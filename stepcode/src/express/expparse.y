@@ -1,5 +1,5 @@
-/** Lemon grammar for Express parser, based on SCL's expparse.y.  */
-%include {
+	/** Lemon grammar for Express parser, based on SCL's expparse.y.  */
+%{
 #include <assert.h>
 #include "token_type.h"
 #include "parse_data.h"
@@ -117,8 +117,9 @@ void parserInitState()
     yyexpresult->symbol.filename = yyexpresult->u.express->filename;
     yyexpresult->symbol.line = 1;
 }
-} /* include */
+%}
 
+/*
 %extra_argument { parse_data_t parseData }
 
 %destructor statement_list {
@@ -126,6 +127,7 @@ void parserInitState()
     $$.string = (char*)NULL;
     }
 }
+ */
 
 %type case_action            { Case_Item }
 %type case_otherwise            { Case_Item }

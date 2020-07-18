@@ -106,7 +106,8 @@ int main( int argc, char ** argv ) {
     bool buffer_messages = false;
     Express model;
 
-    EXPRESSprogram_name = argv[0];
+	char* progName = strrchr(argv[0], '/') + 1;
+	EXPRESSprogram_name = (progName != NULL ? progName : argv[0]);
     ERRORusage_function = 0;
 
     EXPRESSinit_init();

@@ -103,8 +103,8 @@ typedef char * Generic;
 /* function pointer types */
 /**************************/
 
-typedef void ( *voidFuncptr )();
-typedef int ( *intFuncptr )();
+typedef void ( *voidFuncptr )(void);
+typedef int ( *intFuncptr )(void);
 
 /******************************/
 /* deal with inline functions */

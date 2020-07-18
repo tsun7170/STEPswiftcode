@@ -163,6 +163,22 @@ union expr_union {
                               * expr that results in an entity */
     Variable variable;  /**< attribute reference */
 };
+//*TY2020/07/11
+typedef enum {
+	expr_unset = 0,
+	expr_is_integer,
+	expr_is_real,
+	expr_is_attribute,
+	expr_is_binary,
+	expr_is_logical,
+	expr_is_boolean,
+	expr_is_query,
+	expr_is_funcall,
+	expr_is_list,
+	expr_is_expression,
+	expr_is_entity,
+	expr_is_variable
+} expr_union_tag;
 
 /** The difference between 'type' and 'return_type' is illustrated
  * by "func(a)".  Here, 'type' is Type_Function while 'return_type'
@@ -173,6 +189,8 @@ struct Expression_ {
     Type return_type;   /**< type of value returned by expression */
     struct Op_Subexpression e;
     union expr_union u;
+	//*TY2020/07/11
+	expr_union_tag u_tag;	// to identify the union assignment
 };
 
 /** indexed by the op enumeration values */

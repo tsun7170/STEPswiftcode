@@ -95,7 +95,7 @@ struct freelist_head OP_fl;
 struct freelist_head QUERY_fl;
 struct freelist_head QUAL_ATTR_fl;
 
-void EXPop_init();
+void EXPop_init(void);
 static Error ERROR_internal_unrecognized_op_in_EXPresolve;
 /* following two could probably be combined */
 static Error ERROR_attribute_reference_on_aggregate;
@@ -172,6 +172,9 @@ void EXPinitialize( void ) {
 #define M_E     2.7182818284590452354
 #endif
     LITERAL_E->u.real = M_E;
+	//*TY2020/07/11
+	LITERAL_E->u_tag = expr_is_real;
+	
     resolved_all( LITERAL_E );
 
     LITERAL_PI = EXPcreate_simple( Type_Real );
@@ -179,18 +182,30 @@ void EXPinitialize( void ) {
 #define M_PI    3.14159265358979323846
 #endif
     LITERAL_PI->u.real = M_PI;
+	//*TY2020/07/11
+	LITERAL_PI->u_tag = expr_is_real;
+	
     resolved_all( LITERAL_PI );
 
     LITERAL_INFINITY = EXPcreate_simple( Type_Integer );
     LITERAL_INFINITY->u.integer = INT_MAX;
+	//*TY2020/07/11
+	LITERAL_INFINITY->u_tag = expr_is_integer;
+	
     resolved_all( LITERAL_INFINITY );
 
     LITERAL_ZERO = EXPcreate_simple( Type_Integer );
     LITERAL_ZERO->u.integer = 0;
+	//*TY2020/07/11
+	LITERAL_ZERO->u_tag = expr_is_integer;
+	
     resolved_all( LITERAL_ZERO );
 
     LITERAL_ONE = EXPcreate_simple( Type_Integer );
     LITERAL_ONE->u.integer = 1;
+	//*TY2020/07/11
+	LITERAL_ONE->u_tag = expr_is_integer;
+	
     resolved_all( LITERAL_ONE );
 
     ERROR_integer_expression_expected = ERRORcreate(
@@ -349,13 +364,13 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
     Expression op1 = expr->e.op1;
     Expression op2 = expr->e.op2;
     Variable v = 0;
-    Expression item;
+	Expression item = NULL;
     Type op1type;
     bool all_enums = true; /* used by 'case select_' */
 
     /* stuff for dealing with select_ */
     int options = 0;
-    char dt;
+	char dt = '\0';
     struct Symbol_ *where = NULL;
 
     /* op1 is entity expression, op2 is attribute */
@@ -414,11 +429,17 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
                             ERRORabort( 0 );
                         }
                         op2->u.variable = v;
+											//*TY2020/07/11
+											op2->u_tag = expr_is_variable;
+											
                         op2->return_type = v->type;
                         resolved_all( expr );
                         return( v->type );
                     } else if( dt == OBJ_ENUM ) {
                         op2->u.expression = item;
+											//*TY2020/07/11
+											op2->u_tag = expr_is_expression;
+											
                         op2->return_type = item->type;
                         resolved_all( expr );
                         return( item->type );
@@ -451,7 +472,10 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
             }
 
             op2->u.variable = v;
-            op2->return_type = v->type;
+						//*TY2020/07/11
+				op2->u_tag = expr_is_variable;
+
+						op2->return_type = v->type;
             resolved_all( expr );
             return( v->type );
         case entity_:
@@ -470,6 +494,9 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
             }
 
             op2->u.variable = v;
+				//*TY2020/07/11
+				op2->u_tag = expr_is_variable;
+
             /* changed to set return_type */
             op2->return_type = op2->u.variable->type;
             resolved_all( expr );
@@ -486,6 +513,9 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
             }
 
             op2->u.expression = item;
+				//*TY2020/07/11
+				op2->u_tag = expr_is_expression;
+
             op2->return_type = item->type;
             resolved_all( expr );
             return( item->type );
@@ -606,6 +636,9 @@ Type EXPresolve_op_group( Expression expr, Scope scope ) {
             }
 
             op2->u.entity = ent_ref;
+				//*TY2020/07/11
+				op2->u_tag = expr_is_entity;
+
             op2->return_type = ent_ref->u.entity->type;
             resolved_all( expr );
             return( op2->return_type );
@@ -634,6 +667,9 @@ Type EXPresolve_op_group( Expression expr, Scope scope ) {
                 case 1:
                     /* only one possible resolution */
                     op2->u.entity = ent_ref;
+								//*TY2020/07/11
+								op2->u_tag = expr_is_entity;
+
                     op2->return_type = ent_ref->u.entity->type;
                     resolved_all( expr );
                     return( op2->return_type );
@@ -963,6 +999,9 @@ Expression QUERYcreate( Symbol * local, Expression aggregate ) {
 
     DICTdefine( s->symbol_table, local->name, ( Generic )v, &e2->symbol, OBJ_VARIABLE );
     e->u.query = QUERY_new();
+	//*TY2020/07/11
+	e->u_tag = expr_is_query;
+
     e->u.query->scope = s;
     e->u.query->local = v;
     e->u.query->aggregate = aggregate;

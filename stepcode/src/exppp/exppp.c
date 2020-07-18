@@ -103,7 +103,7 @@ int count_newlines( char * s ) {
 }
 
 /** true if last char through exp_output was a space */
-static bool printedSpaceLast = false;
+bool printedSpaceLast = false;
 
 void exp_output( char * buf, unsigned int len ) {
     FILE * fp = ( exppp_fp ? exppp_fp : stdout );
@@ -131,15 +131,12 @@ void exp_output( char * buf, unsigned int len ) {
     }
 }
 
-void wrap( const char * fmt, ... ) {
+static void vwrap( const char * fmt, va_list args ) {
     char buf[10000];
     char * p, * start = buf;
     int len;
-    va_list args;
 
-    va_start( args, fmt );
     vsprintf( buf, fmt, args );
-    va_end( args );
 
     len = strlen( buf );
 
@@ -159,11 +156,15 @@ void wrap( const char * fmt, ... ) {
     if( ( ( ( curpos + len ) > exppp_linelength ) && ( ( indent2 + len ) < exppp_linelength ) )
         || ( ( exppp_linelength == indent2 ) && ( curpos > indent2 ) ) ) {
         /* move to new continuation line */
-        char line[1000];
-        sprintf( line, "\n%*s", indent2, "" );
-        exp_output( line, 1 + indent2 );
-
-        curpos = indent2;       /* reset current position */
+			
+			//*TY2020/07/12
+//        char line[1000];
+//        sprintf( line, "\n%*s", indent2, "" );
+//        exp_output( line, 1 + indent2 );
+//
+//        curpos = indent2;       /* reset current position */
+			force_wrap();
+			
     }
 
     /* eliminate leading whitespace  - again */
@@ -182,16 +183,20 @@ void wrap( const char * fmt, ... ) {
         }
     }
 }
+void wrap( const char * fmt, ... ) {
+	va_list args;
+	va_start( args, fmt );
+	vwrap( fmt, args );
+	va_end( args );
+}
 
-void raw( const char * fmt, ... ) {
+
+static void vraw( const char * fmt, va_list args ) {
     char * p;
     char buf[10000];
     int len;
-    va_list args;
 
-    va_start( args, fmt );
     vsprintf( buf, fmt, args );
-    va_end( args );
 
     len = strlen( buf );
 
@@ -206,6 +211,31 @@ void raw( const char * fmt, ... ) {
         }
     }
 }
+void raw( const char * fmt, ... ) {
+	va_list args;
+	va_start( args, fmt );
+	vraw( fmt, args );
+	va_end( args );
+}
+
+//*TY2020/07/11
+void wrap_if(bool can_wrap, const char * fmt, ... ) {
+	va_list args;
+	va_start( args, fmt );
+
+	if( can_wrap ) {
+    vwrap( fmt, args );
+	}
+	else {
+    vraw( fmt, args );
+	}
+	
+	va_end( args );
+}
+void force_wrap(void) {
+	raw("\n%*s", indent2, "" );
+}
+
 
 void exppp_init() {
     static bool first_time = true;

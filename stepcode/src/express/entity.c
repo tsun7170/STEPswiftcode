@@ -113,6 +113,7 @@
  *
  */
 
+#include <assert.h>
 #include <sc_memmgr.h>
 #include "express/entity.h"
 #include "express/express.h"
@@ -183,6 +184,38 @@ struct Scope_ * ENTITYfind_inherited_entity( struct Scope_ *entity, char * name,
 
     __SCOPE_search_id++;
     return ENTITY_find_inherited_entity( entity, name, down );
+}
+
+//*TY2020/07/11
+static bool ENTITY_check_inherited_entity( Entity family, Entity e ) {
+	if( family->search_id == __SCOPE_search_id ) {
+			return false;
+	}
+	family->search_id = __SCOPE_search_id;
+
+	LISTdo( family->u.entity->supertypes, super, Entity )
+	if( super == e ) {
+			return true;
+	}
+	LISTod
+
+	LISTdo( family->u.entity->supertypes, super, Entity )
+	if( ENTITY_check_inherited_entity( super, e ) ) {
+			return true;
+	}
+	LISTod;
+
+	return false;
+}
+extern bool ENTITYis_aKindOf( Entity family, Entity e ) {
+	if( e==NULL || family==NULL ) { 
+		return false;
+	}
+	if( e == family ) {
+		return true;
+	}
+	__SCOPE_search_id++;
+	return ENTITY_check_inherited_entity(family, e);
 }
 
 /** find a (possibly inherited) attribute */
@@ -331,22 +364,31 @@ void ENTITYinitialize() {
 ** Add an attribute to an entity.
 */
 void ENTITYadd_attribute( Entity entity, Variable attr ) {
-    int rc;
-
-    if( attr->name->type->u.type->body->type != op_ ) {
-        /* simple id */
-        rc = DICTdefine( entity->symbol_table, attr->name->symbol.name,
-                         ( Generic )attr, &attr->name->symbol, OBJ_VARIABLE );
-    } else {
-        /* SELF\ENTITY.SIMPLE_ID */
-        rc = DICTdefine( entity->symbol_table, attr->name->e.op2->symbol.name,
-                         ( Generic )attr, &attr->name->symbol, OBJ_VARIABLE );
-    }
-    if( rc == 0 ) {
-        LISTadd_last( entity->u.entity->attributes, ( Generic )attr );
-        VARput_offset( attr, entity->u.entity->attribute_count );
-        entity->u.entity->attribute_count++;
-    }
+	int rc;
+	
+	if( attr->name->type->u.type->body->type != op_ ) {
+		/* simple id */
+		rc = DICTdefine(	/*dict*/	entity->symbol_table, 
+											/*name*/	attr->name->symbol.name,
+											/*obj*/ 	( Generic )attr, 
+											/*sym*/ 	&attr->name->symbol, 
+											/*type*/ 	OBJ_VARIABLE );
+	} else {
+		/* SELF\ENTITY.SIMPLE_ID */
+		rc = DICTdefine(	/*dict*/	entity->symbol_table, 
+											/*name*/	attr->name->e.op2->symbol.name,
+											/*obj*/		( Generic )attr, 
+											/*sym*/		&attr->name->symbol, 
+											/*type*/	OBJ_VARIABLE );
+	}
+	if( rc == DICTsuccess ) {
+		LISTadd_last( entity->u.entity->attributes, ( Generic )attr );
+		VARput_offset( attr, entity->u.entity->attribute_count );
+		entity->u.entity->attribute_count++;
+		
+		//*TY2020/06/21 added
+		attr->defined_in = entity;
+	}
 }
 
 /**

@@ -37,16 +37,22 @@ void TYPE_out( Type t, int level ) {
  * I.e., the type of an attribute or other object
  */
 void TYPE_head_out( Type t, int level ) {
-    if( t->symbol.name ) {
-        int old_indent = indent2;
-        if( indent2 + ( int ) strlen( t->symbol.name ) > exppp_linelength ) {
-            indent2 = ( indent2 + level ) / 2;
-        }
-        wrap( " %s", t->symbol.name );
-        indent2 = old_indent;
-    } else {
-        TYPE_body_out( t, level );
-    }
+	if( t->symbol.name ) {
+		int old_indent = indent2;
+		if( indent2 + ( int ) strlen( t->symbol.name ) > exppp_linelength ) {
+			indent2 = ( indent2 + level ) / 2;
+		}
+		wrap( " %s", t->symbol.name );
+		if( TYPEis_entity(t)) {
+			raw(" (*ENTITY*)");
+		}
+		else {
+			raw( " (*TYPE*)" );
+		}
+		indent2 = old_indent;
+	} else {
+		TYPE_body_out( t, level );
+	}
 }
 
 void TYPEunique_or_optional_out( TypeBody tb ) {
@@ -89,7 +95,7 @@ void TYPE_body_out( Type t, int level ) {
             wrap( " NUMBER" );
             break;
         case entity_:
-            wrap( " %s", tb->entity->symbol.name );
+            wrap( " %s (*ENTITY*)", tb->entity->symbol.name );
             break;
         case aggregate_:
         case array_:

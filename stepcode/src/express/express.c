@@ -465,7 +465,7 @@ void EXPRESSparse( Express model, FILE * fp, char * filename ) {
 }
 
 /* TODO LEMON ought to put this in expparse.h */
-void parserInitState();
+void parserInitState(void);
 
 /** start parsing a new schema file */
 static Express PARSERrun( char * filename, FILE * fp ) {

@@ -19,14 +19,14 @@ typedef struct {
 extern SC_EXPRESS_EXPORT void orderedAttrsInit( Entity e );
 
 /**free memory */
-extern SC_EXPRESS_EXPORT void orderedAttrsCleanup();
+extern SC_EXPRESS_EXPORT void orderedAttrsCleanup(void);
 
 /**get next attr; not thread safe (as if the rest of libexpress is) */
-extern SC_EXPRESS_EXPORT const orderedAttr * nextAttr();
+extern SC_EXPRESS_EXPORT const orderedAttr * nextAttr(void);
 #ifdef __cplusplus
 }
 
 typedef std::vector<orderedAttr * > oaList;
-oaList getAttrList();
+oaList getAttrList(void);
 
 #endif /* __cplusplus */

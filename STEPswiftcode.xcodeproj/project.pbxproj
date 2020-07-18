@@ -23,7 +23,6 @@
 		F44D032124BE429E00E77B2A /* ordered_attrs.cc in Sources */ = {isa = PBXBuildFile; fileRef = F44D02FA24BE429E00E77B2A /* ordered_attrs.cc */; };
 		F44D032224BE429E00E77B2A /* linklist.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D02FC24BE429E00E77B2A /* linklist.c */; };
 		F44D032624BE429E00E77B2A /* entity.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D030224BE429E00E77B2A /* entity.c */; };
-		F44D032724BE429E00E77B2A /* inithook.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D030324BE429E00E77B2A /* inithook.c */; };
 		F44D032824BE429E00E77B2A /* stmt.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D030424BE429E00E77B2A /* stmt.c */; };
 		F44D032924BE429E00E77B2A /* info.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D030524BE429E00E77B2A /* info.c */; };
 		F44D032A24BE429E00E77B2A /* resolve.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D030824BE429E00E77B2A /* resolve.c */; };
@@ -56,10 +55,36 @@
 		F44D037F24BE42B400E77B2A /* pretty_entity.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D036524BE42B400E77B2A /* pretty_entity.c */; };
 		F44D038024BE42B400E77B2A /* pretty_rule.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D036924BE42B400E77B2A /* pretty_rule.c */; };
 		F44D038124BE42B400E77B2A /* pretty_loop.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D036A24BE42B400E77B2A /* pretty_loop.c */; };
+		F48BF92A24C0E0C5005B5B0A /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF92924C0E0C5005B5B0A /* main.c */; };
+		F48BF92F24C0E110005B5B0A /* expscan.l in Sources */ = {isa = PBXBuildFile; fileRef = F44D030A24BE429E00E77B2A /* expscan.l */; };
+		F48BF93024C0E115005B5B0A /* expparse.y in Sources */ = {isa = PBXBuildFile; fileRef = F44D031424BE429E00E77B2A /* expparse.y */; };
+		F48BF93824C26BB1005B5B0A /* exp2swift_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF93224C26BB1005B5B0A /* exp2swift_main.c */; };
+		F48BF93924C26BB1005B5B0A /* swift_schema.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF93424C26BB1005B5B0A /* swift_schema.c */; };
+		F48BF93A24C26BB1005B5B0A /* swift_express.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF93624C26BB1005B5B0A /* swift_express.c */; };
+		F48BF93B24C26BB1005B5B0A /* swift_files.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF93724C26BB1005B5B0A /* swift_files.c */; };
+		F48BF95524C26BFF005B5B0A /* swift_expression.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF93D24C26BFE005B5B0A /* swift_expression.c */; };
+		F48BF95624C26BFF005B5B0A /* swift_scope.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94024C26BFE005B5B0A /* swift_scope.c */; };
+		F48BF95724C26BFF005B5B0A /* swift_scope_algs.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94424C26BFE005B5B0A /* swift_scope_algs.c */; };
+		F48BF95824C26BFF005B5B0A /* swift_scope_consts.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94524C26BFE005B5B0A /* swift_scope_consts.c */; };
+		F48BF95924C26BFF005B5B0A /* swift_scope_entities.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94624C26BFE005B5B0A /* swift_scope_entities.c */; };
+		F48BF95A24C26BFF005B5B0A /* swift_scope_locals.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94724C26BFE005B5B0A /* swift_scope_locals.c */; };
+		F48BF95B24C26BFF005B5B0A /* swift_scope_types.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94B24C26BFE005B5B0A /* swift_scope_types.c */; };
+		F48BF95C24C26BFF005B5B0A /* swift_entity.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94E24C26BFE005B5B0A /* swift_entity.c */; };
+		F48BF95D24C26BFF005B5B0A /* swift_symbol.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF95024C26BFE005B5B0A /* swift_symbol.c */; };
+		F48BF95E24C26BFF005B5B0A /* swift_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF95424C26BFE005B5B0A /* swift_type.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		F44D025024BE402700E77B2A /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		F48BF92524C0E0C5005B5B0A /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -181,7 +206,7 @@
 		F44D030724BE429E00E77B2A /* parse_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parse_data.h; sourceTree = "<group>"; };
 		F44D030824BE429E00E77B2A /* resolve.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = resolve.c; sourceTree = "<group>"; };
 		F44D030924BE429E00E77B2A /* fedex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = fedex.c; sourceTree = "<group>"; };
-		F44D030A24BE429E00E77B2A /* expscan.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = expscan.l; sourceTree = "<group>"; };
+		F44D030A24BE429E00E77B2A /* expscan.l */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.lex; path = expscan.l; sourceTree = "<group>"; tabWidth = 4; };
 		F44D030B24BE429E00E77B2A /* hash.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = hash.c; sourceTree = "<group>"; };
 		F44D030C24BE429E00E77B2A /* scope.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = scope.c; sourceTree = "<group>"; };
 		F44D030D24BE429E00E77B2A /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
@@ -261,15 +286,53 @@
 		F44D039C24BE42FD00E77B2A /* decstart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = decstart.h; sourceTree = "<group>"; };
 		F44D039D24BE42FD00E77B2A /* de_end.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = de_end.h; sourceTree = "<group>"; };
 		F44D039F24BE42FE00E77B2A /* exppp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = exppp.h; sourceTree = "<group>"; };
+		F456D5EA24C283BC008EC5B4 /* Products */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Products; path = "../../../../../../Library/Developer/Xcode/DerivedData/STEPswiftcode-eekfndbmrwrfyadpkfsqjovxhltq/Build/Products"; sourceTree = "<group>"; };
 		F48BF91E24C07A2B005B5B0A /* ordered_attrs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ordered_attrs.h; sourceTree = "<group>"; };
 		F48BF91F24C07A2B005B5B0A /* sc_export.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sc_export.h; sourceTree = "<group>"; };
 		F48BF92024C07A2C005B5B0A /* sc_stdbool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sc_stdbool.h; sourceTree = "<group>"; };
 		F48BF92124C07A78005B5B0A /* sc_version_string.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sc_version_string.h; sourceTree = "<group>"; };
 		F48BF92224C07A78005B5B0A /* sc_cf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sc_cf.h; sourceTree = "<group>"; };
+		F48BF92724C0E0C5005B5B0A /* yacc&lex */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "yacc&lex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F48BF92924C0E0C5005B5B0A /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		F48BF93124C26BB0005B5B0A /* swift_schema.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_schema.h; sourceTree = "<group>"; };
+		F48BF93224C26BB1005B5B0A /* exp2swift_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = exp2swift_main.c; sourceTree = "<group>"; };
+		F48BF93324C26BB1005B5B0A /* swift_files.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_files.h; sourceTree = "<group>"; };
+		F48BF93424C26BB1005B5B0A /* swift_schema.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_schema.c; sourceTree = "<group>"; };
+		F48BF93524C26BB1005B5B0A /* swift_express.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_express.h; sourceTree = "<group>"; };
+		F48BF93624C26BB1005B5B0A /* swift_express.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_express.c; sourceTree = "<group>"; };
+		F48BF93724C26BB1005B5B0A /* swift_files.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_files.c; sourceTree = "<group>"; };
+		F48BF93D24C26BFE005B5B0A /* swift_expression.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_expression.c; sourceTree = "<group>"; };
+		F48BF93E24C26BFE005B5B0A /* swift_expression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_expression.h; sourceTree = "<group>"; };
+		F48BF94024C26BFE005B5B0A /* swift_scope.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_scope.c; sourceTree = "<group>"; };
+		F48BF94124C26BFE005B5B0A /* swift_scope_locals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_scope_locals.h; sourceTree = "<group>"; };
+		F48BF94224C26BFE005B5B0A /* swift_scope_entities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_scope_entities.h; sourceTree = "<group>"; };
+		F48BF94324C26BFE005B5B0A /* swift_scope_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_scope_types.h; sourceTree = "<group>"; };
+		F48BF94424C26BFE005B5B0A /* swift_scope_algs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_scope_algs.c; sourceTree = "<group>"; };
+		F48BF94524C26BFE005B5B0A /* swift_scope_consts.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_scope_consts.c; sourceTree = "<group>"; };
+		F48BF94624C26BFE005B5B0A /* swift_scope_entities.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_scope_entities.c; sourceTree = "<group>"; };
+		F48BF94724C26BFE005B5B0A /* swift_scope_locals.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_scope_locals.c; sourceTree = "<group>"; };
+		F48BF94824C26BFE005B5B0A /* swift_scope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_scope.h; sourceTree = "<group>"; };
+		F48BF94924C26BFE005B5B0A /* swift_scope_consts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_scope_consts.h; sourceTree = "<group>"; };
+		F48BF94A24C26BFE005B5B0A /* swift_scope_algs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_scope_algs.h; sourceTree = "<group>"; };
+		F48BF94B24C26BFE005B5B0A /* swift_scope_types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_scope_types.c; sourceTree = "<group>"; };
+		F48BF94D24C26BFE005B5B0A /* swift_entity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_entity.h; sourceTree = "<group>"; };
+		F48BF94E24C26BFE005B5B0A /* swift_entity.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_entity.c; sourceTree = "<group>"; };
+		F48BF95024C26BFE005B5B0A /* swift_symbol.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_symbol.c; sourceTree = "<group>"; };
+		F48BF95124C26BFE005B5B0A /* swift_symbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_symbol.h; sourceTree = "<group>"; };
+		F48BF95324C26BFE005B5B0A /* swift_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_type.h; sourceTree = "<group>"; };
+		F48BF95424C26BFE005B5B0A /* swift_type.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_type.c; sourceTree = "<group>"; };
+		F48BF96024C2711E005B5B0A /* SwiftSDAIcore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftSDAIcore; path = ../SwiftSDAIcore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		F44D024F24BE402700E77B2A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F48BF92424C0E0C5005B5B0A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -282,8 +345,10 @@
 		F44D023B24BE3FDA00E77B2A = {
 			isa = PBXGroup;
 			children = (
+				F48BF96024C2711E005B5B0A /* SwiftSDAIcore */,
 				F44D025324BE402700E77B2A /* exp2swift */,
 				F44D025924BE40B600E77B2A /* stepcode */,
+				F48BF92824C0E0C5005B5B0A /* yacc&lex */,
 				F44D024524BE3FDA00E77B2A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -292,6 +357,7 @@
 			isa = PBXGroup;
 			children = (
 				F44D025224BE402700E77B2A /* exp2swift */,
+				F48BF92724C0E0C5005B5B0A /* yacc&lex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -299,8 +365,21 @@
 		F44D025324BE402700E77B2A /* exp2swift */ = {
 			isa = PBXGroup;
 			children = (
+				F48BF95F24C27038005B5B0A /* generated */,
 				F48BF92224C07A78005B5B0A /* sc_cf.h */,
 				F48BF92124C07A78005B5B0A /* sc_version_string.h */,
+				F48BF93224C26BB1005B5B0A /* exp2swift_main.c */,
+				F48BF93624C26BB1005B5B0A /* swift_express.c */,
+				F48BF93524C26BB1005B5B0A /* swift_express.h */,
+				F48BF93724C26BB1005B5B0A /* swift_files.c */,
+				F48BF93324C26BB1005B5B0A /* swift_files.h */,
+				F48BF93424C26BB1005B5B0A /* swift_schema.c */,
+				F48BF93124C26BB0005B5B0A /* swift_schema.h */,
+				F48BF94C24C26BFE005B5B0A /* entity */,
+				F48BF93C24C26BFE005B5B0A /* expression */,
+				F48BF93F24C26BFE005B5B0A /* scope */,
+				F48BF94F24C26BFE005B5B0A /* symbol */,
+				F48BF95224C26BFE005B5B0A /* type */,
 			);
 			path = exp2swift;
 			sourceTree = "<group>";
@@ -582,6 +661,8 @@
 			isa = PBXGroup;
 			children = (
 				F44D02EE24BE429E00E77B2A /* generated */,
+				F44D030A24BE429E00E77B2A /* expscan.l */,
+				F44D031424BE429E00E77B2A /* expparse.y */,
 				F44D02F524BE429E00E77B2A /* dict.c */,
 				F44D02F624BE429E00E77B2A /* caseitem.c */,
 				F44D02F724BE429E00E77B2A /* alg.c */,
@@ -598,7 +679,6 @@
 				F44D030724BE429E00E77B2A /* parse_data.h */,
 				F44D030824BE429E00E77B2A /* resolve.c */,
 				F44D030924BE429E00E77B2A /* fedex.c */,
-				F44D030A24BE429E00E77B2A /* expscan.l */,
 				F44D030B24BE429E00E77B2A /* hash.c */,
 				F44D030C24BE429E00E77B2A /* scope.c */,
 				F44D030D24BE429E00E77B2A /* README */,
@@ -608,7 +688,6 @@
 				F44D031124BE429E00E77B2A /* lexact.c */,
 				F44D031224BE429E00E77B2A /* symbol.c */,
 				F44D031324BE429E00E77B2A /* stack.h */,
-				F44D031424BE429E00E77B2A /* expparse.y */,
 				F44D031524BE429E00E77B2A /* exp_kw.c */,
 				F44D031624BE429E00E77B2A /* express.c */,
 				F44D031724BE429E00E77B2A /* expr.c */,
@@ -634,43 +713,43 @@
 		F44D033924BE42B400E77B2A /* exppp */ = {
 			isa = PBXGroup;
 			children = (
-				F44D033A24BE42B400E77B2A /* pretty_func.h */,
-				F44D033B24BE42B400E77B2A /* pretty_case.h */,
-				F44D033C24BE42B400E77B2A /* pretty_alg.h */,
-				F44D033D24BE42B400E77B2A /* pretty_schema.c */,
-				F44D033E24BE42B400E77B2A /* pretty_stmt.h */,
 				F44D033F24BE42B400E77B2A /* CMakeLists.txt */,
-				F44D034024BE42B400E77B2A /* pretty_subtype.c */,
-				F44D034124BE42B400E77B2A /* pretty_express.c */,
-				F44D034E24BE42B400E77B2A /* pretty_expr.c */,
-				F44D034F24BE42B400E77B2A /* pretty_scope.c */,
-				F44D035024BE42B400E77B2A /* pretty_entity.h */,
-				F44D035124BE42B400E77B2A /* pretty_ref.h */,
-				F44D035224BE42B400E77B2A /* pretty_type.c */,
-				F44D035324BE42B400E77B2A /* pretty_loop.h */,
-				F44D035424BE42B400E77B2A /* pretty_rule.h */,
-				F44D035524BE42B400E77B2A /* pretty_proc.c */,
-				F44D035624BE42B400E77B2A /* README */,
-				F44D035724BE42B400E77B2A /* pretty_where.c */,
-				F44D035824BE42B400E77B2A /* pretty_stmt.c */,
-				F44D035924BE42B400E77B2A /* pretty_schema.h */,
-				F44D035A24BE42B400E77B2A /* pretty_alg.c */,
-				F44D035B24BE42B400E77B2A /* pretty_case.c */,
-				F44D035C24BE42B400E77B2A /* pretty_func.c */,
-				F44D035D24BE42B400E77B2A /* pretty_scope.h */,
-				F44D035E24BE42B400E77B2A /* pretty_expr.h */,
-				F44D035F24BE42B400E77B2A /* pretty_subtype.h */,
-				F44D036024BE42B400E77B2A /* exppp.c */,
-				F44D036124BE42B400E77B2A /* pretty_express.h */,
-				F44D036224BE42B400E77B2A /* pretty_type.h */,
 				F44D036324BE42B400E77B2A /* exppp-main.c */,
-				F44D036424BE42B400E77B2A /* pretty_ref.c */,
-				F44D036524BE42B400E77B2A /* pretty_entity.c */,
-				F44D036624BE42B400E77B2A /* pretty_proc.h */,
-				F44D036724BE42B400E77B2A /* pretty_where.h */,
+				F44D036024BE42B400E77B2A /* exppp.c */,
 				F44D036824BE42B400E77B2A /* pp.h */,
-				F44D036924BE42B400E77B2A /* pretty_rule.c */,
+				F44D035A24BE42B400E77B2A /* pretty_alg.c */,
+				F44D033C24BE42B400E77B2A /* pretty_alg.h */,
+				F44D035B24BE42B400E77B2A /* pretty_case.c */,
+				F44D033B24BE42B400E77B2A /* pretty_case.h */,
+				F44D036524BE42B400E77B2A /* pretty_entity.c */,
+				F44D035024BE42B400E77B2A /* pretty_entity.h */,
+				F44D034E24BE42B400E77B2A /* pretty_expr.c */,
+				F44D035E24BE42B400E77B2A /* pretty_expr.h */,
+				F44D034124BE42B400E77B2A /* pretty_express.c */,
+				F44D036124BE42B400E77B2A /* pretty_express.h */,
+				F44D035C24BE42B400E77B2A /* pretty_func.c */,
+				F44D033A24BE42B400E77B2A /* pretty_func.h */,
 				F44D036A24BE42B400E77B2A /* pretty_loop.c */,
+				F44D035324BE42B400E77B2A /* pretty_loop.h */,
+				F44D035524BE42B400E77B2A /* pretty_proc.c */,
+				F44D036624BE42B400E77B2A /* pretty_proc.h */,
+				F44D036424BE42B400E77B2A /* pretty_ref.c */,
+				F44D035124BE42B400E77B2A /* pretty_ref.h */,
+				F44D036924BE42B400E77B2A /* pretty_rule.c */,
+				F44D035424BE42B400E77B2A /* pretty_rule.h */,
+				F44D033D24BE42B400E77B2A /* pretty_schema.c */,
+				F44D035924BE42B400E77B2A /* pretty_schema.h */,
+				F44D034F24BE42B400E77B2A /* pretty_scope.c */,
+				F44D035D24BE42B400E77B2A /* pretty_scope.h */,
+				F44D035824BE42B400E77B2A /* pretty_stmt.c */,
+				F44D033E24BE42B400E77B2A /* pretty_stmt.h */,
+				F44D034024BE42B400E77B2A /* pretty_subtype.c */,
+				F44D035F24BE42B400E77B2A /* pretty_subtype.h */,
+				F44D035224BE42B400E77B2A /* pretty_type.c */,
+				F44D036224BE42B400E77B2A /* pretty_type.h */,
+				F44D035724BE42B400E77B2A /* pretty_where.c */,
+				F44D036724BE42B400E77B2A /* pretty_where.h */,
+				F44D035624BE42B400E77B2A /* README */,
 			);
 			path = exppp;
 			sourceTree = "<group>";
@@ -728,6 +807,77 @@
 			path = exppp;
 			sourceTree = "<group>";
 		};
+		F48BF92824C0E0C5005B5B0A /* yacc&lex */ = {
+			isa = PBXGroup;
+			children = (
+				F48BF92924C0E0C5005B5B0A /* main.c */,
+			);
+			path = "yacc&lex";
+			sourceTree = "<group>";
+		};
+		F48BF93C24C26BFE005B5B0A /* expression */ = {
+			isa = PBXGroup;
+			children = (
+				F48BF93D24C26BFE005B5B0A /* swift_expression.c */,
+				F48BF93E24C26BFE005B5B0A /* swift_expression.h */,
+			);
+			path = expression;
+			sourceTree = "<group>";
+		};
+		F48BF93F24C26BFE005B5B0A /* scope */ = {
+			isa = PBXGroup;
+			children = (
+				F48BF94024C26BFE005B5B0A /* swift_scope.c */,
+				F48BF94124C26BFE005B5B0A /* swift_scope_locals.h */,
+				F48BF94224C26BFE005B5B0A /* swift_scope_entities.h */,
+				F48BF94324C26BFE005B5B0A /* swift_scope_types.h */,
+				F48BF94424C26BFE005B5B0A /* swift_scope_algs.c */,
+				F48BF94524C26BFE005B5B0A /* swift_scope_consts.c */,
+				F48BF94624C26BFE005B5B0A /* swift_scope_entities.c */,
+				F48BF94724C26BFE005B5B0A /* swift_scope_locals.c */,
+				F48BF94824C26BFE005B5B0A /* swift_scope.h */,
+				F48BF94924C26BFE005B5B0A /* swift_scope_consts.h */,
+				F48BF94A24C26BFE005B5B0A /* swift_scope_algs.h */,
+				F48BF94B24C26BFE005B5B0A /* swift_scope_types.c */,
+			);
+			path = scope;
+			sourceTree = "<group>";
+		};
+		F48BF94C24C26BFE005B5B0A /* entity */ = {
+			isa = PBXGroup;
+			children = (
+				F48BF94D24C26BFE005B5B0A /* swift_entity.h */,
+				F48BF94E24C26BFE005B5B0A /* swift_entity.c */,
+			);
+			path = entity;
+			sourceTree = "<group>";
+		};
+		F48BF94F24C26BFE005B5B0A /* symbol */ = {
+			isa = PBXGroup;
+			children = (
+				F48BF95024C26BFE005B5B0A /* swift_symbol.c */,
+				F48BF95124C26BFE005B5B0A /* swift_symbol.h */,
+			);
+			path = symbol;
+			sourceTree = "<group>";
+		};
+		F48BF95224C26BFE005B5B0A /* type */ = {
+			isa = PBXGroup;
+			children = (
+				F48BF95324C26BFE005B5B0A /* swift_type.h */,
+				F48BF95424C26BFE005B5B0A /* swift_type.c */,
+			);
+			path = type;
+			sourceTree = "<group>";
+		};
+		F48BF95F24C27038005B5B0A /* generated */ = {
+			isa = PBXGroup;
+			children = (
+				F456D5EA24C283BC008EC5B4 /* Products */,
+			);
+			path = generated;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -748,6 +898,23 @@
 			productReference = F44D025224BE402700E77B2A /* exp2swift */;
 			productType = "com.apple.product-type.tool";
 		};
+		F48BF92624C0E0C5005B5B0A /* yacc&lex */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F48BF92B24C0E0C5005B5B0A /* Build configuration list for PBXNativeTarget "yacc&lex" */;
+			buildPhases = (
+				F48BF92324C0E0C5005B5B0A /* Sources */,
+				F48BF92424C0E0C5005B5B0A /* Frameworks */,
+				F48BF92524C0E0C5005B5B0A /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "yacc&lex";
+			productName = "yacc&lex";
+			productReference = F48BF92724C0E0C5005B5B0A /* yacc&lex */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -759,6 +926,9 @@
 				TargetAttributes = {
 					F44D025124BE402700E77B2A = {
 						CreatedOnToolsVersion = 11.5;
+					};
+					F48BF92624C0E0C5005B5B0A = {
+						CreatedOnToolsVersion = 11.6;
 					};
 				};
 			};
@@ -776,6 +946,7 @@
 			projectRoot = "";
 			targets = (
 				F44D025124BE402700E77B2A /* exp2swift */,
+				F48BF92624C0E0C5005B5B0A /* yacc&lex */,
 			);
 		};
 /* End PBXProject section */
@@ -787,13 +958,18 @@
 			files = (
 				F44D032224BE429E00E77B2A /* linklist.c in Sources */,
 				F44D031E24BE429E00E77B2A /* alg.c in Sources */,
+				F48BF95624C26BFF005B5B0A /* swift_scope.c in Sources */,
 				F44D033124BE429E00E77B2A /* lexact.c in Sources */,
 				F44D037C24BE42B400E77B2A /* exppp.c in Sources */,
+				F48BF93B24C26BB1005B5B0A /* swift_files.c in Sources */,
+				F48BF95524C26BFF005B5B0A /* swift_expression.c in Sources */,
+				F48BF95C24C26BFF005B5B0A /* swift_entity.c in Sources */,
 				F44D033024BE429E00E77B2A /* error.c in Sources */,
 				F44D032924BE429E00E77B2A /* info.c in Sources */,
 				F44D036C24BE42B400E77B2A /* pretty_subtype.c in Sources */,
 				F44D036B24BE42B400E77B2A /* pretty_schema.c in Sources */,
 				F44D032624BE429E00E77B2A /* entity.c in Sources */,
+				F48BF93924C26BB1005B5B0A /* swift_schema.c in Sources */,
 				F44D033624BE429E00E77B2A /* expr.c in Sources */,
 				F44D037924BE42B400E77B2A /* pretty_alg.c in Sources */,
 				F44D037B24BE42B400E77B2A /* pretty_func.c in Sources */,
@@ -808,32 +984,50 @@
 				F44D02EC24BE427C00E77B2A /* sc_benchmark.cc in Sources */,
 				F44D037524BE42B400E77B2A /* pretty_type.c in Sources */,
 				F44D037624BE42B400E77B2A /* pretty_proc.c in Sources */,
+				F48BF95E24C26BFF005B5B0A /* swift_type.c in Sources */,
 				F44D033424BE429E00E77B2A /* exp_kw.c in Sources */,
 				F44D037324BE42B400E77B2A /* pretty_expr.c in Sources */,
 				F44D02EB24BE427C00E77B2A /* path2str.c in Sources */,
 				F44D033524BE429E00E77B2A /* express.c in Sources */,
 				F44D032A24BE429E00E77B2A /* resolve.c in Sources */,
 				F44D031C24BE429E00E77B2A /* dict.c in Sources */,
+				F48BF95824C26BFF005B5B0A /* swift_scope_consts.c in Sources */,
+				F48BF95B24C26BFF005B5B0A /* swift_scope_types.c in Sources */,
+				F48BF93824C26BB1005B5B0A /* exp2swift_main.c in Sources */,
 				F44D031B24BE429E00E77B2A /* expparse.c in Sources */,
 				F44D032024BE429E00E77B2A /* memory.c in Sources */,
 				F44D038024BE42B400E77B2A /* pretty_rule.c in Sources */,
 				F44D032F24BE429E00E77B2A /* type.c in Sources */,
 				F44D037A24BE42B400E77B2A /* pretty_case.c in Sources */,
+				F48BF95724C26BFF005B5B0A /* swift_scope_algs.c in Sources */,
 				F44D02DE24BE427C00E77B2A /* sc_trace_fprintf.c in Sources */,
 				F44D031F24BE429E00E77B2A /* object.c in Sources */,
+				F48BF95A24C26BFF005B5B0A /* swift_scope_locals.c in Sources */,
 				F44D02E024BE427C00E77B2A /* sc_mkdir.c in Sources */,
 				F44D037424BE42B400E77B2A /* pretty_scope.c in Sources */,
 				F44D02E124BE427C00E77B2A /* sc_getopt.cc in Sources */,
 				F44D033824BE429E00E77B2A /* schema.c in Sources */,
-				F44D032724BE429E00E77B2A /* inithook.c in Sources */,
 				F44D037E24BE42B400E77B2A /* pretty_ref.c in Sources */,
+				F48BF95924C26BFF005B5B0A /* swift_scope_entities.c in Sources */,
 				F44D031D24BE429E00E77B2A /* caseitem.c in Sources */,
 				F44D032124BE429E00E77B2A /* ordered_attrs.cc in Sources */,
+				F48BF93A24C26BB1005B5B0A /* swift_express.c in Sources */,
 				F44D031A24BE429E00E77B2A /* expscan.c in Sources */,
 				F44D033224BE429E00E77B2A /* symbol.c in Sources */,
 				F44D032824BE429E00E77B2A /* stmt.c in Sources */,
 				F44D037824BE42B400E77B2A /* pretty_stmt.c in Sources */,
 				F44D033724BE429E00E77B2A /* variable.c in Sources */,
+				F48BF95D24C26BFF005B5B0A /* swift_symbol.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F48BF92324C0E0C5005B5B0A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F48BF93024C0E115005B5B0A /* expparse.y in Sources */,
+				F48BF92A24C0E0C5005B5B0A /* main.c in Sources */,
+				F48BF92F24C0E110005B5B0A /* expscan.l in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -985,6 +1179,26 @@
 			};
 			name = Release;
 		};
+		F48BF92C24C0E0C5005B5B0A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = ZX793TWQF2;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F48BF92D24C0E0C5005B5B0A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = ZX793TWQF2;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1002,6 +1216,15 @@
 			buildConfigurations = (
 				F44D025724BE402700E77B2A /* Debug */,
 				F44D025824BE402700E77B2A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F48BF92B24C0E0C5005B5B0A /* Build configuration list for PBXNativeTarget "yacc&lex" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F48BF92C24C0E0C5005B5B0A /* Debug */,
+				F48BF92D24C0E0C5005B5B0A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

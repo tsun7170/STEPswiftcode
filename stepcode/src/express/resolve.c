@@ -464,6 +464,9 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
             switch( DICT_type ) {
                 case OBJ_VARIABLE:
                     expr->u.variable = ( Variable )x;
+								//*TY2020/07/11
+								expr->u_tag = expr_is_variable;
+
 #if 0
                     /* gee, I don't see what variables have to go through this right here */
                     VARresolve_expressions( expr->u.variable, scope );
@@ -488,6 +491,9 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
                 case OBJ_EXPRESSION:
                     /* so far only enumerations get returned this way */
                     expr->u.expression = ( Expression )x;
+								//*TY2020/07/11
+								expr->u_tag = expr_is_expression;
+
                     expr->type = expr->return_type = ( ( Expression )x )->type;
                     resolved_all( expr );
                     break;
@@ -495,6 +501,9 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
                     /* functions with no args end up here because the */
                     /* parser doesn't know any better */
                     expr->u.list = LISTcreate();
+								//*TY2020/07/11
+								expr->u_tag = expr_is_list;
+
                     LISTadd_last( expr->u.list, x );
                     expr->type = Type_Funcall;
                     expr->return_type = ( ( Function )x )->u.func->return_type;
@@ -764,6 +773,8 @@ void VAR_resolve_expressions( Variable v, Entity entity /* was scope */ ) {
         if( is_resolve_failed( v->initializer ) ) {
             resolve_failed( v->name );
         }
+			//*TY2020/07/04
+			VARput_dynamic(v);
     }
 }
 
@@ -795,6 +806,15 @@ void VAR_resolve_types( Variable v ) {
             attr = VARfind( type->u.type->body->entity, v->inverse_symbol->name, 1 );
             if( attr ) {
                 v->inverse_attribute = attr;
+							
+							  // *TY2020/06/20 added attribute observation info
+							if( attr->observers == NULL ){
+								attr->observers = LISTcreate();
+							}
+							LISTadd_last(attr->observers, v);
+//							assert(attr->observed_by_inverse_attribute == NULL);
+//								attr->observed_by_inverse_attribute = v;
+							
                 failed |= is_resolve_failed( attr->name );
             } else {
                 ERRORreport_with_symbol( ERROR_inverse_bad_attribute,
@@ -805,6 +825,26 @@ void VAR_resolve_types( Variable v ) {
         /* but keep around anyway for ease in later reconstruction */
     }
 
+	//*TY2020/06/28 added
+	if(_VARis_redeclaring(v) ) {
+		Entity super = ENTITYfind_inherited_entity(v->defined_in, _VARget_redeclaring_entity_name_string(v), 0);
+		assert(super != NULL);
+		Variable super_attr = ENTITYget_named_attribute(super, _VARget_redeclaring_attr_name_string(v));
+		assert(super_attr != NULL);
+		v->original_attribute = super_attr;
+		if( super_attr->overriders == NULL) {
+			super_attr->overriders = DICTcreate(8);
+		}
+		char attr_type = ATTR_EXPLICIT;
+		if( VARis_derived(v) ) {
+			attr_type = ATTR_DERIVED;
+			VARput_dynamic(super_attr);
+		}
+		int rc = DICTdefine(super_attr->overriders, ENTITYget_name(v->defined_in), ( Generic )v, &v->name->symbol, attr_type);
+		assert(rc == DICTsuccess);
+	}
+
+	
     if( failed ) {
         resolve_failed( v->name );
     }
@@ -1480,7 +1520,9 @@ void SCOPEresolve_expressions_statements( Scope s ) {
 
 static int WHEREresolve( Linked_List list, Scope scope, int need_self ) {
     int status = 0;
-
+//*TY2020/07/11
+	int serial = 0;
+	
     LISTdo( list, w, Where )
     /* check if we've been here before */
     /* i'm not sure why, but it happens */
@@ -1500,6 +1542,8 @@ static int WHEREresolve( Linked_List list, Scope scope, int need_self ) {
         w->label->resolved = RESOLVED;
     }
     status |= w->label->resolved;
+	  //*TY2020/07/11
+	  w->serial = ++serial;
     LISTod
     if( status == RESOLVE_FAILED ) {
         return 0;

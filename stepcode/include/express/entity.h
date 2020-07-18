@@ -155,4 +155,6 @@ extern SC_EXPRESS_EXPORT void     ENTITYadd_instance PROTO( ( Entity, Generic ) 
 extern SC_EXPRESS_EXPORT int      ENTITYget_initial_offset PROTO( ( Entity ) );
 extern SC_EXPRESS_EXPORT int      ENTITYdeclares_variable PROTO( ( Entity, struct Variable_ * ) );
 
+//*TY2020/07/11
+extern bool ENTITYis_aKindOf( Entity family , Entity e );
 #endif    /*  ENTITY_H  */

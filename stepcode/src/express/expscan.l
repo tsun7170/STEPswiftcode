@@ -101,6 +101,7 @@
  * 
  */
 
+%{
 #include "express/basic.h"
 #include "express/error.h"
 #include "express/lexact.h"
@@ -169,159 +170,165 @@ SCAN_lex_init(char *filename, FILE *fp) {
 	SCANbuffer.filename = (filename ? filename : "");
 	current_filename = SCANbuffer.filename;
 }
+%}
+
+%Start		code comment return_end_schema
+
+digit		[0-9]
+integer		digit+
+letter		[A-Za-z]
+id_char		[A-Za-z0-9_]
+
 %%
-digit	= [0-9];
-integer	= digit+;
-letter	= [A-Za-z];
-id_char	= [A-Za-z0-9_];
+<INITIAL>	{	BEGIN code; }
 
-<> => code
+			/* Added * at the end of next rule (to make lexer faster) - DEL */
+[\t ]*		{ 	IGNORE_TOKEN; }
 
-/* Added * at the end of next rule (to make lexer faster) - DEL */
-<*>[\t ]* { IGNORE_TOKEN; }
-<*>'\n' {
-    NEWLINE;
-    IGNORE_TOKEN;
-}
+\n 			{
+				NEWLINE;
+				IGNORE_TOKEN;
+			}
 
-<code>"--"[^\n]*'\n' {
-    NEWLINE;
-    SCANsave_comment(yytext);
-    IGNORE_TOKEN;
-}
+<code>"--"[^\n]*\n	{
+				NEWLINE;
+				SCANsave_comment(yytext);
+				IGNORE_TOKEN;
+			}
 
-<*>"(*" => comment {
-    /* nested comment errors will occur with most deeply nested - DEL */
-    if (nesting_level < MAX_NESTED_COMMENTS) {
-	open_comment[nesting_level].line = yylineno;
-	open_comment[nesting_level].filename = current_filename;
-    }
-    nesting_level++;
-    IGNORE_TOKEN;
-}
+"(*"		{
+				BEGIN comment;
+				/* nested comment errors will occur with most deeply nested - DEL */
+				if (nesting_level < MAX_NESTED_COMMENTS) {
+				open_comment[nesting_level].line = yylineno;
+				open_comment[nesting_level].filename = current_filename;
+				}
+				nesting_level++;
+				IGNORE_TOKEN;
+			}
 
-<code> {
 
-/* real literal (like, think it'll fly?!) */
-(integer)'.'(integer)?([eE][+-]?(integer))? {
-    return SCANprocess_real_literal(yytext);
-}
 
-/* integer literal */
-integer {
-    return SCANprocess_integer_literal(yytext);
-}
+			/* real literal (like, think it'll fly?!) */
+<code>{integer}"."{integer}?([eE][+-]?{integer})?	{
+				return SCANprocess_real_literal(yytext);
+			}
 
-/* binary literal */
-'%'[01]+ {
-    return SCANprocess_binary_literal(yytext);
-}
+			/* integer literal */
+<code>{integer}	{
+				return SCANprocess_integer_literal(yytext);
+			}
 
-/* identifier/keyword */
-(letter)(id_char)* {
-    return SCANprocess_identifier_or_keyword(yytext);
-}
+			/* binary literal */
+<code>"%"[01]+	{
+				return SCANprocess_binary_literal(yytext);
+			}
 
-/* bad identifier */
-[_A-Za-z]id_char* {
-    ERRORreport_with_line(ERROR_bad_identifier, yylineno, yytext);
-    return SCANprocess_identifier_or_keyword(yytext);
-}
+			/* identifier/keyword */
+<code>{letter}{id_char}*	{
+    			return SCANprocess_identifier_or_keyword(yytext);
+			}
 
-/* string literal */
-"'"([^'\n]|"''")*"'" {
-    /* ' keep font-lock happy */
-    return SCANprocess_string(yytext);
-}
+			/* bad identifier */
+<code>[_A-Za-z]{id_char}*	{
+    			ERRORreport_with_line(ERROR_bad_identifier, yylineno, yytext);
+    			return SCANprocess_identifier_or_keyword(yytext);
+			}
 
-"'"([^'\n]|"''")*'\n' {
-    ERRORreport_with_line(ERROR_unterminated_string, LINENO_FUDGE);
-    NEWLINE;
-    return SCANprocess_string(yytext);
-}
+			/* string literal */
+<code>"'"([^'\n]|"''")*"'"	{
+    			/* ' keep font-lock happy */
+				return SCANprocess_string(yytext);
+			}
 
-'"'[^\"\n]*'"' {
-    return SCANprocess_encoded_string(yytext);
-}
+<code>"'"([^'\n]|"''")*\n	{
+				ERRORreport_with_line(ERROR_unterminated_string, LINENO_FUDGE);
+				NEWLINE;
+				return SCANprocess_string(yytext);
+			}
 
-'"'[^\"\n]*'\n' {
-    ERRORreport_with_line(ERROR_unterminated_string, LINENO_FUDGE);
-    NEWLINE;
-    return SCANprocess_encoded_string(yytext);
-}
+<code>\"[^\"\n]*\" 			{
+				return SCANprocess_encoded_string(yytext);
+			}
 
-';'[ \t]*"--"[^\n]*'\n' {
-    NEWLINE;
-    return SCANprocess_semicolon(yytext, 1);
-}
+<code>\"[^\"\n]*\n 			{
+				ERRORreport_with_line(ERROR_unterminated_string, LINENO_FUDGE);
+				NEWLINE;
+				return SCANprocess_encoded_string(yytext);
+			}
 
-";"	{ return SCANprocess_semicolon(yytext, 0); }
-":="	{ return TOK_ASSIGNMENT; }
-":"	{ return TOK_COLON; }
-","	{ return TOK_COMMA; }
-"||"	{ return TOK_CONCAT_OP; }
-"."	{ return TOK_DOT; }
-"="	{ return TOK_EQUAL; }
-"**"	{ return TOK_EXP; }
-"|"	{ return TOK_SUCH_THAT; }
-"<*"	{ return TOK_ALL_IN; }
-">="	{ return TOK_GREATER_EQUAL; }
-">"	{ return TOK_GREATER_THAN; }
-"?"	{ return TOK_QUESTION_MARK; }
-":=:"	{ return TOK_INST_EQUAL; }
-":<>:"	{ return TOK_INST_NOT_EQUAL; }
-"["	{ return TOK_LEFT_BRACKET; }
-"{"	{ return TOK_LEFT_CURL; }
-"("	{ return TOK_LEFT_PAREN; }
-"<="	{ return TOK_LESS_EQUAL; }
-"<"	{ return TOK_LESS_THAN; }
-"-"	{ return TOK_MINUS; }
-"<>"	{ return TOK_NOT_EQUAL; }
-"+"	{ return TOK_PLUS; }
-"/"	{ return TOK_REAL_DIV; }
-"]"	{ return TOK_RIGHT_BRACKET; }
-"}"	{ return TOK_RIGHT_CURL; }
-")"	{ return TOK_RIGHT_PAREN; }
-"*"	{ return TOK_TIMES; }
-"\\"	{ return TOK_BACKSLASH; }
+<code>";"[ \t]*"--"[^\n]*\n	{
+				NEWLINE;
+				return SCANprocess_semicolon(yytext, 1);
+			}
 
-} /* <code> */
+<code>";"	{ return SCANprocess_semicolon(yytext, 0); }
+<code>":="	{ return TOK_ASSIGNMENT; }
+<code>":"	{ return TOK_COLON; }
+<code>","	{ return TOK_COMMA; }
+<code>"||"	{ return TOK_CONCAT_OP; }
+<code>"."	{ return TOK_DOT; }
+<code>"="	{ return TOK_EQUAL; }
+<code>"**"	{ return TOK_EXP; }
+<code>"|"	{ return TOK_SUCH_THAT; }
+<code>"<*"	{ return TOK_ALL_IN; }
+<code>">="	{ return TOK_GREATER_EQUAL; }
+<code>">"	{ return TOK_GREATER_THAN; }
+<code>"?"	{ return TOK_QUESTION_MARK; }
+<code>":=:"	{ return TOK_INST_EQUAL; }
+<code>":<>:"	{ return TOK_INST_NOT_EQUAL; }
+<code>"["	{ return TOK_LEFT_BRACKET; }
+<code>"{"	{ return TOK_LEFT_CURL; }
+<code>"("	{ return TOK_LEFT_PAREN; }
+<code>"<="	{ return TOK_LESS_EQUAL; }
+<code>"<"	{ return TOK_LESS_THAN; }
+<code>"-"	{ return TOK_MINUS; }
+<code>"<>"	{ return TOK_NOT_EQUAL; }
+<code>"+"	{ return TOK_PLUS; }
+<code>"/"	{ return TOK_REAL_DIV; }
+<code>"]"	{ return TOK_RIGHT_BRACKET; }
+<code>"}"	{ return TOK_RIGHT_CURL; }
+<code>")"	{ return TOK_RIGHT_PAREN; }
+<code>"*"	{ return TOK_TIMES; }
+<code>"\\"	{ return TOK_BACKSLASH; }
 
-<return_end_schema>'X' => code {
-    return TOK_END_SCHEMA;
-}
 
-<comment>"*)" {
-    if (0 == --nesting_level) {
-	YYSETCONDITION(code);
-    }
-    IGNORE_TOKEN;
-}
+<return_end_schema>"X"	{
+				BEGIN code;
+				return TOK_END_SCHEMA;
+			}
 
-<code>"*)" {
-    ERRORreport_with_line(ERROR_unmatched_close_comment, yylineno);
-    IGNORE_TOKEN;
-}	
+<comment>"*)"	{
+				if (0 == --nesting_level) {
+				YYSETCONDITION(code);
+				}
+				IGNORE_TOKEN;
+			}
 
-<comment> {
+<code>"*)"	{
+				ERRORreport_with_line(ERROR_unmatched_close_comment, yylineno);
+				IGNORE_TOKEN;
+			}	
 
-'\n' {
-    NEWLINE;
-    IGNORE_TOKEN;
-}
-[^*()\n]* { IGNORE_TOKEN; }
-[*()] { IGNORE_TOKEN; }
 
-} /* <comment> */
 
-/* As per N15, 7.1.5.3, all other recognized chars are incorrect - DEL */
-<code>[$%&@\^{}~] {
-    ERRORreport_with_line(ERROR_unexpected_character,yylineno,yytext[0]);
-    IGNORE_TOKEN;
-}
+<comment>\n	{
+				NEWLINE;
+				IGNORE_TOKEN;
+			}
+<comment>[^*()\n]*	{ IGNORE_TOKEN; }
+<comment>[*()]		{ IGNORE_TOKEN; }
 
-/* ... and unrecognized characters are treated as whitespace - DEL */
-<*>[^] { IGNORE_TOKEN; }
+
+
+			/* As per N15, 7.1.5.3, all other recognized chars are incorrect - DEL */
+<code>[$%&@\^{}~]	{
+				ERRORreport_with_line(ERROR_unexpected_character,yylineno,yytext[0]);
+				IGNORE_TOKEN;
+			}
+
+			/* ... and unrecognized characters are treated as whitespace - DEL */
+			/*[^] 		{ IGNORE_TOKEN; }	*/
 
 %%
 void

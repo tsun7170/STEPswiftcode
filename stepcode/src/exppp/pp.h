@@ -27,6 +27,11 @@ void raw( const char * fmt, ... );
  */
 void wrap( const char * fmt, ... );
 
+//*TY2020/07/11
+void wrap_if(bool can_wrap, const char * fmt, ... );
+void force_wrap(void);
+
+
 /** convert a real into our preferred form compatible with 10303-11
  * (i.e. decimal point is required; no trailing zeros)
  * uses a static buffer, so NOT thread safe
@@ -44,17 +49,17 @@ const char * real2exp( double r );
  */
 void breakLongStr( const char * in );
 
-int finish_buffer();
+int finish_buffer(void);
 int minimum( int a, int b, int c );
 int prep_buffer( char * buf, int len );
-int prep_string();
-void finish_file();
-void first_newline();
-void prep_file();
-char * finish_string();
+int prep_string(void);
+void finish_file(void);
+void first_newline(void);
+void prep_file(void);
+char * finish_string(void);
 const char * real2exp( double r );
 void exp_output( char * buf, unsigned int len );
-void exppp_init();
+void exppp_init(void);
 void exppp_ref_info( Symbol * s );
 extern char * placeholder;
 

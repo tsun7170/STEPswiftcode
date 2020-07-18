@@ -45,6 +45,7 @@
  * prettied up interface to print_objects_when_running
  */
 
+#include <assert.h>
 #include <sc_memmgr.h>
 #include "express/expbasic.h"
 #include "express/schema.h"
@@ -71,6 +72,7 @@ void SCHEMAinitialize( void ) {
 /** Create and return an empty scope inside a parent scope. */
 Scope SCOPEcreate( char type ) {
     Scope d = SCOPE_new();
+		assert(d->clientData == NULL);
     d->symbol_table = DICTcreate( 50 );
     d->type = type;
     return d;
@@ -78,6 +80,7 @@ Scope SCOPEcreate( char type ) {
 
 Scope SCOPEcreate_tiny( char type ) {
     Scope d = SCOPE_new();
+		assert(d->clientData == NULL);
     d->symbol_table = DICTcreate( 1 );
     d->type = type;
     return d;
@@ -93,6 +96,7 @@ void SCOPEdestroy( Scope scope ) {
  */
 Scope SCOPEcreate_nostab( char type ) {
     Scope d = SCOPE_new();
+		assert(d->clientData == NULL);
     d->type = type;
     return d;
 }

@@ -89,10 +89,17 @@ struct Variable_ {
         unsigned int unique      : 1; /**< appears in UNIQUE list */
         unsigned int parameter   : 1; /**< is a formal parameter */
         unsigned int attribute   : 1; /**< is an attribute (rule parameters are marked this way, too) */
+				//*TY2020/07/04 added
+			  unsigned int dynamic		 : 1; /**< is an attribure overriden as derived */
     } flags;
 
     Symbol   *  inverse_symbol;     /**< entity symbol */
     Variable    inverse_attribute;  /**< attribute related by inverse relationship */
+	// *TY2020/06/20 added
+	Scope defined_in;
+	Linked_List observers;	// of inverse attribures observing this attribute
+	Variable original_attribute;	// original attribute overriden by this attribute
+	Dictionary overriders; // of attribure overriding this attribute
 };
 
 /********************/
@@ -120,6 +127,27 @@ extern SC_EXPRESS_EXPORT struct freelist_head VAR_fl;
 
 #define VARis_derived(v)        ((v)->initializer != 0)
 #define VARget_inverse(v)       ((v)->inverse_attribute)
+
+//*TY2020/06/28 added
+#define VARis_inverse(v)				((v)->inverse_symbol != NULL)
+#define VARis_redeclaring(v)		((v)->original_attribute != NULL)
+#define _VARis_redeclaring(v)		((TYPEis((v)->name->type) == op_) && \
+																((v)->name->e.op_code == OP_DOT) && \
+																((v)->name->e.op1->e.op_code == OP_GROUP))
+#define VARget_redeclaring_attr(v)	((v)->original_attribute)
+#define _VARget_redeclaring_attr(v) ((v)->name->e.op2->u.variable)
+#define _VARget_redeclaring_attr_name_string(v)	((v)->name->e.op2->symbol.name)
+#define _VARget_redeclaring_entity_name_string(v) ((v)->name->e.op1->e.op2->symbol.name)
+#define VARis_overriden(v)			((v)->overriders != NULL)
+#define VARis_dynamic(v)				((v)->flags.dynamic != 0)
+#define VARput_dynamic(v)				((v)->flags.dynamic = 1)
+#define VARis_observed(v)				((v)->observers != NULL)
+#define VARget_observers(v)			((v)->observers)
+#define ATTRget_name_string(v)					(_VARis_redeclaring(v) ? _VARget_redeclaring_attr_name_string(v) : (v)->name->symbol.name)
+#define ATTRget_type_string(v)					(TYPEhead_to_string((v)->type))
+#define ATTRget_base_type(v)	( TYPEis_aggregate((v)->type) ? TYPEget_base_type((v)->type) : (v)->type )
+#define ATTR_EXPLICIT	'E'		// overriders dictionary entry type
+#define ATTR_DERIVED	'D'		// overriders dictionary entry type
 
 /***********************/
 /* function prototypes */

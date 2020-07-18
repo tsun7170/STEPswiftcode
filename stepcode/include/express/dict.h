@@ -92,6 +92,10 @@ extern SC_EXPRESS_EXPORT char DICT_type;  /**< set as a side-effect of DICT look
                     }
 #define DICTchange_type(e,typ)      (e)->type = (typ)
 
+//*TY2020/06/28 added
+#define DICTsuccess	0
+#define DICTfailure 1
+
 
 /***********************/
 /* function prototypes */

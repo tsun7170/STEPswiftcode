@@ -103,6 +103,8 @@ struct Rule_ {
 struct Where_ {
     Symbol   *   label;
     Expression  expr;
+	//*TY2020/07/11
+	int serial;	//for the identification on unlabeled where rule
 };
 
 /********************/

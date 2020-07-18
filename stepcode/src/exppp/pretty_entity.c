@@ -164,6 +164,8 @@ void ENTITYinverse_out( Linked_List attrs, int level ) {
             raw( " FOR " );
 
             wrap( v->inverse_attribute->name->symbol.name );
+					//*TY2020.06.28 added
+					raw(" -- defined in ENTITY: %s",ENTITYget_name(v->inverse_attribute->defined_in));
 
             raw( ";\n" );
         }
@@ -227,8 +229,25 @@ void ENTITYattrs_out( Linked_List attrs, int derived, int level ) {
                 wrap( " := " );
                 EXPR_out( v->initializer, 0 );
             }
+						raw( ";" );
+					
+					//*TY2020.06.28 added
+					if( v->observers != NULL ){
+						raw(" (* observed by\n");
+						LISTdo( v->observers, observingAttr, Variable) {
 
-            raw( ";\n" );
+							raw("%*s%s.",level+exppp_continuation_indent, "",ENTITYget_name( observingAttr->defined_in) );
+							EXPR_out(observingAttr->name,0);
+#if 0
+							raw(" ( as ");
+							TYPE_head_out( observingAttr->type, NOLEVEL );
+							raw(" )");
+#endif
+							raw("\n");
+						} LISTod
+						raw("%*s*)",level+exppp_continuation_indent, "");
+					}
+					raw( "\n" );
         }
     } LISTod
 }
