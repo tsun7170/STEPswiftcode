@@ -12,7 +12,7 @@
 #include <express/schema.h>
 
 extern const int nestingIndent_swift;
-void beginExpress_swift(void);
+void beginExpress_swift(char* description);
 void endExpress_swift(void);
 void indent_swift(int level);
 

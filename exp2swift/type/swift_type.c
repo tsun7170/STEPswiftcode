@@ -101,7 +101,7 @@ static void selectTypeDefinition_swift(Type type, TypeBody typeBody, int level) 
 
 
 void TYPE_swift( Type t, int level ) {
-	beginExpress_swift();
+	beginExpress_swift("TYPE DEFINITION");
 	TYPE_out(t, level);
 	endExpress_swift();
 	

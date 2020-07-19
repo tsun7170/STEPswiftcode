@@ -43,7 +43,7 @@ void SCHEMA_swift( Schema schema ) {
 	int level = 0;
 	
 	first_line = false;
-	beginExpress_swift();
+	beginExpress_swift("SCHEMA DEFINITION");
 	raw( "SCHEMA %s;\n", schema->symbol.name );
 	
 	if( schema->u.schema->usedict || schema->u.schema->use_schemas

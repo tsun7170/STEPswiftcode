@@ -123,7 +123,7 @@ struct freelist_head ENTITY_fl;
 int ENTITY_MARK = 0;
 
 /** returns true if variable is declared (or redeclared) directly by entity */
-int ENTITYdeclares_variable( Entity e, Variable v ) {
+bool ENTITYdeclares_variable( Entity e, Variable v ) {
     LISTdo( e->u.entity->attributes, attr, Variable )
     if( attr == v ) {
         return true;
@@ -186,37 +186,31 @@ struct Scope_ * ENTITYfind_inherited_entity( struct Scope_ *entity, char * name,
     return ENTITY_find_inherited_entity( entity, name, down );
 }
 
-//*TY2020/07/11
-static bool ENTITY_check_inherited_entity( Entity family, Entity e ) {
-	if( family->search_id == __SCOPE_search_id ) {
-			return false;
+//*TY2020/07/18
+static int ENTITY_check_attr_declarations( Entity entity, char* attrName, int found ) {
+	if( entity->search_id == __SCOPE_search_id ) return found;
+	entity->search_id = __SCOPE_search_id;
+	
+	/* first look locally */
+	Variable result = ( Variable )DICTlookup( entity->symbol_table, attrName );
+	if( result && !VARis_redeclaring(result) ) {
+		found += 1;
+		if( found > 1 ) return found;
 	}
-	family->search_id = __SCOPE_search_id;
 
-	LISTdo( family->u.entity->supertypes, super, Entity )
-	if( super == e ) {
-			return true;
-	}
-	LISTod
-
-	LISTdo( family->u.entity->supertypes, super, Entity )
-	if( ENTITY_check_inherited_entity( super, e ) ) {
-			return true;
-	}
+	/* check supertypes */
+	LISTdo( entity->u.entity->supertypes, super, Entity )
+	found = ENTITY_check_attr_declarations(super, attrName, found);
+	if( found > 1 ) return found;
 	LISTod;
 
-	return false;
+	return found;
 }
-extern bool ENTITYis_aKindOf( Entity family, Entity e ) {
-	if( e==NULL || family==NULL ) { 
-		return false;
-	}
-	if( e == family ) {
-		return true;
-	}
+int ENTITYget_attr_ambiguous_count( Entity entity, char* attrName ) {
 	__SCOPE_search_id++;
-	return ENTITY_check_inherited_entity(family, e);
+	return ENTITY_check_attr_declarations(entity, attrName, 0);
 }
+
 
 /** find a (possibly inherited) attribute */
 Variable ENTITY_find_inherited_attribute( Entity entity, char * name, int * down, struct Symbol_ ** where ) {
@@ -265,15 +259,15 @@ Variable ENTITY_find_inherited_attribute( Entity entity, char * name, int * down
 }
 
 Variable ENTITYfind_inherited_attribute( struct Scope_ *entity, char * name,
-        struct Symbol_ ** down_sym ) {
+        struct Symbol_ ** down_where ) {
     extern int __SCOPE_search_id;
     int down_flag = 0;
 
     __SCOPE_search_id++;
-    if( down_sym ) {
-        return ENTITY_find_inherited_attribute( entity, name, &down_flag, down_sym );
+    if( down_where ) {
+        return ENTITY_find_inherited_attribute( entity, name, &down_flag, down_where );
     } else {
-        return ENTITY_find_inherited_attribute( entity, name, 0, 0 );
+        return ENTITY_find_inherited_attribute( entity, name, NULL, NULL );
     }
 }
 
@@ -403,18 +397,26 @@ void ENTITYadd_instance( Entity entity, Generic instance ) {
     LISTadd_last( entity->u.entity->instances, instance );
 }
 
+//*TY2020/07/11
+bool ENTITYis_a( Entity kindof, Entity entity ) {
+	if( entity==NULL || kindof==NULL ) return false;
+	if( entity == kindof ) return true;
+	return ENTITYhas_supertype(kindof, entity);
+}
+
+
 /**
-** \param child entity to check parentage of
-** \param parent parent to check for
-** \return does child's superclass chain include parent?
+** \param sub entity to check parentage of
+** \param sup supertype to check for
+** \return does child's superclass chain include sup ?
 ** Look for a certain entity in the supertype graph of an entity.
 */
-bool ENTITYhas_supertype( Entity child, Entity parent ) {
-    LISTdo( child->u.entity->supertypes, entity, Entity )
-    if( entity == parent ) {
+bool ENTITYhas_supertype( Entity sub, Entity sup ) {
+    LISTdo( sub->u.entity->supertypes, sup1, Entity )
+    if( sup1 == sup ) {
         return true;
     }
-    if( ENTITYhas_supertype( entity, parent ) ) {
+    if( ENTITYhas_supertype( sup1, sup ) ) {
         return true;
     }
     LISTod;
@@ -436,8 +438,13 @@ bool ENTITYhas_immediate_supertype( Entity child, Entity parent ) {
     return false;
 }
 
+#if 0
 /** called by ENTITYget_all_attributes(). \sa ENTITYget_all_attributes */
 static void ENTITY_get_all_attributes( Entity entity, Linked_List result ) {
+	//*TY2020/07/19
+	if( entity->search_id == __SCOPE_search_id ) return;
+	entity->search_id = __SCOPE_search_id;
+	
     LISTdo( entity->u.entity->supertypes, super, Entity )
     /*  if (OBJis_kind_of(super, Class_Entity))*/
     ENTITY_get_all_attributes( super, result );
@@ -461,10 +468,82 @@ static void ENTITY_get_all_attributes( Entity entity, Linked_List result ) {
  */
 Linked_List ENTITYget_all_attributes( Entity entity ) {
     Linked_List result = LISTcreate();
+	//*TY2020/07/19
+	__SCOPE_search_id++;
 
     ENTITY_get_all_attributes( entity, result );
     return result;
 }
+#endif
+//*TY2020/07/19 alternative implementation; width-wise search
+static void ENTITY_build_all_attributes( Linked_List queue, Dictionary result  ) {
+	Entity entity;
+	while ( (entity = LISTremove_first_if(queue)) != NULL ) {
+		if( entity->search_id == __SCOPE_search_id ) continue;
+		entity->search_id = __SCOPE_search_id;
+		
+		LISTdo( entity->u.entity->supertypes, super, Entity )
+		LISTadd_last(queue, super);
+		LISTod;
+
+    LISTdo( entity->u.entity->attributes, attr, Generic )
+		char* attr_name = VARget_simple_name(attr);
+		Linked_List attr_list = DICTlookup(result, attr_name);
+		if( attr_list == NULL ) {
+			attr_list = LISTcreate();
+			DICTdefine(result, attr_name, attr_list, NULL, OBJ_UNKNOWN);
+		}
+		LISTadd_last(attr_list, attr);
+		LISTod;
+	}
+}
+Dictionary ENTITYget_all_attributes( Entity entity ) {
+	if( entity->u.entity->all_attributes ) return entity->u.entity->all_attributes;
+	
+	Dictionary result = DICTcreate(25);
+	Linked_List queue = LISTcreate();
+	__SCOPE_search_id++;
+	
+	LISTadd_last(queue, entity);
+	ENTITY_build_all_attributes(queue, result);
+	entity->u.entity->all_attributes = result;
+	LISTfree(queue);
+	return result;
+}
+
+//*TY2020/07/19
+Variable ENTITYfind_attribute_effective_definition( Entity entity, char* attr_name ) {
+	if( ENTITYget_attr_ambiguous_count(entity, attr_name) > 1 ) return NULL;
+		
+	Dictionary all_attrs = ENTITYget_all_attributes(entity);
+	Linked_List attr_defs = DICTlookup(all_attrs, attr_name);
+	if( attr_defs == NULL ) return NULL;
+	
+	Variable effective_def = LISTget_first(attr_defs);
+	return effective_def;	
+}
+
+//*TY2020/07/19
+static void ENTITY_build_super_entitiy_list( Entity entity, Linked_List result ) {
+	if( entity->search_id == __SCOPE_search_id ) return;
+	entity->search_id = __SCOPE_search_id;
+
+	LISTdo( entity->u.entity->supertypes, super, Entity )
+	ENTITY_build_super_entitiy_list(super, result);
+	LISTod;
+	
+	LISTadd_last(result, entity);
+}
+Linked_List ENTITYget_super_entity_list( Entity entity ) {
+	if( entity->u.entity->supertype_list ) return entity->u.entity->supertype_list;
+	
+	Linked_List result = LISTcreate();
+	__SCOPE_search_id++;
+	ENTITY_build_super_entitiy_list( entity, result );
+	entity->u.entity->supertype_list = result;
+	return result;
+}
+
 
 /**
 ** \param entity  - entity to examine

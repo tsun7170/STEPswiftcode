@@ -67,12 +67,9 @@ enum AttrType {
 
 static void attribute_out( Entity leaf, Variable v, int level ) {
 	enum AttrType attr_type = explicit;
-	if(  VARis_derived(v) ) {
-		attr_type = derived;
-	}
-	if( VARis_inverse(v) ) {
-		attr_type = inverse;
-	}
+	if( VARis_derived(v) ) attr_type = derived;	
+	if( VARis_inverse(v) ) attr_type = inverse;
+
 
 	indent_swift(level);
 	if( VARis_redeclaring(v) ) {
@@ -103,6 +100,9 @@ static void attribute_out( Entity leaf, Variable v, int level ) {
 	if(VARis_dynamic(v)) {
 		raw(" (DYNAMIC)");
 	}
+	if( ENTITYget_attr_ambiguous_count(leaf, ATTRget_name_string(v)) > 1 ) {
+		raw("\t(AMBIGUOUS)");
+	}
 	raw("\n");
 
 	{	int level2 = level+nestingIndent_swift;
@@ -130,10 +130,10 @@ static void attribute_out( Entity leaf, Variable v, int level ) {
 				} LISTod
 			}
 		}
-		else if( v->inverse_symbol ) {
+		else if( VARis_inverse(v) ) {
 			indent_swift(level2);
 			raw( "FOR " );
-			raw( v->inverse_attribute->name->symbol.name );
+			raw( VARget_name(VARget_inverse(v))->symbol.name );
 			raw( ";\n" );
 		}
 		
@@ -147,7 +147,7 @@ static void attribute_out( Entity leaf, Variable v, int level ) {
 			raw("-- possibly overriden by\n");
 			DictionaryEntry de;
 			Variable overrider;
-			Variable effective_definition = ENTITYfind_inherited_attribute(leaf, ATTRget_name_string(v), NULL);
+			Variable effective_definition = ENTITYfind_attribute_effective_definition(leaf, ATTRget_name_string(v));
 			DICTdo_init(v->overriders, &de);
 			while( 0 != ( overrider = DICTdo( &de ) ) ) {
 				indent_swift(level2);
@@ -179,8 +179,10 @@ static void listLocalAttributes( Entity leaf, Entity entity, int level ) {
 	raw("\n");
 	indent_swift(level);
 	raw("ENTITY(%d)\t%s\n", ++entity_no, entity->symbol.name);
-	LISTdo( entity->u.entity->attributes, attr, Generic )
-	attribute_out(leaf, attr, level + nestingIndent_swift);
+
+	LISTdo( entity->u.entity->attributes, attr, Generic ) {
+		attribute_out(leaf, attr, level + nestingIndent_swift);
+	}
 	LISTod;
 
 }
@@ -189,8 +191,9 @@ static void listAllAttributes( Entity leaf, Entity entity, int level, int search
 	if( entity->search_id == search_id ) return;
 	entity->search_id = search_id;
 	
-	LISTdo( entity->u.entity->supertypes, super, Entity )
-	listAllAttributes(leaf, super, level, search_id);
+	LISTdo( entity->u.entity->supertypes, super, Entity ) {
+		listAllAttributes(leaf, super, level, search_id);
+	}
 	LISTod;
 	
 	listLocalAttributes(leaf, entity, level);
@@ -212,57 +215,18 @@ static void attributeHead_swift(char* access, Variable attr, int level, char att
 }
 
 static void simpleAttribureObservers_swift(Entity entity, Variable attr, int level) {
-	indent_swift(level);
-	raw("{ willSet {\n");
-	{	int level2 = level + nestingIndent_swift;
-		
-		char buf[BUFSIZ];
-		indent_swift(level2);
-		raw("let oldComplex = self.%s.complexEntity\n", partialEntityAttribute_swiftName(attr, buf));
-		indent_swift(level2);
-		raw("let newComplex = newValue.complexEntity\n");
-		
-		LISTdo( VARget_observers(attr), observingAttr, Variable) {
-			Entity observingEntity = observingAttr->defined_in;
-			
-			indent_swift(level2);
-			raw("//OBSERVING ENTITY: %s\n", ENTITY_swiftName(observingEntity));
-			
-			indent_swift(level2);
-			raw("oldComplex.partialEntityInstance(%s.self)", partialEntity_swiftName(observingEntity, buf));
-			wrap(".%s__observeRemovedReference(in: self.complexEntity)\n", partialEntityAttribute_swiftName(observingAttr, buf));
-
-			indent_swift(level2);
-			raw("newComplex.partialEntityInstance(%s.self)", partialEntity_swiftName(observingEntity, buf));
-			wrap(".%s__observeAddedReference(in: self.complexEntity)\n", partialEntityAttribute_swiftName(observingAttr, buf));
-		} LISTod
-	}
-	indent_swift(level);
-	raw("}}\n");
-}
-
-static void aggregateAttributeObservers_swift(Entity entity, Variable attr, int level) {
 	char buf[BUFSIZ];
-	
+
 	indent_swift(level);
-	raw("{ willSet(newAggregate) {\n");
+	wrap("fileprivate static func %s__observer(", partialEntityAttribute_swiftName(attr, buf));
+	wrap("SELF: SDAI.EntityReference, ");
+	wrap("removing: SDAI.EntityReference?, adding: SDAI.EntityReference?) {\n");
 	{	int level2 = level + nestingIndent_swift;
-		
+
 		indent_swift(level2);
-		raw("let oldAggregate = self.%s\n", partialEntityAttribute_swiftName(attr, buf));
-		
+		raw("guard removing != adding else { return }\n");
 		indent_swift(level2);
-		raw("oldAggregate.observer = nil\n");
-		indent_swift(level2);
-		raw("newAggregate.observer = { [unowned self] (removing, adding) in self.%s__observer(removing, adding) }\n", partialEntityAttribute_swiftName(attr, buf));
-	}
-	indent_swift(level);
-	raw("}}\n");
-	
-	indent_swift(level);
-	raw("private func %s__observer(_ removing: SDAI.EntityReference?, _ adding: SDAI.EntityReference?) -> Void {\n", buf);
-	{	int level2 = level + nestingIndent_swift;
-		
+		raw("let selfComplex = SELF.complexEntity\n");
 		indent_swift(level2);
 		raw("if let oldComplex = removing?.complexEntity {\n");
 		{	int level3 = level2 + nestingIndent_swift;
@@ -274,8 +238,8 @@ static void aggregateAttributeObservers_swift(Entity entity, Variable attr, int 
 				raw("//OBSERVING ENTITY: %s\n", ENTITY_swiftName(observingEntity));
 				
 				indent_swift(level3);
-				raw("oldComplex.partialEntityInstance(%s.self)", partialEntity_swiftName(observingEntity, buf));
-				wrap(".%s__observeRemovedReference(in: self.complexEntity)\n", partialEntityAttribute_swiftName(observingAttr, buf));
+				raw("oldComplex.partialEntityInstance(%s.self)?", partialEntity_swiftName(observingEntity, buf));
+				wrap(".%s__observeRemovedReference(in: selfComplex)\n", partialEntityAttribute_swiftName(observingAttr, buf));
 			} LISTod
 			
 		}
@@ -293,8 +257,8 @@ static void aggregateAttributeObservers_swift(Entity entity, Variable attr, int 
 				raw("//OBSERVING ENTITY: %s\n", ENTITY_swiftName(observingEntity));
 				
 				indent_swift(level3);
-				raw("newComplex.partialEntityInstance(%s.self)", partialEntity_swiftName(observingEntity, buf));
-				wrap(".%s__observeAddedReference(in: self.complexEntity)\n", partialEntityAttribute_swiftName(observingAttr, buf));
+				raw("newComplex.partialEntityInstance(%s.self)?", partialEntity_swiftName(observingEntity, buf));
+				wrap(".%s__observeAddedReference(in: selfComplex)\n", partialEntityAttribute_swiftName(observingAttr, buf));
 			} LISTod
 			
 		}
@@ -304,6 +268,27 @@ static void aggregateAttributeObservers_swift(Entity entity, Variable attr, int 
 	indent_swift(level);
 	raw("}\n");
 
+}
+
+static void aggregateAttributeObservers_swift(Entity entity, Variable attr, int level) {
+	char buf[BUFSIZ];
+	
+	indent_swift(level);
+	wrap("fileprivate static func %s__aggregateObserver<AGG:SDAIAggregationType>(", partialEntityAttribute_swiftName(attr, buf));
+	wrap("SELF: SDAI.EntityReference, ");
+	wrap("oldAggregate: inout AGG?, newAggregate: inout AGG?) {\n");
+
+	{	int level2 = level + nestingIndent_swift;
+		indent_swift(level2);
+		raw("oldAggregate?.observer = nil\n");
+		indent_swift(level2);
+		raw("newAggregate?.observer = { [unowned SELF] (removing, adding) in %s", partialEntity_swiftName(entity, buf));
+		wrap(".%s__observer(SELF:SELF, removing:removing, adding:adding) }\n", partialEntityAttribute_swiftName(attr, buf));
+	}
+	indent_swift(level);
+	raw("}\n");
+	
+	simpleAttribureObservers_swift(entity, attr, level);
 }
 
 static void explicitStaticAttributeDefinition_swift(Entity entity, Variable attr, int level) {
@@ -339,9 +324,7 @@ static void explicitDynamicAttributeDefinition_swift(Entity entity, Variable att
 	}
 
 	indent_swift(level);
-	raw("public func %s__getter(SELF: %s) -> ",
-			attrName,
-			ENTITY_swiftName(entity) );
+	raw("public func %s__getter(SELF: %s) -> ", attrName, ENTITY_swiftName(entity) );
 	
 	if( VARget_optional(attr) ) {
 		raw("( ");
@@ -367,9 +350,7 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 	partialEntityAttribute_swiftName(attr, attrName);
 	
 	indent_swift(level);
-	raw("public func %s__getter(SELF: %s) -> ",
-			attrName,
-			ENTITY_swiftName(entity) );
+	raw("public func %s__getter(SELF: %s) -> ", attrName, ENTITY_swiftName(entity) );
 	
 	if( VARget_optional(attr) ) {
 		raw("( ");
@@ -577,7 +558,7 @@ static void entityReferenceDefinition_swift( Entity entity, int level ) {
 
 
 void ENTITY_swift( Entity e, int level ) {
-	beginExpress_swift();
+	beginExpress_swift("ENTITY DEFINITION");
 	ENTITY_out(e, level);
 	endExpress_swift();	
 	
@@ -590,69 +571,6 @@ void ENTITY_swift( Entity e, int level ) {
 	
 	entityReferenceDefinition_swift(e, level);
 	
-#if 0
-	
-    const unsigned int EXPLICIT = 0, DERIVED = 1;
-    int linelen = exppp_linelength;
-    bool first_time = true;
-
-    first_newline();
-    exppp_ref_info( &e->symbol );
-
-    raw( "%*sENTITY %s", level, "", e->symbol.name );
-
-    level += exppp_nesting_indent;
-    indent2 = level + exppp_continuation_indent;
-
-    exppp_linelength = indent2; /* force newlines */
-    if( ENTITYget_abstract( e ) ) {
-        if( e->u.entity->subtype_expression ) {
-            raw( "\n%*sABSTRACT SUPERTYPE OF ", level, "" );
-            SUBTYPEout( e->u.entity->subtype_expression );
-        } else {
-            raw( "\n%*sABSTRACT SUPERTYPE", level, "" );
-        }
-    } else {
-        if( e->u.entity->subtype_expression ) {
-            raw( "\n%*sSUPERTYPE OF ", level, "" );
-            SUBTYPEout( e->u.entity->subtype_expression );
-        }
-    }
-    exppp_linelength = linelen;
-
-    if( e->u.entity->supertype_symbols ) {
-        raw( "\n%*sSUBTYPE OF ( ", level, "" );
-
-        LISTdo( e->u.entity->supertype_symbols, s, Symbol * )
-        if( first_time ) {
-            first_time = false;
-        } else {
-            raw( ", " );
-        }
-        wrap( s->name );
-        LISTod
-        raw( " )" );
-    }
-
-    raw( ";\n" );
-
-#if 0
-    /* add a little more space before entities if sub or super appears */
-    if( e->u.entity->supertype_symbols || e->u.entity->subtype_expression ) {
-        raw( "\n" );
-    }
-#endif
-
-    ENTITYattrs_swift( e->u.entity->attributes, EXPLICIT, level );
-    ENTITYattrs_swift( e->u.entity->attributes, DERIVED, level );
-    ENTITYinverse_swift( e->u.entity->attributes, level );
-    ENTITYunique_swift( e->u.entity->unique, level );
-    WHERE_out( TYPEget_where( e ), level );
-
-    level -= exppp_nesting_indent;
-    raw( "%*sEND_ENTITY;", level, "" );
-    tail_comment( e->symbol.name );
-#endif
 }
 
 void ENTITYunique_swift( Linked_List u, int level ) {
@@ -703,110 +621,3 @@ void ENTITYunique_swift( Linked_List u, int level ) {
     } LISTod
 }
 
-void ENTITYinverse_swift( Linked_List attrs, int level ) {
-    int max_indent;
-
-    /* pass 1: calculate length of longest attr name */
-    max_indent = 0;
-    LISTdo( attrs, v, Variable ) {
-        if( v->inverse_symbol ) {
-            int length;
-            length = (int)strlen( v->name->symbol.name );
-            if( length > max_indent ) {
-                max_indent = length;
-            }
-        }
-    } LISTod
-
-    if( max_indent == 0 ) {
-        return;
-    }
-    raw( "%*sINVERSE\n", level, "" );
-    level += exppp_nesting_indent;
-    indent2 = level + max_indent + strlen( ": " ) + exppp_continuation_indent;
-
-    /* pass 2: print them */
-    LISTdo( attrs, v, Variable ) {
-        if( v->inverse_symbol ) {
-            /* print attribute name */
-            raw( "%*s", level, "" );
-            EXPR_out( v->name, 0 );
-            raw( "%-*s :", ( ( ( max_indent - curpos ) > 0 ) ? max_indent - curpos  : 0 ), "" );
-
-            /* print attribute type */
-            if( VARget_optional( v ) ) {
-                wrap( " OPTIONAL" );
-            }
-            TYPE_head_out( v->type, NOLEVEL );
-
-            raw( " FOR " );
-
-            wrap( v->inverse_attribute->name->symbol.name );
-
-            raw( ";\n" );
-        }
-    } LISTod
-}
-
-void ENTITYattrs_swift( Linked_List attrs, int derived, int level ) {
-    int max_indent;
-
-    /* pass 1: calculate length of longest attr name */
-    max_indent = 0;
-    LISTdo( attrs, v, Variable ) {
-        if( v->inverse_symbol ) {
-            continue;
-        }
-        if( ( derived && v->initializer ) ||
-                ( !derived && !v->initializer ) ) {
-            int length;
-            length = EXPRlength( v->name );
-            if( length > max_indent ) {
-                max_indent = length;
-            }
-        }
-    } LISTod
-
-    if( max_indent == 0 ) {
-        return;
-    }
-    if( derived ) {
-        raw( "%*sDERIVE\n", level, "" );
-    }
-    level += exppp_nesting_indent;
-    if( level + max_indent > exppp_linelength / 3 ) {
-        max_indent = ( exppp_linelength / 3 ) - level;
-    }
-    indent2 = level + max_indent + strlen( ": " ) + exppp_continuation_indent;
-
-    /* pass 2: print them */
-    LISTdo( attrs, v, Variable ) {
-        if( v->inverse_symbol ) {
-            continue;
-        }
-        if( ( derived && v->initializer ) || ( !derived && !v->initializer ) ) {
-            int spaces;
-            /* print attribute name */
-            raw( "%*s", level, "" );
-            EXPR_out( v->name, 0 );
-            spaces = level + max_indent + 2 - curpos;
-            if( spaces < 0 ) {
-                spaces = 0;
-            }
-            raw( "%*s :", spaces, "" );
-
-            /* print attribute type */
-            if( VARget_optional( v ) ) {
-                wrap( " OPTIONAL" );
-            }
-            TYPE_head_out( v->type, NOLEVEL );
-
-            if( derived && v->initializer ) {
-                wrap( " := " );
-                EXPR_out( v->initializer, 0 );
-            }
-
-            raw( ";\n" );
-        }
-    } LISTod
-}

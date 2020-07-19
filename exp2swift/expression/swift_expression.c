@@ -132,7 +132,7 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 			if( e->u_tag == expr_is_variable ) {
 				Variable v = e->u.variable;
 				Entity ent = v->defined_in;
-				if( ENTITYis_aKindOf(SELF, ent) ) {
+				if( ENTITYis_a(SELF, ent) ) {
 					wrap_if(can_wrap, "SELF.");
 				}
 			}

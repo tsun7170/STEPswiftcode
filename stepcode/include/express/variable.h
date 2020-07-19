@@ -136,16 +136,17 @@ extern SC_EXPRESS_EXPORT struct freelist_head VAR_fl;
 																((v)->name->e.op1->e.op_code == OP_GROUP))
 #define VARget_redeclaring_attr(v)	((v)->original_attribute)
 #define _VARget_redeclaring_attr(v) ((v)->name->e.op2->u.variable)
-#define _VARget_redeclaring_attr_name_string(v)	((v)->name->e.op2->symbol.name)
+#define _VARget_redeclaring_attr_name_string(v)		((v)->name->e.op2->symbol.name)
 #define _VARget_redeclaring_entity_name_string(v) ((v)->name->e.op1->e.op2->symbol.name)
 #define VARis_overriden(v)			((v)->overriders != NULL)
 #define VARis_dynamic(v)				((v)->flags.dynamic != 0)
 #define VARput_dynamic(v)				((v)->flags.dynamic = 1)
 #define VARis_observed(v)				((v)->observers != NULL)
 #define VARget_observers(v)			((v)->observers)
-#define ATTRget_name_string(v)					(_VARis_redeclaring(v) ? _VARget_redeclaring_attr_name_string(v) : (v)->name->symbol.name)
-#define ATTRget_type_string(v)					(TYPEhead_to_string((v)->type))
-#define ATTRget_base_type(v)	( TYPEis_aggregate((v)->type) ? TYPEget_base_type((v)->type) : (v)->type )
+//#define ATTRget_name_string(v)	(_VARis_redeclaring(v) ? _VARget_redeclaring_attr_name_string(v) : (v)->name->symbol.name)
+#define ATTRget_name_string(v)	VARget_simple_name(v)
+#define ATTRget_type_string(v)	(TYPEhead_to_string((v)->type))
+#define ATTRget_base_type(v)		( TYPEis_aggregate((v)->type) ? TYPEget_base_type((v)->type) : (v)->type )
 #define ATTR_EXPLICIT	'E'		// overriders dictionary entry type
 #define ATTR_DERIVED	'D'		// overriders dictionary entry type
 

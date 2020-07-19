@@ -15,7 +15,7 @@
 
 /** print a type definition.  I.e., a TYPE statement */
 void TYPE_out( Type t, int level ) {
-    first_newline();
+//    first_newline();
     exppp_ref_info( &t->symbol );
 
     raw( "%*sTYPE %s =", level, "", t->symbol.name );

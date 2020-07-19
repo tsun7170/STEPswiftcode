@@ -166,6 +166,22 @@ Generic LISTremove_first( Linked_List list ) {
     return item;
 }
 
+//*TY2020/07/19
+Generic LISTremove_first_if( Linked_List list ) {
+    Link        node;
+    Generic     item;
+
+    node = list->mark->next;
+    if( node == list->mark ) {
+        return NULL;
+    }
+    item = node->data;
+    ( list->mark->next = node->next )->prev = list->mark;
+    LINK_destroy( node );
+    return item;
+}
+
+
 Generic LISTget_first( Linked_List list ) {
     Link node;
     Generic item;

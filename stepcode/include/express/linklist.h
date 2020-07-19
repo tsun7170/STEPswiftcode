@@ -143,4 +143,7 @@ extern SC_EXPRESS_EXPORT void LISTfree PROTO( ( Linked_List ) );
 extern SC_EXPRESS_EXPORT int  LISTget_length PROTO( ( Linked_List ) );
 extern SC_EXPRESS_EXPORT bool LISTempty( Linked_List list );
 
+//*TY2020/07/19
+extern SC_EXPRESS_EXPORT Generic  LISTremove_first_if PROTO( ( Linked_List ) );
+
 #endif /*LINKED_LIST_H*/

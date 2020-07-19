@@ -57,7 +57,7 @@ YYSTYPE yylval;
     Express yyexpresult;    /* hook to everything built by parser */
 
     Symbol *interface_schema;    /* schema of interest in use/ref clauses */
-    void (*interface_func)();    /* func to attach rename clauses */
+    void (*interface_func)( Schema cur_schema, Symbol * ref_schema, YYSTYPE old, YYSTYPE snnew );    /* func to attach rename clauses */
 
     /* record schemas found in a single parse here, allowing them to be */
     /* differentiated from other schemas parsed earlier */
@@ -2257,6 +2257,8 @@ static void yy_reduce(
 {
     yygotominor.yy401 = EXPcreate(Type_Aggregate);
     yygotominor.yy401->u.list = LISTcreate();
+	//*TY2020/07/11
+	yygotominor.yy401->u_tag = expr_is_list;
 }
 #line 2262 "expparse.c"
         break;
@@ -2265,6 +2267,8 @@ static void yy_reduce(
 {
     yygotominor.yy401 = EXPcreate(Type_Aggregate);
     yygotominor.yy401->u.list = yymsp[-1].minor.yy371;
+	//*TY2020/07/11
+	yygotominor.yy401->u_tag = expr_is_list;
 }
 #line 2270 "expparse.c"
         break;
@@ -2769,7 +2773,9 @@ static void yy_reduce(
         id->data = (Generic)(x = EXPcreate(CURRENT_SCOPE));
         x->symbol = *(tmp);
         x->u.integer = ++value;
-
+			//*TY2020/07/11
+			x->u_tag = expr_is_integer;
+			
         /* define both in enum scope and scope of */
         /* 1st visibility */
         DICT_define(CURRENT_SCOPE->symbol_table, x->symbol.name,
@@ -3565,6 +3571,9 @@ static void yy_reduce(
     } else {
     yygotominor.yy401 = EXPcreate_simple(Type_Integer);
     yygotominor.yy401->u.integer = (int)yymsp[0].minor.yy0.iVal;
+			//*TY2020/07/11
+			yygotominor.yy401->u_tag = expr_is_integer;
+			
     resolved_all(yygotominor.yy401);
     }
 }
@@ -3585,6 +3594,9 @@ static void yy_reduce(
     } else {
         yygotominor.yy401 = EXPcreate_simple(Type_Real);
         yygotominor.yy401->u.real = yymsp[0].minor.yy0.rVal;
+			//*TY2020/07/11
+			yygotominor.yy401->u_tag = expr_is_real;
+			
         resolved_all(yygotominor.yy401);
     }
 }
@@ -3613,6 +3625,9 @@ static void yy_reduce(
 {
     yygotominor.yy401 = EXPcreate_simple(Type_Logical);
     yygotominor.yy401->u.logical = yymsp[0].minor.yy0.logical;
+	//*TY2020/07/11
+	yygotominor.yy401->u_tag = expr_is_logical;
+	
     resolved_all(yygotominor.yy401);
 }
 #line 3619 "expparse.c"
@@ -4222,6 +4237,8 @@ static void yy_reduce(
 {
     yygotominor.yy385.subtypes = EXPcreate(Type_Oneof);
     yygotominor.yy385.subtypes->u.list = yymsp[-1].minor.yy371;
+	//*TY2020/07/11
+	yygotominor.yy385.subtypes->u_tag = expr_is_list;
 }
 #line 4227 "expparse.c"
         break;
