@@ -216,78 +216,78 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe, bool paren, unsigned int previous_op, bool can_wrap) {
     switch( oe->op_code ) {
         case OP_AND:
-					EXPRop2__swift( SELF, oe, "&&", paren, YES_PAD, previous_op, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, "&&", paren, YES_PAD, previous_op, YES_WRAP );
 					break;
         case OP_ANDOR:
-					EXPRop2__swift( SELF, oe, ( char * )0, paren, YES_PAD, previous_op, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, OPCODE_FROM_EXPRESS, paren, YES_PAD, previous_op, YES_WRAP );
 					break;
         case OP_OR:
-					EXPRop2__swift( SELF, oe, "||", paren, YES_PAD, previous_op, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, "||", paren, YES_PAD, previous_op, YES_WRAP );
 					break;
         case OP_CONCAT:
-					EXPRop2__swift( SELF, oe, ( char * )0, paren, YES_PAD, previous_op, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, OPCODE_FROM_EXPRESS, paren, YES_PAD, previous_op, YES_WRAP );
 					break;
         case OP_EQUAL:
-					EXPRop2__swift( SELF, oe, "==", paren, YES_PAD, previous_op, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, "==", paren, YES_PAD, previous_op, YES_WRAP );
 					break;
         case OP_PLUS:
-					EXPRop2__swift( SELF, oe, ( char * )0, paren, YES_PAD, previous_op, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, OPCODE_FROM_EXPRESS, paren, YES_PAD, previous_op, YES_WRAP );
 					break;
         case OP_TIMES:
-					EXPRop2__swift( SELF, oe, ( char * )0, paren, YES_PAD, previous_op, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, OPCODE_FROM_EXPRESS, paren, YES_PAD, previous_op, YES_WRAP );
 					break;
         case OP_XOR:
-            EXPRop2__swift( SELF, oe, "^^", paren, YES_PAD, previous_op, YES_WRAP );
+            EXPRop2__swift( SELF,SELF, oe, "^^", paren, YES_PAD, previous_op, YES_WRAP );
             break;
 				
         case OP_EXP:
-					EXPRop2__swift( SELF, oe, ( char * )0, paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, OPCODE_FROM_EXPRESS, paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
 					break;
         case OP_GREATER_EQUAL:
-					EXPRop2__swift( SELF, oe, ( char * )0, paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, OPCODE_FROM_EXPRESS, paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
 					break;
         case OP_GREATER_THAN:
-					EXPRop2__swift( SELF, oe, ( char * )0, paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, OPCODE_FROM_EXPRESS, paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
 					break;
         case OP_IN:
 					EXPRopIn_swift( SELF, oe, can_wrap );
 					break;
         case OP_INST_EQUAL:
-					EXPRop2__swift( SELF, oe, "===", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, "===", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
 					break;
         case OP_INST_NOT_EQUAL:
-					EXPRop2__swift( SELF, oe, "!==", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, "!==", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
 					break;
         case OP_LESS_EQUAL:
-					EXPRop2__swift( SELF, oe, ( char * )0, paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, OPCODE_FROM_EXPRESS, paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
 					break;
         case OP_LESS_THAN:
-					EXPRop2__swift( SELF, oe, ( char * )0, paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, OPCODE_FROM_EXPRESS, paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
 					break;
         case OP_LIKE:
-					EXPRop2__swift( SELF, oe, "~=", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, "~=", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
 					break;
         case OP_MOD:
-					EXPRop2__swift( SELF, oe, "%", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+					EXPRop2__swift( SELF,SELF, oe, "%", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
 					break;
         case OP_NOT_EQUAL:
-            EXPRop2__swift( SELF, oe, "!=", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+            EXPRop2__swift( SELF,SELF, oe, "!=", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
             break;
 				
         case OP_NOT:
             EXPRop1_swift( SELF, oe, " !", paren, NO_WRAP );
             break;
         case OP_REAL_DIV:
-            EXPRop2__swift( SELF, oe, "/", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+            EXPRop2__swift( SELF,SELF, oe, "/", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
             break;
         case OP_DIV:
-            EXPRop2__swift( SELF, oe, "DIV", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+            EXPRop2__swift( SELF,SELF, oe, "DIV", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
             break;
         case OP_MINUS:
-            EXPRop2__swift( SELF, oe, "-", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+            EXPRop2__swift( SELF,SELF, oe, "-", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
             break;
         case OP_DOT:
-            EXPRop2__swift( SELF, oe, ".", paren, NO_PAD, OP_UNKNOWN, can_wrap );
+            EXPRop2__swift( SELF,NULL, oe, ".", paren, NO_PAD, OP_UNKNOWN, can_wrap );
             break;
         case OP_GROUP:
 						EXPRopGroup_swift( SELF, oe, can_wrap );
@@ -314,27 +314,27 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe, bool paren, unsign
     }
 }
 
-void EXPRop2__swift( Scope SELF, struct Op_Subexpression * eo, char * opcode, 
+void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * eo, char * opcode, 
 										bool paren, bool pad, unsigned int previous_op, bool can_wrap ) {
-    if( pad && paren && ( eo->op_code != previous_op ) ) {
-        wrap_if(can_wrap, "( " );
-    }
-    EXPR__swift( SELF, eo->op1, YES_PAREN, eo->op_code, can_wrap );
-    if( pad ) {
-        raw( " " );
-    }
-    wrap_if(can_wrap, "%s", ( opcode ? opcode : EXPop_table[eo->op_code].token ) );
-    if( pad ) {
-        wrap_if(can_wrap, " " );
-    }
+	if( pad && paren && ( eo->op_code != previous_op ) ) {
+		wrap_if(can_wrap, "( " );
+	}
+	EXPR__swift( SELF1, eo->op1, YES_PAREN, eo->op_code, can_wrap );
+	if( pad ) {
+		raw( " " );
+	}
+	wrap_if(can_wrap, "%s", ( opcode ? opcode : EXPop_table[eo->op_code].token ) );
+	if( pad ) {
+		wrap_if(can_wrap, " " );
+	}
 	bool can_wrap2 = can_wrap;
 	if( eo->op_code == OP_DOT ) {
 		can_wrap2 = NO_WRAP;
 	}
-    EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, can_wrap2 );
-    if( pad && paren && ( eo->op_code != previous_op ) ) {
-        raw( " )" );
-    }
+	EXPR__swift( SELF2, eo->op2, YES_PAREN, eo->op_code, can_wrap2 );
+	if( pad && paren && ( eo->op_code != previous_op ) ) {
+		raw( " )" );
+	}
 }
 
 void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {

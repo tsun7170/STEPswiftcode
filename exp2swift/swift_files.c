@@ -26,7 +26,7 @@
 const int nestingIndent_swift = 2;       /* default nesting indent */
 
 void beginExpress_swift(char* description) {
-	raw( "/* (%s in EXPRESS) \n\n", description );
+	raw( "//MARK: -%s in EXPRESS\n/*\n", description );
 }
 
 void endExpress_swift() {
@@ -34,6 +34,7 @@ void endExpress_swift() {
 }
 
 void indent_swift(int level) {
+	if( level <= 0 ) return;
 	raw( "%*s", level, "");
 }
 

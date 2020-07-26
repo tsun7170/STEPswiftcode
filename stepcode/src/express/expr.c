@@ -274,20 +274,21 @@ void EXPcleanup( void ) {
  * only types, and it's marking only entities
  */
 static int EXP_resolve_op_dot_fuzzy( Type selection, Symbol sref, Expression * e,
-                                     Variable * v, char * dt, struct Symbol_ ** where, int s_id ) {
+                                     Variable * v, char * dt, struct Symbol_ ** where /*, int s_id*/ ) {
     Expression item;
     Variable tmp;
     int options = 0;
     struct Symbol_ *w = NULL;
 
-    if( selection->search_id == s_id ) {
-        return 0;
-    }
-
+//    if( selection->search_id == s_id ) {
+//        return 0;
+//    }
+		if( SCOPE_search_visited(selection) ) return 0;
+	
     switch( selection->u.type->body->type ) {
         case entity_:
             /* goes through supertypes and their subtypes (!!) */
-            tmp = ENTITYfind_inherited_attribute( selection->u.type->body->entity, sref.name, &w );
+            tmp = ENTITYfind_inherited_attribute( selection->u.type->body->entity, sref.name, &w, true );
             if( tmp ) {
                 if( w != NULL ) {
                     *where = w;
@@ -302,9 +303,9 @@ static int EXP_resolve_op_dot_fuzzy( Type selection, Symbol sref, Expression * e
             Linked_List supert = LISTcreate();
             Linked_List subt = LISTcreate();
             Linked_List uniqSubs = LISTcreate();
-            selection->search_id = s_id;
+//            selection->search_id = s_id;
             LISTdo( selection->u.type->body->list, t, Type ) {
-                int nr = EXP_resolve_op_dot_fuzzy( t, sref, e, v, dt, &w, s_id );
+                int nr = EXP_resolve_op_dot_fuzzy( t, sref, e, v, dt, &w /*, s_id*/ );
                 if( nr ) {
                     if( w != NULL ) {
                         /* only ever set due to ENTITYfind_inherited_attribute in case entity_.
@@ -337,7 +338,7 @@ static int EXP_resolve_op_dot_fuzzy( Type selection, Symbol sref, Expression * e
             if( ( LISTget_length( uniqSubs ) == 0 ) && ( LISTget_length( supert ) == 1 ) && ( options > 1 ) ) {
                 options = 1;
                 /* this ensures that v is set correctly and wasn't overwritten */
-                EXP_resolve_op_dot_fuzzy( (Type) LISTget_first( supert ), sref, e, v, dt, &w, s_id );
+                EXP_resolve_op_dot_fuzzy( (Type) LISTget_first( supert ), sref, e, v, dt, &w /*, s_id*/ );
             }
             if( options > 1 ) {
                 /* found more than one, so ambiguous */
@@ -389,17 +390,21 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
             /* defer */
             return( Type_Runtime );
         case select_:
-            __SCOPE_search_id++;
+//            __SCOPE_search_id++;
+						SCOPE_begin_search();
             /* don't think this actually actually catches anything on the first go-round, but let's be consistent */
-            op1type->search_id = __SCOPE_search_id;
+//            op1type->search_id = __SCOPE_search_id;
+						SCOPE_search_visited(op1type);
             LISTdo( op1type->u.type->body->list, t, Type ) {
                 /* this used to increment options by 1 if EXP_resolve_op_dot_fuzzy found 1 or more possibilities.
                  * thus the code for handling ambiguities was only used if the ambig was in the immediate type
                  * and not a supertype. don't think that's right...
                  */
-                options += EXP_resolve_op_dot_fuzzy( t, op2->symbol, &item, &v, &dt, &where, __SCOPE_search_id );
+                options += EXP_resolve_op_dot_fuzzy( t, op2->symbol, &item, &v, &dt, &where /*, __SCOPE_search_id*/ );
             }
             LISTod;
+						SCOPE_end_search();
+				
             switch( options ) {
                 case 0:
                     LISTdo( op1type->u.type->body->list, t, Type ) {
@@ -456,6 +461,7 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
                     }
                     return( Type_Runtime );
             }
+				
         case attribute_:
             v = ENTITYresolve_attr_ref( op1->u.variable->type->u.type->body->entity, ( struct Symbol_ * )0, &op2->symbol );
 
@@ -544,19 +550,20 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
  * there will be no ambiguities, since we're looking at (and marking)
  * only types, and it's marking only entities
  */
-static int EXP_resolve_op_group_fuzzy( Type selection, Symbol sref, Entity * e,
-                                       int s_id ) {
+static int EXP_resolve_op_group_fuzzy( Type selection, Symbol sref, Entity * e/*,
+                                       int s_id*/ ) {
     Entity tmp;
     int options = 0;
 
-    if( selection->search_id == s_id ) {
-        return 0;
-    }
-
+//    if( selection->search_id == s_id ) {
+//        return 0;
+//    }
+		if( SCOPE_search_visited(selection) ) return 0;
+																				 
     switch( selection->u.type->body->type ) {
         case entity_:
             tmp = ( Entity )ENTITYfind_inherited_entity(
-                      selection->u.type->body->entity, sref.name, 1 );
+                      selection->u.type->body->entity, sref.name, 1, true );
             if( tmp ) {
                 *e = tmp;
                 return 1;
@@ -565,9 +572,9 @@ static int EXP_resolve_op_group_fuzzy( Type selection, Symbol sref, Entity * e,
             return 0;
         case select_:
             tmp = *e;
-            selection->search_id = s_id;
+//            selection->search_id = s_id;
             LISTdo( selection->u.type->body->list, t, Type )
-            if( EXP_resolve_op_group_fuzzy( t, sref, e, s_id ) ) {
+            if( EXP_resolve_op_group_fuzzy( t, sref, e/*, s_id*/ ) ) {
                 if( *e != tmp ) {
                     tmp = *e;
                     ++options;
@@ -627,7 +634,7 @@ Type EXPresolve_op_group( Expression expr, Scope scope ) {
 
             /* Now get entity denoted by "X\Y" */
             ent_ref =
-                ( Entity )ENTITYfind_inherited_entity( tmp, op2->symbol.name, 1 );
+                ( Entity )ENTITYfind_inherited_entity( tmp, op2->symbol.name, 1, false );
             if( !ent_ref ) {
                 ERRORreport_with_symbol( ERROR_group_ref_no_such_entity,
                                          &op2->symbol, op2->symbol.name );
@@ -643,20 +650,23 @@ Type EXPresolve_op_group( Expression expr, Scope scope ) {
             resolved_all( expr );
             return( op2->return_type );
         case select_:
-            __SCOPE_search_id++;
-            /* don't think this actually actually catches anything on the */
+//            __SCOPE_search_id++;
+						SCOPE_begin_search();
+				/* don't think this actually actually catches anything on the */
             /* first go-round, but let's be consistent */
-            op1type->search_id = __SCOPE_search_id;
+//            op1type->search_id = __SCOPE_search_id;
+						SCOPE_search_visited(op1type);
             LISTdo( op1type->u.type->body->list, t, Type )
-            if( EXP_resolve_op_group_fuzzy( t, op2->symbol, &ent_ref,
-                                            __SCOPE_search_id ) ) {
+            if( EXP_resolve_op_group_fuzzy( t, op2->symbol, &ent_ref/*,
+                                            __SCOPE_search_id*/ ) ) {
                 if( ent_ref != tmp ) {
                     tmp = ent_ref;
                     ++options;
                 }
             }
             LISTod;
-
+						SCOPE_end_search();
+				
             switch( options ) {
                 case 0:
                     /* no possible resolutions */

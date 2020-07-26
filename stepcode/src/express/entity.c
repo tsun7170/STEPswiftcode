@@ -141,10 +141,11 @@ static Entity ENTITY_find_inherited_entity( Entity entity, char * name, int down
     /* if A ref's B which ref's C, and A ref's C.  Then C */
     /* can be searched twice by A.  Similar problem with */
     /* sub/super inheritance. */
-    if( entity->search_id == __SCOPE_search_id ) {
-        return NULL;
-    }
-    entity->search_id = __SCOPE_search_id;
+		if( SCOPE_search_visited(entity) ) return NULL;
+//    if( entity->search_id == __SCOPE_search_id ) {
+//        return NULL;
+//    }
+//    entity->search_id = __SCOPE_search_id;
 
     LISTdo( entity->u.entity->supertypes, super, Entity )
     if( streq( super->symbol.name, name ) ) {
@@ -177,38 +178,48 @@ static Entity ENTITY_find_inherited_entity( Entity entity, char * name, int down
     return 0;
 }
 
-struct Scope_ * ENTITYfind_inherited_entity( struct Scope_ *entity, char * name, int down ) {
-    if( streq( name, entity->symbol.name ) ) {
-        return( entity );
-    }
-
-    __SCOPE_search_id++;
-    return ENTITY_find_inherited_entity( entity, name, down );
+struct Scope_ * ENTITYfind_inherited_entity( struct Scope_ *entity, char * name, int down, bool under_search ) {
+	if( streq( name, entity->symbol.name ) ) {
+		return( entity );
+	}
+	
+	//    __SCOPE_search_id++;
+	if(!under_search) SCOPE_begin_search();
+	Entity result = ENTITY_find_inherited_entity( entity, name, down );
+	if(!under_search) SCOPE_end_search();
+	return result;
 }
 
 //*TY2020/07/18
-static int ENTITY_check_attr_declarations( Entity entity, char* attrName, int found ) {
-	if( entity->search_id == __SCOPE_search_id ) return found;
-	entity->search_id = __SCOPE_search_id;
+static int ENTITY_check_attr_declarations( Entity leaf, Entity entity, char* attrName, int found ) {
+//	if( entity->search_id == __SCOPE_search_id ) return found;
+//	entity->search_id = __SCOPE_search_id;
+	if( SCOPE_search_visited(entity) ) return found;
 	
 	/* first look locally */
-	Variable result = ( Variable )DICTlookup( entity->symbol_table, attrName );
-	if( result && !VARis_redeclaring(result) ) {
+	Variable attr = ( Variable )DICTlookup( entity->symbol_table, attrName );
+	if( attr!=NULL && !VARis_redeclaring(attr) ) {
 		found += 1;
+		if( entity == leaf ) {
+			return found;
+		}
 		if( found > 1 ) return found;
 	}
 
 	/* check supertypes */
 	LISTdo( entity->u.entity->supertypes, super, Entity )
-	found = ENTITY_check_attr_declarations(super, attrName, found);
+	found = ENTITY_check_attr_declarations(leaf, super, attrName, found);
 	if( found > 1 ) return found;
 	LISTod;
 
 	return found;
 }
 int ENTITYget_attr_ambiguous_count( Entity entity, char* attrName ) {
-	__SCOPE_search_id++;
-	return ENTITY_check_attr_declarations(entity, attrName, 0);
+//	__SCOPE_search_id++;
+	SCOPE_begin_search();
+	int found = ENTITY_check_attr_declarations(entity, entity, attrName, 0);
+	SCOPE_end_search();
+	return found;
 }
 
 
@@ -221,11 +232,12 @@ Variable ENTITY_find_inherited_attribute( Entity entity, char * name, int * down
     /* if A ref's B which ref's C, and A ref's C.  Then C */
     /* can be searched twice by A.  Similar problem with */
     /* sub/super inheritance. */
-    if( entity->search_id == __SCOPE_search_id ) {
-        return NULL;
-    }
-    entity->search_id = __SCOPE_search_id;
-
+//    if( entity->search_id == __SCOPE_search_id ) {
+//        return NULL;
+//    }
+//    entity->search_id = __SCOPE_search_id;
+	if( SCOPE_search_visited(entity) ) return NULL;
+	
     /* first look locally */
     result = ( Variable )DICTlookup( entity->symbol_table, name );
     if( result ) {
@@ -259,16 +271,20 @@ Variable ENTITY_find_inherited_attribute( Entity entity, char * name, int * down
 }
 
 Variable ENTITYfind_inherited_attribute( struct Scope_ *entity, char * name,
-        struct Symbol_ ** down_where ) {
-    extern int __SCOPE_search_id;
+        struct Symbol_ ** down_where, bool under_search ) {
+//    extern int __SCOPE_search_id;
     int down_flag = 0;
 
-    __SCOPE_search_id++;
-    if( down_where ) {
-        return ENTITY_find_inherited_attribute( entity, name, &down_flag, down_where );
+//    __SCOPE_search_id++;
+	if( !under_search ) SCOPE_begin_search();
+	Variable result;
+	if( down_where ) {
+        result = ENTITY_find_inherited_attribute( entity, name, &down_flag, down_where );
     } else {
-        return ENTITY_find_inherited_attribute( entity, name, NULL, NULL );
+        result = ENTITY_find_inherited_attribute( entity, name, NULL, NULL );
     }
+	if( !under_search ) SCOPE_end_search();
+	return result;
 }
 
 /** resolve a (possibly group-qualified) attribute ref.
@@ -283,7 +299,7 @@ Variable ENTITYresolve_attr_ref( Entity e, Symbol * grp_ref, Symbol * attr_ref )
 
     if( grp_ref ) {
         /* use entity provided in group reference */
-        ref_entity = ENTITYfind_inherited_entity( e, grp_ref->name, 0 );
+        ref_entity = ENTITYfind_inherited_entity( e, grp_ref->name, 0, false );
         if( !ref_entity ) {
             ERRORreport_with_symbol( ERROR_unknown_supertype, grp_ref,
                                      grp_ref->name, e->symbol.name );
@@ -300,7 +316,7 @@ Variable ENTITYresolve_attr_ref( Entity e, Symbol * grp_ref, Symbol * attr_ref )
     } else {
         /* no entity provided, look through supertype chain */
         where = NULL;
-        attr = ENTITYfind_inherited_attribute( e, attr_ref->name, &where );
+        attr = ENTITYfind_inherited_attribute( e, attr_ref->name, &where, false );
         if( !attr /* was ref_entity? */ ) {
             ERRORreport_with_symbol( ERROR_unknown_attr_in_entity,
                                      attr_ref, attr_ref->name,
@@ -479,8 +495,9 @@ Linked_List ENTITYget_all_attributes( Entity entity ) {
 static void ENTITY_build_all_attributes( Linked_List queue, Dictionary result  ) {
 	Entity entity;
 	while ( (entity = LISTremove_first_if(queue)) != NULL ) {
-		if( entity->search_id == __SCOPE_search_id ) continue;
-		entity->search_id = __SCOPE_search_id;
+//		if( entity->search_id == __SCOPE_search_id ) continue;
+//		entity->search_id = __SCOPE_search_id;
+		if( SCOPE_search_visited(entity) ) continue;
 		
 		LISTdo( entity->u.entity->supertypes, super, Entity )
 		LISTadd_last(queue, super);
@@ -502,10 +519,13 @@ Dictionary ENTITYget_all_attributes( Entity entity ) {
 	
 	Dictionary result = DICTcreate(25);
 	Linked_List queue = LISTcreate();
-	__SCOPE_search_id++;
-	
 	LISTadd_last(queue, entity);
+	
+//	__SCOPE_search_id++;
+	SCOPE_begin_search();
 	ENTITY_build_all_attributes(queue, result);
+	SCOPE_end_search();
+	
 	entity->u.entity->all_attributes = result;
 	LISTfree(queue);
 	return result;
@@ -525,9 +545,10 @@ Variable ENTITYfind_attribute_effective_definition( Entity entity, char* attr_na
 
 //*TY2020/07/19
 static void ENTITY_build_super_entitiy_list( Entity entity, Linked_List result ) {
-	if( entity->search_id == __SCOPE_search_id ) return;
-	entity->search_id = __SCOPE_search_id;
-
+//	if( entity->search_id == __SCOPE_search_id ) return;
+//	entity->search_id = __SCOPE_search_id;
+	if( SCOPE_search_visited(entity) ) return;
+	
 	LISTdo( entity->u.entity->supertypes, super, Entity )
 	ENTITY_build_super_entitiy_list(super, result);
 	LISTod;
@@ -538,8 +559,12 @@ Linked_List ENTITYget_super_entity_list( Entity entity ) {
 	if( entity->u.entity->supertype_list ) return entity->u.entity->supertype_list;
 	
 	Linked_List result = LISTcreate();
-	__SCOPE_search_id++;
+	
+//	__SCOPE_search_id++;
+	SCOPE_begin_search();
 	ENTITY_build_super_entitiy_list( entity, result );
+	SCOPE_end_search();
+	
 	entity->u.entity->supertype_list = result;
 	return result;
 }

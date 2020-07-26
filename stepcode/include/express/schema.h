@@ -51,6 +51,7 @@
 /*****************/
 
 #include <sc_export.h>
+#include <assert.h>
 #include "expbasic.h"   /* get basic definitions */
 #include "symbol.h"
 #include "scope.h"
@@ -109,6 +110,8 @@ extern SC_EXPRESS_EXPORT struct freelist_head SCOPE_fl;
 extern SC_EXPRESS_EXPORT struct freelist_head SCHEMA_fl;
 
 extern SC_EXPRESS_EXPORT int __SCOPE_search_id;
+//*TY2020/07/23
+extern bool __SCOPE_search_ongoing;
 
 /******************************/
 /* macro function definitions */
@@ -128,6 +131,11 @@ extern SC_EXPRESS_EXPORT int __SCOPE_search_id;
 /* otherwise, you'd see "entity->superscope" even when you KNOW */
 /* it is a schema */
 #define ENTITYget_schema(e)     (e)->superscope
+
+//*TY2020/07/23
+#define SCOPE_begin_search()	(assert(__SCOPE_search_ongoing==false),++__SCOPE_search_id, __SCOPE_search_ongoing=true)
+#define SCOPE_search_visited(s)	(assert(__SCOPE_search_ongoing==true),((s)->search_id==__SCOPE_search_id ? true : ((s)->search_id=__SCOPE_search_id,false)))
+#define SCOPE_end_search()	(assert(__SCOPE_search_ongoing==true),__SCOPE_search_ongoing=false)
 
 /***********************/
 /* function prototypes */

@@ -287,6 +287,7 @@
 		F44D039D24BE42FD00E77B2A /* de_end.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = de_end.h; sourceTree = "<group>"; };
 		F44D039F24BE42FE00E77B2A /* exppp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = exppp.h; sourceTree = "<group>"; };
 		F456D5EA24C283BC008EC5B4 /* Products */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Products; path = "../../../../../../Library/Developer/Xcode/DerivedData/STEPswiftcode-eekfndbmrwrfyadpkfsqjovxhltq/Build/Products"; sourceTree = "<group>"; };
+		F456DE5224C4DE60008EC5B4 /* MyPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = MyPlayground.playground; path = "../../../../Library/Autosave Information/MyPlayground.playground"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		F48BF91E24C07A2B005B5B0A /* ordered_attrs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ordered_attrs.h; sourceTree = "<group>"; };
 		F48BF91F24C07A2B005B5B0A /* sc_export.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sc_export.h; sourceTree = "<group>"; };
 		F48BF92024C07A2C005B5B0A /* sc_stdbool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sc_stdbool.h; sourceTree = "<group>"; };
@@ -345,6 +346,7 @@
 		F44D023B24BE3FDA00E77B2A = {
 			isa = PBXGroup;
 			children = (
+				F456DE5224C4DE60008EC5B4 /* MyPlayground.playground */,
 				F48BF96024C2711E005B5B0A /* SwiftSDAIcore */,
 				F44D025324BE402700E77B2A /* exp2swift */,
 				F44D025924BE40B600E77B2A /* stepcode */,
@@ -660,39 +662,39 @@
 		F44D02ED24BE429E00E77B2A /* express */ = {
 			isa = PBXGroup;
 			children = (
-				F44D02EE24BE429E00E77B2A /* generated */,
-				F44D030A24BE429E00E77B2A /* expscan.l */,
+				F44D030D24BE429E00E77B2A /* README */,
 				F44D031424BE429E00E77B2A /* expparse.y */,
-				F44D02F524BE429E00E77B2A /* dict.c */,
-				F44D02F624BE429E00E77B2A /* caseitem.c */,
+				F44D030A24BE429E00E77B2A /* expscan.l */,
+				F44D02EE24BE429E00E77B2A /* generated */,
 				F44D02F724BE429E00E77B2A /* alg.c */,
-				F44D02F824BE429E00E77B2A /* object.c */,
-				F44D02F924BE429E00E77B2A /* memory.c */,
-				F44D02FA24BE429E00E77B2A /* ordered_attrs.cc */,
-				F44D02FB24BE429E00E77B2A /* CMakeLists.txt */,
-				F44D02FC24BE429E00E77B2A /* linklist.c */,
-				F44D030224BE429E00E77B2A /* entity.c */,
-				F44D030324BE429E00E77B2A /* inithook.c */,
-				F44D030424BE429E00E77B2A /* stmt.c */,
-				F44D030524BE429E00E77B2A /* info.c */,
+				F44D02F624BE429E00E77B2A /* caseitem.c */,
 				F44D030624BE429E00E77B2A /* Changes */,
-				F44D030724BE429E00E77B2A /* parse_data.h */,
-				F44D030824BE429E00E77B2A /* resolve.c */,
+				F44D02FB24BE429E00E77B2A /* CMakeLists.txt */,
+				F44D02F524BE429E00E77B2A /* dict.c */,
+				F44D030224BE429E00E77B2A /* entity.c */,
+				F44D031024BE429E00E77B2A /* error.c */,
+				F44D031524BE429E00E77B2A /* exp_kw.c */,
+				F44D031724BE429E00E77B2A /* expr.c */,
+				F44D031624BE429E00E77B2A /* express.c */,
 				F44D030924BE429E00E77B2A /* fedex.c */,
 				F44D030B24BE429E00E77B2A /* hash.c */,
+				F44D030524BE429E00E77B2A /* info.c */,
+				F44D030324BE429E00E77B2A /* inithook.c */,
+				F44D031124BE429E00E77B2A /* lexact.c */,
+				F44D02FC24BE429E00E77B2A /* linklist.c */,
+				F44D02F924BE429E00E77B2A /* memory.c */,
+				F44D02F824BE429E00E77B2A /* object.c */,
+				F44D02FA24BE429E00E77B2A /* ordered_attrs.cc */,
+				F44D030724BE429E00E77B2A /* parse_data.h */,
+				F44D030824BE429E00E77B2A /* resolve.c */,
+				F44D031924BE429E00E77B2A /* schema.c */,
 				F44D030C24BE429E00E77B2A /* scope.c */,
-				F44D030D24BE429E00E77B2A /* README */,
+				F44D031324BE429E00E77B2A /* stack.h */,
+				F44D030424BE429E00E77B2A /* stmt.c */,
+				F44D031224BE429E00E77B2A /* symbol.c */,
 				F44D030E24BE429E00E77B2A /* token_type.h */,
 				F44D030F24BE429E00E77B2A /* type.c */,
-				F44D031024BE429E00E77B2A /* error.c */,
-				F44D031124BE429E00E77B2A /* lexact.c */,
-				F44D031224BE429E00E77B2A /* symbol.c */,
-				F44D031324BE429E00E77B2A /* stack.h */,
-				F44D031524BE429E00E77B2A /* exp_kw.c */,
-				F44D031624BE429E00E77B2A /* express.c */,
-				F44D031724BE429E00E77B2A /* expr.c */,
 				F44D031824BE429E00E77B2A /* variable.c */,
-				F44D031924BE429E00E77B2A /* schema.c */,
 			);
 			path = express;
 			sourceTree = "<group>";

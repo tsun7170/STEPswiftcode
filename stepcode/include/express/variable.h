@@ -99,7 +99,7 @@ struct Variable_ {
 	Scope defined_in;
 	Linked_List observers;	// of inverse attribures observing this attribute
 	Variable original_attribute;	// original attribute overriden by this attribute
-	Dictionary overriders; // of attribure overriding this attribute
+	Dictionary overriders; // of attribute overriding this attribute
 };
 
 /********************/

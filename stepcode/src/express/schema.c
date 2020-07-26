@@ -57,6 +57,8 @@ struct freelist_head SCOPE_fl;
 struct freelist_head SCHEMA_fl;
 
 int __SCOPE_search_id = 0;
+//*TY2020/07/23
+bool __SCOPE_search_ongoing = false;
 
 Symbol * RENAME_get_symbol( Generic r ) {
     return( ( ( Rename * )r )->old );
@@ -197,11 +199,12 @@ static void SCHEMA_get_entities_use( Scope scope, Linked_List result ) {
     DictionaryEntry de;
     Rename * rename;
 
-    if( scope->search_id == __SCOPE_search_id ) {
-        return;
-    }
-    scope->search_id = __SCOPE_search_id;
-
+//    if( scope->search_id == __SCOPE_search_id ) {
+//        return;
+//    }
+//    scope->search_id = __SCOPE_search_id;
+		if( SCOPE_search_visited(scope) ) return;
+	
     /* fully USE'd schema */
     LISTdo( scope->u.schema->use_schemas, schema, Schema )
     SCOPE_get_entities( schema, result );
@@ -221,10 +224,11 @@ static void SCHEMA_get_entities_use( Scope scope, Linked_List result ) {
 Linked_List SCHEMAget_entities_use( Scope scope ) {
     Linked_List result = LISTcreate();
 
-    __SCOPE_search_id++;
-    ENTITY_MARK++;
-
+		ENTITY_MARK++;
+//    __SCOPE_search_id++;
+		SCOPE_begin_search();
     SCHEMA_get_entities_use( scope, result );
+		SCOPE_end_search();
     return( result );
 }
 
@@ -233,11 +237,12 @@ static void SCHEMA_get_entities_ref( Scope scope, Linked_List result ) {
     Rename * rename;
     DictionaryEntry de;
 
-    if( scope->search_id == __SCOPE_search_id ) {
-        return;
-    }
-    scope->search_id = __SCOPE_search_id;
-
+//    if( scope->search_id == __SCOPE_search_id ) {
+//        return;
+//    }
+//    scope->search_id = __SCOPE_search_id;
+		if( SCOPE_search_visited(scope) ) return;
+	
     ENTITY_MARK++;
 
     /* fully REF'd schema */
@@ -259,10 +264,12 @@ static void SCHEMA_get_entities_ref( Scope scope, Linked_List result ) {
 Linked_List SCHEMAget_entities_ref( Scope scope ) {
     Linked_List result = LISTcreate();
 
-    __SCOPE_search_id++;
     ENTITY_MARK++;
 
-    SCHEMA_get_entities_ref( scope, result );
+//	__SCOPE_search_id++;
+		SCOPE_begin_search();
+		SCHEMA_get_entities_ref( scope, result );
+		SCOPE_end_search();
     return( result );
 }
 
@@ -276,7 +283,7 @@ Variable VARfind( Scope scope, char * name, int strict ) {
     /* first look up locally */
     switch( scope->type ) {
         case OBJ_ENTITY:
-            result = ENTITYfind_inherited_attribute( scope, name, 0 );
+            result = ENTITYfind_inherited_attribute( scope, name, 0, false );
             if( result ) {
                 if( strict && ( DICT_type != OBJ_VARIABLE ) ) {
                     fprintf( stderr, "ERROR: strict && ( DICT_type != OBJ_VARIABLE )\n" );

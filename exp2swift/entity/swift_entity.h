@@ -14,13 +14,20 @@
 #include "../express/express.h"
 
 const char* ENTITY_swiftName( Entity e );
-char ENTITY_swiftNameInitial( Entity e);
-const char* attribute_swiftName( Variable attr );
+char 				ENTITY_swiftNameInitial( Entity e);
+const char* ENTITY_canonicalName( Entity e, char buf[BUFSIZ] );
+const char* ENTITY_swiftProtocolName( Entity e, char buf[BUFSIZ]);
 const char* partialEntity_swiftName( Entity e, char buf[BUFSIZ] );
+
+const char* attribute_swiftName( Variable attr );
 const char* partialEntityAttribute_swiftName( Variable attr, char buf[BUFSIZ] );
+const char* dynamicAttribute_swiftProtocolName( Variable original, char buf[BUFSIZ] );
+
 const char* whereLabel_swiftName( Where w, char buf[BUFSIZ] );
 
-void ENTITY_swift( Entity e, int level );
+void ENTITY_swift( Entity e, int level, Linked_List dynamic_attrs );
+void ENTITY_swiftProtocol(Entity e, int level, Linked_List dynamic_attrs );
+
 //void ENTITYunique_swift( Linked_List u, int level );
 //void ENTITYinverse_swift( Linked_List attrs, int level );
 //void ENTITYattrs_swift( Linked_List attrs, int derived, int level );

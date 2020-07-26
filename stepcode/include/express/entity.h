@@ -152,17 +152,17 @@ extern SC_EXPRESS_EXPORT struct Scope_  * ENTITYcopy PROTO( ( struct Scope_ * ) 
 extern SC_EXPRESS_EXPORT Variable     ENTITYresolve_attr_ref PROTO( ( Entity, Symbol *, Symbol * ) );
 
 // entity related queries
-extern SC_EXPRESS_EXPORT Entity       ENTITYfind_inherited_entity PROTO( ( struct Scope_ *, char *, int ) );
+extern SC_EXPRESS_EXPORT Entity       ENTITYfind_inherited_entity PROTO( ( struct Scope_ *, char *, int, bool ) );
 extern SC_EXPRESS_EXPORT bool      ENTITYhas_immediate_supertype PROTO( ( Entity, Entity ) );
 extern SC_EXPRESS_EXPORT bool      ENTITYhas_supertype PROTO( ( Entity, Entity ) );
 //*TY2020/07/11
 extern bool ENTITYis_a( Entity kindof , Entity entity );
 //*TY2020/07/11
-extern Linked_List ENTITYget_super_entity_list( Entity entity );
+extern Linked_List ENTITYget_super_entity_list( Entity entity ); // including starting entity
 
 
 // attribute related queries
-extern SC_EXPRESS_EXPORT Variable     ENTITYfind_inherited_attribute PROTO( ( struct Scope_ *, char *, struct Symbol_ ** ) );
+extern SC_EXPRESS_EXPORT Variable     ENTITYfind_inherited_attribute PROTO( ( struct Scope_ *, char *, struct Symbol_ **, bool ) );
 //*TY2020/07/19
 extern Variable ENTITYfind_attribute_effective_definition( Entity entity, char* attr_name );
 extern SC_EXPRESS_EXPORT Variable     ENTITYget_named_attribute PROTO( ( Entity, char * ) );

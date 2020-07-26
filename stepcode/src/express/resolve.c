@@ -827,7 +827,7 @@ void VAR_resolve_types( Variable v ) {
 
 	//*TY2020/06/28 added
 	if(_VARis_redeclaring(v) ) {
-		Entity super = ENTITYfind_inherited_entity(v->defined_in, _VARget_redeclaring_entity_name_string(v), 0);
+		Entity super = ENTITYfind_inherited_entity(v->defined_in, _VARget_redeclaring_entity_name_string(v), 0, false);
 		assert(super != NULL);
 		Variable super_attr = ENTITYget_named_attribute(super, _VARget_redeclaring_attr_name_string(v));
 		assert(super_attr != NULL);
@@ -1023,7 +1023,7 @@ void ENTITYresolve_expressions( Entity e ) {
             /* attribute redeclaration */
             sname = attr->name->e.op1->e.op2->symbol.name;
             if( streq( sname, e->symbol.name ) ||
-                    !( sup = ENTITYfind_inherited_entity( e, sname, 0 ) ) ) {
+                    !( sup = ENTITYfind_inherited_entity( e, sname, 0, false ) ) ) {
                 ERRORreport_with_symbol( ERROR_redecl_no_such_supertype,
                                         &attr->name->e.op1->e.op2->symbol,
                                         attr->name->e.op1->e.op2->symbol.name,
@@ -1123,11 +1123,13 @@ int ENTITY_check_subsuper_cyclicity( Entity e, Entity enew ) {
         ERRORreport_with_symbol( ERROR_subsuper_loop, &sub->symbol, e->symbol.name );
         return 1;
     }
-    if( sub->search_id == __SCOPE_search_id ) {
-        return 0;
-    }
-    sub->search_id = __SCOPE_search_id;
-    if( ENTITY_check_subsuper_cyclicity( e, sub ) ) {
+//    if( sub->search_id == __SCOPE_search_id ) {
+//        return 0;
+//    }
+//    sub->search_id = __SCOPE_search_id;
+		if( SCOPE_search_visited(sub) ) return 0;
+	
+		if( ENTITY_check_subsuper_cyclicity( e, sub ) ) {
         ERRORreport_with_symbol( ERROR_subsuper_continuation, &sub->symbol, sub->symbol.name );
         return 1;
     }
@@ -1136,8 +1138,10 @@ int ENTITY_check_subsuper_cyclicity( Entity e, Entity enew ) {
 }
 
 void ENTITYcheck_subsuper_cyclicity( Entity e ) {
-    __SCOPE_search_id++;
+//    __SCOPE_search_id++;
+		SCOPE_begin_search();
     ( void ) ENTITY_check_subsuper_cyclicity( e, e );
+		SCOPE_end_search();
 }
 
 /** returns 1 if select type is involved in circularity, else 0 */
@@ -1149,10 +1153,12 @@ int TYPE_check_select_cyclicity( TypeBody tb, Type tnew ) {
                                      &item->symbol, item->symbol.name );
             return 1;
         }
-        if( item->search_id == __SCOPE_search_id ) {
-            return 0;
-        }
-        item->search_id = __SCOPE_search_id;
+//        if( item->search_id == __SCOPE_search_id ) {
+//            return 0;
+//        }
+//        item->search_id = __SCOPE_search_id;
+				if( SCOPE_search_visited(item) ) return 0;
+			
         if( TYPE_check_select_cyclicity( tb, item ) ) {
             ERRORreport_with_symbol( ERROR_select_continuation,
                                      &item->symbol, item->symbol.name );
@@ -1165,8 +1171,10 @@ int TYPE_check_select_cyclicity( TypeBody tb, Type tnew ) {
 
 void TYPEcheck_select_cyclicity( Type t ) {
     if( t->u.type->body->type == select_ ) {
-        __SCOPE_search_id++;
-        ( void ) TYPE_check_select_cyclicity( t->u.type->body, t );
+//        __SCOPE_search_id++;
+			SCOPE_begin_search();
+			( void ) TYPE_check_select_cyclicity( t->u.type->body, t );
+			SCOPE_end_search();
     }
 }
 
