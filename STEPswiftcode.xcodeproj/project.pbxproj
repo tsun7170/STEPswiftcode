@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F43B6BEF24CD3D6C007493AB /* swift_entity_partial.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */; };
+		F43B6BF124CD3E20007493AB /* swift_entity_reference.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF024CD3E20007493AB /* swift_entity_reference.c */; };
 		F44D02DE24BE427C00E77B2A /* sc_trace_fprintf.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D02B824BE427C00E77B2A /* sc_trace_fprintf.c */; };
 		F44D02DF24BE427C00E77B2A /* sc_memmgr.cc in Sources */ = {isa = PBXBuildFile; fileRef = F44D02B924BE427C00E77B2A /* sc_memmgr.cc */; };
 		F44D02E024BE427C00E77B2A /* sc_mkdir.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D02BC24BE427C00E77B2A /* sc_mkdir.c */; };
@@ -96,6 +98,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_partial.c; sourceTree = "<group>"; };
+		F43B6BF024CD3E20007493AB /* swift_entity_reference.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_reference.c; sourceTree = "<group>"; };
 		F44D025224BE402700E77B2A /* exp2swift */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = exp2swift; sourceTree = BUILT_PRODUCTS_DIR; };
 		F44D025C24BE421400E77B2A /* IFC4.exp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.exports; path = IFC4.exp; sourceTree = "<group>"; };
 		F44D025D24BE421400E77B2A /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
@@ -850,6 +854,8 @@
 			children = (
 				F48BF94D24C26BFE005B5B0A /* swift_entity.h */,
 				F48BF94E24C26BFE005B5B0A /* swift_entity.c */,
+				F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */,
+				F43B6BF024CD3E20007493AB /* swift_entity_reference.c */,
 			);
 			path = entity;
 			sourceTree = "<group>";
@@ -974,6 +980,7 @@
 				F48BF93924C26BB1005B5B0A /* swift_schema.c in Sources */,
 				F44D033624BE429E00E77B2A /* expr.c in Sources */,
 				F44D037924BE42B400E77B2A /* pretty_alg.c in Sources */,
+				F43B6BEF24CD3D6C007493AB /* swift_entity_partial.c in Sources */,
 				F44D037B24BE42B400E77B2A /* pretty_func.c in Sources */,
 				F44D037F24BE42B400E77B2A /* pretty_entity.c in Sources */,
 				F44D032D24BE429E00E77B2A /* hash.c in Sources */,
@@ -989,6 +996,7 @@
 				F48BF95E24C26BFF005B5B0A /* swift_type.c in Sources */,
 				F44D033424BE429E00E77B2A /* exp_kw.c in Sources */,
 				F44D037324BE42B400E77B2A /* pretty_expr.c in Sources */,
+				F43B6BF124CD3E20007493AB /* swift_entity_reference.c in Sources */,
 				F44D02EB24BE427C00E77B2A /* path2str.c in Sources */,
 				F44D033524BE429E00E77B2A /* express.c in Sources */,
 				F44D032A24BE429E00E77B2A /* resolve.c in Sources */,

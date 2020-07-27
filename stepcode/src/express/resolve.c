@@ -773,8 +773,8 @@ void VAR_resolve_expressions( Variable v, Entity entity /* was scope */ ) {
         if( is_resolve_failed( v->initializer ) ) {
             resolve_failed( v->name );
         }
-			//*TY2020/07/04
-			VARput_dynamic(v);
+//			//*TY2020/07/04
+//			VARput_dynamic(v);
     }
 }
 
@@ -839,6 +839,7 @@ void VAR_resolve_types( Variable v ) {
 		if( VARis_derived(v) ) {
 			attr_type = ATTR_DERIVED;
 			VARput_dynamic(super_attr);
+			VARput_dynamic(v);
 		}
 		int rc = DICTdefine(super_attr->overriders, ENTITYget_name(v->defined_in), ( Generic )v, &v->name->symbol, attr_type);
 		assert(rc == DICTsuccess);
@@ -1408,6 +1409,9 @@ void ENTITYresolve_uniques( Entity e ) {
             if( ENTITYdeclares_variable( e, attr ) ) {
                 attr->flags.unique = 1;
             }
+					//*TY2020/07/26
+					expr->u.variable = attr;
+					expr->u_tag = expr_is_variable;
         } LISTod;
     } LISTod;
     e->symbol.resolved |= failed;

@@ -49,7 +49,7 @@ static void SCOPEconst_swift( Variable v, int level, int max_indent ) {
             /* causes wrap() to always begin new line */
             exppp_linelength = indent2;
         }
-        EXPR_swift( NULL, v->initializer, 0 );
+        EXPR_swift( NULL, v->initializer, NO_PAREN );
         exppp_linelength = old_ll;
     }
 

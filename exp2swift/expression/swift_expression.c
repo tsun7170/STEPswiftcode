@@ -68,9 +68,9 @@ void EXPRbounds_swift(Scope SELF, TypeBody tb ) {
     }
 
     wrap( "/*[" );
-    EXPR_swift(SELF, tb->lower, 0 );
+    EXPR_swift(SELF, tb->lower, NO_PAREN );
     wrap( ":" );
-    EXPR_swift(SELF, tb->upper, 0 );
+    EXPR_swift(SELF, tb->upper, NO_PAREN );
     raw( "]*/" );
 }
 
@@ -345,6 +345,7 @@ void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap 
 
 void EXPRopIn_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
 	EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, can_wrap );
+	force_wrap();
 	wrap_if(YES_WRAP, ".contains( ");
 	EXPR__swift( SELF, eo->op1, YES_PAREN, eo->op_code, YES_WRAP );
 	raw(" )");
