@@ -2342,6 +2342,7 @@ static void yy_reduce(
 }
 #line 2340 "expparse.c"
         break;
+			//MARK: aggregate_type ::= TOK_AGGREGATE TOK_OF parameter_type
       case 15: /* aggregate_type ::= TOK_AGGREGATE TOK_OF parameter_type */
 #line 397 "expparse.y"
 {
@@ -2355,9 +2356,20 @@ static void yy_reduce(
         ERRORreport_with_symbol(ERROR_unlabelled_param_type, &sym,
         CURRENT_SCOPE_NAME);
     }
+	//*TY2020/08/06 to add implicit tag
+	else {
+		Symbol* tag_sym = SYMBOLcreate_implicit_tag(tag_count+1, yylineno, current_filename);
+		Type t = TYPEcreate_user_defined_tag(yymsp[0].minor.yy297, CURRENT_SCOPE, tag_sym);
+		if (t) {
+				SCOPEadd_super(t);
+				yygotominor.yy477->tag = t;
+		}
+	}
+
 }
 #line 2356 "expparse.c"
         break;
+			//MARK: aggregate_type ::= TOK_AGGREGATE TOK_COLON TOK_IDENTIFIER TOK_OF parameter_type
       case 16: /* aggregate_type ::= TOK_AGGREGATE TOK_COLON TOK_IDENTIFIER TOK_OF parameter_type */
 #line 411 "expparse.y"
 {
@@ -3167,6 +3179,7 @@ static void yy_reduce(
 }
 #line 3163 "expparse.c"
         break;
+			//MARK: fh_lineno ::= TOK_FUNCTION
       case 129: /* fh_lineno ::= TOK_FUNCTION */
       case 218: /* ph_get_line ::= */ yytestcase(yyruleno==218);
       case 247: /* rh_get_line ::= */ yytestcase(yyruleno==247);
@@ -3188,6 +3201,7 @@ static void yy_reduce(
 }
 #line 3184 "expparse.c"
         break;
+			//MARK: fh_plist ::= formal_parameter_list
       case 131: /* fh_plist ::= formal_parameter_list */
 #line 1169 "expparse.y"
 {
@@ -3295,6 +3309,7 @@ static void yy_reduce(
 }
 #line 3291 "expparse.c"
         break;
+			//MARK: generic_type ::= TOK_GENERIC
       case 143: /* generic_type ::= TOK_GENERIC */
 #line 1253 "expparse.y"
 {
@@ -3307,9 +3322,21 @@ static void yy_reduce(
         ERRORreport_with_symbol(ERROR_unlabelled_param_type, &sym,
         CURRENT_SCOPE_NAME);
     }
+		//*TY2020/08/06 to add implicit tag
+		else {
+			TypeBody g = TYPEBODYcreate(generic_);
+			yygotominor.yy297 = TYPEcreate_from_body_anonymously(g);
+			SCOPEadd_super(yygotominor.yy297);
+			Symbol* tag_sym = SYMBOLcreate_implicit_tag(tag_count+1, yylineno, current_filename);
+			g->tag = TYPEcreate_user_defined_tag(yygotominor.yy297, CURRENT_SCOPE, tag_sym);
+			if (g->tag) {
+					SCOPEadd_super(g->tag);
+			}
+		}
 }
 #line 3306 "expparse.c"
         break;
+			//MARK: generic_type ::= TOK_GENERIC TOK_COLON TOK_IDENTIFIER
       case 144: /* generic_type ::= TOK_GENERIC TOK_COLON TOK_IDENTIFIER */
 #line 1265 "expparse.y"
 {

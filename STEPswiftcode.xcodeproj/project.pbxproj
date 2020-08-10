@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		F43B6BEF24CD3D6C007493AB /* swift_entity_partial.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */; };
 		F43B6BF124CD3E20007493AB /* swift_entity_reference.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF024CD3E20007493AB /* swift_entity_reference.c */; };
+		F43B6BF724CEC040007493AB /* swift_rule.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF624CEC040007493AB /* swift_rule.c */; };
+		F43B6BFA24CEC053007493AB /* swift_func.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF924CEC053007493AB /* swift_func.c */; };
+		F43B6BFD24CEC064007493AB /* swift_proc.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BFC24CEC064007493AB /* swift_proc.c */; };
+		F43B6C0124D0064D007493AB /* swift_algorithm.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6C0024D0064D007493AB /* swift_algorithm.c */; };
 		F44D02DE24BE427C00E77B2A /* sc_trace_fprintf.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D02B824BE427C00E77B2A /* sc_trace_fprintf.c */; };
 		F44D02DF24BE427C00E77B2A /* sc_memmgr.cc in Sources */ = {isa = PBXBuildFile; fileRef = F44D02B924BE427C00E77B2A /* sc_memmgr.cc */; };
 		F44D02E024BE427C00E77B2A /* sc_mkdir.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D02BC24BE427C00E77B2A /* sc_mkdir.c */; };
@@ -57,6 +61,7 @@
 		F44D037F24BE42B400E77B2A /* pretty_entity.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D036524BE42B400E77B2A /* pretty_entity.c */; };
 		F44D038024BE42B400E77B2A /* pretty_rule.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D036924BE42B400E77B2A /* pretty_rule.c */; };
 		F44D038124BE42B400E77B2A /* pretty_loop.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D036A24BE42B400E77B2A /* pretty_loop.c */; };
+		F45A7F8E24D00EEF00669F95 /* swift_statement.c in Sources */ = {isa = PBXBuildFile; fileRef = F45A7F8D24D00EEF00669F95 /* swift_statement.c */; };
 		F48BF92A24C0E0C5005B5B0A /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF92924C0E0C5005B5B0A /* main.c */; };
 		F48BF92F24C0E110005B5B0A /* expscan.l in Sources */ = {isa = PBXBuildFile; fileRef = F44D030A24BE429E00E77B2A /* expscan.l */; };
 		F48BF93024C0E115005B5B0A /* expparse.y in Sources */ = {isa = PBXBuildFile; fileRef = F44D031424BE429E00E77B2A /* expparse.y */; };
@@ -100,6 +105,14 @@
 /* Begin PBXFileReference section */
 		F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_partial.c; sourceTree = "<group>"; };
 		F43B6BF024CD3E20007493AB /* swift_entity_reference.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_reference.c; sourceTree = "<group>"; };
+		F43B6BF524CEC040007493AB /* swift_rule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_rule.h; sourceTree = "<group>"; };
+		F43B6BF624CEC040007493AB /* swift_rule.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_rule.c; sourceTree = "<group>"; };
+		F43B6BF824CEC052007493AB /* swift_func.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_func.h; sourceTree = "<group>"; };
+		F43B6BF924CEC053007493AB /* swift_func.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_func.c; sourceTree = "<group>"; };
+		F43B6BFB24CEC064007493AB /* swift_proc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_proc.h; sourceTree = "<group>"; };
+		F43B6BFC24CEC064007493AB /* swift_proc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_proc.c; sourceTree = "<group>"; };
+		F43B6BFF24D0064D007493AB /* swift_algorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_algorithm.h; sourceTree = "<group>"; };
+		F43B6C0024D0064D007493AB /* swift_algorithm.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_algorithm.c; sourceTree = "<group>"; };
 		F44D025224BE402700E77B2A /* exp2swift */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = exp2swift; sourceTree = BUILT_PRODUCTS_DIR; };
 		F44D025C24BE421400E77B2A /* IFC4.exp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.exports; path = IFC4.exp; sourceTree = "<group>"; };
 		F44D025D24BE421400E77B2A /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
@@ -292,6 +305,8 @@
 		F44D039F24BE42FE00E77B2A /* exppp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = exppp.h; sourceTree = "<group>"; };
 		F456D5EA24C283BC008EC5B4 /* Products */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Products; path = "../../../../../../Library/Developer/Xcode/DerivedData/STEPswiftcode-eekfndbmrwrfyadpkfsqjovxhltq/Build/Products"; sourceTree = "<group>"; };
 		F456DE5224C4DE60008EC5B4 /* MyPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = MyPlayground.playground; path = "../../../../Library/Autosave Information/MyPlayground.playground"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		F45A7F8C24D00EEF00669F95 /* swift_statement.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_statement.h; sourceTree = "<group>"; };
+		F45A7F8D24D00EEF00669F95 /* swift_statement.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_statement.c; sourceTree = "<group>"; };
 		F48BF91E24C07A2B005B5B0A /* ordered_attrs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ordered_attrs.h; sourceTree = "<group>"; };
 		F48BF91F24C07A2B005B5B0A /* sc_export.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sc_export.h; sourceTree = "<group>"; };
 		F48BF92024C07A2C005B5B0A /* sc_stdbool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sc_stdbool.h; sourceTree = "<group>"; };
@@ -347,6 +362,47 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F43B6BF224CEBFA3007493AB /* rule */ = {
+			isa = PBXGroup;
+			children = (
+				F43B6BF524CEC040007493AB /* swift_rule.h */,
+				F43B6BF624CEC040007493AB /* swift_rule.c */,
+			);
+			path = rule;
+			sourceTree = "<group>";
+		};
+		F43B6BF324CEBFBB007493AB /* func */ = {
+			isa = PBXGroup;
+			children = (
+				F43B6BF824CEC052007493AB /* swift_func.h */,
+				F43B6BF924CEC053007493AB /* swift_func.c */,
+			);
+			path = func;
+			sourceTree = "<group>";
+		};
+		F43B6BF424CEBFC6007493AB /* proc */ = {
+			isa = PBXGroup;
+			children = (
+				F43B6BFB24CEC064007493AB /* swift_proc.h */,
+				F43B6BFC24CEC064007493AB /* swift_proc.c */,
+			);
+			path = proc;
+			sourceTree = "<group>";
+		};
+		F43B6BFE24D00595007493AB /* algorithm */ = {
+			isa = PBXGroup;
+			children = (
+				F43B6BF224CEBFA3007493AB /* rule */,
+				F43B6BF324CEBFBB007493AB /* func */,
+				F43B6BF424CEBFC6007493AB /* proc */,
+				F43B6BFF24D0064D007493AB /* swift_algorithm.h */,
+				F43B6C0024D0064D007493AB /* swift_algorithm.c */,
+				F45A7F8C24D00EEF00669F95 /* swift_statement.h */,
+				F45A7F8D24D00EEF00669F95 /* swift_statement.c */,
+			);
+			path = algorithm;
+			sourceTree = "<group>";
+		};
 		F44D023B24BE3FDA00E77B2A = {
 			isa = PBXGroup;
 			children = (
@@ -372,6 +428,7 @@
 			isa = PBXGroup;
 			children = (
 				F48BF95F24C27038005B5B0A /* generated */,
+				F43B6BFE24D00595007493AB /* algorithm */,
 				F48BF92224C07A78005B5B0A /* sc_cf.h */,
 				F48BF92124C07A78005B5B0A /* sc_version_string.h */,
 				F48BF93224C26BB1005B5B0A /* exp2swift_main.c */,
@@ -833,18 +890,18 @@
 		F48BF93F24C26BFE005B5B0A /* scope */ = {
 			isa = PBXGroup;
 			children = (
-				F48BF94024C26BFE005B5B0A /* swift_scope.c */,
-				F48BF94124C26BFE005B5B0A /* swift_scope_locals.h */,
-				F48BF94224C26BFE005B5B0A /* swift_scope_entities.h */,
-				F48BF94324C26BFE005B5B0A /* swift_scope_types.h */,
 				F48BF94424C26BFE005B5B0A /* swift_scope_algs.c */,
-				F48BF94524C26BFE005B5B0A /* swift_scope_consts.c */,
-				F48BF94624C26BFE005B5B0A /* swift_scope_entities.c */,
-				F48BF94724C26BFE005B5B0A /* swift_scope_locals.c */,
-				F48BF94824C26BFE005B5B0A /* swift_scope.h */,
-				F48BF94924C26BFE005B5B0A /* swift_scope_consts.h */,
 				F48BF94A24C26BFE005B5B0A /* swift_scope_algs.h */,
+				F48BF94524C26BFE005B5B0A /* swift_scope_consts.c */,
+				F48BF94924C26BFE005B5B0A /* swift_scope_consts.h */,
+				F48BF94624C26BFE005B5B0A /* swift_scope_entities.c */,
+				F48BF94224C26BFE005B5B0A /* swift_scope_entities.h */,
+				F48BF94724C26BFE005B5B0A /* swift_scope_locals.c */,
+				F48BF94124C26BFE005B5B0A /* swift_scope_locals.h */,
 				F48BF94B24C26BFE005B5B0A /* swift_scope_types.c */,
+				F48BF94324C26BFE005B5B0A /* swift_scope_types.h */,
+				F48BF94024C26BFE005B5B0A /* swift_scope.c */,
+				F48BF94824C26BFE005B5B0A /* swift_scope.h */,
 			);
 			path = scope;
 			sourceTree = "<group>";
@@ -965,16 +1022,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				F44D032224BE429E00E77B2A /* linklist.c in Sources */,
+				F43B6BFA24CEC053007493AB /* swift_func.c in Sources */,
 				F44D031E24BE429E00E77B2A /* alg.c in Sources */,
 				F48BF95624C26BFF005B5B0A /* swift_scope.c in Sources */,
 				F44D033124BE429E00E77B2A /* lexact.c in Sources */,
 				F44D037C24BE42B400E77B2A /* exppp.c in Sources */,
+				F43B6BFD24CEC064007493AB /* swift_proc.c in Sources */,
 				F48BF93B24C26BB1005B5B0A /* swift_files.c in Sources */,
 				F48BF95524C26BFF005B5B0A /* swift_expression.c in Sources */,
 				F48BF95C24C26BFF005B5B0A /* swift_entity.c in Sources */,
 				F44D033024BE429E00E77B2A /* error.c in Sources */,
 				F44D032924BE429E00E77B2A /* info.c in Sources */,
 				F44D036C24BE42B400E77B2A /* pretty_subtype.c in Sources */,
+				F43B6C0124D0064D007493AB /* swift_algorithm.c in Sources */,
 				F44D036B24BE42B400E77B2A /* pretty_schema.c in Sources */,
 				F44D032624BE429E00E77B2A /* entity.c in Sources */,
 				F48BF93924C26BB1005B5B0A /* swift_schema.c in Sources */,
@@ -1022,6 +1082,8 @@
 				F44D031D24BE429E00E77B2A /* caseitem.c in Sources */,
 				F44D032124BE429E00E77B2A /* ordered_attrs.cc in Sources */,
 				F48BF93A24C26BB1005B5B0A /* swift_express.c in Sources */,
+				F45A7F8E24D00EEF00669F95 /* swift_statement.c in Sources */,
+				F43B6BF724CEC040007493AB /* swift_rule.c in Sources */,
 				F44D031A24BE429E00E77B2A /* expscan.c in Sources */,
 				F44D033224BE429E00E77B2A /* symbol.c in Sources */,
 				F44D032824BE429E00E77B2A /* stmt.c in Sources */,

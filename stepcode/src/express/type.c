@@ -159,6 +159,10 @@ Type Type_Set_Of_String;
 Type Type_Set_Of_Generic;
 Type Type_Bag_Of_Generic;
 
+//*TY2020/08/02
+Type Type_List_Of_Generic;
+Type Type_Aggregate_Of_Generic;
+
 struct freelist_head TYPEHEAD_fl;
 struct freelist_head TYPEBODY_fl;
 
@@ -173,6 +177,7 @@ Type TYPEcreate_nostab( struct Symbol_ *symbol, Scope scope, char objtype ) {
     TypeHead th = TYPEHEAD_new();
 
     t->u.type = th;
+	t->u_tag = scope_is_type;	//*TY2020/08/02
     t->symbol = *symbol;
     DICTdefine( scope->symbol_table, symbol->name, ( Generic )t, &t->symbol, objtype );
 
@@ -189,8 +194,18 @@ Type TYPEcreate_name( Symbol * symbol ) {
     TypeHead t = TYPEHEAD_new();
 
     s->u.type = t;
+	s->u_tag = scope_is_type;	//*TY2020/08/02
     s->symbol = *symbol;
     return s;
+}
+
+Symbol* SYMBOLcreate_implicit_tag( int tag_no, int line, const char * filename ) {
+#define TAG_NAME_SIZE 16
+	char* tag_name = (char*)sc_malloc(TAG_NAME_SIZE);
+	snprintf(tag_name, TAG_NAME_SIZE, "_T%d", tag_no);
+	Symbol* tag_sym = SYMBOLcreate(tag_name, line, filename);
+	return tag_sym;
+#undef TAG_NAME_SIZE
 }
 
 Type TYPEcreate_user_defined_tag( Type base, Scope scope, struct Symbol_ *symbol ) {
@@ -243,6 +258,7 @@ Type TYPEcreate_from_body_anonymously( TypeBody tb ) {
     TypeHead th = TYPEHEAD_new();
 
     t->u.type = th;
+	t->u_tag = scope_is_type;	//*TY2020/08/02
     t->u.type->body = tb;
     t->symbol.name = 0;
     SYMBOLset( t );
@@ -392,6 +408,17 @@ void TYPEinitialize() {
     Type_Bag_Of_Generic->u.type->body->flags.shared = 1;
     Type_Bag_Of_Generic->u.type->body->base = Type_Generic;
 
+	//*TY2020/08/02
+	Type_List_Of_Generic = TYPEcreate( list_ );
+	Type_List_Of_Generic->u.type->body->flags.shared = 1;
+	Type_List_Of_Generic->u.type->body->base = Type_Generic;
+//
+	Type_Aggregate_Of_Generic = TYPEcreate( aggregate_ );
+	Type_Aggregate_Of_Generic->u.type->body->flags.shared = 1;
+	Type_Aggregate_Of_Generic->u.type->body->base = Type_Generic;
+	
+	
+	
     Type_Attribute = TYPEcreate( attribute_ );
     Type_Attribute->u.type->body->flags.shared = 1;
 

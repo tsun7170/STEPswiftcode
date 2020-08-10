@@ -30,6 +30,9 @@ void wrap( const char * fmt, ... );
 //*TY2020/07/11
 void wrap_if(bool can_wrap, const char * fmt, ... );
 void force_wrap(void);
+void positively_wrap(void);
+int captureWrapIndent(void);
+void restoreWrapIndent(int captured_indent2);
 
 
 /** convert a real into our preferred form compatible with 10303-11

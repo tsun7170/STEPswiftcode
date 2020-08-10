@@ -119,7 +119,7 @@ static void attribute_out( Entity leaf, Variable v, int level ) {
 	raw( "%s,\t", ATTRget_name_string(v) );
 
 	raw("TYPE: ");
-	if( VARget_optional( v ) ) {
+	if( VARis_optional( v ) ) {
 		wrap( "OPTIONAL " );
 	}
 	raw(ATTRget_type_string(v));
@@ -197,7 +197,7 @@ static void attribute_out( Entity leaf, Variable v, int level ) {
 				}
 				raw("ENTITY: %s,\t", ENTITYget_name(overrider->defined_in));
 				raw("TYPE: ");
-				if(VARget_optional(v)) {
+				if(VARis_optional(v)) {
 					raw("OPTIONAL ");
 				}
 				raw(ATTRget_type_string(overrider));
@@ -230,7 +230,7 @@ static void listLocalAttributes( Entity leaf, Entity entity, int level ) {
 			indent_swift(level2);
 			raw("(no local attributes)\n");
 		}
-		LISTdo( entity->u.entity->attributes, attr, Generic ) {
+		LISTdo( entity->u.entity->attributes, attr, Variable ) {
 			attribute_out(leaf, attr, level2);
 		}LISTod;
 	}
@@ -261,7 +261,7 @@ void ENTITY_swift( Entity entity, int level, Linked_List dynamic_attrs ) {
 	raw("\n//MARK: - ALL DEFINED ATTRIBUTES\n/*\n");
 	entity_no = 0;
 	listAllAttributes(entity, entity, level);
-	raw("\n*/\n");
+	raw("*/\n");
 	
 	// partial entity definition
 	Linked_List attr_overrides = LISTcreate();

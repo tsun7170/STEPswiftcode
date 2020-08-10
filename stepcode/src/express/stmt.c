@@ -207,6 +207,7 @@ Scope INCR_CTLcreate( Symbol * control, Expression start,
     DICTdefine( s->symbol_table, control->name,
                 ( Generic )v, control, OBJ_VARIABLE );
     s->u.incr = INCR_new();
+	s->u_tag = scope_is_incr;
     s->u.incr->init = start;
     s->u.incr->end = end;
     s->u.incr->increment = increment;

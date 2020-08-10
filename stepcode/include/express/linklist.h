@@ -88,6 +88,12 @@ extern SC_EXPRESS_EXPORT struct freelist_head LIST_fl;
 #define LINKnext(link)  (link)->next
 #define LINKprev(link)  (link)->prev
 
+//*TY2020/08/02
+#define LISTLINKfirst(list)					((list)->mark->next)
+#define LISTLINKis_last(list,link)	(LINKnext(link)==LISTLINKfirst(list))
+#define LISTLINKnext(list,link)			( LISTLINKis_last(list,link) ? NULL : LINKnext(link) )
+
+
 /** iteration */
 #define LISTdo(list, elt, type) LISTdo_n( list, elt, type, a )
 

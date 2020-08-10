@@ -14,8 +14,7 @@
 
 //#include "pp.h"
 
-void SCOPEconstList_swift( Scope s, int level );
-void SCOPEaddvars_inorder( Linked_List list, Variable v );	// from pretty_scope.c
+void SCOPEconstList_swift( bool nested, Scope s, int level );
 
 
 #endif /* swift_scope_const_h */

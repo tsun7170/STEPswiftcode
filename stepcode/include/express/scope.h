@@ -96,6 +96,19 @@ struct Scope_ {
         /* no, query owns a scope rather than scope owning a query
          *      struct Query *query;  */
     } u;
+	//*TY2020/08/02
+	enum {
+		scope_unset = 0,
+		scope_is_proc,
+		scope_is_func,
+		scope_is_rule,
+		scope_is_entity,
+		scope_is_schema,
+		scope_is_express,
+		scope_is_incr,
+		scope_is_type
+	} u_tag;
+	
     Linked_List where;      /**< optional where clause */
 };
 

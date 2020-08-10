@@ -29,6 +29,7 @@
 #include "swift_scope_consts.h"
 #include "swift_scope_types.h"
 #include "swift_scope_entities.h"
+#include "swift_scope_algs.h"
 
 
 const char* SCHEMA_swiftName( Schema schema) {
@@ -78,13 +79,19 @@ void SCHEMA_swift( Schema schema ) {
 	// swift code generation
 	raw("/* SCHEMA */\n");
 	raw("public enum %s: NameSpace {\n", SCHEMA_swiftName(schema));
-	SCOPEconstList_swift( schema, level + nestingIndent_swift );
+	
+	{	int level2 = level+nestingIndent_swift;
+		indent_swift(level2);
+		raw("public typealias RawValue = NameSpace");
+		SCOPEconstList_swift( false, schema, level + nestingIndent_swift );
+	}
 
 	raw("}\n");
 	raw("/* END_SCHEMA */\n");
 
 	SCHEMAtypeList_swift( schema );
 	SCHEMAentityList_swift( schema );
+	SCHEMAalgList_swift( schema );
 
 	
 	return;

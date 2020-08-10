@@ -21,21 +21,18 @@
 #include "swift_files.h"
 #include "swift_type.h"
 #include "swift_expression.h"
+#include "swift_algorithm.h"
+#include "swift_symbol.h"
 
-//MARK: - partial entity swift definition
 
 static void attributeHead_swift(char* access, Variable attr, int level, char attrNameBuf[BUFSIZ]) {
 	indent_swift(level);
 	raw("%s var %s: ",access,partialEntityAttribute_swiftName(attr, attrNameBuf));
-	if( VARget_optional(attr) ) {
-		raw("( ");
-	}
-	TYPE_head_swift(attr->type, level+nestingIndent_swift);
-	if( VARget_optional(attr) ) {
-		raw(" )?");
-	}
+	
+	variableType_swift(attr, false, level+nestingIndent_swift);
 }
 
+//MARK: explicit attribute
 static void simpleAttribureObservers_swift(Entity entity, Variable attr, int level) {
 	char buf[BUFSIZ];
 
@@ -154,30 +151,19 @@ static void explicitDynamicAttributeDefinition_swift(Entity entity, Variable att
 	}
 }
 
+//MARK: derived attribute
 static void derivedAttributeGetterDefinitionHead(Variable attr, char *attrName, Entity entity, int level) {
 	indent_swift(level);
 	raw("internal func %s__getter(SELF: %s) -> ", attrName, ENTITY_swiftName(entity) );
 	
-	if( VARget_optional(attr) ) {
-		raw("( ");
-	}
-	TYPE_head_swift(attr->type, level);
-	if( VARget_optional(attr) ) {
-		raw(" )?");
-	}
+	variableType_swift(attr, false, level);
 }
 
 static void derivedRedefinitionGetterDefinitionHead(Variable attr, char *attrName, Entity entity, int level) {
 	indent_swift(level);
 	raw("internal func %s__getter(complex: SDAI.ComplexEntity) -> ", attrName );
 	
-	if( VARget_optional(attr) ) {
-		raw("( ");
-	}
-	TYPE_head_swift(attr->type, level);
-	if( VARget_optional(attr) ) {
-		raw(" )?");
-	}
+	variableType_swift(attr, false, level);
 }
 
 void explicitDynamicAttributeProtocolDefinition_swift(Entity entity, Variable attr, int level) {
@@ -273,7 +259,7 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 	raw("}\n");
 }
 
-
+//MARK: inverse attribute
 static void inverseAttributeDefinition_swift(Variable attr, int level) {
 	indent_swift(level);
 	raw("//\tINVERSE\n");
@@ -300,7 +286,7 @@ static void inverseAttributeDefinition_swift(Variable attr, int level) {
 		}
 		else {
 			wrap("self.%s = entityRef", attrName );
-			if( !VARget_optional(attr) ) {
+			if( !VARis_optional(attr) ) {
 				raw("!");
 			}
 			raw("\n");
@@ -323,7 +309,7 @@ static void inverseAttributeDefinition_swift(Variable attr, int level) {
 			wrap("self.%s.remove(member: entityRef )\n", attrName );
 		}
 		else {
-			if( VARget_optional(attr) ) {
+			if( VARis_optional(attr) ) {
 				wrap("self.%s = nil\n", attrName );
 			}
 		}
@@ -334,7 +320,7 @@ static void inverseAttributeDefinition_swift(Variable attr, int level) {
 
 }
 
-
+//MARK: local attributes list
 static void localAttributeDefinitions_swift
  ( Entity entity, int level, Linked_List attr_overrides, Linked_List dynamic_attrs ) {
 	 Linked_List local_attributes = entity->u.entity->attributes;
@@ -378,7 +364,7 @@ static void localAttributeDefinitions_swift
 	 }
 }
 
-
+//MARK: - where rule
 static void whereDefinitions_swift( Entity entity, int level ) {
 	Linked_List where_rules = TYPEget_where(entity);
 	if( LISTempty(where_rules) ) return;
@@ -396,12 +382,14 @@ static void whereDefinitions_swift( Entity entity, int level ) {
 		indent_swift(level+nestingIndent_swift);
 		EXPR_swift(entity, where->expr, NO_PAREN);
 		
+		raw("\n");
 		indent_swift(level);
 		raw("}\n");
 	}LISTod;
-	raw("\n");
+//	raw("\n");
 }
 
+//MARK: - unique rule
 static Variable unique_attribute( Expression expr ) {
 	assert(expr->u_tag == expr_is_variable);
 	return expr->u.variable;
@@ -426,7 +414,7 @@ static void jointUniquenessRule_swift( Entity entity, Linked_List unique, int jo
 		if( ++attr_no == 0 ) continue;	// skip label
 		
 		Variable attr = unique_attribute(attr_expr);
-		if( VARget_optional(attr) ) {
+		if( VARis_optional(attr) ) {
 			indent_swift(level);
 			wrap("guard let attr%d = ", attr_no);
 			EXPR_swift(entity, attr_expr, NO_PAREN);
@@ -491,6 +479,35 @@ static void uniqueDefinitions_swift( Entity entity, int level ) {
 	raw("\n");
 }
 
+//MARK: - constructor
+static void expressConstructor( Entity entity, int level ) {
+	
+	indent_swift(level);
+	raw("//EXPRESS IMPLICIT PARTIAL ENTITY CONSTRUCTOR\n");
+	
+	Linked_List params = ENTITYget_constructor_params(entity);
+	
+	indent_swift(level);
+	raw("public init(");
+	ALGargs_swift(NO_FORCE_OPTIONAL, params, NO_DROP_SINGLE_LABEL, level);
+	raw(") {\n");
+
+	{	int level2 = level+nestingIndent_swift;
+		char buf[BUFSIZ];
+		LISTdo(params, attr, Variable) {
+			indent_swift(level2);
+			raw("self.%s = %s\n", partialEntityAttribute_swiftName(attr, buf), variable_swiftName(attr));
+		}LISTod;
+		indent_swift(level2);
+		raw("super.init()\n");
+	}
+	
+	indent_swift(level);
+	raw("}\n\n");
+}
+
+//MARK: - partial entity swift definition
+
 void partialEntityDefinition_swift
  ( Entity entity, int level, Linked_List attr_overrides, Linked_List dynamic_attrs ) {
 	 raw("\n\n");
@@ -507,6 +524,7 @@ void partialEntityDefinition_swift
 		 localAttributeDefinitions_swift(entity, level2, attr_overrides, dynamic_attrs);
 		 whereDefinitions_swift(entity, level2);
 		 uniqueDefinitions_swift(entity, level2);
+		 expressConstructor(entity, level2);
 	 }
 	 
 	 indent_swift(level);

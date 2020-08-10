@@ -107,6 +107,7 @@ Scope SCOPEcreate_nostab( char type ) {
 Schema SCHEMAcreate( void ) {
     Scope s = SCOPEcreate( OBJ_SCHEMA );
     s->u.schema = SCHEMA_new();
+	s->u_tag = scope_is_schema;	//*TY2020/08/02
     return s;
 }
 

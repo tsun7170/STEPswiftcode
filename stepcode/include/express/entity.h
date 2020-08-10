@@ -88,7 +88,7 @@ struct Entity_ {
     Linked_List supertypes;         /**< linked list of immediate supertypes (as entities) */
     Linked_List subtypes;           /**< simple list of subtypes useful for simple lookups */
     Expression  subtype_expression; /**< DAG of subtypes, with complete information including, OR, AND, and ONEOF */
-    Linked_List attributes;         /**< explicit attributes */
+    Linked_List attributes;         /**< all local attributes (explicit,derive,inverse,redeclaration) */
     int         inheritance;        /**< total number of attributes inherited from supertypes */
     int         attribute_count;
     Linked_List unique;             /**< list of identifiers that are unique */
@@ -99,6 +99,7 @@ struct Entity_ {
 	//*TY2020/07/19 added
 	Linked_List supertype_list;	// list of all supertypes consistent with P21 spec.
 	Dictionary all_attributes;	// dict of (linked_list of attr) keyed by attr simple name. linked_list is sorted from most subentity to superentity (first item is the effective attr definition, if it is not an ambiguous definition)
+	Linked_List constructor_params;	// parameters for the implicit constructor
 };
 
 /********************/
@@ -157,7 +158,6 @@ extern SC_EXPRESS_EXPORT bool      ENTITYhas_immediate_supertype PROTO( ( Entity
 extern SC_EXPRESS_EXPORT bool      ENTITYhas_supertype PROTO( ( Entity, Entity ) );
 //*TY2020/07/11
 extern bool ENTITYis_a( Entity kindof , Entity entity );
-//*TY2020/07/11
 extern Linked_List ENTITYget_super_entity_list( Entity entity ); // including starting entity
 
 
@@ -172,6 +172,8 @@ extern SC_EXPRESS_EXPORT bool      ENTITYdeclares_variable PROTO( ( Entity, stru
 extern SC_EXPRESS_EXPORT Dictionary  ENTITYget_all_attributes PROTO( ( Entity ) ); // returns dict of (linked_list of attr) keyed by attr simple name
 //*TY2020/07/11
 extern int ENTITYget_attr_ambiguous_count( Entity entity, char* attrName );	// 0: not defined anywhere, 1: unique defintion, >1: ambiguous definition
+//*TY2020/08/09
+extern Linked_List ENTITYget_constructor_params( Entity entity );
 
 // misc.
 extern SC_EXPRESS_EXPORT void     ENTITYadd_instance PROTO( ( Entity, Generic ) );

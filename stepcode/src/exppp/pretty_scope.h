@@ -6,6 +6,7 @@
 
 #include "pp.h"
 
+void SCOPElocals_order( Linked_List list, Variable v );	//*TY2020/07/29
 void SCOPEadd_inorder( Linked_List list, Scope s );
 void SCOPEalgs_out( Scope s, int level );
 void SCOPEconsts_out( Scope s, int level );

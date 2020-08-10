@@ -54,11 +54,12 @@ Error ERROR_select_empty;
 
 const int exppp_nesting_indent = 2;       /* default nesting indent */
 const int exppp_continuation_indent = 4;  /* default nesting indent for continuation lines */
-int exppp_linelength = 130;                /* leave some room for closing parens.
+int exppp_linelength = 110;                /* leave some room for closing parens.
                                            * '\n' is not included in this count either */
 int indent2;                              /* where continuation lines start */
 int curpos;                               /* current line position (1 is first position) */
 const int NOLEVEL = -1;
+bool wrapped = true;										//*TY2020/07/31 already wrapped and no non-space chars are written
 
 
 Symbol error_sym;                           /* only used when printing errors */
@@ -110,6 +111,17 @@ void exp_output( char * buf, unsigned int len ) {
 
     error_sym.line += count_newlines( buf );
     printedSpaceLast = ( *( buf + len - 1) == ' ' );
+	
+	//*TY2020/07/31
+	for( int i=len-1;i>=0;--i ) {
+		if( buf[i] == '\n' ) {
+			wrapped = true; break;
+		}
+		else if( buf[i] != ' ' && buf[i] != '\t' ) {
+			wrapped = false; break;
+		}
+	}
+	
     if( exppp_buf ) {
         /* output to string */
         if( len > exppp_buflen ) {
@@ -138,7 +150,7 @@ static void vwrap( const char * fmt, va_list args ) {
 
     vsprintf( buf, fmt, args );
 
-    len = strlen( buf );
+    len = (int)strlen( buf );
 
     /* eliminate leading whitespace */
     while( ( *start == ' ' ) && ( ( printedSpaceLast ) || ( *( start + 1 ) == ' ' ) ) ){
@@ -179,7 +191,7 @@ static void vwrap( const char * fmt, va_list args ) {
         if( 0 == ( p = strrchr( start, '\n' ) ) ) {
             curpos += len;
         } else {
-            curpos = len + start - p;
+            curpos = len + (int)(start - p);
         }
     }
 }
@@ -198,11 +210,11 @@ static void vraw( const char * fmt, va_list args ) {
 
     vsprintf( buf, fmt, args );
 
-    len = strlen( buf );
+    len = (int)strlen( buf );
 
-    exp_output( buf, len );
 
     if( len ) {
+			exp_output( buf, len );
         /* reset cur position based on last newline seen */
         if( 0 == ( p = strrchr( buf, '\n' ) ) ) {
             curpos += len;
@@ -233,9 +245,21 @@ void wrap_if(bool can_wrap, const char * fmt, ... ) {
 	va_end( args );
 }
 void force_wrap(void) {
-	raw("\n%*s", indent2, "" );
+	if( !wrapped ) {
+		raw("\n%*s", indent2, "" );
+	}
 }
-
+void positively_wrap(void) {
+	if( curpos > (exppp_linelength *2)/3 ) force_wrap(); 
+}
+int captureWrapIndent(void) {
+	int old_indent2 = indent2;
+	indent2 = curpos-1;
+	return old_indent2;
+}
+void restoreWrapIndent(int captured_indent2) {
+	indent2 = captured_indent2;
+}
 
 void exppp_init() {
     static bool first_time = true;

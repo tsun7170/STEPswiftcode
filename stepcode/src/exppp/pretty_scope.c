@@ -150,7 +150,7 @@ void SCOPEconst_out( Variable v, int level, size_t max_indent ) {
          max_indent, v->name->symbol.name );
 
     /* print attribute type */
-    if( VARget_optional( v ) ) {
+    if( VARis_optional( v ) ) {
         wrap( " OPTIONAL" );
     }
 
@@ -302,7 +302,7 @@ void SCOPElocals_out( Scope s, int level ) {
              max_indent, var->name->symbol.name );
 
         /* print attribute type */
-        if( VARget_optional( var ) ) {
+        if( VARis_optional( var ) ) {
             wrap( " OPTIONAL" );
         }
         TYPE_head_out( var->type, NOLEVEL );

@@ -12,5 +12,6 @@
 #include <express/scope.h>
 
 const char * variable_swiftName(Variable v);
+void variableType_swift(Variable v, bool force_optional, int level);
 
 #endif /* swift_symbol_h */

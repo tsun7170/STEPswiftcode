@@ -106,7 +106,8 @@ void TYPE_body_out( Type t, int level ) {
                 /* ignore the aggregate bounds for now */
                 case aggregate_:
                     wrap( " AGGREGATE" );
-                    if( tb->tag ) {
+								//*TY2020/08/08
+                    if( TYPEhas_tag(tb) ) {
                         wrap( ":%s", tb->tag->symbol.name );
                     }
                     wrap( " OF" );
@@ -200,7 +201,16 @@ void TYPE_body_out( Type t, int level ) {
                 raw( "%*s ", level, "" );
             }
             raw( type->symbol.name );
-            LISTod
+				
+						//*TY2020/07/28
+						if( TYPEis_entity(type)) {
+							raw(" (*ENTITY*)");
+						}
+						else {
+							raw( " (*TYPE*)" );
+						}
+
+						LISTod
 
             /* if empty, force a left paren */
             if( first_time ) {
@@ -211,7 +221,7 @@ void TYPE_body_out( Type t, int level ) {
             break;
         case generic_:
             wrap( " GENERIC" );
-            if( tb->tag ) {
+            if( TYPEhas_tag(tb) ) {
                 wrap( ":%s", tb->tag->symbol.name );
             }
             break;

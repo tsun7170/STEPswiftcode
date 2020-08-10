@@ -15,10 +15,14 @@ extern const int nestingIndent_swift;
 void beginExpress_swift(char* description);
 void endExpress_swift(void);
 void indent_swift(int level);
+void indent_with_char(int level, char c);
 
 void openSwiftFileForSchema(Schema s);
 void openSwiftFileForType(Type type);
 void openSwiftFileForEntity(Entity entity);
+void openSwiftFileForRule(Rule rule);
+void openSwiftFileForFunction(Function func);
+void openSwiftFileForProcedure(Procedure proc);
 void closeSwiftFile(void);
 
 #endif /* swift_files_h */

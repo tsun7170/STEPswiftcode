@@ -340,6 +340,7 @@ Entity ENTITYcreate( Symbol * sym ) {
     Scope s = SCOPEcreate( OBJ_ENTITY );
 
     s->u.entity = ENTITY_new();
+	s->u_tag = scope_is_entity;	//*TY2020/08/02
     s->u.entity->attributes = LISTcreate();
     s->u.entity->inheritance = ENTITY_INHERITANCE_UNINITIALIZED;
 
@@ -542,6 +543,23 @@ Variable ENTITYfind_attribute_effective_definition( Entity entity, char* attr_na
 	Variable effective_def = LISTget_first(attr_defs);
 	return effective_def;	
 }
+
+//*TY2020/08/09
+Linked_List ENTITYget_constructor_params( Entity entity ) {
+	if( entity->u.entity->constructor_params ) return entity->u.entity->constructor_params;
+
+	Linked_List params = entity->u.entity->constructor_params = LISTcreate();
+	LISTdo( entity->u.entity->attributes, attr, Variable ) {
+		if( VARis_redeclaring(attr) ) continue;
+		if( VARis_derived(attr) ) continue;
+		if( VARis_inverse(attr) ) continue;
+		LISTadd_last(params, attr);
+	}LISTod;
+
+	return params;
+}
+
+
 
 //*TY2020/07/19
 static void ENTITY_build_super_entitiy_list( Entity entity, Linked_List result ) {

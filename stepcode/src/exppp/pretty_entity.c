@@ -156,7 +156,7 @@ void ENTITYinverse_out( Linked_List attrs, int level ) {
             raw( "%-*s :", ( ( ( max_indent - curpos ) > 0 ) ? max_indent - curpos  : 0 ), "" );
 
             /* print attribute type */
-            if( VARget_optional( v ) ) {
+            if( VARis_optional( v ) ) {
                 wrap( " OPTIONAL" );
             }
             TYPE_head_out( v->type, NOLEVEL );
@@ -220,7 +220,7 @@ void ENTITYattrs_out( Linked_List attrs, int derived, int level ) {
             raw( "%*s :", spaces, "" );
 
             /* print attribute type */
-            if( VARget_optional( v ) ) {
+            if( VARis_optional( v ) ) {
                 wrap( " OPTIONAL" );
             }
             TYPE_head_out( v->type, NOLEVEL );

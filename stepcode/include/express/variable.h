@@ -122,13 +122,16 @@ extern SC_EXPRESS_EXPORT struct freelist_head VAR_fl;
 
 #define VARget_initializer(v)       ((v)->initializer)
 #define VARget_type(v)          ((v)->type)
-#define VARget_optional(v)      ((v)->flags.optional)
-#define VARget_unique(v)        ((v)->flags.unique)
+#define VARis_optional(v)      ((v)->flags.optional)
+#define VARis_unique(v)        ((v)->flags.unique)
 
 #define VARis_derived(v)        ((v)->initializer != 0)
 #define VARget_inverse(v)       ((v)->inverse_attribute)
 
 //*TY2020/06/28 added
+#define VARis_constant(v)				((v)->flags.constant != 0)
+#define VARis_inout(v)					((v)->flags.var != 0)
+#define VARis_parameter(v)			((v)->flags.parameter != 0)
 #define VARis_inverse(v)				((v)->inverse_symbol != NULL)
 #define VARis_redeclaring(v)		((v)->original_attribute != NULL)
 #define _VARis_redeclaring(v)		((TYPEis((v)->name->type) == op_) && \

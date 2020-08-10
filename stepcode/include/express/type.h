@@ -213,6 +213,9 @@ extern SC_EXPRESS_EXPORT Type Type_Self;
 extern SC_EXPRESS_EXPORT Type Type_Set_Of_String;
 extern SC_EXPRESS_EXPORT Type Type_Set_Of_Generic;
 extern SC_EXPRESS_EXPORT Type Type_Bag_Of_Generic;
+//*TY2020/08/02
+extern SC_EXPRESS_EXPORT Type Type_List_Of_Generic;
+extern SC_EXPRESS_EXPORT Type Type_Aggregate_Of_Generic;
 
 extern SC_EXPRESS_EXPORT struct freelist_head TYPEHEAD_fl;
 extern SC_EXPRESS_EXPORT struct freelist_head TYPEBODY_fl;
@@ -289,6 +292,9 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 #define TYPEget_clientData(t)       ((t)->clientData)
 #define TYPEput_clientData(t,d)     ((t)->clientData = (d))
 
+//*TY2020/08/08
+#define	TYPEhas_tag(t)							( ((t)->tag!=NULL) && ((t)->tag->symbol.name[0]!='_') )
+
 /***********************/
 /* function prototypes */
 /***********************/
@@ -308,5 +314,8 @@ extern SC_EXPRESS_EXPORT Type TYPEget_nonaggregate_base_type PROTO( ( Type ) );
 
 extern SC_EXPRESS_EXPORT Type TYPEcreate_user_defined_type PROTO( ( Type, Scope, struct Symbol_ * ) );
 extern SC_EXPRESS_EXPORT Type TYPEcreate_user_defined_tag PROTO( ( Type, Scope, struct Symbol_ * ) );
+
+//*TY2020/08/06
+extern Symbol* SYMBOLcreate_implicit_tag( int tag_no, int line, const char * filename );
 
 #endif    /*  TYPE_H  */

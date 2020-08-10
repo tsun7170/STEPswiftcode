@@ -23,98 +23,50 @@
 #include "swift_expression.h"
 
 
-/** output one const - used in SCOPEconsts_out, below */
-static void SCOPEconst_swift( Variable v, int level, int max_indent ) {
-//    int old_indent2;
-
-    /* print attribute name */
+static void SCOPEconst_swift( char* access, Variable v, int level ) {
+	
+	/* print attribute name */
 	indent_swift(level);
-	raw( "public static let %s : ", variable_swiftName(v) );
-
-    /* print attribute type */
-	TYPE_head_swift( v->type, NOLEVEL );
-    if( VARget_optional( v ) ) {
-        raw( "?" );
-    }
-
-
-    if( v->initializer ) {
-        int old_ll = exppp_linelength; /* so exppp_linelength can be restored */
-        raw( " = " );
-
-        /* let '[' on first line of initializer stick out so strings are aligned */
-        raw( "\n%*s", indent2 - 2, "" );
-
-        if( exppp_aggressively_wrap_consts ) {
-            /* causes wrap() to always begin new line */
-            exppp_linelength = indent2;
-        }
-        EXPR_swift( NULL, v->initializer, NO_PAREN );
-        exppp_linelength = old_ll;
-    }
-
-    raw( "\n" );
+	raw( "%slet %s: ", access, variable_swiftName(v) );
+	
+	/* print attribute type */
+	variableType_swift(v, false, NOLEVEL);
+	
+	
+	if( v->initializer ) {
+		raw( " = " );
+		positively_wrap();
+		
+		EXPR_swift( NULL, v->initializer, NO_PAREN );
+	}
+	
+	raw( "\n\n" );
 }
 
 /** output all consts in this scope */
-void SCOPEconstList_swift( Scope s, int level ) {
-    Variable v;
-    DictionaryEntry de;
-    int max_indent = 0;
-    Dictionary d = s->symbol_table;
-
-    /* checks length of constant names */
-    DICTdo_type_init( d, &de, OBJ_VARIABLE );
-    while( 0 != ( v = ( Variable )DICTdo( &de ) ) ) {
-        if( !v->flags.constant ) {
-            continue;
-        }
-        if( strlen( v->name->symbol.name ) > max_indent ) {
-            max_indent = (int)strlen( v->name->symbol.name );
-        }
-    }
-
-    if( !max_indent ) {
-        return;
-    }
-
-    first_newline();
-
-	indent_swift(level);
-    raw( "/* CONSTANT */\n" );
-
-    /* if max_indent is too big, wrap() won't insert any newlines
-     * fiddled with this until it looked ok on 242 arm
-     */
-    if( ( max_indent + 20 ) > exppp_linelength / 2 ) {
-        max_indent = exppp_linelength / 3;
-    }
-    indent2 = level + max_indent + strlen( ": ab" ) + exppp_continuation_indent;
-
-    if( !exppp_alphabetize ) {
-        DICTdo_type_init( d, &de, OBJ_VARIABLE );
-        while( 0 != ( v = ( Variable )DICTdo( &de ) ) ) {
-            if( !v->flags.constant ) {
-                continue;
-            }
-            SCOPEconst_swift( v, level, max_indent );
-        }
-    } else {
-        Linked_List alpha = LISTcreate();
-
-        DICTdo_type_init( d, &de, OBJ_VARIABLE );
-        while( 0 != ( v = ( Variable )DICTdo( &de ) ) ) {
-            if( !v->flags.constant ) {
-                continue;
-            }
-            SCOPEaddvars_inorder( alpha, v );
-        }
-        LISTdo( alpha, cnst, Variable ) {
-            SCOPEconst_swift( cnst, level, max_indent );
-        } LISTod
-        LISTfree( alpha );
-    }
-	indent_swift(level);
-    raw( "/* END_CONSTANT */\n" );
+void SCOPEconstList_swift( bool nested, Scope s, int level ) {
+	Variable v;
+	DictionaryEntry de;
+	
+	char* access = (nested ? "" : "public static ");
+	
+	int iconst = 0;
+	DICTdo_type_init( s->symbol_table, &de, OBJ_VARIABLE );
+	while( 0 != ( v = ( Variable )DICTdo( &de ) ) ) {
+		if( !VARis_constant(v) ) continue;
+		
+		if(++iconst==1) {
+			raw("\n");
+			indent_swift(level);
+			raw( "//CONSTANT\n" );
+		}
+		
+		SCOPEconst_swift( access, v, level );
+	}
+	
+	if(iconst > 1) {
+		indent_swift(level);
+		raw( "//END_CONSTANT\n\n" );
+	}
 }
 

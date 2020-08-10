@@ -55,12 +55,15 @@ Scope ALGcreate( char type ) {
     switch( type ) {
         case OBJ_PROCEDURE:
             s->u.proc = PROC_new();
+				s->u_tag = scope_is_proc;	//*TY2020/08/02
             break;
         case OBJ_FUNCTION:
             s->u.func = FUNC_new();
+				s->u_tag = scope_is_func;		//*TY2020/08/02
             break;
         case OBJ_RULE:
             s->u.rule = RULE_new();
+				s->u_tag = scope_is_rule;		//*TY2020/08/02
             break;
     }
     return s;

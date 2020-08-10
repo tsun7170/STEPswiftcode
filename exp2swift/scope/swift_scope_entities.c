@@ -21,36 +21,18 @@
 #include "swift_entity.h"
 #include "swift_schema.h"
 
-
 void SCOPEentityList_swift( Scope s, int level ) {
 	DictionaryEntry dictEntry;
 	Entity entity;
 	
-	if( exppp_alphabetize == false ) {
-		DICTdo_type_init( s->symbol_table, &dictEntry, OBJ_ENTITY );
-		while( 0 != ( entity = ( Entity )DICTdo( &dictEntry ) ) ) {
-			Linked_List dummy = LISTcreate();
-			ENTITY_swift( entity, level, dummy );
-			LISTfree(dummy);
-		}
-	} 
-	else {
-		Linked_List alpha = LISTcreate();
-		
-		DICTdo_type_init( s->symbol_table, &dictEntry, OBJ_ENTITY );
-		while( 0 != ( entity = ( Entity )DICTdo( &dictEntry ) ) ) {
-			SCOPEadd_inorder( alpha, entity );
-		}
-		
-		LISTdo( alpha, en, Entity ) {
-			Linked_List dummy = LISTcreate();
-			ENTITY_swift( en, level, dummy );
-			LISTfree(dummy);
-		} LISTod
-		
-		LISTfree( alpha );
+	DICTdo_type_init( s->symbol_table, &dictEntry, OBJ_ENTITY );
+	while( 0 != ( entity = ( Entity )DICTdo( &dictEntry ) ) ) {
+		Linked_List dummy = LISTcreate();
+		ENTITY_swift( entity, level, dummy );
+		LISTfree(dummy);
 	}
 }
+
 
 static void schemaLevelEntity_swift( Schema schema, Entity entity) {
 	int level = 0;
@@ -74,29 +56,9 @@ static void schemaLevelEntity_swift( Schema schema, Entity entity) {
 void SCHEMAentityList_swift( Schema schema ) {
 	DictionaryEntry dictEntry;
 	
-	if( exppp_alphabetize == false ) {
-		Entity entity;
-		DICTdo_type_init( schema->symbol_table, &dictEntry, OBJ_ENTITY );
-		while( 0 != ( entity = ( Entity )DICTdo( &dictEntry ) ) ) {
-			schemaLevelEntity_swift(schema, entity);
-		}
-	} 
-	else {
-		Linked_List sorted = LISTcreate();
-		
-		{
-			Entity entity;
-			DICTdo_type_init( schema->symbol_table, &dictEntry, OBJ_ENTITY );
-			while( 0 != ( entity = ( Entity )DICTdo( &dictEntry ) ) ) {
-				SCOPEadd_inorder( sorted, entity );
-			}
-		}
-		
-		LISTdo( sorted, entity, Entity ) {
-			schemaLevelEntity_swift(schema, entity);
-		} LISTod
-		
-		LISTfree( sorted );
-	}
-	
+	Entity entity;
+	DICTdo_type_init( schema->symbol_table, &dictEntry, OBJ_ENTITY );
+	while( 0 != ( entity = ( Entity )DICTdo( &dictEntry ) ) ) {
+		schemaLevelEntity_swift(schema, entity);
+	}	
 }

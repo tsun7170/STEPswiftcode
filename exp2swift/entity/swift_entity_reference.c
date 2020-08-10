@@ -21,6 +21,7 @@
 #include "swift_files.h"
 #include "swift_type.h"
 #include "swift_expression.h"
+#include "swift_symbol.h"
 
 //MARK: - entity reference
 
@@ -66,7 +67,7 @@ static void partialEntityReference_swift(Entity entity, Entity partial) {
 	wrap(".partialEntity");
 }
 
-//MARK: Attirbute References
+//MARK: - Attirbute References
 
 static void attributeRefHead_swift(Entity entity, char* access, Variable attr, int level, char* label) {	
 	indent_swift(level);
@@ -76,15 +77,7 @@ static void attributeRefHead_swift(Entity entity, char* access, Variable attr, i
 	indent_swift(level);
 	raw("%s var %s: ", access, attribute_swiftName(attr) );
 	
-	if( VARget_optional(attr) ) {
-		raw("( ");
-	}
-	
-	TYPE_head_swift(attr->type, level+nestingIndent_swift);
-	
-	if( VARget_optional(attr) ) {
-		raw(" )?");
-	}
+	variableType_swift(attr, false, level+nestingIndent_swift);
 	
 	raw(" {\n");
 }
@@ -176,7 +169,8 @@ static void explicitDynamicGetterSetter_swift(Variable attr, Entity entity, int 
 		DICTdo_init(original->overriders, &de);
 		while( 0 != ( overrider = DICTdo( &de ) ) ) {
 			if( !VARis_derived(overrider) ) continue;
-			wrap("%s\"%s\"", sep, ENTITY_canonicalName(overrider->defined_in, buf));
+			raw("%s",sep);
+			wrap("\"%s\"",  ENTITY_canonicalName(overrider->defined_in, buf));
 			sep = ", ";
 		}
 		wrap("])");

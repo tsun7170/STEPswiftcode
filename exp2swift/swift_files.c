@@ -22,6 +22,9 @@
 #include "swift_schema.h"
 #include "swift_type.h"
 #include "swift_entity.h"
+#include "swift_rule.h"
+#include "swift_func.h"
+#include "swift_proc.h"
 
 const int nestingIndent_swift = 2;       /* default nesting indent */
 
@@ -34,9 +37,16 @@ void endExpress_swift() {
 }
 
 void indent_swift(int level) {
+	indent2 = level+nestingIndent_swift;
 	if( level <= 0 ) return;
 	raw( "%*s", level, "");
 }
+void indent_with_char(int level, char c) {
+	for(int i=1; i<=level; ++i) {
+		raw("%c",c);
+	}
+}
+
 
 //char * exppp_output_filename = ( char * )0; /* if this is set, override default output filename */
 static char swift_filename_buffer[1000];           /* output file name */
@@ -160,6 +170,119 @@ void openSwiftFileForEntity(Entity entity) {
 	}
 	
 	if( mkDirIfNone( "entity" ) == -1 ) {
+			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
+			perror( 0 );
+			abort();
+	}
+	if( mkDirIfNone( dir ) == -1 ) {
+			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
+			perror( 0 );
+			abort();
+	}
+
+	
+	if( !( exppp_fp = f = fopen( swift_filename_buffer, "w" ) ) ) {
+		ERRORreport( ERROR_file_unwriteable, swift_filename_buffer, strerror( errno ) );
+		abort();
+	}
+	
+	printOutHeaderComment();
+}
+
+
+void openSwiftFileForRule(Rule rule) {
+	
+	FILE * f;
+	closeSwiftFile();
+	exppp_output_filename = 0;
+	
+	exppp_output_filename = swift_filename_buffer;
+	exppp_output_filename_reset = true;
+	snprintf( dir, BUFSIZ-1, "rule/%c", RULE_swiftNameInitial(rule) );
+	sprintf( swift_filename_buffer, "%s/%s.swift", dir, RULE_swiftName(rule) );
+	
+	error_sym.filename = swift_filename_buffer;
+	
+	if( !described && !exppp_terse ) {
+		fprintf( stdout, "%s: writing schema file %s\n", EXPRESSprogram_name, swift_filename_buffer );
+	}
+	
+	if( mkDirIfNone( "rule" ) == -1 ) {
+			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
+			perror( 0 );
+			abort();
+	}
+	if( mkDirIfNone( dir ) == -1 ) {
+			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
+			perror( 0 );
+			abort();
+	}
+
+	
+	if( !( exppp_fp = f = fopen( swift_filename_buffer, "w" ) ) ) {
+		ERRORreport( ERROR_file_unwriteable, swift_filename_buffer, strerror( errno ) );
+		abort();
+	}
+	
+	printOutHeaderComment();
+}
+
+
+void openSwiftFileForFunction(Function func) {
+	
+	FILE * f;
+	closeSwiftFile();
+	exppp_output_filename = 0;
+	
+	exppp_output_filename = swift_filename_buffer;
+	exppp_output_filename_reset = true;
+	snprintf( dir, BUFSIZ-1, "func/%c", FUNC_swiftNameInitial(func) );
+	sprintf( swift_filename_buffer, "%s/%s.swift", dir, FUNC_swiftName(func) );
+	
+	error_sym.filename = swift_filename_buffer;
+	
+	if( !described && !exppp_terse ) {
+		fprintf( stdout, "%s: writing schema file %s\n", EXPRESSprogram_name, swift_filename_buffer );
+	}
+	
+	if( mkDirIfNone( "func" ) == -1 ) {
+			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
+			perror( 0 );
+			abort();
+	}
+	if( mkDirIfNone( dir ) == -1 ) {
+			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
+			perror( 0 );
+			abort();
+	}
+
+	
+	if( !( exppp_fp = f = fopen( swift_filename_buffer, "w" ) ) ) {
+		ERRORreport( ERROR_file_unwriteable, swift_filename_buffer, strerror( errno ) );
+		abort();
+	}
+	
+	printOutHeaderComment();
+}
+
+void openSwiftFileForProcedure(Procedure proc) {
+	
+	FILE * f;
+	closeSwiftFile();
+	exppp_output_filename = 0;
+	
+	exppp_output_filename = swift_filename_buffer;
+	exppp_output_filename_reset = true;
+	snprintf( dir, BUFSIZ-1, "proc/%c", PROC_swiftNameInitial(proc) );
+	sprintf( swift_filename_buffer, "%s/%s.swift", dir, PROC_swiftName(proc) );
+	
+	error_sym.filename = swift_filename_buffer;
+	
+	if( !described && !exppp_terse ) {
+		fprintf( stdout, "%s: writing schema file %s\n", EXPRESSprogram_name, swift_filename_buffer );
+	}
+	
+	if( mkDirIfNone( "proc" ) == -1 ) {
 			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
 			perror( 0 );
 			abort();

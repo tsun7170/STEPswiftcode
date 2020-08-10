@@ -14,6 +14,5 @@
 
 void SCOPElocalList_swift( Scope s, int level );
 
-void SCOPElocals_order( Linked_List list, Variable v ); // in pretty_scope.c
 
 #endif /* swift_scope_locals_h */

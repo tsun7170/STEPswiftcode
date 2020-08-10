@@ -171,44 +171,67 @@ void TYPE_body_swift( Type t, int level ) {
 	TypeBody tb = TYPEget_body( t );
 	
 	switch( tb->type ) {
+			//MARK:integer_
 		case integer_:
 			wrap( "SDAI.INTEGER" );
 			break;
+			
+			//MARK:real_
 		case real_:
 			wrap( "SDAI.REAL" );
 			break;
+			
+			//MARK:string_
 		case string_:
 			wrap( "SDAI.STRING" );
 			break;
+			
+			//MARK:binary_
 		case binary_:
 			wrap( "SDAI.BINARY" );
 			break;
+			
+			//MARK:boolean_
 		case boolean_:
 			wrap( "SDAI.BOOLEAN" );
 			break;
+			
+			//MARK:logical_
 		case logical_:
 			wrap( "SDAI.LOGICAL" );
 			break;
+			
+			//MARK:number_
 		case number_:
 			wrap( "SDAI.NUMBER" );
 			break;
+			
+			//MARK:entity_
 		case entity_:
 			wrap( "%s", ENTITY_swiftName(tb->entity) );
 			break;
+			
+			//MARK:generic_
+		case generic_:
+			assert(tb->tag);
+			wrap( "%s", TYPE_swiftName(tb->tag) );
+			break;
+			
+			//MARK:aggregate_
 		case aggregate_:
+			assert(tb->tag);
+			wrap( "%s", TYPE_swiftName(tb->tag) );
+			TYPEoptional_swift(tb);
+			EXPRbounds_swift( NULL, tb );
+			TYPEunique_swift(tb);
+			break;
+
+			//MARK:array_,bag_,set_,list_
 		case array_:
 		case bag_:
 		case set_:
 		case list_:
 			switch( tb->type ) {
-					/* ignore the aggregate bounds for now */
-				case aggregate_:
-					wrap( "SDAI.AGGREGATE" );
-					if( tb->tag ) {
-						wrap( "/* :%s */", tb->tag->symbol.name );
-					}
-					break;
-					
 				case array_:
 					wrap( "SDAI.ARRAY" );
 					break;
@@ -230,15 +253,15 @@ void TYPE_body_swift( Type t, int level ) {
 					abort();
 			}
 			
-			wrap( "<" );
+			raw( "<" );
 			TYPE_head_swift( tb->base, level );
+			raw(">");
 			TYPEoptional_swift(tb);
-			wrap(">");
-			
 			EXPRbounds_swift( NULL, tb );
 			TYPEunique_swift(tb);
-			
 			break;
+			
+			//MARK:enumeration_
 		case enumeration_: {
 			int i, count = 0;
 			Expression * enumCases;
@@ -282,6 +305,7 @@ void TYPE_body_swift( Type t, int level ) {
 		}
 			break;
 			
+			//MARK:select_
 		case select_:
 			wrap( "/* SELECT\n" );
 			LISTdo( tb->list, selection, Type )
@@ -306,13 +330,6 @@ void TYPE_body_swift( Type t, int level ) {
 				raw( "%*s( ", level, "" );
 			}
 			raw( " ) */" );
-			break;
-			
-		case generic_:
-			wrap( "SDAI.GENERIC" );
-			if( tb->tag ) {
-				wrap( "/* :%s */", tb->tag->symbol.name );
-			}
 			break;
 			
 		default:
