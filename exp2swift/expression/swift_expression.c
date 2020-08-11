@@ -219,7 +219,6 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 			else {	
 				LISTdo( e->u.funcall.list, arg, Expression ) {
 					raw("%s",sep);
-					positively_wrap();
 					
 					EXPR__swift( SELF, arg, NO_PAREN, OP_UNKNOWN, YES_WRAP );
 					
