@@ -47,7 +47,7 @@ void FUNC_swift( bool nested, Function func, int level ) {
 	
 	// function head
 	indent_swift(level);
-	char* access = (nested ? "//NESTED " : "public static ");
+	char* access = (nested ? "//NESTED FUNCTION" : "public static ");
 	raw("%s\n", access);
 	indent_swift(level);
 	raw("func %s", FUNC_swiftName(func));
@@ -97,7 +97,7 @@ void FUNC_swift( bool nested, Function func, int level ) {
 	{	int level2 = level+nestingIndent_swift;
 		
 		ALGscope_swift(func, level2);
-		STMTlist_swift(func->u.proc->body, level2);
+		STMTlist_swift(func->u.func->body, level2);
 	}
 	
 	indent_swift(level);

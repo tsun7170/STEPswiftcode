@@ -145,6 +145,12 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 		case enumeration_:			
 			if( e->u_tag == expr_is_variable ) {
 				Variable v = e->u.variable;
+				if( v->flags.alias ) {
+					raw("(/*%s*/",e->symbol.name);
+					EXPR__swift(SELF, v->initializer, NO_PAREN, OP_UNKNOWN, can_wrap);
+					raw(")");
+					break;
+				}
 				Entity ent = v->defined_in;
 				if( ENTITYis_a(SELF, ent) ) {
 					wrap_if(can_wrap, "SELF.");

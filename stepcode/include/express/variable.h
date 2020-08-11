@@ -91,6 +91,7 @@ struct Variable_ {
         unsigned int attribute   : 1; /**< is an attribute (rule parameters are marked this way, too) */
 				//*TY2020/07/04 added
 			  unsigned int dynamic		 : 1; /**< is an attribure overriden as derived */
+				unsigned int alias       : 1;	/**< is an alias (for initializer) */
     } flags;
 
     Symbol   *  inverse_symbol;     /**< entity symbol */

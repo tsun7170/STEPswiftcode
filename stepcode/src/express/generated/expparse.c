@@ -2401,6 +2401,8 @@ static void yy_reduce(
     Variable v = VARcreate(e, Type_Unknown);
 
     v->initializer = yymsp[-5].minor.yy401; 
+	//*TY2020/08/11
+		v->flags.alias = 1;
 
     DICTdefine(CURRENT_SCOPE->symbol_table, yymsp[-7].minor.yy0.symbol->name, (Generic)v,
         yymsp[-7].minor.yy0.symbol, OBJ_VARIABLE);

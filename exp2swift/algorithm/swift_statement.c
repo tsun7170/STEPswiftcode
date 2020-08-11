@@ -15,9 +15,9 @@
 #include "swift_expression.h"
 #include "swift_proc.h"
 
-const char * alias_swiftName(Statement s) {
-	return s->symbol.name;
-}
+//const char * alias_swiftName(Statement s) {
+//	return s->symbol.name;
+//}
 
 static void CASE_swift( struct Case_Statement_ * case_stmt, int level ) {
 	int level2 = level+nestingIndent_swift;
@@ -273,23 +273,15 @@ void STMT_swift( Statement stmt, int level ) {
 			
 			//MARK: STMT_ALIAS
 		case STMT_ALIAS:
-			if( VARis_constant(stmt->u.alias->variable) ) {
-				wrap("do {\tlet %s = %s\n", alias_swiftName(stmt), variable_swiftName(stmt->u.alias->variable) );
-			}
-			else {
-				wrap("do {\tvar %s = %s\n", alias_swiftName(stmt), variable_swiftName(stmt->u.alias->variable) );
-			}
+			raw("do {\t/* ALIAS %s", variable_swiftName(stmt->u.alias->variable) );
+			wrap(" FOR ");
+			EXPR_swift(NULL, stmt->u.alias->variable->initializer, NO_PAREN);
+			raw(" */\n");
 			
 			STMTlist_swift(stmt->u.alias->statements, level+nestingIndent_swift);
 
 			indent_swift(level);
-			if( VARis_constant(stmt->u.alias->variable) ) {
-				raw("}\n");
-			}
-			else {
-				wrap("%s = ", variable_swiftName(stmt->u.alias->variable) );
-				wrap("%s }\n", alias_swiftName(stmt) );
-			}
+			raw("} //END ALIAS\n");
 			break;
 			
 			//MARK: STMT_SKIP

@@ -12,7 +12,7 @@
 #include <express/stmt.h>
 #include <express/linklist.h>
 
-const char * alias_swiftName(Statement s);
+//const char * alias_swiftName(Statement s);
 
 
 void STMT_swift( Statement stmt, int level );
