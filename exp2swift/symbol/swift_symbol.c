@@ -18,8 +18,16 @@ const char * variable_swiftName(Variable v) {
 
 void variableType_swift(Variable v, bool force_optional, int level) {
 	bool optional = force_optional || VARis_optional(v);
+	optionalType_swift(v->type, optional, level);
+}
+
+void optionalType_swift(Type type, bool optional, int level) {
+	bool simple_type = 	(type->symbol.name != NULL) || !TYPEhas_bounds(type);
 	
-	//	if( optional ) raw("(");
-	TYPE_head_swift(v->type, level+nestingIndent_swift);
-	if( optional ) raw("?");
+	if( optional && !simple_type ) raw("(");
+	TYPE_head_swift(type, level);
+	if( optional ) {
+		if( !simple_type ) raw(")");
+		raw("!");
+	} 
 }

@@ -294,6 +294,7 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 
 //*TY2020/08/08
 #define	TYPEhas_tag(t)							( ((t)->tag!=NULL) && ((t)->tag->symbol.name[0]!='_') )
+#define TYPEhas_bounds(t)						( (t)->u.type->body->upper != NULL )
 
 /***********************/
 /* function prototypes */

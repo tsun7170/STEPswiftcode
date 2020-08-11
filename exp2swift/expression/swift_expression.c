@@ -419,9 +419,9 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe, bool paren, unsign
 				//MARK:OP_ARRAY_ELEMENT
         case OP_ARRAY_ELEMENT:
 						EXPR__swift( SELF, oe->op1, YES_PAREN, OP_UNKNOWN, can_wrap );
-            wrap_if(can_wrap, "[" );
+            wrap_if(can_wrap, "[SDAI.INDEX(" );
             EXPR__swift( SELF, oe->op2, NO_PAREN, OP_UNKNOWN, YES_WRAP );
-            raw( "]" );
+            raw( ")]" );
             break;
 				
 				//MARK:OP_SUBCOMPONENT

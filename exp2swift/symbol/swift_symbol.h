@@ -13,5 +13,6 @@
 
 const char * variable_swiftName(Variable v);
 void variableType_swift(Variable v, bool force_optional, int level);
+void optionalType_swift(Type type, bool optional, int level);
 
 #endif /* swift_symbol_h */

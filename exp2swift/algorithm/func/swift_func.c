@@ -20,6 +20,7 @@
 #include "swift_type.h"
 #include "swift_algorithm.h"
 #include "swift_statement.h"
+#include "swift_symbol.h"
 
 
 const char* FUNC_swiftName( Function func ) {
@@ -76,7 +77,7 @@ void FUNC_swift( bool nested, Function func, int level ) {
 	
 	// return type
 //	positively_wrap();
-	TYPE_head_swift(func->u.func->return_type, level);raw("?");
+	optionalType_swift(func->u.func->return_type, true, level);
 	
 	if(!LISTempty(aggregates)) {
 		// constraint for aggregate element type

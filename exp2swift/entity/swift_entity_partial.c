@@ -386,7 +386,7 @@ static void whereDefinitions_swift( Entity entity, int level ) {
 		indent_swift(level);
 		raw("}\n");
 	}LISTod;
-//	raw("\n");
+	raw("\n");
 }
 
 //MARK: - unique rule

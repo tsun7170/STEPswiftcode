@@ -49,6 +49,38 @@ void SCOPElocalList_swift( Scope s, int level ) {
 			wrap( " = " );
 			EXPR_swift( NULL, var->initializer, NO_PAREN );
 		}
+		else if( TYPEhas_bounds(var->type) ) {
+			const char* aggr;
+			switch (TYPEget_type(var->type)) {
+				case aggregate_:
+					aggr = TYPE_swiftName(TYPEget_body(var->type)->tag);
+					break;
+				case array_:
+					aggr = "SDAI.ARRAY";
+					break;
+					
+				case bag_:
+					aggr = "SDAI.BAG" ;
+					break;
+					
+				case set_:
+					aggr = "SDAI.SET" ;
+					break;
+					
+				case list_:
+					aggr = "SDAI.LIST" ;
+					break;
+					
+				default:
+					aggr = "#UNKNOWN_TYPE#";
+					break;
+			}
+			wrap(" = %s(bound1:",aggr);
+			EXPR_swift(NULL,TYPEget_body(var->type)->lower, NO_PAREN);
+			raw(", bound2:");
+			EXPR_swift(NULL,TYPEget_body(var->type)->upper, NO_PAREN);
+			raw(")");
+		}
 		
 		raw( "\n" );
 	}
