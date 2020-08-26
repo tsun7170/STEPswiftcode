@@ -37,17 +37,17 @@ void EXPR__out( Expression e, int paren, unsigned int previous_op ) {
 
     switch( TYPEis( e->type ) ) {
         case integer_:
-            if( e == LITERAL_INFINITY ) {
+            if( isLITERAL_INFINITY(e) ) {	//*TY2020/08/26
                 wrap( "?" );
             } else {
                 wrap( "%d", e->u.integer );
             }
             break;
         case real_:
-            if( e == LITERAL_PI ) {
+            if( isLITERAL_PI(e) ) {	//*TY2020/08/26
                 wrap( "PI" );
-            } else if( e == LITERAL_E ) {
-                wrap( "E" );
+            } else if( isLITERAL_E(e) ) {	//*TY2020/08/26
+                wrap( "CONST_E" );	//*TY2020/08/26
             } else {
                 wrap( real2exp( e->u.real ) );
             }
@@ -278,17 +278,17 @@ void EXPRstring( char * buffer, Expression e ) {
 
     switch( TYPEis( e->type ) ) {
         case integer_:
-            if( e == LITERAL_INFINITY ) {
+            if( isLITERAL_INFINITY(e) ) {	//*TY2020/08/26
                 strcpy( buffer, "?" );
             } else {
                 sprintf( buffer, "%d", e->u.integer );
             }
             break;
         case real_:
-            if( e == LITERAL_PI ) {
+            if( isLITERAL_PI(e) ) {	//*TY2020/08/26
                 strcpy( buffer, "PI" );
-            } else if( e == LITERAL_E ) {
-                strcpy( buffer, "E" );
+            } else if( isLITERAL_E(e) ) {	//*TY2020/08/26
+                strcpy( buffer, "CONST_E" );	//*TY2020/08/26
             } else {
                 sprintf( buffer, "%s", real2exp( e->u.real ) );
             }
@@ -410,7 +410,7 @@ int EXPRlength( Expression e ) {
     char buffer[10000];
     *buffer = '\0';
     EXPRstring( buffer, e );
-    return( strlen( buffer ) );
+    return( (int)strlen( buffer ) );
 }
 
 char * EXPRto_string( Expression e ) {

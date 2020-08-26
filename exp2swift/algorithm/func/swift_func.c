@@ -23,16 +23,16 @@
 #include "swift_symbol.h"
 
 
-const char* FUNC_swiftName( Function func ) {
-	return func->symbol.name;
-}
-
 char 				FUNC_swiftNameInitial( Function func ) {
-	return toupper( FUNC_swiftName(func)[0] );
+	return toupper( func->symbol.name[0] );
 }
 
-const char* FUNCcall_swiftName( Expression fcall ) {
-	return fcall->symbol.name;
+const char* FUNC_swiftName( Function func, char buf[BUFSIZ] ) {
+	return canonical_swiftName(func->symbol.name, buf);
+}
+
+const char* FUNCcall_swiftName( Expression fcall, char buf[BUFSIZ] ) {
+	return canonical_swiftName(fcall->symbol.name, buf);
 }
 
 //MARK: - main entry point
@@ -50,21 +50,25 @@ void FUNC_swift( bool nested, Function func, int level ) {
 	char* access = (nested ? "//NESTED FUNCTION" : "public static ");
 	raw("%s\n", access);
 	indent_swift(level);
-	raw("func %s", FUNC_swiftName(func));
+	{
+		char buf[BUFSIZ];
+		raw("func %s", FUNC_swiftName(func,buf));
+	}
 
 	Linked_List generics = LISTcreate();
 	Linked_List aggregates = LISTcreate();
 	ALGget_generics(func, generics, aggregates);
 	if(!LISTempty(generics) || !LISTempty(aggregates)) {
 		//generic function
+		char buf[BUFSIZ];
 		char* sep = "";
 		raw("<");
 		LISTdo(generics, gtag, Type) {
-			wrap("%s%s: SDAIGenericType",sep,TYPE_swiftName(gtag));
+			wrap("%s%s: SDAIGenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION,buf));
 			sep=", ";
 		}LISTod;
 		LISTdo(aggregates, atag, Type) {
-			wrap("%s%s: SDAIAggregationType",sep,TYPE_swiftName(atag));
+			wrap("%s%s: SDAIAggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION,buf));
 			sep=", ";
 		}LISTod;
 		raw(">");
@@ -72,22 +76,23 @@ void FUNC_swift( bool nested, Function func, int level ) {
 	
 	// parameters
 	raw("(");
-	ALGargs_swift( YES_FORCE_OPTIONAL, func->u.func->parameters, YES_DROP_SINGLE_LABEL, level );
+	ALGargs_swift( func->superscope, YES_FORCE_OPTIONAL, func->u.func->parameters, YES_DROP_SINGLE_LABEL, level );
 	raw(") -> ");
 	
 	// return type
 //	positively_wrap();
-	optionalType_swift(func->u.func->return_type, true, level);
+	optionalType_swift(func->superscope, func->u.func->return_type, YES_OPTIONAL_TYPE, level, NOT_IN_COMMENT);
 	
 	if(!LISTempty(aggregates)) {
 		// constraint for aggregate element type
 		raw(" ");
+		char buf[BUFSIZ];
 		char* sep = "where ";
 		LISTdo(aggregates, atag, Type) {
 			Type base = atag->u.type->head;	//hack!
 			positively_wrap();
-			wrap("%s%s.Element == ",sep,TYPE_swiftName(atag));
-			TYPE_head_swift(base,level);
+			wrap("%s%s.Element == ",sep,TYPE_swiftName(atag,NULL,buf));
+			TYPE_head_swift(func->superscope, base, level, false);
 			sep = ", ";
 		}LISTod;
 	}
@@ -102,7 +107,8 @@ void FUNC_swift( bool nested, Function func, int level ) {
 	
 	indent_swift(level);
 	if( nested ) {
-		raw("} //END FUNCTION %s\n\n", FUNC_swiftName(func));
+		char buf[BUFSIZ];
+		raw("} //END FUNCTION %s\n\n", FUNC_swiftName(func,buf));
 	}
 	else {
 		raw("}\n\n");

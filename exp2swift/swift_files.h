@@ -18,11 +18,11 @@ void indent_swift(int level);
 void indent_with_char(int level, char c);
 
 void openSwiftFileForSchema(Schema s);
-void openSwiftFileForType(Type type);
-void openSwiftFileForEntity(Entity entity);
-void openSwiftFileForRule(Rule rule);
-void openSwiftFileForFunction(Function func);
-void openSwiftFileForProcedure(Procedure proc);
+void openSwiftFileForType(Schema s, Type type);
+void openSwiftFileForEntity(Schema s, Entity entity);
+void openSwiftFileForRule(Schema s, Rule rule);
+void openSwiftFileForFunction(Schema s, Function func);
+void openSwiftFileForProcedure(Schema s, Procedure proc);
 void closeSwiftFile(void);
 
 #endif /* swift_files_h */

@@ -85,9 +85,14 @@ char * exppp_bufp = 0;          /* pointer to write position in expppbuf,
  *
  * prints a newline regardless
  */
-void tail_comment( const char * name ) {
+//*TY2020/08/22
+void tail_comment( Symbol symbol ) {
     if( exppp_tail_comment ) {
-        raw( " -- %s", name );
+			const char* filename = strrchr(symbol.filename, '/');
+			if( filename == NULL ) filename = symbol.filename;
+			else ++filename;
+			
+        raw( " -- %s (line:%d file:%s)", symbol.name, symbol.line, filename );
     }
     raw( "\n" );
 }
@@ -219,7 +224,7 @@ static void vraw( const char * fmt, va_list args ) {
         if( 0 == ( p = strrchr( buf, '\n' ) ) ) {
             curpos += len;
         } else {
-            curpos = len + buf - p;
+            curpos = (int)(len + buf - p);
         }
     }
 }
@@ -243,6 +248,12 @@ void wrap_if(bool can_wrap, const char * fmt, ... ) {
 	}
 	
 	va_end( args );
+}
+void wrap_provisionally(int next_len) {
+	if( ( ( ( curpos + next_len ) > exppp_linelength ) && ( ( indent2 + next_len ) < exppp_linelength ) )
+			|| ( ( exppp_linelength == indent2 ) && ( curpos > indent2 ) ) ) {
+		force_wrap();
+	}
 }
 void force_wrap(void) {
 	if( !wrapped ) {
@@ -421,7 +432,7 @@ void maybeBreak( int len, bool first ) {
  */
 void breakLongStr( const char * in ) {
     const char * iptr = in, * end;
-    unsigned int inlen = strlen( in );
+    unsigned int inlen = (uint)strlen( in );
     bool first = true;
     /* used to ensure that we don't overrun the input buffer */
     end = in + inlen;

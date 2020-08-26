@@ -36,11 +36,26 @@ const char* SCHEMA_swiftName( Schema schema) {
 	return schema->symbol.name;
 }
 
+const char* schema_nickname(Schema schema, char buf[BUFSIZ] ) {
+	char* underline = strchr(schema->symbol.name, '_');
+	
+	if( underline != NULL) {
+		int nicklen = (int)(underline - schema->symbol.name);
+		snprintf(buf, BUFSIZ, "%.*s", nicklen, schema->symbol.name);
+	}
+	else {
+		snprintf(buf, BUFSIZ, "%s", schema->symbol.name);
+	}
+	return buf;
+}
 
 void SCHEMA_swift( Schema schema ) {
 	
 	openSwiftFileForSchema(schema);
-	
+		
+	raw("\n"
+			"import SwiftSDAIcore\n");
+
 	int level = 0;
 	
 	first_line = false;
@@ -54,36 +69,19 @@ void SCHEMA_swift( Schema schema ) {
 	
 	REFout( schema->u.schema->usedict, schema->u.schema->use_schemas, "USE", level + exppp_nesting_indent );
 	REFout( schema->u.schema->refdict, schema->u.schema->ref_schemas, "REFERENCE", level + exppp_nesting_indent );
-	
-	/* output order for DIS & IS schemas:
-	 * CONSTANT
-	 * TYPE
-	 * ENTITY
-	 * RULE
-	 * FUNCTION
-	 * PROCEDURE
-	 *
-	 * Within each of those groups, declarations must be sorted alphabetically.
-	 */
-	
 	SCOPEconsts_out( schema, level + exppp_nesting_indent );
-	//    SCOPEtypes_out( s, level + exppp_nesting_indent );
-	//    SCOPEentities_out( s, level + exppp_nesting_indent );
-	//    SCOPEalgs_out( s, level + exppp_nesting_indent );
 	
 	raw(	"\n"
 			"END_SCHEMA;"	);
-	tail_comment( schema->symbol.name );
+	tail_comment( schema->symbol );
 	endExpress_swift();
 	
 	// swift code generation
 	raw("/* SCHEMA */\n");
-	raw("public enum %s: NameSpace {\n", SCHEMA_swiftName(schema));
+	raw("public enum %s {\n", SCHEMA_swiftName(schema));
 	
 	{	int level2 = level+nestingIndent_swift;
-		indent_swift(level2);
-		raw("public typealias RawValue = NameSpace");
-		SCOPEconstList_swift( false, schema, level + nestingIndent_swift );
+		SCOPEconstList_swift( false, schema, level2 );
 	}
 
 	raw("}\n");

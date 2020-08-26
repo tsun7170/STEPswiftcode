@@ -332,7 +332,11 @@ Symbol * TYPE_get_symbol( Generic t ) {
 
 /** Initialize the Type module */
 void TYPEinitialize() {
-    MEMinitialize( &TYPEHEAD_fl, sizeof( struct TypeHead_ ), 500, 100 );
+	//*TY2020/08/26
+	current_filename = __FILE__;
+	yylineno = __LINE__;
+
+		MEMinitialize( &TYPEHEAD_fl, sizeof( struct TypeHead_ ), 500, 100 );
     MEMinitialize( &TYPEBODY_fl, sizeof( struct TypeBody_ ), 200, 100 );
     OBJcreate( OBJ_TYPE, TYPE_get_symbol, "type", OBJ_TYPE_BITS );
     /*  OBJcreate(OBJ_TYPE,TYPE_get_symbol,"(headless) type", OBJ_UNFINDABLE_BITS);*/

@@ -82,7 +82,11 @@ Symbol * WHERE_get_symbol( Generic w ) {
 
 /** Initialize the Algorithm module. */
 void ALGinitialize( void ) {
-    MEMinitialize( &FUNC_fl, sizeof( struct Function_ ),  100, 50 );
+	//*TY2020/08/26
+	current_filename = __FILE__;
+	yylineno = __LINE__;
+
+	MEMinitialize( &FUNC_fl, sizeof( struct Function_ ),  100, 50 );
     MEMinitialize( &RULE_fl, sizeof( struct Rule_ ),      100, 50 );
     MEMinitialize( &PROC_fl, sizeof( struct Procedure_ ), 100, 50 );
     MEMinitialize( &WHERE_fl, sizeof( struct Where_ ),    100, 50 );

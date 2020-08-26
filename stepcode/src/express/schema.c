@@ -66,7 +66,11 @@ Symbol * RENAME_get_symbol( Generic r ) {
 
 /** Initialize the Schema module. */
 void SCHEMAinitialize( void ) {
-    OBJcreate( OBJ_RENAME, RENAME_get_symbol, "rename clause", OBJ_UNUSED_BITS );
+	//*TY2020/08/26
+	current_filename = __FILE__;
+	yylineno = __LINE__;
+
+	OBJcreate( OBJ_RENAME, RENAME_get_symbol, "rename clause", OBJ_UNUSED_BITS );
     MEMinitialize( &REN_fl, sizeof( struct Rename ), 30, 30 );
     MEMinitialize( &SCHEMA_fl, sizeof( struct Schema_ ), 40, 20 );
 }

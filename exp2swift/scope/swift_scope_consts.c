@@ -23,21 +23,25 @@
 #include "swift_expression.h"
 
 
-static void SCOPEconst_swift( char* access, Variable v, int level ) {
+static void SCOPEconst_swift(Scope current, char* access, Variable v, int level ) {
 	
 	/* print attribute name */
 	indent_swift(level);
-	raw( "%slet %s: ", access, variable_swiftName(v) );
+	{
+		char buf[BUFSIZ];
+		raw( "%slet %s: ", access, variable_swiftName(v,buf) );
+	}
 	
 	/* print attribute type */
-	variableType_swift(v, false, NOLEVEL);
+	variableType_swift(current, v, false, NOLEVEL, NOT_IN_COMMENT);
 	
 	
 	if( v->initializer ) {
 		raw( " = " );
 		positively_wrap();
-		
+		int oldwrap = captureWrapIndent();
 		EXPR_swift( NULL, v->initializer, NO_PAREN );
+		restoreWrapIndent(oldwrap);
 	}
 	
 	raw( "\n\n" );
@@ -61,7 +65,9 @@ void SCOPEconstList_swift( bool nested, Scope s, int level ) {
 			raw( "//CONSTANT\n" );
 		}
 		
-		SCOPEconst_swift( access, v, level );
+		assert(v->name->type->superscope != NULL);
+		assert(v->type->superscope != NULL);
+		SCOPEconst_swift( s, access, v, level );
 	}
 	
 	if(iconst > 1) {

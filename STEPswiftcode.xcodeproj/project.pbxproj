@@ -26,7 +26,6 @@
 		F44D031E24BE429E00E77B2A /* alg.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D02F724BE429E00E77B2A /* alg.c */; };
 		F44D031F24BE429E00E77B2A /* object.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D02F824BE429E00E77B2A /* object.c */; };
 		F44D032024BE429E00E77B2A /* memory.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D02F924BE429E00E77B2A /* memory.c */; };
-		F44D032124BE429E00E77B2A /* ordered_attrs.cc in Sources */ = {isa = PBXBuildFile; fileRef = F44D02FA24BE429E00E77B2A /* ordered_attrs.cc */; };
 		F44D032224BE429E00E77B2A /* linklist.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D02FC24BE429E00E77B2A /* linklist.c */; };
 		F44D032624BE429E00E77B2A /* entity.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D030224BE429E00E77B2A /* entity.c */; };
 		F44D032824BE429E00E77B2A /* stmt.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D030424BE429E00E77B2A /* stmt.c */; };
@@ -70,7 +69,6 @@
 		F48BF93A24C26BB1005B5B0A /* swift_express.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF93624C26BB1005B5B0A /* swift_express.c */; };
 		F48BF93B24C26BB1005B5B0A /* swift_files.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF93724C26BB1005B5B0A /* swift_files.c */; };
 		F48BF95524C26BFF005B5B0A /* swift_expression.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF93D24C26BFE005B5B0A /* swift_expression.c */; };
-		F48BF95624C26BFF005B5B0A /* swift_scope.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94024C26BFE005B5B0A /* swift_scope.c */; };
 		F48BF95724C26BFF005B5B0A /* swift_scope_algs.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94424C26BFE005B5B0A /* swift_scope_algs.c */; };
 		F48BF95824C26BFF005B5B0A /* swift_scope_consts.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94524C26BFE005B5B0A /* swift_scope_consts.c */; };
 		F48BF95924C26BFF005B5B0A /* swift_scope_entities.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94624C26BFE005B5B0A /* swift_scope_entities.c */; };
@@ -303,8 +301,7 @@
 		F44D039C24BE42FD00E77B2A /* decstart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = decstart.h; sourceTree = "<group>"; };
 		F44D039D24BE42FD00E77B2A /* de_end.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = de_end.h; sourceTree = "<group>"; };
 		F44D039F24BE42FE00E77B2A /* exppp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = exppp.h; sourceTree = "<group>"; };
-		F456D5EA24C283BC008EC5B4 /* Products */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Products; path = "../../../../../../Library/Developer/Xcode/DerivedData/STEPswiftcode-eekfndbmrwrfyadpkfsqjovxhltq/Build/Products"; sourceTree = "<group>"; };
-		F456DE5224C4DE60008EC5B4 /* MyPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = MyPlayground.playground; path = "../../../../Library/Autosave Information/MyPlayground.playground"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		F455D4F324EC73F7004C5320 /* schema */ = {isa = PBXFileReference; lastKnownFileType = folder; path = schema; sourceTree = "<group>"; };
 		F45A7F8C24D00EEF00669F95 /* swift_statement.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_statement.h; sourceTree = "<group>"; };
 		F45A7F8D24D00EEF00669F95 /* swift_statement.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_statement.c; sourceTree = "<group>"; };
 		F48BF91E24C07A2B005B5B0A /* ordered_attrs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ordered_attrs.h; sourceTree = "<group>"; };
@@ -323,7 +320,6 @@
 		F48BF93724C26BB1005B5B0A /* swift_files.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_files.c; sourceTree = "<group>"; };
 		F48BF93D24C26BFE005B5B0A /* swift_expression.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_expression.c; sourceTree = "<group>"; };
 		F48BF93E24C26BFE005B5B0A /* swift_expression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_expression.h; sourceTree = "<group>"; };
-		F48BF94024C26BFE005B5B0A /* swift_scope.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_scope.c; sourceTree = "<group>"; };
 		F48BF94124C26BFE005B5B0A /* swift_scope_locals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_scope_locals.h; sourceTree = "<group>"; };
 		F48BF94224C26BFE005B5B0A /* swift_scope_entities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_scope_entities.h; sourceTree = "<group>"; };
 		F48BF94324C26BFE005B5B0A /* swift_scope_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_scope_types.h; sourceTree = "<group>"; };
@@ -331,7 +327,6 @@
 		F48BF94524C26BFE005B5B0A /* swift_scope_consts.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_scope_consts.c; sourceTree = "<group>"; };
 		F48BF94624C26BFE005B5B0A /* swift_scope_entities.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_scope_entities.c; sourceTree = "<group>"; };
 		F48BF94724C26BFE005B5B0A /* swift_scope_locals.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_scope_locals.c; sourceTree = "<group>"; };
-		F48BF94824C26BFE005B5B0A /* swift_scope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_scope.h; sourceTree = "<group>"; };
 		F48BF94924C26BFE005B5B0A /* swift_scope_consts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_scope_consts.h; sourceTree = "<group>"; };
 		F48BF94A24C26BFE005B5B0A /* swift_scope_algs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_scope_algs.h; sourceTree = "<group>"; };
 		F48BF94B24C26BFE005B5B0A /* swift_scope_types.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_scope_types.c; sourceTree = "<group>"; };
@@ -341,7 +336,6 @@
 		F48BF95124C26BFE005B5B0A /* swift_symbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_symbol.h; sourceTree = "<group>"; };
 		F48BF95324C26BFE005B5B0A /* swift_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_type.h; sourceTree = "<group>"; };
 		F48BF95424C26BFE005B5B0A /* swift_type.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_type.c; sourceTree = "<group>"; };
-		F48BF96024C2711E005B5B0A /* SwiftSDAIcore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftSDAIcore; path = ../SwiftSDAIcore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -406,12 +400,12 @@
 		F44D023B24BE3FDA00E77B2A = {
 			isa = PBXGroup;
 			children = (
-				F456DE5224C4DE60008EC5B4 /* MyPlayground.playground */,
-				F48BF96024C2711E005B5B0A /* SwiftSDAIcore */,
 				F44D025324BE402700E77B2A /* exp2swift */,
+				F455D4F324EC73F7004C5320 /* schema */,
 				F44D025924BE40B600E77B2A /* stepcode */,
 				F48BF92824C0E0C5005B5B0A /* yacc&lex */,
 				F44D024524BE3FDA00E77B2A /* Products */,
+				F45A7F8F24E3B24700669F95 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -427,8 +421,6 @@
 		F44D025324BE402700E77B2A /* exp2swift */ = {
 			isa = PBXGroup;
 			children = (
-				F48BF95F24C27038005B5B0A /* generated */,
-				F43B6BFE24D00595007493AB /* algorithm */,
 				F48BF92224C07A78005B5B0A /* sc_cf.h */,
 				F48BF92124C07A78005B5B0A /* sc_version_string.h */,
 				F48BF93224C26BB1005B5B0A /* exp2swift_main.c */,
@@ -438,6 +430,7 @@
 				F48BF93324C26BB1005B5B0A /* swift_files.h */,
 				F48BF93424C26BB1005B5B0A /* swift_schema.c */,
 				F48BF93124C26BB0005B5B0A /* swift_schema.h */,
+				F43B6BFE24D00595007493AB /* algorithm */,
 				F48BF94C24C26BFE005B5B0A /* entity */,
 				F48BF93C24C26BFE005B5B0A /* expression */,
 				F48BF93F24C26BFE005B5B0A /* scope */,
@@ -870,6 +863,13 @@
 			path = exppp;
 			sourceTree = "<group>";
 		};
+		F45A7F8F24E3B24700669F95 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		F48BF92824C0E0C5005B5B0A /* yacc&lex */ = {
 			isa = PBXGroup;
 			children = (
@@ -900,8 +900,6 @@
 				F48BF94124C26BFE005B5B0A /* swift_scope_locals.h */,
 				F48BF94B24C26BFE005B5B0A /* swift_scope_types.c */,
 				F48BF94324C26BFE005B5B0A /* swift_scope_types.h */,
-				F48BF94024C26BFE005B5B0A /* swift_scope.c */,
-				F48BF94824C26BFE005B5B0A /* swift_scope.h */,
 			);
 			path = scope;
 			sourceTree = "<group>";
@@ -935,14 +933,6 @@
 			path = type;
 			sourceTree = "<group>";
 		};
-		F48BF95F24C27038005B5B0A /* generated */ = {
-			isa = PBXGroup;
-			children = (
-				F456D5EA24C283BC008EC5B4 /* Products */,
-			);
-			path = generated;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -959,6 +949,8 @@
 			dependencies = (
 			);
 			name = exp2swift;
+			packageProductDependencies = (
+			);
 			productName = exp2swift;
 			productReference = F44D025224BE402700E77B2A /* exp2swift */;
 			productType = "com.apple.product-type.tool";
@@ -986,7 +978,7 @@
 		F44D023C24BE3FDA00E77B2A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1160;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = "Minokamo, Japan";
 				TargetAttributes = {
 					F44D025124BE402700E77B2A = {
@@ -1024,7 +1016,6 @@
 				F44D032224BE429E00E77B2A /* linklist.c in Sources */,
 				F43B6BFA24CEC053007493AB /* swift_func.c in Sources */,
 				F44D031E24BE429E00E77B2A /* alg.c in Sources */,
-				F48BF95624C26BFF005B5B0A /* swift_scope.c in Sources */,
 				F44D033124BE429E00E77B2A /* lexact.c in Sources */,
 				F44D037C24BE42B400E77B2A /* exppp.c in Sources */,
 				F43B6BFD24CEC064007493AB /* swift_proc.c in Sources */,
@@ -1080,7 +1071,6 @@
 				F44D037E24BE42B400E77B2A /* pretty_ref.c in Sources */,
 				F48BF95924C26BFF005B5B0A /* swift_scope_entities.c in Sources */,
 				F44D031D24BE429E00E77B2A /* caseitem.c in Sources */,
-				F44D032124BE429E00E77B2A /* ordered_attrs.cc in Sources */,
 				F48BF93A24C26BB1005B5B0A /* swift_express.c in Sources */,
 				F45A7F8E24D00EEF00669F95 /* swift_statement.c in Sources */,
 				F43B6BF724CEC040007493AB /* swift_rule.c in Sources */,
@@ -1132,6 +1122,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1190,6 +1181,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1254,6 +1246,7 @@
 		F48BF92C24C0E0C5005B5B0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = ZX793TWQF2;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1264,6 +1257,7 @@
 		F48BF92D24C0E0C5005B5B0A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = ZX793TWQF2;
 				ENABLE_HARDENED_RUNTIME = YES;

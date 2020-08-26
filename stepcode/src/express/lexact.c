@@ -325,7 +325,7 @@ int SCANprocess_identifier_or_keyword( const char * yytext ) {
     int len;
 
     /* make uppercase copy */
-    len = strlen( yytext );
+    len = (int)strlen( yytext );
     dest = test_string = ( char * )sc_malloc( len + 1 );
     for( src = yytext; *src; src++, dest++ ) {
         *dest = ( islower( *src ) ? toupper( *src ) : *src );
@@ -366,6 +366,7 @@ int SCANprocess_string( const char * yytext ) {
     yylval.string = SCANstrdup( yytext + 1 ); /* remove 1st single quote */
 
     /* change pairs of quotes to single quotes */
+	assert(yylval.string != NULL);
     for( s = d = yylval.string; *s; ) {
         if( *s != '\'' ) {
             *d++ = *s++;
@@ -456,7 +457,7 @@ bool SCANread( void ) {
 
         /* check whether we've seen eof on this file */
         if( !SCANbuffer.readEof ) {
-            numRead = fread( SCANbuffer.text, sizeof( char ),
+            numRead = (int)fread( SCANbuffer.text, sizeof( char ),
                              SCAN_BUFFER_SIZE, SCANbuffer.file );
             if( numRead < SCAN_BUFFER_SIZE ) {
                 SCANbuffer.readEof = true;

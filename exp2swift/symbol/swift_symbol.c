@@ -12,22 +12,44 @@
 #include "swift_files.h"
 #include "swift_type.h"
 
-const char * variable_swiftName(Variable v) {
-	return v->name->symbol.name;
+const char* canonical_swiftName(const char* name, char buf[BUFSIZ]) {
+	char* to = buf;
+	int remain = BUFSIZ-1;
+	for(const char* from = name; *from; ++from ) {
+		if( islower(*from) ) {
+			(*to) = toupper(*from);
+		}
+		else {
+			(*to) = (*from);
+		}
+		++to;
+		--remain;
+		if( remain == 0 ) break;
+	}
+	(*to) = 0;
+	return buf;
 }
 
-void variableType_swift(Variable v, bool force_optional, int level) {
+
+const char * variable_swiftName(Variable v, char buf[BUFSIZ]) {
+	return canonical_swiftName(v->name->symbol.name, buf);
+}
+
+void variableType_swift(Scope current, Variable v, bool force_optional, int level, bool in_comment) {
 	bool optional = force_optional || VARis_optional(v);
-	optionalType_swift(v->type, optional, level);
+	optionalType_swift(current, v->type, optional, level, in_comment);
 }
 
-void optionalType_swift(Type type, bool optional, int level) {
-	bool simple_type = 	(type->symbol.name != NULL) || !TYPEhas_bounds(type);
+void optionalType_swift(Scope current, Type type, bool optional, int level, bool in_comment) {
+	bool simple_type = 	(type->symbol.name != NULL) || 
+						!(TYPEhas_bounds(type) || TYPEget_unique(type));
+	
+	optional &= !TYPEis_optional(type);
 	
 	if( optional && !simple_type ) raw("(");
-	TYPE_head_swift(type, level);
+	TYPE_head_swift(current, type, level, in_comment);
 	if( optional ) {
 		if( !simple_type ) raw(")");
-		raw("!");
+		raw("! ");
 	} 
 }

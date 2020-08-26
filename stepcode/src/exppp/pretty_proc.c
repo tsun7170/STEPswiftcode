@@ -49,6 +49,6 @@ void PROC_out( Procedure p, int level ) {
     STMTlist_out( p->u.proc->body, level + exppp_nesting_indent );
 
     raw( "\n%*sEND_PROCEDURE;", level, "" );
-    tail_comment( p->symbol.name );
+    tail_comment( p->symbol );
 }
 

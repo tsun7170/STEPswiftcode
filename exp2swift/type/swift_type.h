@@ -11,15 +11,23 @@
 
 #include "../express/type.h"
 
-const char* TYPE_swiftName( Type t );
+#define YES_IN_COMMENT	true
+#define NOT_IN_COMMENT	false
+
+#define NO_QUALIFICATION	NULL
+
+int accumulate_qualification(Scope target, Scope current, char buf[BUFSIZ]);
+
+const char* TYPE_swiftName( Type t, Scope current, char buf[BUFSIZ]  );
 char TYPE_swiftNameInitial( Type t );
-const char* enumCase_swiftName( Expression expr );
-const char* selectCase_swiftName( Type selection );
+const char* enumCase_swiftName( Expression expr, char buf[BUFSIZ] );
+const char* selectCase_swiftName( Type selection, char buf[BUFSIZ] );
 
-void TYPE_swift( Type t, int level );
-void TYPE_head_swift( Type t, int level );
-void TYPE_body_swift( Type t, int level );
+void TYPEdefinition_swift( Type t, int level );
 
-const char* TYPEhead_string_swift( Type t, char buf[BUFSIZ]);
+void TYPE_head_swift( Scope current, Type t, int level, bool in_comment );
+void TYPE_body_swift( Scope current, Type t, int level, bool in_comment );
+
+const char* TYPEhead_string_swift( Scope current, Type t, bool in_comment, char buf[BUFSIZ]);
 
 #endif /* swift_type_h */

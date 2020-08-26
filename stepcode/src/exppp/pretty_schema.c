@@ -98,7 +98,7 @@ char * SCHEMAout( Schema s ) {
         if( !described && !exppp_terse ) {
             fprintf( stdout, "%s: writing schema file %s\n", EXPRESSprogram_name, exppp_filename_buffer );
         }
-        if( !( exppp_fp = f = fopen( exppp_filename_buffer, "w" ) ) ) {
+        if( !( exppp_fp = fopen( exppp_filename_buffer, "w" ) ) ) {
             ERRORreport( ERROR_file_unwriteable, exppp_filename_buffer, strerror( errno ) );
             return 0;
         }
@@ -145,7 +145,7 @@ char * SCHEMAout( Schema s ) {
     SCOPEalgs_out( s, level + exppp_nesting_indent );
 
     raw( "\nEND_SCHEMA;");
-    tail_comment( s->symbol.name );
+    tail_comment( s->symbol );
 
     fclose( exppp_fp );
 

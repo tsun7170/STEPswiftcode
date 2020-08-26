@@ -12,8 +12,9 @@
 #include "../express/alg.h"
 
 char 				PROC_swiftNameInitial( Procedure proc );
-const char* PROC_swiftName( Procedure proc );
-const char* PROCcall_swiftName( Statement pcall );
+
+const char* PROC_swiftName( Procedure proc, char buf[BUFSIZ] );
+const char* PROCcall_swiftName( Statement pcall, char buf[BUFSIZ] );
 
 
 void PROC_swift( bool nested, Procedure proc, int level );

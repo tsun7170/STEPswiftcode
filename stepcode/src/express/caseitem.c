@@ -37,7 +37,11 @@ struct freelist_head CASE_IT_fl;
 /** Initialize the Case Item module. */
 void
 CASE_ITinitialize( void ) {
-    MEMinitialize( &CASE_IT_fl, sizeof( struct Case_Item_ ), 500, 100 );
+	//*TY2020/08/26
+	current_filename = __FILE__;
+	yylineno = __LINE__;
+
+	MEMinitialize( &CASE_IT_fl, sizeof( struct Case_Item_ ), 500, 100 );
 }
 
 /**

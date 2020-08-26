@@ -112,37 +112,37 @@ static int	nesting_level = 0;
 /* can't imagine this will ever be more than 2 or 3 - DEL */
 #define MAX_NESTED_COMMENTS 20
 static struct Symbol_ open_comment[MAX_NESTED_COMMENTS];
-static_inline
-int
-SCANnextchar(char* buffer)
-{
-extern bool SCANread(void);
-#ifdef keep_nul
-static int escaped = 0;
-#endif
-if (SCANtext_ready || SCANread()) {
-#ifdef keep_nul
-if (!*SCANcurrent) {
-buffer[0] = SCAN_ESCAPE;
-*SCANcurrent = '0';
-return 1;
-} else if ((*SCANcurrent == SCAN_ESCAPE) && !escaped) {
-escaped = 1;
-buffer[0] = SCAN_ESCAPE;
-return 1;
-}
-SCANbuffer.numRead--;
-#endif
-buffer[0] = *(SCANcurrent++);
-if (!isascii(buffer[0])) {
-ERRORreport_with_line(ERROR_nonascii_char,yylineno,
-0xff & buffer[0]);
-buffer[0] = ' ';	/* substitute space */
-}
-return 1;
-} else
-return 0;
-}
+//static_inline
+//int
+//SCANnextchar(char* buffer)
+//{
+//extern bool SCANread(void);
+//#ifdef keep_nul
+//static int escaped = 0;
+//#endif
+//if (SCANtext_ready || SCANread()) {
+//#ifdef keep_nul
+//if (!*SCANcurrent) {
+//buffer[0] = SCAN_ESCAPE;
+//*SCANcurrent = '0';
+//return 1;
+//} else if ((*SCANcurrent == SCAN_ESCAPE) && !escaped) {
+//escaped = 1;
+//buffer[0] = SCAN_ESCAPE;
+//return 1;
+//}
+//SCANbuffer.numRead--;
+//#endif
+//buffer[0] = *(SCANcurrent++);
+//if (!isascii(buffer[0])) {
+//ERRORreport_with_line(ERROR_nonascii_char,yylineno,
+//0xff & buffer[0]);
+//buffer[0] = ' ';	/* substitute space */
+//}
+//return 1;
+//} else
+//return 0;
+//}
 #define NEWLINE (yylineno++)
 /* when lex looks ahead over a newline, error messages get thrown off */
 /* Fortunately, we know when that occurs, so adjust for it by this hack */
@@ -349,7 +349,7 @@ buf_strnappend(struct Buf *buf, const char *str, int n)
 struct Buf*
 buf_strappend(struct Buf *buf, const char *str)
 {
-    return buf_strnappend(buf, str, strlen(str));
+    return buf_strnappend(buf, str, (int)strlen(str));
 }
 
 /* appends "#define str def\n" */
@@ -441,7 +441,7 @@ buf_append(struct Buf *buf, const void *ptr, int n_elem)
     /* May need to alloc more. */
     if (n_elem + buf->nelts > buf->nmax) {
 	/* exact amount needed... */
-	n_alloc = (n_elem + buf->nelts) * buf->elt_size;
+	n_alloc = (int)((n_elem + buf->nelts) * buf->elt_size);
 
 	/* ...plus some extra */
 	if (((n_alloc * buf->elt_size) % 512) != 0 && buf->elt_size < 512) {
@@ -581,7 +581,7 @@ bufferFill(perplex_t scanner, size_t n)
 	memmove(bufFirst, scannerFirst, bytesInUse);
 
 	/* update number of elements */
-        buf->nelts = bytesInUse / buf->elt_size;
+        buf->nelts = (int)(bytesInUse / buf->elt_size);
 
 	/* update markers */
 	shiftSize = (size_t)scannerFirst - (size_t)bufFirst;
@@ -596,7 +596,7 @@ bufferFill(perplex_t scanner, size_t n)
 static char*
 getTokenText(perplex_t scanner)
 {
-    int tokenChars = scanner->cursor - scanner->tokenStart;
+    int tokenChars = (int)(scanner->cursor - scanner->tokenStart);
 
     if (scanner->tokenText != NULL) {
 	free(scanner->tokenText);
@@ -1026,6 +1026,7 @@ yy34:
 		}
 yy35:
 		{
+//			assert(yych == ':'); //*TY2020/08/20
 return TOK_COLON; }
 yy36:
 		yyaccept = 3;

@@ -2,6 +2,7 @@
 #include "path2str.h"
 #include "sc_memmgr.h"
 #include <string.h>
+#include <assert.h>
 
 /* for windows, rewrite backslashes in paths
  * that will be written to generated code
@@ -17,6 +18,7 @@ const char * path2str_fn( const char * fileMacro ) {
         rlen = strlen( fileMacro );
         result = ( char * )sc_malloc( rlen * sizeof( char ) + 1 );
     }
+		assert(result != NULL);
     strcpy( result, fileMacro );
     p = result;
     while( *p ) {

@@ -28,7 +28,7 @@ void SCOPEtypeList_swift( Scope s, int level ) {
 	
 	DICTdo_type_init( s->symbol_table, &dictEntry, OBJ_TYPE );
 	while( 0 != ( type = ( Type )DICTdo( &dictEntry ) ) ) {
-		TYPE_swift( type, level );
+		TYPEdefinition_swift( type, level );
 	}
 }
 
@@ -36,12 +36,15 @@ void SCOPEtypeList_swift( Scope s, int level ) {
 static void schemaLevelType_swift( Schema schema, Type type) {
 	int level = 0;
 
-	openSwiftFileForType(type);
+	openSwiftFileForType(schema,type);
+
+	raw("\n"
+			"import SwiftSDAIcore\n");
 	
 	raw("\n"
 			"extension %s {\n", SCHEMA_swiftName(schema));
 	
-	TYPE_swift( type, level + nestingIndent_swift );
+	TYPEdefinition_swift( type, level + nestingIndent_swift );
 	
 	raw("}\n");
 }
@@ -49,28 +52,9 @@ static void schemaLevelType_swift( Schema schema, Type type) {
 void SCHEMAtypeList_swift( Schema schema ) {
 	DictionaryEntry dictEntry;
 	
-	if( exppp_alphabetize == false ) {
-		Type type;
-		DICTdo_type_init( schema->symbol_table, &dictEntry, OBJ_TYPE );
-		while( 0 != ( type = ( Type )DICTdo( &dictEntry ) ) ) {
-			schemaLevelType_swift(schema,type);
-		}
-	} 
-	else {
-		Linked_List sorted = LISTcreate();
-		
-		{
-			Type type;
-			DICTdo_type_init( schema->symbol_table, &dictEntry, OBJ_TYPE );
-			while( 0 != ( type = ( Type )DICTdo( &dictEntry ) ) ) {
-				SCOPEadd_inorder( sorted, type );
-			}
-		}
-		
-		LISTdo( sorted, type, Type ) {
-			schemaLevelType_swift(schema,type);
-		} LISTod
-		
-		LISTfree( sorted );
+	Type type;
+	DICTdo_type_init( schema->symbol_table, &dictEntry, OBJ_TYPE );
+	while( 0 != ( type = ( Type )DICTdo( &dictEntry ) ) ) {
+		schemaLevelType_swift(schema,type);
 	}
 }

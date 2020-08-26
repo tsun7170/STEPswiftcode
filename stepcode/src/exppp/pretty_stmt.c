@@ -71,12 +71,17 @@ void STMT_out( Statement s, int level ) {
             raw( ";\n" );
             break;
         case STMT_ALIAS:
-            raw( "%*sALIAS %s for %s;\n", level, "", s->symbol.name,
-                 /* should be generalized reference */
-                 s->u.alias->variable->name->symbol.name );
-            STMTlist_out( s->u.alias->statements, level + exppp_nesting_indent );
-            raw( "%*sEND_ALIAS;", level, "" );
-            tail_comment( s->symbol.name );
+			{
+				//*TY2002/08/27 fixed broken alias handling
+				Variable alias = s->u.alias->variable;
+				raw( "%*sALIAS %s for ", level, "", alias->name->symbol.name );
+				EXPR_out(alias->initializer, 0);
+				raw(";\n");
+
+				STMTlist_out( s->u.alias->statements, level + exppp_nesting_indent );
+				raw( "%*sEND_ALIAS;\n", level, "" );
+//				tail_comment( s->symbol );
+			}
             break;
         case STMT_SKIP:
             raw( "%*sSKIP;\n", level, "" );

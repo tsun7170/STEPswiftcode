@@ -23,34 +23,67 @@
 #include "swift_entity.h"
 #include "swift_expression.h"
 #include "swift_files.h"
+#include "swift_symbol.h"
 
-const char* TYPE_swiftName( Type t ) {
-	return t->symbol.name;
+// returns length of qualification string
+int accumulate_qualification(Scope target, Scope current, char buf[BUFSIZ]) {
+	int qual_len = 0;
+	if( current == NO_QUALIFICATION ) return qual_len;
+	if( target == current ) return qual_len;
+	if( target->superscope == NULL ) return qual_len;	// target is not enclosed by current
+	
+	// check if target is enclosed by current
+	if( target->superscope == current ) {
+		int prnlen;
+		snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s.%n",target->symbol.name, &prnlen);
+		qual_len += prnlen;
+	}
+	else {
+		qual_len = accumulate_qualification(target->superscope, current, buf);
+		if( qual_len > 0 ) {
+			int prnlen;
+			snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s.%n",target->symbol.name, &prnlen);
+			qual_len += prnlen;
+		}
+	}
+	return qual_len;
+}
+
+const char* TYPE_swiftName( Type t, Scope current, char buf[BUFSIZ] ) {
+	int qual_len = accumulate_qualification(t->superscope, current, buf);
+	char buf2[BUFSIZ];
+	snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s", canonical_swiftName(t->symbol.name, buf2));
+	return buf;
 }
 
 char TYPE_swiftNameInitial( Type t ) {
-	return toupper( TYPE_swiftName(t)[0] );
+	return toupper( t->symbol.name[0] );
 }
 
-const char* enumCase_swiftName( Expression expr ) {
-	return expr->symbol.name;
+const char* enumCase_swiftName( Expression expr, char buf[BUFSIZ] ) {
+	return canonical_swiftName(expr->symbol.name, buf);
 }
 
-const char* selectCase_swiftName( Type selection ) {
-	return selection->symbol.name;
+const char* selectCase_swiftName( Type selection, char buf[BUFSIZ] ) {
+	return canonical_swiftName(selection->symbol.name, buf);
 }
 
+//MARK: - type definitions
 static void simpleTypeAlias_swift( Type type, Type original, int level) {
+	char buf[BUFSIZ];
 	indent_swift(level);
-	raw( "public typealias %s = ", TYPE_swiftName(type) );
-	wrap( " %s", TYPE_swiftName(original) );
+	raw( "public typealias %s = ", TYPE_swiftName(type,type->superscope,buf) );
+	wrap( " %s", TYPE_swiftName(original, type->superscope, buf) );
 	raw("\n");
 }
 
-static void typeArias_swift( Type type, int level ) {
+static void typeArias_swift( Type type, int level, bool in_comment ) {
 	indent_swift(level);
-	raw( "public typealias %s = ", TYPE_swiftName(type) );
-	TYPE_body_swift(type, level + nestingIndent_swift);
+	{
+		char buf[BUFSIZ];
+		raw( "public typealias %s = ", TYPE_swiftName(type, type->superscope, buf) );
+	}
+	TYPE_body_swift(type->superscope, type, level + nestingIndent_swift, in_comment);
 	raw("\n");
 }
 
@@ -58,25 +91,35 @@ static void enumTypeDefinition_swift(Type type, int level) {
 	DictionaryEntry dictEntry;
 	DICTdo_type_init( type->symbol_table, &dictEntry, OBJ_EXPRESSION );
 	int count = 0;
-	while( 0 != ( ( Expression )DICTdo( &dictEntry ) ) ) {
+	while( 0 != DICTdo(&dictEntry)  ) {
 		count++;
 	}
 	
 	indent_swift(level);
-	wrap( "public enum %s : SDAI.ENUMERATION, SDAIEnumerationType {\n", TYPE_swiftName(type) );
+	{
+		char buf[BUFSIZ];
+		wrap( "public enum %s : SDAI.ENUMERATION, SDAIEnumerationType {\n", TYPE_swiftName(type,type->superscope,buf) );
+	}
 	
 	if(count>0) {
-		Expression * enumCases = ( Expression * )sc_malloc( (count) * sizeof( Expression ) );
+		Expression* enumCases = ( Expression * )sc_calloc( count, sizeof( Expression ) );
+		
+		// sort enum cases
 		DICTdo_type_init( type->symbol_table, &dictEntry, OBJ_EXPRESSION );
 		Expression expr;
 		while( 0 != ( expr = ( Expression )DICTdo( &dictEntry ) ) ) {
+			assert(expr->u.integer >= 1);
+			assert(expr->u.integer <= count);
+			assert(enumCases[expr->u.integer - 1] == NULL);
 			enumCases[expr->u.integer - 1] = expr;
 		}
 		
-		
+		char buf[BUFSIZ];
+
 		for( int i = 0; i < count; i++ ) {
 			indent_swift(level + nestingIndent_swift);
-			raw( "case %s\n", enumCase_swiftName( enumCases[i] ) );
+			assert(enumCases[i] != NULL);
+			raw( "case %s\n", enumCase_swiftName( enumCases[i], buf ) );
 		}
 		
 		sc_free( ( char * )enumCases );
@@ -87,12 +130,15 @@ static void enumTypeDefinition_swift(Type type, int level) {
 }
 
 static void selectTypeDefinition_swift(Type type, TypeBody typeBody, int level) {
+	char buf[BUFSIZ];
+	
 	indent_swift(level);
-	wrap( "public enum %s : SDAI.SELECT, SDAISelectType {\n", TYPE_swiftName(type) );
+	wrap( "public enum %s : SDAISelectType {\n", TYPE_swiftName(type,type->superscope,buf) );
 
 	LISTdo( typeBody->list, selection, Type )
 	indent_swift(level + nestingIndent_swift);
-		raw( "case %s(%s)\n", selectCase_swiftName(selection), TYPE_swiftName(selection) );
+		raw( "case %s", selectCase_swiftName(selection, buf) );
+	raw( "(%s)\n", TYPE_swiftName(selection, type->superscope, buf) );
 	LISTod
 
 	indent_swift(level);
@@ -100,7 +146,7 @@ static void selectTypeDefinition_swift(Type type, TypeBody typeBody, int level) 
 }
 
 
-void TYPE_swift( Type t, int level ) {
+void TYPEdefinition_swift( Type t, int level ) {
 	beginExpress_swift("TYPE DEFINITION");
 	TYPE_out(t, level);
 	endExpress_swift();
@@ -122,7 +168,7 @@ void TYPE_swift( Type t, int level ) {
 				break;
 				
 			default:
-				typeArias_swift(t, level);
+				typeArias_swift(t, level, NOT_IN_COMMENT);
 		}
 	}
 	
@@ -131,38 +177,36 @@ void TYPE_swift( Type t, int level ) {
 	raw("*/\n");
 }
 
+//MARK: - type references
 
-
-/** prints type description (preceded by a space).
- * I.e., the type of an attribute or other object
- */
-void TYPE_head_swift( Type t, int level ) {
-    if( t->symbol.name ) {
-        int old_indent = indent2;
-        if( indent2 + ( int ) strlen( t->symbol.name ) > exppp_linelength ) {
-            indent2 = ( indent2 + level ) / 2;
-        }
-        wrap( "%s", TYPE_swiftName(t) );
-        indent2 = old_indent;
-    } else {
-        TYPE_body_swift( t, level );
-    }
+void TYPE_head_swift( Scope current, Type t, int level, bool in_comment ) {
+	if( t->symbol.name ) {
+		char buf[BUFSIZ];
+		wrap( "%s", TYPE_swiftName(t,current,buf) );
+	} else {
+		TYPE_body_swift( current, t, level, in_comment );
+	}
 }
 
-void TYPEunique_swift( TypeBody tb ) {
+static void TYPEunique_swift( TypeBody tb, bool in_comment ) {
     if( tb->flags.unique ) {
-        wrap( "/*UNIQUE*/" );
+			if( in_comment ) {
+				wrap( "UNIQUE" );
+			}
+			else {
+				wrap( "/*UNIQUE*/" );
+			}
     }
 }
 
-void TYPEoptional_swift( TypeBody tb ) {
+static void TYPEoptional_swift( TypeBody tb ) {
     if( tb->flags.optional ) {
-        wrap( "?" );
+        wrap( "? " );
     }
 }
 
 
-void TYPE_body_swift( Type t, int level ) {
+void TYPE_body_swift( Scope current, Type t, int level, bool in_comment ) {
 	bool first_time = true;
 	
 	Expression expr;
@@ -208,23 +252,32 @@ void TYPE_body_swift( Type t, int level ) {
 			
 			//MARK:entity_
 		case entity_:
-			wrap( "%s", ENTITY_swiftName(tb->entity) );
+		{
+			char buf[BUFSIZ];
+			wrap( "%s", ENTITY_swiftName(tb->entity,"","",current,buf) );
 			break;
+		}
 			
 			//MARK:generic_
 		case generic_:
+		{
+			char buf[BUFSIZ];
 			assert(tb->tag);
-			wrap( "%s", TYPE_swiftName(tb->tag) );
+			wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION,buf) );
 			break;
+		}
 			
 			//MARK:aggregate_
 		case aggregate_:
+		{
+			char buf[BUFSIZ];
 			assert(tb->tag);
-			wrap( "%s", TYPE_swiftName(tb->tag) );
+			wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION,buf) );
 			TYPEoptional_swift(tb);
-			EXPRbounds_swift( NULL, tb );
-			TYPEunique_swift(tb);
+			EXPRbounds_swift( NULL, tb, in_comment );
+			TYPEunique_swift(tb, in_comment);
 			break;
+		}
 
 			//MARK:array_,bag_,set_,list_
 		case array_:
@@ -254,17 +307,16 @@ void TYPE_body_swift( Type t, int level ) {
 			}
 			
 			raw( "<" );
-			TYPE_head_swift( tb->base, level );
+			TYPE_head_swift( current, tb->base, level, in_comment );
 			raw(">");
 			TYPEoptional_swift(tb);
-			EXPRbounds_swift( NULL, tb );
-			TYPEunique_swift(tb);
+			EXPRbounds_swift( NULL, tb, in_comment );
+			TYPEunique_swift(tb, in_comment);
 			break;
 			
 			//MARK:enumeration_
 		case enumeration_: {
 			int i, count = 0;
-			Expression * enumCases;
 			
 			/*
 			 * write names out in original order by first bucket sorting
@@ -272,17 +324,20 @@ void TYPE_body_swift( Type t, int level ) {
 			 * will get filled with one and only one object.
 			 */
 			DICTdo_type_init( t->symbol_table, &de, OBJ_EXPRESSION );
-			while( 0 != ( ( Expression )DICTdo( &de ) ) ) {
+			while( 0 != DICTdo(&de) ) {
 				count++;
 			}
 			if(count>0){
-				enumCases = ( Expression * )sc_malloc( (count) * sizeof( Expression ) );
+				Expression * enumCases = ( Expression * )sc_calloc( count, sizeof( Expression ) );
 				DICTdo_type_init( t->symbol_table, &de, OBJ_EXPRESSION );
 				while( 0 != ( expr = ( Expression )DICTdo( &de ) ) ) {
+					assert(expr->u.integer >= 1);
+					assert(expr->u.integer <= count);
+					assert(enumCases[expr->u.integer - 1] == NULL);
 					enumCases[expr->u.integer - 1] = expr;
 				}
 				
-				wrap( "/* ENUMERATION OF\n" );
+				wrap( "%sENUMERATION OF\n", in_comment ? "" : "/* " );
 				
 				for( i = 0; i < count; i++ ) {
 					/* finish line from previous enum item */
@@ -297,9 +352,11 @@ void TYPE_body_swift( Type t, int level ) {
 					} else {
 						raw( "%*s ", level, "" );
 					}
-					raw( enumCase_swiftName( enumCases[i] ) );
+					assert(enumCases[i] != NULL);
+					char buf[BUFSIZ];
+					raw( enumCase_swiftName( enumCases[i], buf ) );
 				}
-				raw( " ) */" );
+				raw( " )%s", in_comment ? "" : " */" );
 				sc_free( ( char * )enumCases );
 			}
 		}
@@ -307,7 +364,8 @@ void TYPE_body_swift( Type t, int level ) {
 			
 			//MARK:select_
 		case select_:
-			wrap( "/* SELECT\n" );
+		{
+			wrap( "%sSELECT\n", in_comment ? "" : "/* " );
 			LISTdo( tb->list, selection, Type )
 			/* finish line from previous entity */
 			if( !first_time ) {
@@ -321,7 +379,8 @@ void TYPE_body_swift( Type t, int level ) {
 			} else {
 				raw( "%*s ", level, "" );
 			}
-			raw( selectCase_swiftName(selection) );
+			char buf[BUFSIZ];
+			raw( selectCase_swiftName(selection,buf) );
 			LISTod
 			
 			/* if empty, force a left paren */
@@ -329,28 +388,39 @@ void TYPE_body_swift( Type t, int level ) {
 				ERRORreport_with_symbol( ERROR_select_empty, &error_sym, t->symbol.name );
 				raw( "%*s( ", level, "" );
 			}
-			raw( " ) */" );
+			raw( " )%s", in_comment ? "" : " */" );
+		}
 			break;
 			
 		default:
-			wrap( " /* unknown type %d */", tb->type );
+			if( in_comment ) {
+				wrap( "unknown type %d", tb->type );
+			}
+			else {
+				wrap( " /* unknown type %d */", tb->type );
+			}
 	}
 	
 	if( tb->precision ) {
-		wrap( "/* ( " );
+		wrap( "%s( ", in_comment ? "" : "/* " );
 		EXPR_out( tb->precision, 0 );
-		raw( " ) */" );
+		raw( " )%s", in_comment ? "" : " */" );
 	}
 	if( tb->flags.fixed ) {
-		wrap( "/* FIXED */" );
+		if( in_comment ) {
+			wrap( "FIXED" );
+		}
+		else {
+			wrap( "/* FIXED */" );
+		}
 	}
 }
 
-const char* TYPEhead_string_swift( Type t, char buf[BUFSIZ]) {
+const char* TYPEhead_string_swift( Scope current, Type t, bool in_comment, char buf[BUFSIZ]) {
 	if( prep_buffer(buf, BUFSIZ) ) {
 		abort();
 	}
-	TYPE_head_swift(t, 0);
+	TYPE_head_swift(current, t, 0, in_comment);
 	finish_buffer();
 	return ( buf );
 }

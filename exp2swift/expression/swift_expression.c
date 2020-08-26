@@ -20,64 +20,99 @@
 #include "swift_func.h"
 #include "swift_entity.h"
 
+#define EXPRop2_swift(	SELF1,SELF2,oe,string,paren,pad) \
+				EXPRop2__swift(	SELF1,SELF2,oe,string,paren,pad,		OP_UNKNOWN, YES_WRAP)
+
+#define EXPRop_swift(		SELF,oe,paren) \
+				EXPRop__swift(	SELF,oe,paren,		OP_UNKNOWN, YES_WRAP)
 
 
-extern bool printedSpaceLast;
-int nextBreakpoint( const char * pos, const char * end );
-bool shouldBreak( int len );
-
-/** Insert newline if it makes sense. */
-void maybeBreak_swift( int len, bool first ) {
-    if( shouldBreak( len ) ) {
-        if( first ) {
-            raw( "\n%*s\"", indent2, "" );
-        } else {
-            raw( "\"\n%*s+ \"", indent2, "" );
-        }
-    } else if( first ) {
-        /* staying on same line */
-        raw( "%s", ( printedSpaceLast ? "\"": " \"" ) );
-    }
-}
+static void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe, bool paren, unsigned int previous_op, bool can_wrap );
+static void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * eo, char * opcode, bool paren, bool pad, unsigned int previous_op, bool can_wrap );
+static void EXPRop1_swift( Scope SELF, struct Op_Subexpression * eo, char * opcode, bool paren, bool can_wrap );
 
 
-void breakLongStr_swift( const char * instring ) {
-	const char * iptr = instring, * end;
+static void simpleStringLiteral_swift(const char* instring ) {
 	int inlen = (int)strlen( instring );
-	bool first = true;
-	/* used to ensure that we don't overrun the input buffer */
-	end = instring + inlen;
+	wrap_provisionally(inlen);
 	
-	if( ( inlen == 0 ) || ( ( ( int ) inlen + curpos ) < exppp_linelength ) ) {
-		/* short enough to fit on current line */
-		wrap("\"%s\"", instring );
-		return;
+	const char* chptr = instring;
+	wrap("\"");
+	while( *chptr ) {
+		if( *chptr == '\\' || *chptr == '\"' ) {
+			raw("\\"); // escape backslash
+		}
+		raw("%c",*chptr);
+		++chptr;
 	}
-	
-	/* insert newlines at dots as necessary */
-	while( ( iptr < end ) && ( *iptr ) ) {
-		int i = nextBreakpoint( iptr, end );
-		maybeBreak_swift( i, first );
-		first = false;
-		raw( "%.*s", i, iptr );
-		iptr += i;
-	}
-	raw( "\" ");
+	raw("\"");
 }
 
-void EXPRbounds_swift(Scope SELF, TypeBody tb ) {
+static void encodedStringLiteral_swift(const char* instring ) {
+	int inlen = (int)strlen( instring );
+	wrap_provisionally((inlen*3)/2);
+	
+	const char* chptr = instring;
+	wrap("\"");
+	while( *chptr ) {
+		assert(chptr[1]);
+		assert(chptr[2]);
+		assert(chptr[3]);
+		assert(chptr[4]);
+		assert(chptr[5]);
+		assert(chptr[6]);
+		assert(chptr[7]);
+		raw("\\u{%8.8s}", chptr);
+		chptr += 8;
+	}
+	raw("\"");
+}
+
+
+void EXPRbounds_swift(Scope SELF, TypeBody tb, bool in_comment ) {
     if( !tb->upper ) {
         return;
     }
 
-    wrap( "/*[" );
+	wrap( "%s[", in_comment ? "" : "/*" );
     EXPR_swift(SELF, tb->lower, NO_PAREN );
     raw( ":" );
     EXPR_swift(SELF, tb->upper, NO_PAREN );
-    raw( "]*/ " );
+	raw( "]%s ", in_comment ? "" : "*/" );
 }
 
+static void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
+	EXPR__swift( SELF, eo->op1, YES_PAREN, eo->op_code, can_wrap );
+	wrap_if(YES_WRAP, ".SUPER_");
+	EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, NO_WRAP );
+}
 
+static void EXPRopIn_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
+	EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, can_wrap );
+	positively_wrap();
+	wrap_if(YES_WRAP, ".contains( ");
+	EXPR__swift( SELF, eo->op1, YES_PAREN, eo->op_code, YES_WRAP );
+	raw(" )");
+}
+
+static void EXPRrepeat_swift( Scope SELF, Expression val, Expression count) {
+//	assert(val != NULL);
+	assert(count != NULL);
+	
+	wrap_if(YES_WRAP,"SDAI.REPEAT(value: ");
+	if(val) {
+		EXPR__swift( SELF, val, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+	}
+	else {
+		raw("###NULL###");
+	}
+	raw(", ");
+	wrap_if(YES_WRAP,"count: ");
+	EXPR__swift( SELF, count, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+	raw(")");
+}
+
+//MARK: - main entry point
 /**
  * if paren == 1, parens are usually added to prevent possible rebind by
  *    higher-level context.  If op is similar to previous op (and
@@ -87,10 +122,12 @@ void EXPRbounds_swift(Scope SELF, TypeBody tb ) {
 void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op, bool can_wrap  ) {
 	int i;  /* trusty temporary */
 	
+	if(paren) raw("(");
+	
 	switch( TYPEis( e->type ) ) {
 			//MARK: integer_
 		case integer_:
-			if( e == LITERAL_INFINITY ) {
+			if( isLITERAL_INFINITY(e) ) {	//*TY2020/08/26
 				wrap_if(can_wrap, "nil" );
 			} else {
 				wrap_if(can_wrap, "%d", e->u.integer );
@@ -99,10 +136,10 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 			
 			//MARK: real_
 		case real_:
-			if( e == LITERAL_PI ) {
+			if( isLITERAL_PI(e) ) {	//*TY2020/08/26
 				wrap_if(can_wrap, "SDAI.PI" );
-			} else if( e == LITERAL_E ) {
-				wrap_if(can_wrap, "SDAI.E" );
+			} else if( isLITERAL_E(e) ) {
+				wrap_if(can_wrap, "SDAI.CONST_E" );
 			} else {
 				wrap_if(can_wrap, real2exp( e->u.real ) );
 			}
@@ -132,9 +169,10 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 			//MARK: string_
 		case string_:
 			if( TYPEis_encoded( e->type ) ) {
-				wrap_if(can_wrap, "\"%s\"", e->symbol.name );
-			} else {
-				breakLongStr_swift( e->symbol.name );
+				encodedStringLiteral_swift(e->symbol.name);
+			} 
+			else {
+				simpleStringLiteral_swift(e->symbol.name);
 			}
 			break;
 			
@@ -146,7 +184,10 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 			if( e->u_tag == expr_is_variable ) {
 				Variable v = e->u.variable;
 				if( v->flags.alias ) {
-					raw("(/*%s*/",e->symbol.name);
+					{
+						char buf[BUFSIZ];
+						raw("(/*%s*/",canonical_swiftName(e->symbol.name,buf));
+					}
 					EXPR__swift(SELF, v->initializer, NO_PAREN, OP_UNKNOWN, can_wrap);
 					raw(")");
 					break;
@@ -156,13 +197,19 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 					wrap_if(can_wrap, "SELF.");
 				}
 			}
-			raw( "%s", e->symbol.name );
+		{
+			char buf[BUFSIZ];
+			raw( "%s", canonical_swiftName(e->symbol.name,buf) );
+		}
 			break;
 			
 			//MARK: query_
 		case query_:
 			EXPR__swift( SELF, e->u.query->aggregate, YES_PAREN, OP_UNKNOWN, can_wrap );
-			force_wrap();raw( ".QUERY{ %s in ", variable_swiftName(e->u.query->local));
+		{
+			char buf[BUFSIZ];
+			force_wrap();raw( ".QUERY{ %s in ", variable_swiftName(e->u.query->local,buf));
+		}
 			EXPR__swift( SELF, e->u.query->expression, YES_PAREN, OP_UNKNOWN, can_wrap );
 			raw( " }" );
 			break;
@@ -178,22 +225,27 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 			bool isfunc = (e->u.funcall.function->u_tag == scope_is_func);
 			assert(isfunc || (e->u.funcall.function->u_tag == scope_is_entity));
 			
-			char buf[BUFSIZ];
-			char* qual = "";
-			const char* func;
 			Linked_List formals;
-			
-			if( isfunc ) {
-				if( e->u.funcall.function->u.func->builtin ) qual = "SDAI.";
-				func = FUNCcall_swiftName(e);
-				formals = e->u.funcall.function->u.func->parameters;
+			{
+				char buf[BUFSIZ];
+				char* qual = "";
+				const char* func;
+				
+				if( isfunc ) {
+					if( e->u.funcall.function->u.func->builtin ) qual = "SDAI.";
+					func = FUNCcall_swiftName(e,buf);
+					formals = e->u.funcall.function->u.func->parameters;
+				}
+				else {	// entity constructor call
+					func = partialEntity_swiftName(e->u.funcall.function, buf);
+					formals = ENTITYget_constructor_params(e->u.funcall.function);
+				}
+				
+				wrap_if(can_wrap, "%s%s(", qual, func );
 			}
-			else {	// entity constructor call
-				func = partialEntity_swiftName(e->u.funcall.function, buf);
-				formals = ENTITYget_constructor_params(e->u.funcall.function);
-			}
 			
-			wrap_if(can_wrap, "%s%s(", qual, func );
+			positively_wrap();
+			int oldwrap = captureWrapIndent();
 			
 			char* sep = "";
 			if( isfunc && (LISTget_second(formals) == NULL) ) formals = NULL;
@@ -206,7 +258,10 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 					
 					assert(formals_iter != NULL);
 					Variable formal_param = formals_iter->data;
-					wrap("%s: ", variable_swiftName(formal_param));
+					{
+						char buf[BUFSIZ];
+						wrap("%s: ", variable_swiftName(formal_param,buf));
+					}
 					if(VARis_inout(formal_param)) {
 						raw("&");
 					}
@@ -226,6 +281,7 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 				}LISTod
 			}
 			raw( ")" );
+			restoreWrapIndent(oldwrap);
 		}
 			break;
 			
@@ -236,23 +292,39 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 			
 			//MARK: aggregate_
 		case aggregate_:
+		{
 			wrap_if(can_wrap, "[" );
-			i = 0;
+			char* sep = "";
+			Expression prev = NULL;
+			
 			LISTdo( e->u.list, arg, Expression ) {
+				raw(sep);
+				positively_wrap();
+				
 				bool repeat = arg->type->u.type->body->flags.repeat;
 				/* if repeat is true, the previous Expression repeats and this one is the count */
-				i++;
-				if( i != 1 ) {
-					if( repeat ) {
-						raw( " : " );
-					} else {
-						raw( ", " );
-						positively_wrap();
-					}
+				
+				if( repeat ) {
+					EXPRrepeat_swift(SELF, prev, arg);
+					sep = ", ";
+					prev = NULL;
 				}
-				EXPR__swift( SELF, arg, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+				else {
+					if(prev != NULL) {
+						EXPR__swift( SELF, prev, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+						sep = ", ";
+					}
+					prev = arg;
+				}
 			} LISTod
+			
+			if(prev != NULL) {
+				raw(sep);
+				positively_wrap();
+				EXPR__swift( SELF, prev, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+			}
 			raw( "]" );
+		}
 			break;
 			
 			//MARK: oneof_
@@ -286,6 +358,7 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 			fprintf( stderr, "%s:%d: ERROR - unknown expression, type %d", e->symbol.filename, e->symbol.line, TYPEis( e->type ) );
 			abort();
 	}
+	if(paren) raw(")");
 }
 
 /** print expression that has op and operands */
@@ -487,24 +560,10 @@ void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * eo, cha
 	}
 }
 
-void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
-	EXPR__swift( SELF, eo->op1, YES_PAREN, eo->op_code, can_wrap );
-	wrap_if(YES_WRAP, ".SUPER_");
-	EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, NO_WRAP );
-}
-
-void EXPRopIn_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
-	EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, can_wrap );
-	positively_wrap();
-	wrap_if(YES_WRAP, ".contains( ");
-	EXPR__swift( SELF, eo->op1, YES_PAREN, eo->op_code, YES_WRAP );
-	raw(" )");
-}
-
 /** Print out a one-operand operation.  If there were more than two of these
  * I'd generalize it to do padding, but it's not worth it.
  */
-void EXPRop1_swift( Scope SELF, struct Op_Subexpression * eo, char * opcode, bool paren, bool can_wrap ) {
+static void EXPRop1_swift( Scope SELF, struct Op_Subexpression * eo, char * opcode, bool paren, bool can_wrap ) {
     if( paren ) {
         wrap_if(can_wrap, "( " );
     }

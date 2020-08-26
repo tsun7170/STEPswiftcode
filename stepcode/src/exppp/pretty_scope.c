@@ -143,7 +143,7 @@ void SCOPEalgs_out( Scope s, int level ) {
 
 /** output one const - used in SCOPEconsts_out, below */
 void SCOPEconst_out( Variable v, int level, size_t max_indent ) {
-    size_t old_indent2;
+    int old_indent2;
 
     /* print attribute name */
     raw( "%*s%-*s :", level + 2, "",
@@ -184,7 +184,7 @@ void SCOPEconst_out( Variable v, int level, size_t max_indent ) {
 void SCOPEconsts_out( Scope s, int level ) {
     Variable v;
     DictionaryEntry de;
-    size_t max_indent = 0;
+    int max_indent = 0;
     Dictionary d = s->symbol_table;
 
     /* checks length of constant names */
@@ -194,7 +194,7 @@ void SCOPEconsts_out( Scope s, int level ) {
             continue;
         }
         if( strlen( v->name->symbol.name ) > max_indent ) {
-            max_indent = strlen( v->name->symbol.name );
+            max_indent = (int)strlen( v->name->symbol.name );
         }
     }
 
@@ -210,9 +210,9 @@ void SCOPEconsts_out( Scope s, int level ) {
      * fiddled with this until it looked ok on 242 arm
      */
     if( ( max_indent + 20 ) > ( size_t ) exppp_linelength / 2 ) {
-        max_indent = ( size_t ) exppp_linelength / 3;
+        max_indent = exppp_linelength / 3;
     }
-    indent2 = level + max_indent + strlen( ": ab" ) + exppp_continuation_indent;
+    indent2 = level + max_indent + (int)strlen( ": ab" ) + exppp_continuation_indent;
 
     if( !exppp_alphabetize ) {
         DICTdo_type_init( d, &de, OBJ_VARIABLE );
@@ -255,7 +255,7 @@ void SCOPElocals_out( Scope s, int level ) {
     Variable v;
     DictionaryEntry de;
     Linked_List orderedLocals = 0; /**< this list is used to order the vars the same way they were in the file */
-    size_t max_indent = 0;
+    int max_indent = 0;
     Dictionary d = s->symbol_table;
 
     DICTdo_type_init( d, &de, OBJ_VARIABLE );
@@ -267,7 +267,7 @@ void SCOPElocals_out( Scope s, int level ) {
             continue;
         }
         if( strlen( v->name->symbol.name ) > max_indent ) {
-            max_indent = strlen( v->name->symbol.name );
+            max_indent = (int)strlen( v->name->symbol.name );
         }
     }
 
@@ -278,7 +278,7 @@ void SCOPElocals_out( Scope s, int level ) {
     first_newline();
 
     raw( "%*sLOCAL\n", level, "" );
-    indent2 = level + max_indent + strlen( ": " ) + exppp_continuation_indent;
+    indent2 = level + max_indent + (int)strlen( ": " ) + exppp_continuation_indent;
 
     DICTdo_type_init( d, &de, OBJ_VARIABLE );
     while( 0 != ( v = ( Variable )DICTdo( &de ) ) ) {

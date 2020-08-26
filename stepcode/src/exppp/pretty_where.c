@@ -34,7 +34,7 @@ void WHEREout( Linked_List w ) {
 }
 
 void WHERE_out( Linked_List wheres, int level ) {
-    size_t max_indent;
+    int max_indent;
     if( !wheres ) {
         return;
     }
@@ -47,7 +47,7 @@ void WHERE_out( Linked_List wheres, int level ) {
     LISTdo( wheres, w, Where ) {
         if( w->label ) {
             if( strlen( w->label->name ) > max_indent ) {
-                max_indent = strlen( w->label->name );
+                max_indent = (int)strlen( w->label->name );
             }
         }
     } LISTod
@@ -57,7 +57,7 @@ void WHERE_out( Linked_List wheres, int level ) {
          * labels that are ridiculously long */
         max_indent = 4;
     }
-    indent2 = level + max_indent + strlen( ": " ) + exppp_continuation_indent;
+    indent2 = level + max_indent + (int)strlen( ": " ) + exppp_continuation_indent;
 
     /* pass 2: now print labels and exprs */
     LISTdo( wheres, w, Where ) {

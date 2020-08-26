@@ -314,11 +314,11 @@ Type TYPE_retrieve_aggregate( Type t_select, Type t_agg ) {
 ** \note the macro 'EXPresolve' calls this function after checking if expr is already resolved
 */
 void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
-    Function f = 0;
+    Function func = 0;
     Symbol * sym;
     Generic x;
-    Entity e;
-    Type t;
+    Entity entity;
+    Type type;
     bool func_args_checked = false;
 
     /*  if (expr == EXPRESSION_NULL)
@@ -350,25 +350,25 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
             if( DICT_type == OBJ_ENTITY ) {
                 Type self_old = self; /* save previous in the unlikely but possible case that
                                        * SELF is in a derived initialization of an entity */
-                e = ( Entity )x;
-                self = e->u.entity->type;
+                entity = ( Entity )x;
+                self = entity->u.entity->type;
                 /* skip parameter resolution for now */
                 /*          ARGresolve();*/
-                expr->return_type = e->u.entity->type;
+                expr->return_type = entity->u.entity->type;
                 self = self_old;    /* restore old SELF */
             } else {
-                f = ( Function )x;
-                expr->return_type = f->u.func->return_type;
+                func = ( Function )x;
+                expr->return_type = func->u.func->return_type;
 
                 /* do argument typechecking here if requested */
                 /* currently, we just check arg count; necessary */
                 /* to NVL code later which assumes args are present */
                 if( LISTget_length( expr->u.funcall.list ) !=
-                        f->u.func->pcount ) {
+                        func->u.func->pcount ) {
                     ERRORreport_with_symbol( ERROR_wrong_arg_count,
                                              &expr->symbol, expr->symbol.name,
                                              LISTget_length( expr->u.funcall.list ),
-                                             f->u.func->pcount );
+                                             func->u.func->pcount );
                 }
 
 #ifdef future_work
@@ -378,14 +378,14 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
 #endif
 
                 /* should make this data-driven! */
-                if( f == FUNC_NVL ) {
+                if( func == FUNC_NVL ) {
                     EXPresolve( ( Expression )LISTget_first( expr->u.funcall.list ), scope, typecheck );
                     EXPresolve( ( Expression )LISTget_second( expr->u.funcall.list ), scope, typecheck );
                     func_args_checked = true;
                 }
 
                 /* why is this here?  (snc) */
-                if( f == FUNC_USEDIN ) {
+                if( func == FUNC_USEDIN ) {
                     expr->return_type = Type_Bag_Of_Generic;
                 }
             }
@@ -513,7 +513,7 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
                     if( ( ( Function )x )->u.func->pcount != 0 ) {
                         ERRORreport_with_symbol( ERROR_wrong_arg_count,
                                                  &expr->symbol, expr->symbol.name, 0,
-                                                 f->u.func->pcount );
+																								( ( Function )x )->u.func->pcount );
                         resolve_failed( expr );
                     } else {
                         resolved_all( expr );
@@ -558,24 +558,24 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
                 break;
             }
             if( TYPEis_aggregate( expr->return_type ) ) {
-                t = expr->u.query->aggregate->return_type->u.type->body->base;
+                type = expr->u.query->aggregate->return_type->u.type->body->base;
             } else if( TYPEis_select( expr->return_type ) ) {
                 /* retrieve the common aggregate type */
-                t = TYPE_retrieve_aggregate( expr->return_type, 0 );
-                if( !t ) {
+                type = TYPE_retrieve_aggregate( expr->return_type, 0 );
+                if( !type ) {
                     ERRORreport_with_symbol( ERROR_query_requires_aggregate, &expr->u.query->aggregate->symbol );
                     resolve_failed( expr );
                     break;
                 }
             } else if( TYPEis_runtime( expr->return_type ) ) {
-                t = Type_Runtime;
+                type = Type_Runtime;
             } else {
                 ERRORreport_with_symbol( ERROR_query_requires_aggregate, &expr->u.query->aggregate->symbol );
                 resolve_failed( expr );
                 break;
             }
-            expr->u.query->local->type = t;
-            expr->u.query->local->name->return_type = t;
+            expr->u.query->local->type = type;
+            expr->u.query->local->name->return_type = type;
             EXPresolve( expr->u.query->expression, expr->u.query->scope, Type_Dont_Care );
             expr->symbol.resolved = expr->u.query->expression->symbol.resolved;
             break;
@@ -672,7 +672,7 @@ int ENTITYresolve_subtype_expression( Expression expr, Entity ent/*was scope*/, 
 
 /**
 ** \param typeaddr type to resolve
-** \returns true type
+** returns true type
 **
 ** Resolve all references in a type.
 */
@@ -681,6 +681,7 @@ void TYPE_resolve( Type * typeaddr /*, Scope scope*/ ) {
     Type ref_type;
     TypeBody body = type->u.type->body;
     Scope scope = type->superscope;
+	assert(scope != NULL);
 
     if( body ) {
         /* complex type definition such as aggregates, enums, ... */
@@ -1204,11 +1205,13 @@ void SCOPEresolve_types( Scope s ) {
             case OBJ_VARIABLE:  /* really constants */
                 var = ( Variable )x;
                 /* before OBJ_BITS hack, we looked in s->superscope */
+						assert(var->type->superscope != NULL);
                 TYPEresolve( &var->type );
                 if( is_resolve_failed( var->type ) ) {
                     resolve_failed( var->name );
                     resolve_failed( s );
                 }
+						assert(var->type->superscope != NULL);
                 break;
             case OBJ_ENTITY:
                 ENTITYcheck_missing_supertypes( ( Entity )x );

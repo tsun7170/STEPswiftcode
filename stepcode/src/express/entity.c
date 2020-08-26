@@ -364,7 +364,11 @@ Entity ENTITYcopy( Entity e ) {
 
 /** Initialize the Entity module. */
 void ENTITYinitialize() {
-    MEMinitialize( &ENTITY_fl, sizeof( struct Entity_ ), 500, 100 );
+	//*TY2020/08/26
+	current_filename = __FILE__;
+	yylineno = __LINE__;
+
+	MEMinitialize( &ENTITY_fl, sizeof( struct Entity_ ), 500, 100 );
     OBJcreate( OBJ_ENTITY, SCOPE_get_symbol, "entity",
                OBJ_ENTITY_BITS );
 }

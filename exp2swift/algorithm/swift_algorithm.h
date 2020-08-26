@@ -18,7 +18,7 @@ void ALGget_generics( Scope s, Linked_List generics, Linked_List aggregates );
 #define NO_FORCE_OPTIONAL		false
 #define YES_DROP_SINGLE_LABEL	true
 #define NO_DROP_SINGLE_LABEL	false
-void ALGargs_swift( bool force_optional, Linked_List args, bool drop_single_label, int level );
+void ALGargs_swift( Scope current, bool force_optional, Linked_List args, bool drop_single_label, int level );
 void ALGscope_swift( Scope s, int level );
 
 

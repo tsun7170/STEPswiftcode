@@ -12,8 +12,9 @@
 #include "../express/alg.h"
 
 char 				FUNC_swiftNameInitial( Function func );
-const char* FUNC_swiftName( Function func );
-const char* FUNCcall_swiftName( Expression fcall );
+
+const char* FUNC_swiftName( Function func, char buf[BUFSIZ] );
+const char* FUNCcall_swiftName( Expression fcall, char buf[BUFSIZ] );
 
 void FUNC_swift( bool nested, Function func, int level );
 

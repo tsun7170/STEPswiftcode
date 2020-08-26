@@ -54,7 +54,7 @@ void ALGget_generics( Scope s, Linked_List generics, Linked_List aggregates ) {
 }
 
 
-void ALGargs_swift( bool force_optional, Linked_List args, bool drop_single_label, int level ) {
+void ALGargs_swift( Scope current, bool force_optional, Linked_List args, bool drop_single_label, int level ) {
 	int indent2save = captureWrapIndent();
 	
 	bool single_param = drop_single_label && (LISTget_second(args) == NULL);
@@ -63,11 +63,14 @@ void ALGargs_swift( bool force_optional, Linked_List args, bool drop_single_labe
 	LISTdo(args, formalp, Variable) {
 		raw("%s", sep);
 		positively_wrap();
-		wrap("%s: ", variable_swiftName(formalp));
+		{
+			char buf[BUFSIZ];
+			wrap("%s: ", variable_swiftName(formalp,buf));
+		}
 		if( VARis_inout(formalp) ) {
 			wrap("inout ");
 		}
-		variableType_swift(formalp, force_optional, level);
+		variableType_swift(current, formalp, force_optional, level, NOT_IN_COMMENT);
 		sep = ", ";
 	}LISTod;
 	

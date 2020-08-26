@@ -86,6 +86,10 @@
 #include "express/lexact.h"
 #include "express/exp_kw.h"
 
+#include "express/expr.h"
+
+extern const char *const yyTokenName[];	//*TY2020/08/23
+
 void * ParseAlloc( void * ( *mallocProc )( size_t ) );
 void ParseFree( void * parser, void ( *freeProc )( void * ) );
 void Parse( void * parser, int tokenID, YYSTYPE data, parse_data_t parseData );
@@ -231,7 +235,7 @@ static void EXPRESS_PATHinit() {
                 continue;
             }
 
-            length = ( p - 1 ) - start;
+            length = (int)(( p - 1 ) - start);
 
             /* if slash present at end, don't add another */
             slash = strrchr( start, '/' );
@@ -509,8 +513,8 @@ void EXPRESScleanup( void ) {
 }
 
 /**
-** \param file  - Express source file to parse
-** \return resulting Working Form model
+** \param filename  - Express source file to parse
+** return resulting Working Form model
 ** Parse an Express source file into the Working Form.
 */
 void EXPRESSparse( Express model, FILE * fp, char * filename ) {
@@ -523,6 +527,7 @@ void EXPRESSparse( Express model, FILE * fp, char * filename ) {
         /* go down path looking for file */
         LISTdo( EXPRESS_path, dir, Dir * )
         sprintf( dir->leaf, "%s", filename );
+			printf("searching: '%s' ...\n",dir->full);
         if( 0 != ( fp = fopen( dir->full, "r" ) ) ) {
             filename = dir->full;
             break;
@@ -542,7 +547,7 @@ void EXPRESSparse( Express model, FILE * fp, char * filename ) {
         /* get beginning of basename */
         char * start = slash ? ( slash + 1 ) : filename;
 
-        int length = strlen( start );
+        int length = (int)strlen( start );
 
         /* drop .exp suffix if present */
         if( dot && streq( dot, ".exp" ) ) {
@@ -592,8 +597,22 @@ static Express PARSERrun( char * filename, FILE * fp ) {
     yyerrstatus = 0;
     /* NOTE uncomment the next line to enable parser tracing */
     /* ParseTrace( stderr, "- expparse - " ); */
+	int itoken = 0;
     while( ( tokenID = yylex( scanner ) ) > 0 ) {
+			++itoken;
         Parse( parser, tokenID, yylval, parseData );
+			//*TY2020/08/23
+#if 0
+			if(itoken >= 159000)
+			{
+				ParseTrace(stdout, "yy:");
+				char token_text[BUFSIZ];
+				snprintf(token_text, BUFSIZ, "%*s",(int)(parseData.scanner->cursor - parseData.scanner->tokenStart), parseData.scanner->tokenStart);
+				char msg[BUFSIZ];
+				snprintf(msg, BUFSIZ, "after Prase[%d] %s (%s)", itoken, yyTokenName[tokenID],token_text);
+				check_aggregate_initializers(msg, true);
+			}
+#endif
     }
     Parse( parser, 0, yylval, parseData );
 

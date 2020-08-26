@@ -34,7 +34,7 @@ void FUNC_out( Function fn, int level ) {
     STMTlist_out( fn->u.proc->body, level + exppp_nesting_indent );
 
     raw( "\n%*sEND_FUNCTION;", level, "" );
-    tail_comment( fn->symbol.name );
+    tail_comment( fn->symbol );
 }
 
 char * FUNCto_string( Function f ) {

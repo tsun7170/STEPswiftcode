@@ -28,29 +28,40 @@ void SCOPEentityList_swift( Scope s, int level ) {
 	DICTdo_type_init( s->symbol_table, &dictEntry, OBJ_ENTITY );
 	while( 0 != ( entity = ( Entity )DICTdo( &dictEntry ) ) ) {
 		Linked_List dummy = LISTcreate();
-		ENTITY_swift( entity, level, dummy );
+		Linked_List dummy2 = LISTcreate();
+		ENTITY_swift( entity, level, dummy, dummy2 );
+		assert(LISTempty(dummy));
+		assert(LISTempty(dummy2));
 		LISTfree(dummy);
+		LISTfree(dummy2);
 	}
 }
 
 
 static void schemaLevelEntity_swift( Schema schema, Entity entity) {
 	int level = 0;
-	
-	openSwiftFileForEntity(entity);
 	Linked_List dynamic_attrs = LISTcreate();
+	Linked_List attr_overrides = LISTcreate();
 	
+	openSwiftFileForEntity(schema,entity);
+	
+	raw("\n"
+			"import SwiftSDAIcore\n");
+
 	raw("\n"
 			"extension %s {\n", SCHEMA_swiftName(schema));
 	
 	{	int level2 = level + nestingIndent_swift;
 		
-		ENTITY_swift(entity, level2, dynamic_attrs);
+		ENTITY_swift(entity, level2, dynamic_attrs, attr_overrides);
 	}
 	raw("}\n");
 	
-	ENTITY_swiftProtocol(entity, level, dynamic_attrs);
+	ENTITY_swiftProtocol(schema, entity, level, dynamic_attrs);
+	partialEntityAttrOverrideProtocolConformance_swift(schema, entity, level, attr_overrides);
+
 	LISTfree(dynamic_attrs);
+	LISTfree(attr_overrides);
 }
 
 void SCHEMAentityList_swift( Schema schema ) {

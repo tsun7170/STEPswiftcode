@@ -29,6 +29,7 @@ void wrap( const char * fmt, ... );
 
 //*TY2020/07/11
 void wrap_if(bool can_wrap, const char * fmt, ... );
+void wrap_provisionally(int next_len);
 void force_wrap(void);
 void positively_wrap(void);
 int captureWrapIndent(void);

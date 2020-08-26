@@ -22,18 +22,18 @@
 #include "swift_symbol.h"
 
 
-const char* PROC_swiftName( Procedure proc ) {
-	return proc->symbol.name;	
-}
-
-const char* PROCcall_swiftName( Statement pcall ) {
-	return pcall->symbol.name;
-}
-
-
 char 				PROC_swiftNameInitial( Procedure proc ) {
-	return toupper( PROC_swiftName(proc)[0] );
+	return toupper( proc->symbol.name[0] );
 }
+
+const char* PROC_swiftName( Procedure proc, char buf[BUFSIZ] ) {
+	return canonical_swiftName(proc->symbol.name, buf);	
+}
+
+const char* PROCcall_swiftName( Statement pcall, char buf[BUFSIZ] ) {
+	return canonical_swiftName(pcall->symbol.name, buf);
+}
+
 
 //MARK: - main entry point
 
@@ -50,21 +50,25 @@ void PROC_swift( bool nested, Procedure proc, int level ) {
 		char* access = (nested ? "//NESTED PROCEDURE" : "public static ");
 		raw("%s\n", access);
 		indent_swift(level);
-		raw("func %s", PROC_swiftName(proc));
+	{
+		char buf[BUFSIZ];
+		raw("func %s", PROC_swiftName(proc,buf));
+	}
 
 		Linked_List generics = LISTcreate();
 		Linked_List aggregates = LISTcreate();
 		ALGget_generics(proc, generics, aggregates);
 		if(!LISTempty(generics) || !LISTempty(aggregates)) {
 			//generic procedure
+			char buf[BUFSIZ];
 			char* sep = "";
 			raw("<");
 			LISTdo(generics, gtag, Type) {
-				wrap("%s%s: SDAIGenericType",sep,TYPE_swiftName(gtag));
+				wrap("%s%s: SDAIGenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION,buf));
 				sep=", ";
 			}LISTod;
 			LISTdo(aggregates, atag, Type) {
-				wrap("%s%s: SDAIAggregationType",sep,TYPE_swiftName(atag));
+				wrap("%s%s: SDAIAggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION,buf));
 				sep=", ";
 			}LISTod;
 			raw(">");
@@ -72,18 +76,19 @@ void PROC_swift( bool nested, Procedure proc, int level ) {
 		
 		// parameters
 		raw("(");
-		ALGargs_swift( YES_FORCE_OPTIONAL, proc->u.proc->parameters, YES_DROP_SINGLE_LABEL, level );
+		ALGargs_swift( proc->superscope, YES_FORCE_OPTIONAL, proc->u.proc->parameters, YES_DROP_SINGLE_LABEL, level );
 		raw(")");
 				
 		if(!LISTempty(aggregates)) {
 			// constraint for aggregate element type
 			raw(" ");
+			char buf[BUFSIZ];
 			char* sep = "where ";
 			LISTdo(aggregates, atag, Type) {
 				Type base = atag->u.type->head;	//hack!
 				positively_wrap();
-				wrap("%s%s.Element == ",sep,TYPE_swiftName(atag));
-				TYPE_head_swift(base,level);
+				wrap("%s%s.Element == ",sep,TYPE_swiftName(atag,NULL,buf));
+				TYPE_head_swift(proc->superscope, base, level, NOT_IN_COMMENT);
 				sep = ", ";
 			}LISTod;
 		}
@@ -98,7 +103,8 @@ void PROC_swift( bool nested, Procedure proc, int level ) {
 		
 		indent_swift(level);
 		if( nested ) {
-			raw("} //END PROCEDURE %s\n\n", PROC_swiftName(proc));
+			char buf[BUFSIZ];
+			raw("} //END PROCEDURE %s\n\n", PROC_swiftName(proc,buf));
 		}
 		else {
 			raw("}\n\n");

@@ -147,7 +147,7 @@ int DICT_define( Dictionary dict, char * name, Generic obj, Symbol * sym, char t
 /**
 ** \param dict dictionary to modify
 ** \param name name to remove
-** \return  the entry removed, NULL if not found
+** return  the entry removed, NULL if not found
     Changed to return void, since the hash code frees the element, there
     is no way to return (without godawful casting) the generic itself.
 */

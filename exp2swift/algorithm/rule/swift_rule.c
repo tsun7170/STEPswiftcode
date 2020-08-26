@@ -23,12 +23,12 @@
 #include "swift_statement.h"
 #include "swift_expression.h"
 
-const char* RULE_swiftName( Rule rule ) {
-	return rule->symbol.name;
+const char* RULE_swiftName( Rule rule, char buf[BUFSIZ] ) {
+	return canonical_swiftName(rule->symbol.name,buf);
 }
 
 char 				RULE_swiftNameInitial( Rule rule ) {
-	return toupper( RULE_swiftName(rule)[0] );
+	return toupper( rule->symbol.name[0] );
 }
 
 //MARK: - main entry point
@@ -43,11 +43,13 @@ void RULE_swift( Rule rule, int level ) {
 	indent_swift(level);
 	raw("public static\n");
 	indent_swift(level);
-	raw("func %s( ", RULE_swiftName(rule));
+	{
+		char buf[BUFSIZ];
+		raw("func %s( ", RULE_swiftName(rule,buf));
+	}
 	wrap("allEntityInstances: SDAI.AGGREGATE<SDAI.CompexEntity> ) -> SDAI.LOGICAL {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
-		char buf[BUFSIZ];
 		
 		//entity refs
 		raw("\n");
@@ -57,7 +59,9 @@ void RULE_swift( Rule rule, int level ) {
 			assert(TYPEis_entity(TYPEget_base_type(entity_ref->type)));
 			Entity ent = TYPEget_body(TYPEget_base_type(entity_ref->type))->entity;
 			indent_swift(level2);
-			raw("let %s = ", variable_swiftName(entity_ref));
+
+			char buf[BUFSIZ];
+			raw("let %s = ", variable_swiftName(entity_ref,buf));
 			wrap("allEntityInstances.QUERY{ $0.partialEntityInstance(%s.self) != nil }\n\n", partialEntity_swiftName(ent, buf) );
 		}LISTod;
 		
@@ -72,6 +76,8 @@ void RULE_swift( Rule rule, int level ) {
 		Linked_List where_rules = RULEget_where(rule);
 		LISTdo(where_rules, where, Where){
 			indent_swift(level2);
+			
+			char buf[BUFSIZ];
 			raw("let %s = ",whereRuleLabel_swiftName(where, buf));
 			EXPR_swift(NULL,where->expr,YES_PAREN);
 			raw("\n\n");
@@ -84,6 +90,8 @@ void RULE_swift( Rule rule, int level ) {
 		char* sep = " ";
 		LISTdo(where_rules, where, Where){
 			raw("%s",sep);
+			
+			char buf[BUFSIZ];
 			wrap("%s",whereRuleLabel_swiftName(where, buf));
 			sep = " && ";
 		}LISTod;

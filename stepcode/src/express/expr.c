@@ -122,8 +122,55 @@ Expression EXPcreate( Type type ) {
     SYMBOLset( e );
     e->type = type;
     e->return_type = Type_Unknown;
+	//*TY2020/08/23
+	if(type==Type_Aggregate){
+		if(all_aggregate_initializers == NULL){
+			all_aggregate_initializers = LISTcreate();
+		}
+		LISTadd_last(all_aggregate_initializers, e);
+	}
     return( e );
 }
+
+//*TY2020/08/23
+Linked_List all_aggregate_initializers = NULL;
+static void check_aggr(int expr_no, Expression expr, const char* message, bool printit) {
+	Expression prev = NULL;
+	bool prev_repeat = false;
+	if(printit && expr_no==37) printf("expr[%d]@%p\t u.list@%p\n",expr_no,expr,expr->u.list);
+	
+	int i = 1;
+	LISTdo(expr->u.list, arg, Expression) {
+		if(printit && expr_no==37){
+			printf("list[%d]:@%p\t u_tag=%d\t type@%p\t typebody(type:%d)@%p\n",i,arg,arg->u_tag,arg->type,arg->type->u.type->body->type,arg->type->u.type->body);
+		}
+		bool repeat = arg->type->u.type->body->flags.repeat;
+		if( repeat ) {
+			assert(prev != NULL);
+			assert(prev_repeat == false);
+			prev = NULL;
+			prev_repeat = false;
+		}
+		else {
+			prev = arg;
+			prev_repeat = repeat;
+		}
+		++i;
+	}LISTod;
+}
+void check_aggregate_initializers(const char* message, bool printit) {
+	if(all_aggregate_initializers == NULL) {
+		if(printit) printf("%s: no aggregate initializers defined\n", message);
+		return;
+	}
+	int count_of_initializers = LISTget_length(all_aggregate_initializers);
+	if(printit)printf("%s: count of aggregate initializers = %d\n", message, count_of_initializers);
+	int i = 0;
+	LISTdo(all_aggregate_initializers, expr, Expression) {
+		check_aggr(++i, expr, message,printit);
+	}LISTod;
+}
+
 
 /**
  * use this when the return_type is the same as the type
@@ -150,8 +197,86 @@ Symbol * EXP_get_symbol( Generic e ) {
     return( &( ( Expression )e )->symbol );
 }
 
+
+
+//*TY 2020/08/26
+Expression  createLITERAL_E(void) {
+#ifndef M_E
+#define M_E     2.7182818284590452354
+#endif
+	Expression e = EXPcreate_simple( Type_Real );
+	e->u.real = M_E;
+	e->u_tag = expr_is_real;
+	resolved_all( e );
+
+	e->symbol.filename = "LITERAL_E";	
+	return e;
+}
+Expression  createLITERAL_INFINITY(void) {
+	Expression e = EXPcreate_simple( Type_Integer );
+	e->u.integer = INT_MAX;
+	e->u_tag = expr_is_integer;
+	resolved_all( e );
+
+	e->symbol.filename = "LITERAL_INFINITY";	
+	return e;
+}
+Expression  createLITERAL_PI(void) {
+#ifndef M_PI
+#define M_PI    3.14159265358979323846
+#endif
+	Expression e = EXPcreate_simple( Type_Real );
+	e->u.real = M_PI;
+	e->u_tag = expr_is_real;
+	resolved_all( e );
+
+	e->symbol.filename = "LITERAL_PI";	
+	return e;
+}
+Expression  createLITERAL_ZERO(void) {
+	Expression e = EXPcreate_simple( Type_Integer );
+	e->u.integer = 0;
+	e->u_tag = expr_is_integer;
+	resolved_all( e );
+
+	e->symbol.filename = "LITERAL_ZERO";	
+	return e;
+}
+Expression  createLITERAL_ONE(void) {
+	Expression e = EXPcreate_simple( Type_Integer );
+	e->u.integer = 1;
+	e->u_tag = expr_is_integer;
+	resolved_all( e );
+
+	e->symbol.filename = "LITERAL_ONE";	
+	return e;
+}
+
+//*TY 2020/08/26
+bool  isLITERAL_E(Expression e) {
+	return e->symbol.filename == LITERAL_E->symbol.filename;
+}
+bool  isLITERAL_INFINITY(Expression e) {
+	return e->symbol.filename == LITERAL_INFINITY->symbol.filename;
+}
+bool  isLITERAL_PI(Expression e) {
+	return e->symbol.filename == LITERAL_PI->symbol.filename;
+}
+bool  isLITERAL_ZERO(Expression e) {
+	return e->symbol.filename == LITERAL_ZERO->symbol.filename;
+}
+bool  isLITERAL_ONE(Expression e) {
+	return e->symbol.filename == LITERAL_ONE->symbol.filename;
+}
+
+
+
 /** Description: Initialize the Expression module. */
 void EXPinitialize( void ) {
+	//*TY2020/08/26
+	current_filename = __FILE__;
+	yylineno = __LINE__;
+	
     MEMinitialize( &EXP_fl, sizeof( struct Expression_ ), 500, 200 );
     MEMinitialize( &OP_fl, sizeof( struct Op_Subexpression ), 500, 100 );
     MEMinitialize( &QUERY_fl, sizeof( struct Query_ ), 50, 10 );
@@ -167,46 +292,12 @@ void EXPinitialize( void ) {
 
     /* E and PI might come out of math.h */
 
-    LITERAL_E = EXPcreate_simple( Type_Real );
-#ifndef M_E
-#define M_E     2.7182818284590452354
-#endif
-    LITERAL_E->u.real = M_E;
-	//*TY2020/07/11
-	LITERAL_E->u_tag = expr_is_real;
-	
-    resolved_all( LITERAL_E );
-
-    LITERAL_PI = EXPcreate_simple( Type_Real );
-#ifndef M_PI
-#define M_PI    3.14159265358979323846
-#endif
-    LITERAL_PI->u.real = M_PI;
-	//*TY2020/07/11
-	LITERAL_PI->u_tag = expr_is_real;
-	
-    resolved_all( LITERAL_PI );
-
-    LITERAL_INFINITY = EXPcreate_simple( Type_Integer );
-    LITERAL_INFINITY->u.integer = INT_MAX;
-	//*TY2020/07/11
-	LITERAL_INFINITY->u_tag = expr_is_integer;
-	
-    resolved_all( LITERAL_INFINITY );
-
-    LITERAL_ZERO = EXPcreate_simple( Type_Integer );
-    LITERAL_ZERO->u.integer = 0;
-	//*TY2020/07/11
-	LITERAL_ZERO->u_tag = expr_is_integer;
-	
-    resolved_all( LITERAL_ZERO );
-
-    LITERAL_ONE = EXPcreate_simple( Type_Integer );
-    LITERAL_ONE->u.integer = 1;
-	//*TY2020/07/11
-	LITERAL_ONE->u_tag = expr_is_integer;
-	
-    resolved_all( LITERAL_ONE );
+	//*TY2020/08/26
+	LITERAL_E = createLITERAL_E();
+	LITERAL_PI = createLITERAL_PI();
+	LITERAL_INFINITY = createLITERAL_INFINITY();
+	LITERAL_ZERO = createLITERAL_ZERO();
+	LITERAL_ONE = createLITERAL_ONE();
 
     ERROR_integer_expression_expected = ERRORcreate(
                                             "Integer expression expected", SEVERITY_WARNING );
@@ -269,7 +360,7 @@ void EXPcleanup( void ) {
  * \param v set to the Variable found, when a variable is found
  * \param dt set to DICT_type when a match is found (use to determine whether to use e or v)
  * \param where used by ENTITYfind_inherited_attribute, not sure of purpose
- * \param s_id the search id, a parameter to avoid colliding with ENTITYfind...
+ * unused param s_id the search id, a parameter to avoid colliding with ENTITYfind...
  * there will be no ambiguities, since we're looking at (and marking)
  * only types, and it's marking only entities
  */
@@ -371,7 +462,7 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
 
     /* stuff for dealing with select_ */
     int options = 0;
-	char dt = '\0';
+	char dicttype = '\0';
     struct Symbol_ *where = NULL;
 
     /* op1 is entity expression, op2 is attribute */
@@ -400,7 +491,7 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
                  * thus the code for handling ambiguities was only used if the ambig was in the immediate type
                  * and not a supertype. don't think that's right...
                  */
-                options += EXP_resolve_op_dot_fuzzy( t, op2->symbol, &item, &v, &dt, &where /*, __SCOPE_search_id*/ );
+                options += EXP_resolve_op_dot_fuzzy( t, op2->symbol, &item, &v, &dicttype, &where /*, __SCOPE_search_id*/ );
             }
             LISTod;
 						SCOPE_end_search();
@@ -424,7 +515,7 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
                     return( Type_Bad );
                 case 1:
                     /* only one possible resolution */
-                    if( dt == OBJ_VARIABLE ) {
+                    if( dicttype == OBJ_VARIABLE ) {
                         if( where ) {
                             ERRORreport_with_symbol( ERROR_implicit_downcast, &op2->symbol, where->name );
                         }
@@ -437,10 +528,12 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
 											//*TY2020/07/11
 											op2->u_tag = expr_is_variable;
 											
+											assert(v != NULL);
                         op2->return_type = v->type;
                         resolved_all( expr );
                         return( v->type );
-                    } else if( dt == OBJ_ENUM ) {
+                    } else if( dicttype == OBJ_ENUM ) {
+											assert(item != NULL);
                         op2->u.expression = item;
 											//*TY2020/07/11
 											op2->u_tag = expr_is_expression;
@@ -546,7 +639,7 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
 }
 
 /**
- * \param s_id the search id, a parameter to avoid colliding with ENTITYfind...
+ * unused param s_id the search id, a parameter to avoid colliding with ENTITYfind...
  * there will be no ambiguities, since we're looking at (and marking)
  * only types, and it's marking only entities
  */
@@ -805,7 +898,7 @@ Type EXPresolve_op_array_like( Expression e, Scope s ) {
     } else if( TYPEis_select( op1type ) ) {
         int numAggr = 0, numNonAggr = 0;
         bool sameAggrType = true;
-        Type lasttype = 0;
+        Type lasttype = TYPE_NULL;
 
         /* FIXME Is it possible that the base type hasn't yet been resolved?
          * If it is possible, we should signal that we need to come back later... but how? */
@@ -832,6 +925,7 @@ Type EXPresolve_op_array_like( Expression e, Scope s ) {
             }
         }
         LISTod;
+			assert(lasttype != TYPE_NULL);
 
         /* NOTE the following code returns the same data for every case that isn't an error.
          * It needs to be simplified or extended, depending on whether it works or not. */
@@ -1020,7 +1114,7 @@ Expression QUERYcreate( Symbol * local, Expression aggregate ) {
 
 /**
 ** \param expression  expression to evaluate
-** \param experrc buffer for error code
+** global experrc buffer for error code
 ** \returns value of expression
 ** Compute the value of an integer expression.
 */

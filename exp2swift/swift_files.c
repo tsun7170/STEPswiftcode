@@ -90,9 +90,8 @@ static void printOutHeaderComment() {
 
 static bool described = false;
 
+//MARK: - swift file setup
 void openSwiftFileForSchema(Schema schema) {
-	
-	FILE * f;
 	closeSwiftFile();
 	exppp_output_filename = 0;
 	
@@ -105,7 +104,7 @@ void openSwiftFileForSchema(Schema schema) {
 	if( !described && !exppp_terse ) {
 		fprintf( stdout, "%s: writing schema file %s\n", EXPRESSprogram_name, swift_filename_buffer );
 	}
-	if( !( exppp_fp = f = fopen( swift_filename_buffer, "w" ) ) ) {
+	if( !( exppp_fp = fopen( swift_filename_buffer, "w" ) ) ) {
 		ERRORreport( ERROR_file_unwriteable, swift_filename_buffer, strerror( errno ) );
 		abort();
 	}
@@ -113,75 +112,38 @@ void openSwiftFileForSchema(Schema schema) {
 	printOutHeaderComment();
 }
 
-static char dir[ BUFSIZ ] = {0};
 
-void openSwiftFileForType(Type type) {
-	
-	FILE * f;
+static void openSwiftFile(Schema s, const char* category, char initial, const char* filename) {
 	closeSwiftFile();
-	exppp_output_filename = 0;
-	
 	exppp_output_filename = swift_filename_buffer;
 	exppp_output_filename_reset = true;
-	snprintf( dir, BUFSIZ-1, "type/%c", TYPE_swiftNameInitial(type) );
-	sprintf( swift_filename_buffer, "%s/%s.swift", dir, TYPE_swiftName(type) );
 	
+	char dir1[ BUFSIZ ];
+	{
+		char buf[BUFSIZ];
+		snprintf(dir1, BUFSIZ-1, "%s-%s", category,schema_nickname(s, buf));
+		if( mkDirIfNone( dir1 ) == -1 ) {
+			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
+			perror( 0 );
+			abort();
+		}
+	}
+	
+	char dir2[ BUFSIZ ];
+	snprintf( dir2, BUFSIZ-1, "%s/%c", dir1, initial );
+	if( mkDirIfNone( dir2 ) == -1 ) {
+		fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
+		perror( 0 );
+		abort();
+	}	
+	
+	sprintf( swift_filename_buffer, "%s/%s.swift", dir2, filename );
 	error_sym.filename = swift_filename_buffer;
 	
 	if( !described && !exppp_terse ) {
-		fprintf( stdout, "%s: writing schema file %s\n", EXPRESSprogram_name, swift_filename_buffer );
+		fprintf( stdout, "%s: writing schema translation file %s\n", EXPRESSprogram_name, swift_filename_buffer );
 	}
-	
-	if( mkDirIfNone( "type" ) == -1 ) {
-			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
-			perror( 0 );
-			abort();
-	}
-	if( mkDirIfNone( dir ) == -1 ) {
-			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
-			perror( 0 );
-			abort();
-	}
-
-	
-	if( !( exppp_fp = f = fopen( swift_filename_buffer, "w" ) ) ) {
-		ERRORreport( ERROR_file_unwriteable, swift_filename_buffer, strerror( errno ) );
-		abort();
-	}
-	
-	printOutHeaderComment();
-}
-
-void openSwiftFileForEntity(Entity entity) {
-	
-	FILE * f;
-	closeSwiftFile();
-	exppp_output_filename = 0;
-	
-	exppp_output_filename = swift_filename_buffer;
-	exppp_output_filename_reset = true;
-	snprintf( dir, BUFSIZ-1, "entity/%c", ENTITY_swiftNameInitial(entity) );
-	sprintf( swift_filename_buffer, "%s/%s.swift", dir, ENTITY_swiftName(entity) );
-	
-	error_sym.filename = swift_filename_buffer;
-	
-	if( !described && !exppp_terse ) {
-		fprintf( stdout, "%s: writing schema file %s\n", EXPRESSprogram_name, swift_filename_buffer );
-	}
-	
-	if( mkDirIfNone( "entity" ) == -1 ) {
-			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
-			perror( 0 );
-			abort();
-	}
-	if( mkDirIfNone( dir ) == -1 ) {
-			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
-			perror( 0 );
-			abort();
-	}
-
-	
-	if( !( exppp_fp = f = fopen( swift_filename_buffer, "w" ) ) ) {
+	if( !( exppp_fp = fopen( swift_filename_buffer, "w" ) ) ) {
 		ERRORreport( ERROR_file_unwriteable, swift_filename_buffer, strerror( errno ) );
 		abort();
 	}
@@ -190,114 +152,25 @@ void openSwiftFileForEntity(Entity entity) {
 }
 
 
-void openSwiftFileForRule(Rule rule) {
-	
-	FILE * f;
-	closeSwiftFile();
-	exppp_output_filename = 0;
-	
-	exppp_output_filename = swift_filename_buffer;
-	exppp_output_filename_reset = true;
-	snprintf( dir, BUFSIZ-1, "rule/%c", RULE_swiftNameInitial(rule) );
-	sprintf( swift_filename_buffer, "%s/%s.swift", dir, RULE_swiftName(rule) );
-	
-	error_sym.filename = swift_filename_buffer;
-	
-	if( !described && !exppp_terse ) {
-		fprintf( stdout, "%s: writing schema file %s\n", EXPRESSprogram_name, swift_filename_buffer );
-	}
-	
-	if( mkDirIfNone( "rule" ) == -1 ) {
-			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
-			perror( 0 );
-			abort();
-	}
-	if( mkDirIfNone( dir ) == -1 ) {
-			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
-			perror( 0 );
-			abort();
-	}
+void openSwiftFileForType(Schema s, Type type) {
+	openSwiftFile(s, "type", TYPE_swiftNameInitial(type), type->symbol.name);
+}
 
-	
-	if( !( exppp_fp = f = fopen( swift_filename_buffer, "w" ) ) ) {
-		ERRORreport( ERROR_file_unwriteable, swift_filename_buffer, strerror( errno ) );
-		abort();
-	}
-	
-	printOutHeaderComment();
+void openSwiftFileForEntity(Schema s, Entity entity) {
+	openSwiftFile(s, "entity", ENTITY_swiftNameInitial(entity), entity->symbol.name);
+}
+
+void openSwiftFileForRule(Schema s, Rule rule) {
+	openSwiftFile(s, "rule", RULE_swiftNameInitial(rule), rule->symbol.name);
 }
 
 
-void openSwiftFileForFunction(Function func) {
-	
-	FILE * f;
-	closeSwiftFile();
-	exppp_output_filename = 0;
-	
-	exppp_output_filename = swift_filename_buffer;
-	exppp_output_filename_reset = true;
-	snprintf( dir, BUFSIZ-1, "func/%c", FUNC_swiftNameInitial(func) );
-	sprintf( swift_filename_buffer, "%s/%s.swift", dir, FUNC_swiftName(func) );
-	
-	error_sym.filename = swift_filename_buffer;
-	
-	if( !described && !exppp_terse ) {
-		fprintf( stdout, "%s: writing schema file %s\n", EXPRESSprogram_name, swift_filename_buffer );
-	}
-	
-	if( mkDirIfNone( "func" ) == -1 ) {
-			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
-			perror( 0 );
-			abort();
-	}
-	if( mkDirIfNone( dir ) == -1 ) {
-			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
-			perror( 0 );
-			abort();
-	}
-
-	
-	if( !( exppp_fp = f = fopen( swift_filename_buffer, "w" ) ) ) {
-		ERRORreport( ERROR_file_unwriteable, swift_filename_buffer, strerror( errno ) );
-		abort();
-	}
-	
-	printOutHeaderComment();
+void openSwiftFileForFunction(Schema s, Function func) {
+	openSwiftFile(s, "func", FUNC_swiftNameInitial(func), func->symbol.name);
 }
 
-void openSwiftFileForProcedure(Procedure proc) {
-	
-	FILE * f;
-	closeSwiftFile();
-	exppp_output_filename = 0;
-	
-	exppp_output_filename = swift_filename_buffer;
-	exppp_output_filename_reset = true;
-	snprintf( dir, BUFSIZ-1, "proc/%c", PROC_swiftNameInitial(proc) );
-	sprintf( swift_filename_buffer, "%s/%s.swift", dir, PROC_swiftName(proc) );
-	
-	error_sym.filename = swift_filename_buffer;
-	
-	if( !described && !exppp_terse ) {
-		fprintf( stdout, "%s: writing schema file %s\n", EXPRESSprogram_name, swift_filename_buffer );
-	}
-	
-	if( mkDirIfNone( "proc" ) == -1 ) {
-			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
-			perror( 0 );
-			abort();
-	}
-	if( mkDirIfNone( dir ) == -1 ) {
-			fprintf( stderr, "At %s:%d - mkdir() failed with error ", __FILE__, __LINE__);
-			perror( 0 );
-			abort();
-	}
-
-	
-	if( !( exppp_fp = f = fopen( swift_filename_buffer, "w" ) ) ) {
-		ERRORreport( ERROR_file_unwriteable, swift_filename_buffer, strerror( errno ) );
-		abort();
-	}
-	
-	printOutHeaderComment();
+void openSwiftFileForProcedure(Schema s, Procedure proc) {
+	openSwiftFile(s, "proc", PROC_swiftNameInitial(proc), proc->symbol.name);
 }
+
+

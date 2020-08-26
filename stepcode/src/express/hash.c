@@ -329,7 +329,7 @@ HASHsearch( Hash_Table table, Element item, Action action ) {
     HashAccesses++;
 # endif
     h = HASHhash( item->key, table );
-    SegmentDir = DIV( h, SEGMENT_SIZE_SHIFT );
+    SegmentDir = (int)DIV( h, SEGMENT_SIZE_SHIFT );
     SegmentIndex = MOD( h, SEGMENT_SIZE );
     /*
     ** valid segment ensured by HASHhash()
@@ -449,7 +449,7 @@ static void HASHexpand_table( Hash_Table table ) {
         ** Expand address space; if necessary create a new segment
         */
         NewAddress = table->maxp + table->p;
-        NewSegmentDir = DIV( NewAddress, SEGMENT_SIZE_SHIFT );
+        NewSegmentDir = (int)DIV( NewAddress, SEGMENT_SIZE_SHIFT );
         NewSegmentIndex = MOD( NewAddress, SEGMENT_SIZE );
         if( NewSegmentIndex == 0 ) {
             CALLOC( table->Directory[NewSegmentDir], SEGMENT_SIZE, Element );

@@ -23,21 +23,24 @@
 #include "swift_expression.h"
 #include "swift_algorithm.h"
 #include "swift_symbol.h"
+#include "swift_schema.h"
 
 
-static void attributeHead_swift(char* access, Variable attr, int level, char attrNameBuf[BUFSIZ]) {
+static void attributeHead_swift
+ (Scope current, Entity entity, char* access, Variable attr, int level, bool in_comment, char buf[BUFSIZ]) {
 	indent_swift(level);
-	raw("%s var %s: ",access,partialEntityAttribute_swiftName(attr, attrNameBuf));
+	raw("%s var %s: ",access,partialEntityAttribute_swiftName(attr, buf));
 	
-	variableType_swift(attr, false, level+nestingIndent_swift);
+	variableType_swift(current, attr, NO_FORCE_OPTIONAL, level+nestingIndent_swift, in_comment);
 }
 
 //MARK: explicit attribute
-static void simpleAttribureObservers_swift(Entity entity, Variable attr, int level) {
+static void simpleAttribureObservers_swift
+ (Scope current, Entity entity, Variable attr, int level) {
 	char buf[BUFSIZ];
 
 	indent_swift(level);
-	wrap("fileprivate static func %s__observer(", partialEntityAttribute_swiftName(attr, buf));
+	wrap("internal static func %s__observer(", partialEntityAttribute_swiftName(attr, buf));
 	wrap("SELF: SDAI.EntityReference, ");
 	wrap("removing: SDAI.EntityReference?, adding: SDAI.EntityReference?) {\n");
 	{	int level2 = level + nestingIndent_swift;
@@ -54,7 +57,7 @@ static void simpleAttribureObservers_swift(Entity entity, Variable attr, int lev
 				Entity observingEntity = observingAttr->defined_in;
 				
 				indent_swift(level3);
-				raw("//OBSERVING ENTITY: %s\n", ENTITY_swiftName(observingEntity));
+				raw("//OBSERVING ENTITY: %s\n", ENTITY_swiftName(observingEntity, "", "", NO_QUALIFICATION, buf));
 				
 				indent_swift(level3);
 				raw("oldComplex.partialEntityInstance(%s.self)?", partialEntity_swiftName(observingEntity, buf));
@@ -73,7 +76,7 @@ static void simpleAttribureObservers_swift(Entity entity, Variable attr, int lev
 				Entity observingEntity = observingAttr->defined_in;
 				
 				indent_swift(level3);
-				raw("//OBSERVING ENTITY: %s\n", ENTITY_swiftName(observingEntity));
+				raw("//OBSERVING ENTITY: %s\n", ENTITY_swiftName(observingEntity, "", "", NO_QUALIFICATION, buf));
 				
 				indent_swift(level3);
 				raw("newComplex.partialEntityInstance(%s.self)?", partialEntity_swiftName(observingEntity, buf));
@@ -89,11 +92,12 @@ static void simpleAttribureObservers_swift(Entity entity, Variable attr, int lev
 
 }
 
-static void aggregateAttributeObservers_swift(Entity entity, Variable attr, int level) {
+static void aggregateAttributeObservers_swift
+ (Scope current, Entity entity, Variable attr, int level) {
 	char buf[BUFSIZ];
 	
 	indent_swift(level);
-	wrap("fileprivate static func %s__aggregateObserver<AGG:SDAIAggregationType>(", partialEntityAttribute_swiftName(attr, buf));
+	wrap("internal static func %s__aggregateObserver<AGG:SDAIAggregationType>(", partialEntityAttribute_swiftName(attr, buf));
 	wrap("SELF: SDAI.EntityReference, ");
 	wrap("oldAggregate: inout AGG?, newAggregate: inout AGG?) {\n");
 
@@ -107,66 +111,80 @@ static void aggregateAttributeObservers_swift(Entity entity, Variable attr, int 
 	indent_swift(level);
 	raw("}\n");
 	
-	simpleAttribureObservers_swift(entity, attr, level);
+	simpleAttribureObservers_swift(current, entity, attr, level);
 }
 
-static void explicitStaticAttributeDefinition_swift(Entity entity, Variable attr, int level) {
-	char attrName[BUFSIZ];
-	attributeHead_swift("internal", attr, level, attrName);
+static void explicitStaticAttributeDefinition_swift
+ (Scope current,  Entity entity, Variable attr, int level) {
+	char buf[BUFSIZ];
+	
+	attributeHead_swift(current, entity, "internal", attr, level, NOT_IN_COMMENT, buf);
 	if( VARis_observed(attr) ) raw(" //OBSERVED");
 	raw("\n");
 	
 	if( VARis_observed(attr) ) {
 		if( TYPEis_aggregate(attr->type)) {
-			aggregateAttributeObservers_swift(entity, attr, level);
+			aggregateAttributeObservers_swift(current, entity, attr, level);
 		}
 		else {
-			simpleAttribureObservers_swift(entity, attr, level);
+			simpleAttribureObservers_swift(current, entity, attr, level);
 		}
 	}
 }
 
-static void explicitAttributeRedefinition_swift(Entity entity, Variable attr, int level) {
-	char attrName[BUFSIZ];
-	attributeHead_swift("//override", attr, level, attrName);
-	raw("\t//EXPLICIT REDEFINITION(%s)", ENTITY_swiftName(attr->original_attribute->defined_in));
+static void explicitAttributeRedefinition_swift
+ (Scope current, Entity entity, Variable attr, int level) {
+	char buf[BUFSIZ];
+	
+	attributeHead_swift(current, entity, "//override", attr, level, YES_IN_COMMENT, buf);
+	raw("\t//EXPLICIT REDEFINITION(%s)", 
+			ENTITY_swiftName(attr->original_attribute->defined_in, "", "", NO_QUALIFICATION, buf));
 	if( VARis_observed(attr) ) raw(" //OBSERVED");
 	raw("\n");
 }
 
-static void explicitDynamicAttributeDefinition_swift(Entity entity, Variable attr, int level) {
-	char attrName[BUFSIZ];
-	attributeHead_swift("internal", attr, level, attrName);
+static void explicitDynamicAttributeDefinition_swift
+ (Scope current, Entity entity, Variable attr, int level) {
+	char buf[BUFSIZ];
+	
+	attributeHead_swift(current, entity, "internal", attr, level, NOT_IN_COMMENT, buf);
 	raw(" //DYNAMIC");
 	if( VARis_observed(attr) ) raw(" //OBSERVED");
 	raw(" \n");
 	
 	if( VARis_observed(attr) ) {
 		if( TYPEis_aggregate(attr->type)) {
-			aggregateAttributeObservers_swift(entity, attr, level);
+			aggregateAttributeObservers_swift(current, entity, attr, level);
 		}
 		else {
-			simpleAttribureObservers_swift(entity, attr, level);
+			simpleAttribureObservers_swift(current, entity, attr, level);
 		}
 	}
 }
 
 //MARK: derived attribute
-static void derivedAttributeGetterDefinitionHead(Variable attr, char *attrName, Entity entity, int level) {
-	indent_swift(level);
-	raw("internal func %s__getter(SELF: %s) -> ", attrName, ENTITY_swiftName(entity) );
+static void derivedAttributeGetterDefinitionHead
+ (Scope current, Entity entity, Variable attr, const char *attrName, int level) {
+	char buf[BUFSIZ];
 	
-	variableType_swift(attr, false, level);
+	indent_swift(level);
+	raw("internal func %s__getter(SELF: %s) -> ", 
+			attrName, ENTITY_swiftName(entity, "", "", current, buf) );
+	
+	variableType_swift(current, attr, false, level, NOT_IN_COMMENT);
 }
 
-static void derivedRedefinitionGetterDefinitionHead(Variable attr, char *attrName, Entity entity, int level) {
+static void derivedRedefinitionGetterDefinitionHead
+ (Scope current, Entity entity, char* access, Variable attr, const char* attrName,  int level) {
+	 
 	indent_swift(level);
-	raw("internal func %s__getter(complex: SDAI.ComplexEntity) -> ", attrName );
+	raw("%sfunc %s__getter(complex: SDAI.ComplexEntity) -> ", access, attrName );
 	
-	variableType_swift(attr, false, level);
+	variableType_swift(current, attr, NO_FORCE_OPTIONAL, level, NOT_IN_COMMENT);
 }
 
-void explicitDynamicAttributeProtocolDefinition_swift(Entity entity, Variable attr, int level) {
+void explicitDynamicAttributeProtocolDefinition_swift
+ (Schema schema, Entity entity, Variable attr, int level) {
 	char buf[BUFSIZ];
 	
 	indent_swift(level);
@@ -174,9 +192,8 @@ void explicitDynamicAttributeProtocolDefinition_swift(Entity entity, Variable at
 	
 	{	int level2 = level + nestingIndent_swift;
 
-		char attrName[BUFSIZ];
-		partialEntityAttribute_swiftName(attr, attrName);
-		derivedRedefinitionGetterDefinitionHead(attr, attrName, entity, level2);
+		const char* attrName = partialEntityAttribute_swiftName(attr, buf);
+		derivedRedefinitionGetterDefinitionHead(schema->superscope, entity, "", attr, attrName, level2);
 		raw("\n");
 	}
 	
@@ -185,18 +202,21 @@ void explicitDynamicAttributeProtocolDefinition_swift(Entity entity, Variable at
 }
 
 static void recoverSELFfromComplex_swift(Entity entity, int level) {
+	char buf[BUFSIZ];
+	
 	indent_swift(level);
-	wrap("let SELF = complex.entityReference( %s.self )!\n", ENTITY_swiftName(entity));
+	wrap("let SELF = complex.entityReference( %s.self )!\n", 
+			 ENTITY_swiftName(entity, "", "", NO_QUALIFICATION, buf));
 }
 
-static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int level) {
+static void derivedAttributeDefinition_swift(Scope current, Entity entity, Variable attr, int level) {
 	indent_swift(level);
 	raw("//\tDERIVE\n");
 
 	char attrName[BUFSIZ];
 	partialEntityAttribute_swiftName(attr, attrName);
 	
-	derivedAttributeGetterDefinitionHead(attr, attrName, entity, level);
+	derivedAttributeGetterDefinitionHead(current, entity, attr, attrName, level);
 	raw(" {\n");
 	{	int level2 = level+nestingIndent_swift;
 				
@@ -213,18 +233,21 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 }
 
 
-static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int level) {
+static void derivedAttributeRedefinition_swift(Scope current, Entity entity, Variable attr, int level) {
 	Variable original_attr = VARget_redeclaring_attr(attr);
 	
+	char buf[BUFSIZ];
+	const char* entityName = ENTITY_swiftName(original_attr->defined_in, "", "", NO_QUALIFICATION, buf);
+	
+	char buf2[BUFSIZ];
+	const char* attrName = partialEntityAttribute_swiftName(attr, buf2);
+	
 	indent_swift(level);
-	raw("//\tDERIVE REDEFINITION(%s)", ENTITY_swiftName(original_attr->defined_in));
+	raw("//\tDERIVE REDEFINITION(%s)", entityName);
 	if( VARis_observed(original_attr) ) raw(" //OBSERVED ORIGINAL");
 	raw("\n");
-
-	char attrName[BUFSIZ];
-	partialEntityAttribute_swiftName(attr, attrName);
 	
-	derivedRedefinitionGetterDefinitionHead(original_attr, attrName, entity, level);
+	derivedRedefinitionGetterDefinitionHead(current, entity, "internal ", original_attr, attrName, level);
 	raw(" {\n");
 	{	int level2 = level+nestingIndent_swift;
 		
@@ -236,12 +259,10 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 	indent_swift(level);
 	raw("}\n");
 	
-	derivedAttributeGetterDefinitionHead(original_attr, attrName, entity, level);
+	derivedAttributeGetterDefinitionHead(current, entity, original_attr, attrName, level);
 	raw(" {\n");
 	{	int level2 = level+nestingIndent_swift;
 		
-		recoverSELFfromComplex_swift(entity, level2);
-
 		indent_swift(level2);
 		raw("let value = ");
 		EXPR_swift(entity, VARget_initializer(attr), NO_PAREN );
@@ -249,7 +270,7 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 		
 		if( VARis_observed(original_attr) ) {
 			indent_swift(level2);
-			raw("SELF.SUPER_%s.%s = value\n", ENTITY_swiftName(original_attr->defined_in), attrName );
+			raw("SELF.SUPER_%s.%s = value\n", entityName, attrName );
 		}
 		
 		indent_swift(level2);
@@ -260,20 +281,20 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 }
 
 //MARK: inverse attribute
-static void inverseAttributeDefinition_swift(Variable attr, int level) {
+static void inverseAttributeDefinition_swift(Scope current, Entity entity, Variable attr, int level) {
 	indent_swift(level);
 	raw("//\tINVERSE\n");
 	
 	char attrName[BUFSIZ];
-	attributeHead_swift("internal private(set)", attr, level, attrName);
+	attributeHead_swift(current, entity, "internal private(set)", attr, level, NOT_IN_COMMENT, attrName);
 	raw("\n");
 	
 	char attrBaseType[BUFSIZ];
-	TYPEhead_string_swift(ATTRget_base_type(attr), attrBaseType);
+	TYPEhead_string_swift(current, ATTRget_base_type(attr), NOT_IN_COMMENT, attrBaseType);
 	
 	// addedReference observer func
 	indent_swift(level);
-	raw("internal func %s__observeAddedReference(in complex: ComplexEntity) {\n", attrName);
+	raw("internal func %s__observeAddedReference(in complex: SDAI.ComplexEntity) {\n", attrName);
 	
 	{	int level2 = level+nestingIndent_swift;
 
@@ -297,7 +318,7 @@ static void inverseAttributeDefinition_swift(Variable attr, int level) {
 
 	// removedReference observer func
 	indent_swift(level);
-	raw("internal func %s__observeRemovedReference(in complex: ComplexEntity) {\n", attrName);
+	raw("internal func %s__observeRemovedReference(in complex: SDAI.ComplexEntity) {\n", attrName);
 	
 	{	int level2 = level+nestingIndent_swift;
 		
@@ -322,7 +343,7 @@ static void inverseAttributeDefinition_swift(Variable attr, int level) {
 
 //MARK: local attributes list
 static void localAttributeDefinitions_swift
- ( Entity entity, int level, Linked_List attr_overrides, Linked_List dynamic_attrs ) {
+ ( Scope current, Entity entity, int level, Linked_List attr_overrides, Linked_List dynamic_attrs ) {
 	 Linked_List local_attributes = entity->u.entity->attributes;
 	 
 	raw("\n");
@@ -332,27 +353,27 @@ static void localAttributeDefinitions_swift
 	LISTdo( local_attributes, attr, Variable ){
 		if( VARis_redeclaring(attr) ) {
 			if( VARis_derived(attr) ) {
-				derivedAttributeRedefinition_swift(entity, attr, level);
+				derivedAttributeRedefinition_swift(current, entity, attr, level);
 				LISTadd_last(attr_overrides, attr);
 			}
 			else {
-				explicitAttributeRedefinition_swift(entity, attr, level);
+				explicitAttributeRedefinition_swift(current, entity, attr, level);
 			}
 		}
 		else {
 			if( VARis_derived(attr) ) {
-				derivedAttributeDefinition_swift(entity, attr, level);
+				derivedAttributeDefinition_swift(current, entity, attr, level);
 			}
 			else if( VARis_inverse(attr) ){
-				inverseAttributeDefinition_swift(attr, level);
+				inverseAttributeDefinition_swift(current, entity, attr, level);
 			}
 			else {	// explicit
 				if( VARis_dynamic(attr) ) {
-					explicitDynamicAttributeDefinition_swift(entity, attr, level);
+					explicitDynamicAttributeDefinition_swift(current, entity, attr, level);
 					LISTadd_last(dynamic_attrs, attr);
 				}
 				else {
-					explicitStaticAttributeDefinition_swift(entity, attr, level);
+					explicitStaticAttributeDefinition_swift(current, entity, attr, level);
 				}
 			}
 		}
@@ -365,7 +386,7 @@ static void localAttributeDefinitions_swift
 }
 
 //MARK: - where rule
-static void whereDefinitions_swift( Entity entity, int level ) {
+static void whereDefinitions_swift( Scope current, Entity entity, int level ) {
 	Linked_List where_rules = TYPEget_where(entity);
 	if( LISTempty(where_rules) ) return;
 	
@@ -373,11 +394,12 @@ static void whereDefinitions_swift( Entity entity, int level ) {
 	raw("//WHERE RULES\n");
 
 	char whereLabel[BUFSIZ];
+	char buf[BUFSIZ];
 	LISTdo( where_rules, where, Where ){
 		indent_swift(level);
-		wrap("public func %s(SELF: %s) -> LOGICAL {\n", 
+		wrap("public func %s(SELF: %s) -> SDAI.LOGICAL {\n", 
 				 whereRuleLabel_swiftName(where, whereLabel), 
-				 ENTITY_swiftName(entity) );
+				 ENTITY_swiftName(entity, "", "", current, buf) );
 		
 		indent_swift(level+nestingIndent_swift);
 		EXPR_swift(entity, where->expr, NO_PAREN);
@@ -396,7 +418,6 @@ static Variable unique_attribute( Expression expr ) {
 }
 
 static void simpleUniquenessRule_swift( Entity entity, Linked_List unique, int level) {
-	
 	Expression attr_expr = LISTget_second(unique);
 	
 	indent_swift(level);
@@ -433,10 +454,10 @@ static void jointUniquenessRule_swift( Entity entity, Linked_List unique, int jo
 	
 	raw("\n");
 	indent_swift(level);
-	wrap("return AnyHashable( attibutes )\n");
+	wrap("return AnyHashable( attributes )\n");
 }
 
-static void uniqueRule_swift( Entity entity, int serial, Linked_List unique, int level ) {
+static void uniqueRule_swift( Scope current, Entity entity, int serial, Linked_List unique, int level ) {
 	char buf[BUFSIZ];
 	int joint_count = LISTget_length(unique) - 1;
 	
@@ -447,7 +468,7 @@ static void uniqueRule_swift( Entity entity, int serial, Linked_List unique, int
 	{	int level2 = level+nestingIndent_swift;
 		
 		indent_swift(level2);
-		wrap("guard let SELF = complex.entityReference( %s.self ) ", ENTITY_swiftName(entity));
+		wrap("guard let SELF = complex.entityReference( %s.self ) ", ENTITY_swiftName(entity, "", "", current, buf));
 		wrap("else { return nil }\n\n");
 
 		if( joint_count == 1 ) {
@@ -464,7 +485,7 @@ static void uniqueRule_swift( Entity entity, int serial, Linked_List unique, int
 	
 }
 
-static void uniqueDefinitions_swift( Entity entity, int level ) {
+static void uniqueDefinitions_swift( Scope current, Entity entity, int level ) {
 	Linked_List unique_rules = ENTITYget_uniqueness_list(entity);
 	if( LISTempty(unique_rules) ) return;
 	
@@ -473,14 +494,14 @@ static void uniqueDefinitions_swift( Entity entity, int level ) {
 	
 	int serial = 0;
 	LISTdo(unique_rules, unique, Linked_List) {
-		uniqueRule_swift(entity, ++serial, unique, level);
+		uniqueRule_swift(current, entity, ++serial, unique, level);
 	}LISTod;
 	
 	raw("\n");
 }
 
 //MARK: - constructor
-static void expressConstructor( Entity entity, int level ) {
+static void expressConstructor( Scope current, Entity entity, int level ) {
 	
 	indent_swift(level);
 	raw("//EXPRESS IMPLICIT PARTIAL ENTITY CONSTRUCTOR\n");
@@ -488,15 +509,16 @@ static void expressConstructor( Entity entity, int level ) {
 	Linked_List params = ENTITYget_constructor_params(entity);
 	
 	indent_swift(level);
-	raw("public init(");
-	ALGargs_swift(NO_FORCE_OPTIONAL, params, NO_DROP_SINGLE_LABEL, level);
+	raw("public%s init(", LISTempty(params) ? " override" : "");
+	ALGargs_swift(current, NO_FORCE_OPTIONAL, params, NO_DROP_SINGLE_LABEL, level);
 	raw(") {\n");
 
 	{	int level2 = level+nestingIndent_swift;
 		char buf[BUFSIZ];
 		LISTdo(params, attr, Variable) {
 			indent_swift(level2);
-			raw("self.%s = %s\n", partialEntityAttribute_swiftName(attr, buf), variable_swiftName(attr));
+			raw("self.%s = ", partialEntityAttribute_swiftName(attr, buf));
+			raw("%s\n", variable_swiftName(attr,buf));
 		}LISTod;
 		indent_swift(level2);
 		raw("super.init()\n");
@@ -521,10 +543,10 @@ void partialEntityDefinition_swift
 	 
 	 {	int level2 = level+nestingIndent_swift;
 		 
-		 localAttributeDefinitions_swift(entity, level2, attr_overrides, dynamic_attrs);
-		 whereDefinitions_swift(entity, level2);
-		 uniqueDefinitions_swift(entity, level2);
-		 expressConstructor(entity, level2);
+		 localAttributeDefinitions_swift(entity, entity, level2, attr_overrides, dynamic_attrs);
+		 whereDefinitions_swift(entity, entity, level2);
+		 uniqueDefinitions_swift(entity, entity, level2);
+		 expressConstructor(entity, entity, level2);
 	 }
 	 
 	 indent_swift(level);
@@ -532,11 +554,17 @@ void partialEntityDefinition_swift
  }
 
 void partialEntityAttrOverrideProtocolConformance_swift
- ( Entity entity, int level, Linked_List attr_overrides ) {
+ ( Schema schema, Entity entity, int level, Linked_List attr_overrides ) {
+	 if( LISTempty(attr_overrides) ) return;
+	 
+	 raw("\n");
+	 raw("//MARK: - partial Entity Dynamic Attribute Protocol Conformances\n");
+
 	 char buf[BUFSIZ];
-	
+
 	 indent_swift(level);
-	 wrap("extension %s :", partialEntity_swiftName(entity, buf));
+	 raw("extension %s", SCHEMA_swiftName(schema));
+	 wrap(".%s :", partialEntity_swiftName(entity, buf));
 	 char* sep = "";
 	 LISTdo( attr_overrides, attr, Variable ) {
 		 assert(attr->original_attribute);

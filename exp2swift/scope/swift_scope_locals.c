@@ -41,19 +41,26 @@ void SCOPElocalList_swift( Scope s, int level ) {
 		}
 		
 		indent_swift(level);
-		wrap("var %s: ", variable_swiftName(var));
+		{
+			char buf[BUFSIZ];
+			raw("var %s: ", variable_swiftName(var,buf));
+		}
 		
-		variableType_swift(var, true, level);
+		variableType_swift(s, var, true, level, NOT_IN_COMMENT);
 		
 		if( var->initializer ) {
-			wrap( " = " );
+			raw( " = " );
+			positively_wrap();
+			int oldwrap = captureWrapIndent();
 			EXPR_swift( NULL, var->initializer, NO_PAREN );
+			restoreWrapIndent(oldwrap);
 		}
 		else if( TYPEhas_bounds(var->type) ) {
+			char buf[BUFSIZ];
 			const char* aggr;
 			switch (TYPEget_type(var->type)) {
 				case aggregate_:
-					aggr = TYPE_swiftName(TYPEget_body(var->type)->tag);
+					aggr = TYPE_swiftName(TYPEget_body(var->type)->tag,NO_QUALIFICATION,buf);
 					break;
 				case array_:
 					aggr = "SDAI.ARRAY";
@@ -75,11 +82,15 @@ void SCOPElocalList_swift( Scope s, int level ) {
 					aggr = "#UNKNOWN_TYPE#";
 					break;
 			}
-			wrap(" = %s(bound1:",aggr);
+			raw( " = " );
+			positively_wrap();
+			int oldwrap = captureWrapIndent();
+			wrap("%s(bound1:",aggr);
 			EXPR_swift(NULL,TYPEget_body(var->type)->lower, NO_PAREN);
 			raw(", bound2:");
 			EXPR_swift(NULL,TYPEget_body(var->type)->upper, NO_PAREN);
 			raw(")");
+			restoreWrapIndent(oldwrap);
 		}
 		
 		raw( "\n" );

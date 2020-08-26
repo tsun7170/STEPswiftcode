@@ -37,6 +37,7 @@ Now you can say things like:
 #include <sc_memmgr.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "express/memory.h"
 #include "express/error.h"
 
@@ -131,6 +132,7 @@ Generic MEM_new( struct freelist_head * flh ) {
         ERRORnospace();
     }
 
+	assert(flh->freelist != NULL);
     obj = &flh->freelist->memory;
     flh->freelist = flh->freelist->next;
 

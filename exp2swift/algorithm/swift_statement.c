@@ -73,7 +73,10 @@ static void LOOPwithIncrementControl_swift( struct Loop_ *loop, int level ) {
 	DICTdo_init( loop->scope->symbol_table, &de );
 	Variable v = ( Variable )DICTdo( &de );
 
-	wrap("for %s in ",variable_swiftName(v));
+	{
+		char buf[BUFSIZ];
+		wrap("for %s in ",variable_swiftName(v, buf));
+	}
 	
 	if( loop->scope->u.incr->increment && 
 		 !(TYPEis(loop->scope->u.incr->increment->type) == integer_ && (loop->scope->u.incr->increment->u.integer == 1)) ) {
@@ -238,7 +241,10 @@ void STMT_swift( Statement stmt, int level ) {
 			
 			//MARK: STMT_PCALL
 		case STMT_PCALL:
-			wrap("%s(", PROCcall_swiftName(stmt));
+		{
+			char buf[BUFSIZ];
+			wrap("%s(", PROCcall_swiftName(stmt,buf));
+		}
 			
 			char* sep = " ";
 			Linked_List formals = stmt->u.proc->procedure->u.proc->parameters;
@@ -249,7 +255,10 @@ void STMT_swift( Statement stmt, int level ) {
 				
 				assert(formals_iter != NULL);
 				Variable formal_param = formals_iter->data;
-				wrap("%s: ", variable_swiftName(formal_param));
+				{
+					char buf[BUFSIZ];
+					wrap("%s: ", variable_swiftName(formal_param,buf));
+				}
 				if(VARis_inout(formal_param)) {
 					raw("&");
 				}
@@ -273,15 +282,21 @@ void STMT_swift( Statement stmt, int level ) {
 			
 			//MARK: STMT_ALIAS
 		case STMT_ALIAS:
-			raw("do {\t/* ALIAS %s", variable_swiftName(stmt->u.alias->variable) );
+		{
+			char buf[BUFSIZ];
+			raw("do {\t/* ALIAS (%s)", variable_swiftName(stmt->u.alias->variable,buf) );
+		}
 			wrap(" FOR ");
-			EXPR_swift(NULL, stmt->u.alias->variable->initializer, NO_PAREN);
+			EXPR_swift(NULL, stmt->u.alias->variable->initializer, YES_PAREN);
 			raw(" */\n");
 			
 			STMTlist_swift(stmt->u.alias->statements, level+nestingIndent_swift);
 
 			indent_swift(level);
-			raw("} //END ALIAS\n");
+		{
+			char buf[BUFSIZ];			
+			raw("} //END ALIAS (%s)\n",variable_swiftName(stmt->u.alias->variable,buf));
+		}
 			break;
 			
 			//MARK: STMT_SKIP

@@ -210,6 +210,19 @@ extern SC_EXPRESS_EXPORT Expression  LITERAL_INFINITY;
 extern SC_EXPRESS_EXPORT Expression  LITERAL_PI;
 extern SC_EXPRESS_EXPORT Expression  LITERAL_ZERO;
 extern SC_EXPRESS_EXPORT Expression  LITERAL_ONE;
+//*TY 2020/08/26
+extern SC_EXPRESS_EXPORT Expression  createLITERAL_E(void);
+extern SC_EXPRESS_EXPORT Expression  createLITERAL_INFINITY(void);
+extern SC_EXPRESS_EXPORT Expression  createLITERAL_PI(void);
+extern SC_EXPRESS_EXPORT Expression  createLITERAL_ZERO(void);
+extern SC_EXPRESS_EXPORT Expression  createLITERAL_ONE(void);
+//*TY 2020/08/26
+extern SC_EXPRESS_EXPORT bool  isLITERAL_E(Expression e);
+extern SC_EXPRESS_EXPORT bool  isLITERAL_INFINITY(Expression e);
+extern SC_EXPRESS_EXPORT bool  isLITERAL_PI(Expression e);
+extern SC_EXPRESS_EXPORT bool  isLITERAL_ZERO(Expression e);
+extern SC_EXPRESS_EXPORT bool  isLITERAL_ONE(Expression e);
+
 
 extern SC_EXPRESS_EXPORT Error ERROR_bad_qualification;
 extern SC_EXPRESS_EXPORT Error ERROR_integer_expression_expected;
@@ -284,4 +297,7 @@ extern SC_EXPRESS_EXPORT void     EXPcleanup PROTO( ( void ) );
 extern SC_EXPRESS_EXPORT Type     EXPtype PROTO( ( Expression, struct Scope_ * ) );
 extern SC_EXPRESS_EXPORT int      EXPget_integer_value PROTO( ( Expression ) );
 
+//*TY2020/08/23
+extern Linked_List all_aggregate_initializers;
+extern void check_aggregate_initializers(const char* message, bool print);
 #endif /*EXPRESSION_H*/

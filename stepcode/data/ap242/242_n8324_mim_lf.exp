@@ -25038,7 +25038,7 @@ END_TYPE;
     END_LOCAL;
     REPEAT i := 1 TO LENGTH( s ) BY 1;
       ch := s[i];
-      IF ( ch = '\x9' ) OR ( ch = '\xA' ) OR ( ch = '\xD' ) THEN
+      IF ( ch = "00000009" ) OR ( ch = "0000000A" ) OR ( ch = "0000000D" ) THEN	--*TY2020/08/15
         RETURN( FALSE );
       END_IF;
     END_REPEAT;

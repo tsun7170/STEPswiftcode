@@ -11,7 +11,7 @@
 
 #include "../express/alg.h"
 
-const char* RULE_swiftName( Rule rule );
+const char* RULE_swiftName( Rule rule, char buf[BUFSIZ] );
 char 				RULE_swiftNameInitial( Rule rule );
 
 void RULE_swift( Rule rule, int level );

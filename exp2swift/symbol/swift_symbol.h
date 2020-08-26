@@ -11,8 +11,14 @@
 
 #include <express/scope.h>
 
-const char * variable_swiftName(Variable v);
-void variableType_swift(Variable v, bool force_optional, int level);
-void optionalType_swift(Type type, bool optional, int level);
+#define YES_OPTIONAL_TYPE	true
+#define NON_OPTIONAL_TYPE	false
+
+
+const char* canonical_swiftName(const char* name, char buf[BUFSIZ]);
+
+const char * variable_swiftName(Variable v, char buf[BUFSIZ]);
+void variableType_swift(Scope current, Variable v, bool force_optional, int level, bool in_comment);
+void optionalType_swift(Scope current, Type type, bool optional, int level, bool in_comment);
 
 #endif /* swift_symbol_h */

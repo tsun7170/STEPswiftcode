@@ -64,7 +64,8 @@ SC_EXPPP_EXPORT int TYPEbody_to_buffer( Type t, char * buffer, int length );
 SC_EXPPP_EXPORT int WHEREto_buffer( Linked_List w, char * buffer, int length );
 
 SC_EXPPP_EXPORT int EXPRlength( Expression e );
-extern SC_EXPPP_EXPORT void tail_comment( const char * name );
+//*TY2020/08/22 extern SC_EXPPP_EXPORT void tail_comment( const char * name );
+extern SC_EXPPP_EXPORT void tail_comment( Symbol symbol );
 extern SC_EXPPP_EXPORT int count_newlines( char * s );
 
 #endif

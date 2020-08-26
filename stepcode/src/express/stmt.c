@@ -68,7 +68,11 @@ Statement STMTcreate( int type ) {
 
 /** Initialize the Statement module. */
 void STMTinitialize( void ) {
-    MEMinitialize( &STMT_fl, sizeof( struct Statement_ ), 500, 100 );
+	//*TY2020/08/26
+	current_filename = __FILE__;
+	yylineno = __LINE__;
+
+	MEMinitialize( &STMT_fl, sizeof( struct Statement_ ), 500, 100 );
 
     MEMinitialize( &ALIAS_fl, sizeof( struct Alias_ ), 10, 10 );
     MEMinitialize( &ASSIGN_fl, sizeof( struct Assignment_ ), 100, 30 );

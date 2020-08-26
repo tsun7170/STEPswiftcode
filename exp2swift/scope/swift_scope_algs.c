@@ -59,8 +59,6 @@ static void SCOPEprocList_swift( Scope s, int level ) {
 
 
 void SCOPEalgList_swift( Scope s, int level ) {
-    /* Supplementary Directivies 2.1.1 requires rules to be separated */
-    /* might as well separate funcs and procs, too */
     SCOPEruleList_swift( s, level );
     SCOPEfuncList_swift( s, level );
     SCOPEprocList_swift( s, level );
@@ -72,7 +70,10 @@ void SCOPEalgList_swift( Scope s, int level ) {
 static void schemaLevelRule_swift( Schema schema, Rule rule ) {
 	int level = 0;
 
-	openSwiftFileForRule(rule);
+	openSwiftFileForRule(schema,rule);
+	
+	raw("\n"
+			"import SwiftSDAIcore\n");
 	
 	raw("\n"
 			"extension %s {\n", SCHEMA_swiftName(schema));
@@ -87,7 +88,12 @@ static void schemaLevelRule_swift( Schema schema, Rule rule ) {
 static void schemaLevelFunction_swift( Schema schema, Function func ) {
 	int level = 0;
 
-	openSwiftFileForFunction(func);
+	
+	openSwiftFileForFunction(schema,func);
+	
+	raw("\n"
+			"import SwiftSDAIcore\n");
+
 	raw("\n"
 			"extension %s {\n", SCHEMA_swiftName(schema));
 	
@@ -101,11 +107,17 @@ static void schemaLevelFunction_swift( Schema schema, Function func ) {
 static void schemaLevelProcedure_swift( Schema schema, Procedure proc ) {
 	int level = 0;
 
-	openSwiftFileForProcedure(proc);
+	openSwiftFileForProcedure(schema,proc);
 
+	raw("\n"
+			"import SwiftSDAIcore\n");
+
+	raw("\n"
+			"extension %s {\n", SCHEMA_swiftName(schema));
+	
 	{	int level2 = level + nestingIndent_swift;
 		
-		PROC_swift(false, proc, level2);
+		PROC_swift( false, proc, level2 );
 	}
 	raw("}\n");
 }

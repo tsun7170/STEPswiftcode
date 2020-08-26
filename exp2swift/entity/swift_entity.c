@@ -21,55 +21,64 @@
 #include "swift_files.h"
 #include "swift_type.h"
 #include "swift_expression.h"
+#include "swift_symbol.h"
 
 
-const char* ENTITY_swiftName( Entity e ) {
-	return e->symbol.name;
+const char* ENTITY_swiftName( Entity e, const char* prefix, const char* postfix, Scope current, char buf[BUFSIZ] ) {
+	int qual_len = accumulate_qualification(e->superscope, current, buf);
+	char buf2[BUFSIZ];
+	snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s%s%s", 
+					 prefix, canonical_swiftName(e->symbol.name, buf2), postfix);
+	return buf;
 }
 
 char ENTITY_swiftNameInitial( Entity e) {
-	return toupper( ENTITY_swiftName(e)[0] );
+	return toupper( e->symbol.name[0] );
 }
 
 const char* ENTITY_canonicalName( Entity e, char buf[BUFSIZ] ) {
-	char* to = buf;
-	int remain = BUFSIZ-1;
-	for(char* from = e->symbol.name; *from; ++from ) {
-		if( islower(*from) ) {
-			(*to) = toupper(*from);
-		}
-		else {
-			(*to) = (*from);
-		}
-		++to;
-		--remain;
-		if( remain == 0 ) break;
-	}
-	(*to) = 0;
-	return buf;
+	return canonical_swiftName(e->symbol.name, buf);
+//	char* to = buf;
+//	int remain = BUFSIZ-1;
+//	for(char* from = e->symbol.name; *from; ++from ) {
+//		if( islower(*from) ) {
+//			(*to) = toupper(*from);
+//		}
+//		else {
+//			(*to) = (*from);
+//		}
+//		++to;
+//		--remain;
+//		if( remain == 0 ) break;
+//	}
+//	(*to) = 0;
+//	return buf;
 }
 
 const char* ENTITY_swiftProtocolName( Entity e, char buf[BUFSIZ]) {
-	snprintf(buf, BUFSIZ, "%s_protocol", ENTITY_swiftName(e));
-	return buf;
+	return ENTITY_swiftName(e, "", "_protocol", NO_QUALIFICATION, buf);
 }
 
 const char* partialEntity_swiftName( Entity e, char buf[BUFSIZ] ) {
-	snprintf(buf, BUFSIZ, "_%s", ENTITY_swiftName(e));
-	return buf;	
+	snprintf(buf, BUFSIZ, "_%s", e->symbol.name);
+	return buf;
 }
 
-const char* attribute_swiftName( Variable attr ) {
-	return ATTRget_name_string(attr);
+const char* attribute_swiftName( Variable attr, char buf[BUFSIZ] ) {
+	return canonical_swiftName(ATTRget_name_string(attr), buf);
 }
 
 const char* partialEntityAttribute_swiftName( Variable attr, char buf[BUFSIZ] ) {
-	snprintf(buf, BUFSIZ, "_%s", attribute_swiftName(attr));
+	snprintf(buf, BUFSIZ, "_%s", ATTRget_name_string(attr));
 	return buf;
 }
 
 const char* dynamicAttribute_swiftProtocolName( Variable original, char buf[BUFSIZ] ) {
-	snprintf(buf, BUFSIZ, "%s__%s__provider", ENTITY_swiftName(original->defined_in), attribute_swiftName(original));
+	char buf2[BUFSIZ];
+	char buf3[BUFSIZ];
+	snprintf(buf, BUFSIZ, "%s__%s__provider", 
+					 ENTITY_swiftName(original->defined_in, "","",NO_QUALIFICATION,buf2), 
+					 attribute_swiftName(original,buf3));
 	return buf;
 }
 
@@ -252,7 +261,8 @@ static void listAllAttributes( Entity leaf, Entity entity, int level ) {
 
 //MARK: - main entry point
 
-void ENTITY_swift( Entity entity, int level, Linked_List dynamic_attrs ) {
+void ENTITY_swift( Entity entity, int level, 
+									Linked_List dynamic_attrs, Linked_List attr_overrides ) {
 	// EXPRESS summary
 	beginExpress_swift("ENTITY DEFINITION");
 	ENTITY_out(entity, level);
@@ -264,26 +274,21 @@ void ENTITY_swift( Entity entity, int level, Linked_List dynamic_attrs ) {
 	raw("*/\n");
 	
 	// partial entity definition
-	Linked_List attr_overrides = LISTcreate();
 	partialEntityDefinition_swift(entity, level, attr_overrides, dynamic_attrs);
-	if( !LISTempty(attr_overrides) ) {
-		partialEntityAttrOverrideProtocolConformance_swift(entity, level, attr_overrides);
-	}
-	LISTfree(attr_overrides);
-
+	
 	// entity reference definition
 	entityReferenceDefinition_swift(entity, level);
-	
 }
 
-void ENTITY_swiftProtocol(Entity entity, int level, Linked_List dynamic_attrs ) {
+
+void ENTITY_swiftProtocol(Schema schema, Entity entity, int level, Linked_List dynamic_attrs ) {
 	if( LISTempty(dynamic_attrs) ) return;
 	
 	raw("\n");
 	raw("//MARK: - Entity Dynamic Attribute Protocols\n");
 
 	LISTdo(dynamic_attrs, attr, Variable) {
-		explicitDynamicAttributeProtocolDefinition_swift(entity, attr, level);
+		explicitDynamicAttributeProtocolDefinition_swift(schema, entity, attr, level);
 	}LISTod;
 }
 

@@ -12,9 +12,6 @@
 #include <express/scope.h>
 
 void SCOPEalgList_swift( Scope s, int level );
-//void SCOPEruleList_swift( Scope s, int level );
-//void SCOPEfuncList_swift( Scope s, int level );
-//void SCOPEprocList_swift( Scope s, int level );
 
 void SCHEMAalgList_swift( Schema schema );
 

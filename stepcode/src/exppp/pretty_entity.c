@@ -74,7 +74,7 @@ void ENTITY_out( Entity e, int level ) {
 
     level -= exppp_nesting_indent;
     raw( "%*sEND_ENTITY;", level, "" );
-    tail_comment( e->symbol.name );
+    tail_comment( e->symbol );
 }
 
 void ENTITYunique_out( Linked_List u, int level ) {
@@ -93,7 +93,7 @@ void ENTITYunique_out( Linked_List u, int level ) {
     LISTdo( u, list, Linked_List ) {
         if( 0 != ( sym = ( Symbol * )LISTget_first( list ) ) ) {
             int length;
-            length = strlen( sym->name );
+            length = (int)strlen( sym->name );
             if( length > max_indent ) {
                 max_indent = length;
             }
@@ -133,7 +133,7 @@ void ENTITYinverse_out( Linked_List attrs, int level ) {
     LISTdo( attrs, v, Variable ) {
         if( v->inverse_symbol ) {
             int length;
-            length = strlen( v->name->symbol.name );
+            length = (int)strlen( v->name->symbol.name );
             if( length > max_indent ) {
                 max_indent = length;
             }

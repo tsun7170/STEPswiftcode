@@ -49,7 +49,11 @@ Symbol * SCOPE_get_symbol( Generic s ) {
 }
 
 void SCOPEinitialize( void ) {
-    OBJcreate( OBJ_SCHEMA, SCOPE_get_symbol, "schema", OBJ_SCHEMA_BITS );
+	//*TY2020/08/26
+	current_filename = __FILE__;
+	yylineno = __LINE__;
+
+	OBJcreate( OBJ_SCHEMA, SCOPE_get_symbol, "schema", OBJ_SCHEMA_BITS );
     MEMinitialize( &SCOPE_fl, sizeof( struct Scope_ ), 100, 50 );
 }
 

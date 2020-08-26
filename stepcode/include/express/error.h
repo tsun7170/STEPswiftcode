@@ -126,18 +126,34 @@ extern SC_EXPRESS_EXPORT void ERROR_flush_message_buffer PROTO( ( void ) );
 /* Inline functions */
 /********************/
 
+/** \fn ERRORdisable
+** \param error error to disable
+** Disable an error (ERRORreport*() will ignore it)
+** \note this function is inlined in error.h
+*/
 static_inline void ERRORdisable( Error error ) {
     if( error != ERROR_none ) {
         error->enabled = false;
     }
 }
 
+/** \fn ERRORenable
+** \param error error to enable
+** Enable an error (ERRORreport*() will report it)
+** \note this function is inlined in error.h
+*/
 static_inline void ERRORenable( Error error ) {
     if( error != ERROR_none ) {
         error->enabled = true;
     }
 }
 
+/** \fn ERRORis_enabled
+** \param error error to test
+** return is reporting of the error enabled?
+** Check whether an error is enabled
+** \note this function is inlined in error.h
+*/
 static_inline bool ERRORis_enabled( Error error ) {
     return error->enabled;
 }
