@@ -23869,12 +23869,12 @@ END_TYPE;
         IF up1.base = up2.base THEN
           tspace := make_uniform_product_space( up1.base, up1.exponent + up2.exponent );
         ELSE
-          factors := [up1.base : 0, up2.base : 0];
+          factors := [up1.base : 0, up2.base : 0];	--//*TY BROKEN! 
           tspace := make_listed_product_space( factors );
         END_IF;
       ELSE
         IF use_lp2 THEN
-          factors := [up1.base : 0];
+          factors := [up1.base : 0];	--//*TY BROKEN! 
           factors := factors + lp2.factors;
           tspace := make_listed_product_space( factors );
         ELSE
@@ -23885,7 +23885,7 @@ END_TYPE;
     ELSE
       IF use_lp1 THEN
         IF use_up2 THEN
-          factors := [up2.base : 0];
+          factors := [up2.base : 0];	--//*TY BROKEN! 
           factors := lp1.factors + factors;
           tspace := make_listed_product_space( factors );
         ELSE
@@ -29702,7 +29702,7 @@ END_TYPE;
     IF n <> ( ( u - low ) + 1 ) THEN
       RETURN( ? );
     ELSE
-      res := [lis[1] : 0];
+      res := [lis[1] : 0];	--//*TY BROKEN! 
       REPEAT i := 2 TO n BY 1;
         res[( low + i ) - 1] := lis[i];
       END_REPEAT;
@@ -29742,7 +29742,7 @@ END_TYPE;
     IF ( ( u2 - low2 ) + 1 ) <> SIZEOF( lis[1] ) THEN
       RETURN( ? );
     END_IF;
-    res := [list_to_array( lis[1], low2, u2 ) : 0];
+    res := [list_to_array( lis[1], low2, u2 ) : 0];	--//*TY BROKEN! 
     REPEAT i := 2 TO HIINDEX( lis ) BY 1;
       IF ( ( u2 - low2 ) + 1 ) <> SIZEOF( lis[i] ) THEN
         RETURN( ? );

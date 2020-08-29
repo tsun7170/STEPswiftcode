@@ -15,29 +15,14 @@
 //*TY2020/07/11
 #define YES_PAREN	true
 #define NO_PAREN	false
-#define YES_PAD	true
-#define NO_PAD	false
-#define YES_WRAP	true
-#define NO_WRAP	false
-#define OPCODE_FROM_EXPRESS	( char * )0
 
-#define EXPR_swift(		SELF,e,p) \
-				EXPR__swift(	SELF,e,p, YES_WRAP, OP_UNKNOWN)
+//#define EXPR_swift(		SELF,e,p) \
+//				EXPR__swift(	SELF,e,p, YES_WRAP, OP_UNKNOWN)
 
-//#define EXPRop2_swift(	SELF1,SELF2,oe,string,paren,pad) \
-//				EXPRop2__swift(	SELF1,SELF2,oe,string,paren,pad,		OP_UNKNOWN, YES_WRAP)
-//
-//#define EXPRop_swift(		SELF,oe,paren) \
-//				EXPRop__swift(	SELF,oe,paren,		OP_UNKNOWN, YES_WRAP)
 
 
 void EXPRbounds_swift( Scope SELF, TypeBody tb, bool in_comment );
-void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op, bool can_wrap );
-//void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe, bool paren, unsigned int previous_op, bool can_wrap );
-//void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * eo, char * opcode, bool paren, bool pad, unsigned int previous_op, bool can_wrap );
-//void EXPRop1_swift( Scope SELF, struct Op_Subexpression * eo, char * opcode, bool paren, bool can_wrap );
-//void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap );
-//void EXPRopIn_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap );
+void EXPR_swift( Scope SELF, Expression e, bool paren);
 
 
 #endif /* swift_expression_h */

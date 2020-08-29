@@ -20,16 +20,38 @@
 #include "swift_func.h"
 #include "swift_entity.h"
 
+//*TY2020/07/11
+#define YES_PAD	true
+#define NO_PAD	false
+#define YES_WRAP	true
+#define NO_WRAP	false
+#define OPCODE_FROM_EXPRESS	( char * )0
+
+
 #define EXPRop2_swift(	SELF1,SELF2,oe,string,paren,pad) \
 				EXPRop2__swift(	SELF1,SELF2,oe,string,paren,pad,		OP_UNKNOWN, YES_WRAP)
 
 #define EXPRop_swift(		SELF,oe,paren) \
 				EXPRop__swift(	SELF,oe,paren,		OP_UNKNOWN, YES_WRAP)
 
+static void EXPR__swift( Scope SELF, Expression e, 
+												bool paren, unsigned int previous_op, bool can_wrap );
 
-static void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe, bool paren, unsigned int previous_op, bool can_wrap );
-static void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * eo, char * opcode, bool paren, bool pad, unsigned int previous_op, bool can_wrap );
-static void EXPRop1_swift( Scope SELF, struct Op_Subexpression * eo, char * opcode, bool paren, bool can_wrap );
+
+static void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe, 
+													bool paren, unsigned int previous_op, bool can_wrap );
+
+static void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * eo, char * opcode, 
+													 bool paren, bool pad, unsigned int previous_op, bool can_wrap );
+
+static void EXPRop1_swift( Scope SELF, struct Op_Subexpression * eo, char * opcode, 
+													bool paren, bool can_wrap );
+
+
+void EXPR_swift( Scope SELF, Expression e, bool paren) {
+	EXPR__swift( SELF,e, paren, YES_WRAP, OP_UNKNOWN );
+}
+
 
 
 static void simpleStringLiteral_swift(const char* instring ) {
@@ -75,9 +97,9 @@ void EXPRbounds_swift(Scope SELF, TypeBody tb, bool in_comment ) {
     }
 
 	wrap( "%s[", in_comment ? "" : "/*" );
-    EXPR_swift(SELF, tb->lower, NO_PAREN );
+    EXPR_swift(SELF, tb->lower, YES_PAREN );
     raw( ":" );
-    EXPR_swift(SELF, tb->upper, NO_PAREN );
+    EXPR_swift(SELF, tb->upper, YES_PAREN );
 	raw( "]%s ", in_comment ? "" : "*/" );
 }
 
@@ -121,9 +143,7 @@ static void EXPRrepeat_swift( Scope SELF, Expression val, Expression count) {
  */
 void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op, bool can_wrap  ) {
 	int i;  /* trusty temporary */
-	
-	if(paren) raw("(");
-	
+		
 	switch( TYPEis( e->type ) ) {
 			//MARK: integer_
 		case integer_:
@@ -358,11 +378,11 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 			fprintf( stderr, "%s:%d: ERROR - unknown expression, type %d", e->symbol.filename, e->symbol.line, TYPEis( e->type ) );
 			abort();
 	}
-	if(paren) raw(")");
 }
 
 /** print expression that has op and operands */
-void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe, bool paren, unsigned int previous_op, bool can_wrap) {
+void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe, 
+									 bool paren, unsigned int previous_op, bool can_wrap) {
     switch( oe->op_code ) {
 				//MARK:OP_AND
         case OP_AND:
@@ -563,7 +583,8 @@ void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * eo, cha
 /** Print out a one-operand operation.  If there were more than two of these
  * I'd generalize it to do padding, but it's not worth it.
  */
-static void EXPRop1_swift( Scope SELF, struct Op_Subexpression * eo, char * opcode, bool paren, bool can_wrap ) {
+static void EXPRop1_swift( Scope SELF, struct Op_Subexpression * eo, char * opcode, 
+													bool paren, bool can_wrap ) {
     if( paren ) {
         wrap_if(can_wrap, "( " );
     }

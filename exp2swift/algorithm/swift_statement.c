@@ -262,7 +262,7 @@ void STMT_swift( Statement stmt, int level ) {
 				if(VARis_inout(formal_param)) {
 					raw("&");
 				}
-				EXPR__swift(NULL, actual_param, NO_PAREN, OP_UNKNOWN, NO_WRAP);
+				EXPR_swift(NULL, actual_param, NO_PAREN );
 				
 				sep = ", ";
 				formals_iter = LISTLINKnext(formals, formals_iter);
@@ -286,9 +286,9 @@ void STMT_swift( Statement stmt, int level ) {
 			char buf[BUFSIZ];
 			raw("do {\t/* ALIAS (%s)", variable_swiftName(stmt->u.alias->variable,buf) );
 		}
-			wrap(" FOR ");
+			wrap(" FOR (");
 			EXPR_swift(NULL, stmt->u.alias->variable->initializer, YES_PAREN);
-			raw(" */\n");
+			raw(") */\n");
 			
 			STMTlist_swift(stmt->u.alias->statements, level+nestingIndent_swift);
 
