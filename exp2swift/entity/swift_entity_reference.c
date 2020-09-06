@@ -22,6 +22,7 @@
 #include "swift_type.h"
 #include "swift_expression.h"
 #include "swift_symbol.h"
+#include "swift_algorithm.h"
 
 //MARK: - entity reference
 
@@ -38,7 +39,8 @@ static void supertypeReferenceDefinition_swift( Scope current, Entity entity, in
 	LISTdo( supertypes, super, Entity ) {
 		if( super == entity ) continue;
 		indent_swift(level);
-		wrap("public let SUPER_%s: %s \t// [%d]\n", 
+		wrap("public let %s%s: %s \t// [%d]\n", 
+				 superEntity_swiftPrefix,
 				 ENTITY_swiftName(super,"","",NO_QUALIFICATION,buf1), 
 				 ENTITY_swiftName(super,"","",current,buf2), 
 				 ++entity_index);
@@ -63,7 +65,7 @@ static void superEntityReference_swift(Entity entity, Entity supertype) {
 	}
 	else {
 		char buf[BUFSIZ];
-		wrap("SUPER_%s", ENTITY_swiftName(supertype,"","",NO_QUALIFICATION,buf) );
+		wrap("%s%s", superEntity_swiftPrefix, ENTITY_swiftName(supertype,"","",NO_QUALIFICATION,buf) );
 	}
 }
 
@@ -89,7 +91,7 @@ static void attributeRefHead_swift
 		 raw("%s var %s: ", access, attribute_swiftName(attr,buf) );
 	 }
 	 
-	 variableType_swift(current, attr, false, level+nestingIndent_swift, NOT_IN_COMMENT);
+	 variableType_swift(current, attr, NO_FORCE_OPTIONAL, level+nestingIndent_swift, NOT_IN_COMMENT);
 	 
 	 raw(" {\n");
  }

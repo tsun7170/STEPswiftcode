@@ -116,7 +116,7 @@ typedef unsigned long Address;
 /****************/
 
 typedef struct Element_ {
-    char    *    key;
+    const char    *    key;
     char    *    data;
     struct Element_ * next;
     Symbol  *  symbol; /**< for debugging hash conflicts */

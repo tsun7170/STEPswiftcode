@@ -21,6 +21,7 @@
 #include "swift_symbol.h"
 #include "swift_expression.h"
 #include "swift_type.h"
+#include "swift_algorithm.h"
 
 
 void SCOPElocalList_swift( Scope s, int level ) {
@@ -46,7 +47,7 @@ void SCOPElocalList_swift( Scope s, int level ) {
 			raw("var %s: ", variable_swiftName(var,buf));
 		}
 		
-		variableType_swift(s, var, true, level, NOT_IN_COMMENT);
+		variableType_swift(s, var, YES_FORCE_OPTIONAL, level, NOT_IN_COMMENT);
 		
 		if( var->initializer ) {
 			raw( " = " );

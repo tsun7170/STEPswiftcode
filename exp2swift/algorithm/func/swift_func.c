@@ -58,7 +58,7 @@ void FUNC_swift( bool nested, Function func, int level ) {
 	Linked_List generics = LISTcreate();
 	Linked_List aggregates = LISTcreate();
 	ALGget_generics(func, generics, aggregates);
-	if(!LISTempty(generics) || !LISTempty(aggregates)) {
+	if(!LISTis_empty(generics) || !LISTis_empty(aggregates)) {
 		//generic function
 		char buf[BUFSIZ];
 		char* sep = "";
@@ -83,7 +83,7 @@ void FUNC_swift( bool nested, Function func, int level ) {
 //	positively_wrap();
 	optionalType_swift(func->superscope, func->u.func->return_type, YES_OPTIONAL_TYPE, level, NOT_IN_COMMENT);
 	
-	if(!LISTempty(aggregates)) {
+	if(!LISTis_empty(aggregates)) {
 		// constraint for aggregate element type
 		raw(" ");
 		char buf[BUFSIZ];

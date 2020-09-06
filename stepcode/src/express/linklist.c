@@ -21,8 +21,10 @@
  * prettied up interface to print_objects_when_running
  */
 
+#include <assert.h>
 #include <sc_memmgr.h>
 #include "express/linklist.h"
+
 
 Error ERROR_empty_list = ERROR_none;
 struct freelist_head LINK_fl;
@@ -45,11 +47,36 @@ Linked_List LISTcreate() {
     return( list );
 }
 
+//*TY2020/09/04
+void LISTadd_all(Linked_List list, Linked_List items) {
+	int n = LISTget_length(list);
+	
+	LISTdo_links(items, srcnode) {
+		Link node = LISTLINKadd_last(list);
+		node->data = srcnode->data;
+		node->aux = srcnode->aux;
+	}LISTod;
+	
+	assert(LISTget_length(list) == n+LISTget_length(items));
+}
+void LISTadd_all_marking_aux(Linked_List list, Linked_List items, Generic aux) {
+	LISTdo_links(items, srcnode) {
+		Link node = LISTLINKadd_last(list);
+		node->data = srcnode->data;
+		node->aux = aux;
+	}LISTod;
+}
 Linked_List LISTcopy( Linked_List src ) {
     Linked_List dst = LISTcreate();
+#if 0
     LISTdo( src, x, Generic )
     LISTadd_last( dst, x );
     LISTod
+#else
+	//*TY2020/09/04 for aux support
+	LISTadd_all(dst, src);
+	assert(LISTget_length(dst) == LISTget_length(src));
+#endif
     return dst;
 }
 
@@ -71,7 +98,7 @@ void LISTsort( Linked_List list, int (*comp)(void*, void*)) {
     unsigned int moved;
     Link node, prev;
 
-    if (LISTempty(list))
+    if (LISTis_empty(list))
         return;
 
     while (true) {
@@ -98,8 +125,22 @@ void LISTswap( Link p, Link q ) {
     q->data = tmp;
 }
 
+//*TY2020/09/04
+Link LINKadd_after( Link node ) {
+	Link newnode = LINK_new();
+	Link next = node->next;
+
+	newnode->next = next;
+	newnode->prev = node;
+	node->next = newnode;
+	next->prev = newnode;
+	
+	return newnode;
+}
+
 
 Generic LISTadd_first( Linked_List list, Generic item ) {
+#if 0
     Link        node;
 
     node = LINK_new();
@@ -107,9 +148,20 @@ Generic LISTadd_first( Linked_List list, Generic item ) {
     ( node->next = list->mark->next )->prev = node;
     ( list->mark->next = node )->prev = list->mark;
     return item;
+#else
+	//*TY2020/09/04
+	int n = LISTget_length(list);
+
+	Link node = LISTLINKadd_first(list);
+	node->data = item;
+	
+	assert(LISTget_length(list) == n+1);
+	return item;
+#endif
 }
 
 Generic LISTadd_last( Linked_List list, Generic item ) {
+#if 0
     Link        node;
 
     node = LINK_new();
@@ -117,9 +169,20 @@ Generic LISTadd_last( Linked_List list, Generic item ) {
     ( node->prev = list->mark->prev )->next = node;
     ( list->mark->prev = node )->next = list->mark;
     return item;
+#else
+	//*TY2020/09/04
+	int n = LISTget_length(list);
+
+	Link node = LISTLINKadd_last(list);
+	node->data = item;
+	
+	assert(LISTget_length(list) == n+1);
+	return item;
+#endif
 }
 
 Generic LISTadd_after( Linked_List list, Link link, Generic item ) {
+#if 0
     Link node;
 
     if( link == LINK_NULL ) {
@@ -131,9 +194,18 @@ Generic LISTadd_after( Linked_List list, Link link, Generic item ) {
         ( link->next = node )->prev = link;
     }
     return item;
+#else
+	//*TY2020/09/04
+	if( link == LINK_NULL ) return LISTadd_first(list, item);
+	
+	Link node = LINKadd_after(link);
+	node->data = item;
+	return item;
+#endif
 }
 
 Generic LISTadd_before( Linked_List list, Link link, Generic item ) {
+#if 0
     Link node;
 
     if( link == LINK_NULL ) {
@@ -148,6 +220,14 @@ Generic LISTadd_before( Linked_List list, Link link, Generic item ) {
         link->prev = node;      /* fix up next link */
     }
     return item;
+#else
+	//*TY2020/09/04
+	if( link == LINK_NULL ) return LISTadd_last(list, item);
+	
+	Link node = LINKadd_before(link);
+	node->data = item;
+	return item;
+#endif
 }
 
 
@@ -161,24 +241,35 @@ Generic LISTremove_first( Linked_List list ) {
         return NULL;
     }
     item = node->data;
+#if 0
     ( list->mark->next = node->next )->prev = list->mark;
     LINK_destroy( node );
+#else
+	//*TY2020/09/04
+	LINKremove(node);
+#endif
     return item;
 }
 
 //*TY2020/07/19
 Generic LISTremove_first_if( Linked_List list ) {
-    Link        node;
-    Generic     item;
-
-    node = list->mark->next;
-    if( node == list->mark ) {
-        return NULL;
-    }
-    item = node->data;
-    ( list->mark->next = node->next )->prev = list->mark;
-    LINK_destroy( node );
-    return item;
+	Link        node;
+	Generic     item;
+	
+	node = list->mark->next;
+	if( node == list->mark ) {
+		return NULL;
+	}
+	item = node->data;
+	LINKremove(node);
+	return item;
+}
+void LINKremove( Link node ) {
+	Link prev = node->prev;
+	Link next = node->next;
+	prev->next = next;
+	next->prev = prev;
+	LINK_destroy(node);
 }
 
 
@@ -232,12 +323,13 @@ int LISTget_length( Linked_List list ) {
     }
 
     for( node = list->mark->next; node != list->mark; node = node->next ) {
+			assert(node->data!=NULL);
         count++;
     }
     return count;
 }
 
-bool LISTempty( Linked_List list ) {
+bool LISTis_empty( Linked_List list ) {
     if( !list ) {
         return true;
     }

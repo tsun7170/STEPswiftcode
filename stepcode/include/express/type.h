@@ -111,6 +111,9 @@ enum type_enum {
 #include "symbol.h"
 #include "object.h"
 
+#include "dict.h"
+#include "variable.h"
+
 /************/
 /* typedefs */
 /************/
@@ -175,6 +178,9 @@ struct TypeBody_ {
     Expression upper;
     Expression lower;
     struct Scope_ * entity;     /**< only used by entity types */
+	//*TY2020/08/30
+	Dictionary all_select_attributes;	// dict of (linked_list of attr for selection list entries, with aux pointing to the originating selection) keyed by attr simple name.
+	Dictionary all_supertypes; // dict of (linked_list of originating selection) keyed by super-entity name
 };
 
 /********************/
@@ -319,4 +325,11 @@ extern SC_EXPRESS_EXPORT Type TYPEcreate_user_defined_tag PROTO( ( Type, Scope, 
 //*TY2020/08/06
 extern Symbol* SYMBOLcreate_implicit_tag( int tag_no, int line, const char * filename );
 
+//*TY2020/08/30
+extern Dictionary SELECTget_all_attributes ( Type select_type ); // returns dict of (linked_list of attr) keyed by attr simple name
+extern int SELECTget_attr_ambiguous_count( Type select_type, const char* attrName );	// 0: not defined anywhere, 1: unique defintion, >1: ambiguous definition
+extern Variable SELECTfind_attribute_effective_definition( Type select_type, const char* attr_name );
+extern bool SELECTattribute_is_unique( Type select_type, const char* attr_name );
+
+extern Dictionary SELECTget_super_entity_list( Type select_type );	// returns dict of (linked list of selections) keyed by entity name
 #endif    /*  TYPE_H  */

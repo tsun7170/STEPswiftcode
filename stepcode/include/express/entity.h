@@ -97,8 +97,8 @@ struct Entity_ {
     bool        abstract;           /**< is this an abstract supertype? */
     Type        type;               /**< type pointing back to ourself, useful to have when evaluating expressions involving entities */
 	//*TY2020/07/19 added
-	Linked_List supertype_list;	// list of all supertypes consistent with P21 spec.
-	Dictionary all_attributes;	// dict of (linked_list of attr) keyed by attr simple name. linked_list is sorted from most subentity to superentity (first item is the effective attr definition, if it is not an ambiguous definition)
+	Linked_List supertype_list;	// list of all supertypes consistent with P21 spec (including SELF entity at the end).
+	Dictionary all_attributes;	// dict of (linked_list of attr) keyed by attr simple name. linked_list is sorted from most sub-entity to super-entity (first item is the effective attr definition, if it is not an ambiguous definition)
 	Linked_List constructor_params;	// parameters for the implicit constructor
 };
 
@@ -155,9 +155,9 @@ extern SC_EXPRESS_EXPORT Variable     ENTITYresolve_attr_ref PROTO( ( Entity, Sy
 // entity related queries
 extern SC_EXPRESS_EXPORT Entity       ENTITYfind_inherited_entity PROTO( ( struct Scope_ *, char *, int, bool ) );
 extern SC_EXPRESS_EXPORT bool      ENTITYhas_immediate_supertype PROTO( ( Entity, Entity ) );
-extern SC_EXPRESS_EXPORT bool      ENTITYhas_supertype PROTO( ( Entity, Entity ) );
+extern SC_EXPRESS_EXPORT bool      ENTITYhas_supertype PROTO( ( Entity sub, Entity sup) );
 //*TY2020/07/11
-extern bool ENTITYis_a( Entity kindof , Entity entity );
+extern bool ENTITYis_a( Entity entity , Entity sup );
 extern Linked_List ENTITYget_super_entity_list( Entity entity ); // including starting entity
 
 

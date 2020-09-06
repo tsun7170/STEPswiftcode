@@ -105,7 +105,7 @@ void EXPRbounds_swift(Scope SELF, TypeBody tb, bool in_comment ) {
 
 static void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
 	EXPR__swift( SELF, eo->op1, YES_PAREN, eo->op_code, can_wrap );
-	wrap_if(YES_WRAP, ".SUPER_");
+	wrap_if(YES_WRAP, ".%s",superEntity_swiftPrefix);
 	EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, NO_WRAP );
 }
 

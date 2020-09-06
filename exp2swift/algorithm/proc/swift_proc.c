@@ -58,7 +58,7 @@ void PROC_swift( bool nested, Procedure proc, int level ) {
 		Linked_List generics = LISTcreate();
 		Linked_List aggregates = LISTcreate();
 		ALGget_generics(proc, generics, aggregates);
-		if(!LISTempty(generics) || !LISTempty(aggregates)) {
+		if(!LISTis_empty(generics) || !LISTis_empty(aggregates)) {
 			//generic procedure
 			char buf[BUFSIZ];
 			char* sep = "";
@@ -79,7 +79,7 @@ void PROC_swift( bool nested, Procedure proc, int level ) {
 		ALGargs_swift( proc->superscope, YES_FORCE_OPTIONAL, proc->u.proc->parameters, YES_DROP_SINGLE_LABEL, level );
 		raw(")");
 				
-		if(!LISTempty(aggregates)) {
+		if(!LISTis_empty(aggregates)) {
 			// constraint for aggregate element type
 			raw(" ");
 			char buf[BUFSIZ];

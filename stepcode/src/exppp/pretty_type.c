@@ -46,6 +46,11 @@ void TYPE_head_out( Type t, int level ) {
 		if( TYPEis_entity(t)) {
 			raw(" (*ENTITY*)");
 		}
+		else if( TYPEis_select(t)) {
+			raw( " (*SELECT*)" );
+		}
+		else if( TYPEis_enumeration(t))
+			raw( " (*ENUM*)" );
 		else {
 			raw( " (*TYPE*)" );
 		}
@@ -206,6 +211,12 @@ void TYPE_body_out( Type t, int level ) {
 						//*TY2020/07/28
 						if( TYPEis_entity(type)) {
 							raw(" (*ENTITY*)");
+						}
+						else if( TYPEis_select(type) ) {
+							raw(" (*SELECT*)");
+						}
+						else if( TYPEis_enumeration(type) ) {
+							raw(" (*ENUM*)");
 						}
 						else {
 							raw( " (*TYPE*)" );

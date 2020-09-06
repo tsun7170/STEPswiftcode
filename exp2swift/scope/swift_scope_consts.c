@@ -21,6 +21,7 @@
 #include "swift_symbol.h"
 #include "swift_type.h"
 #include "swift_expression.h"
+#include "swift_algorithm.h"
 
 
 static void SCOPEconst_swift(Scope current, char* access, Variable v, int level ) {
@@ -33,7 +34,7 @@ static void SCOPEconst_swift(Scope current, char* access, Variable v, int level 
 	}
 	
 	/* print attribute type */
-	variableType_swift(current, v, false, NOLEVEL, NOT_IN_COMMENT);
+	variableType_swift(current, v, NO_FORCE_OPTIONAL, NOLEVEL, NOT_IN_COMMENT);
 	
 	
 	if( v->initializer ) {

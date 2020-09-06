@@ -30,8 +30,8 @@ void SCOPEentityList_swift( Scope s, int level ) {
 		Linked_List dummy = LISTcreate();
 		Linked_List dummy2 = LISTcreate();
 		ENTITY_swift( entity, level, dummy, dummy2 );
-		assert(LISTempty(dummy));
-		assert(LISTempty(dummy2));
+		assert(LISTis_empty(dummy));
+		assert(LISTis_empty(dummy2));
 		LISTfree(dummy);
 		LISTfree(dummy2);
 	}

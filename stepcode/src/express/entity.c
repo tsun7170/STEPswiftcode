@@ -191,9 +191,8 @@ struct Scope_ * ENTITYfind_inherited_entity( struct Scope_ *entity, char * name,
 }
 
 //*TY2020/07/18
+#if 0
 static int ENTITY_check_attr_declarations( Entity leaf, Entity entity, char* attrName, int found ) {
-//	if( entity->search_id == __SCOPE_search_id ) return found;
-//	entity->search_id = __SCOPE_search_id;
 	if( SCOPE_search_visited(entity) ) return found;
 	
 	/* first look locally */
@@ -215,11 +214,26 @@ static int ENTITY_check_attr_declarations( Entity leaf, Entity entity, char* att
 	return found;
 }
 int ENTITYget_attr_ambiguous_count( Entity entity, char* attrName ) {
-//	__SCOPE_search_id++;
 	SCOPE_begin_search();
 	int found = ENTITY_check_attr_declarations(entity, entity, attrName, 0);
 	SCOPE_end_search();
 	return found;
+}
+#endif
+int ENTITYget_attr_ambiguous_count( Entity entity, char* attrName ) {
+	Dictionary all_attrs = ENTITYget_all_attributes(entity);
+	Linked_List attr_defs = DICTlookup(all_attrs, attrName);
+	if( attr_defs == NULL )return 0;
+	
+	Entity defined_entity = NULL;
+	LISTdo(attr_defs, attr, Variable) {
+		if( VARis_redeclaring(attr) ) attr = attr->original_attribute;
+		if( defined_entity != NULL && attr->defined_in != defined_entity ) return 2;
+		defined_entity = attr->defined_in;		
+	}LISTod;
+	
+	assert(defined_entity != NULL);
+	return 1;
 }
 
 
@@ -419,10 +433,10 @@ void ENTITYadd_instance( Entity entity, Generic instance ) {
 }
 
 //*TY2020/07/11
-bool ENTITYis_a( Entity kindof, Entity entity ) {
-	if( entity==NULL || kindof==NULL ) return false;
-	if( entity == kindof ) return true;
-	return ENTITYhas_supertype(kindof, entity);
+bool ENTITYis_a( Entity entity, Entity sup ) {
+	if( sup==NULL || entity==NULL ) return false;
+	if( sup == entity ) return true;
+	return ENTITYhas_supertype(entity, sup);
 }
 
 
@@ -500,8 +514,6 @@ Linked_List ENTITYget_all_attributes( Entity entity ) {
 static void ENTITY_build_all_attributes( Linked_List queue, Dictionary result  ) {
 	Entity entity;
 	while ( (entity = LISTremove_first_if(queue)) != NULL ) {
-//		if( entity->search_id == __SCOPE_search_id ) continue;
-//		entity->search_id = __SCOPE_search_id;
 		if( SCOPE_search_visited(entity) ) continue;
 		
 		LISTdo( entity->u.entity->supertypes, super, Entity )
@@ -520,13 +532,13 @@ static void ENTITY_build_all_attributes( Linked_List queue, Dictionary result  )
 	}
 }
 Dictionary ENTITYget_all_attributes( Entity entity ) {
+	assert(entity->u_tag==scope_is_entity);
 	if( entity->u.entity->all_attributes ) return entity->u.entity->all_attributes;
 	
 	Dictionary result = DICTcreate(25);
 	Linked_List queue = LISTcreate();
 	LISTadd_last(queue, entity);
 	
-//	__SCOPE_search_id++;
 	SCOPE_begin_search();
 	ENTITY_build_all_attributes(queue, result);
 	SCOPE_end_search();
@@ -567,8 +579,6 @@ Linked_List ENTITYget_constructor_params( Entity entity ) {
 
 //*TY2020/07/19
 static void ENTITY_build_super_entitiy_list( Entity entity, Linked_List result ) {
-//	if( entity->search_id == __SCOPE_search_id ) return;
-//	entity->search_id = __SCOPE_search_id;
 	if( SCOPE_search_visited(entity) ) return;
 	
 	LISTdo( entity->u.entity->supertypes, super, Entity )
@@ -582,7 +592,6 @@ Linked_List ENTITYget_super_entity_list( Entity entity ) {
 	
 	Linked_List result = LISTcreate();
 	
-//	__SCOPE_search_id++;
 	SCOPE_begin_search();
 	ENTITY_build_super_entitiy_list( entity, result );
 	SCOPE_end_search();

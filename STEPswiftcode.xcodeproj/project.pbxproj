@@ -77,6 +77,7 @@
 		F48BF95C24C26BFF005B5B0A /* swift_entity.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94E24C26BFE005B5B0A /* swift_entity.c */; };
 		F48BF95D24C26BFF005B5B0A /* swift_symbol.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF95024C26BFE005B5B0A /* swift_symbol.c */; };
 		F48BF95E24C26BFF005B5B0A /* swift_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF95424C26BFE005B5B0A /* swift_type.c */; };
+		F4E728FC25002891007FDFD9 /* swift_select_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F4E728FB25002891007FDFD9 /* swift_select_type.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -336,6 +337,8 @@
 		F48BF95124C26BFE005B5B0A /* swift_symbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_symbol.h; sourceTree = "<group>"; };
 		F48BF95324C26BFE005B5B0A /* swift_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_type.h; sourceTree = "<group>"; };
 		F48BF95424C26BFE005B5B0A /* swift_type.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_type.c; sourceTree = "<group>"; };
+		F4E728FA25002891007FDFD9 /* swift_select_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_select_type.h; sourceTree = "<group>"; };
+		F4E728FB25002891007FDFD9 /* swift_select_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_select_type.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -929,6 +932,8 @@
 			children = (
 				F48BF95324C26BFE005B5B0A /* swift_type.h */,
 				F48BF95424C26BFE005B5B0A /* swift_type.c */,
+				F4E728FA25002891007FDFD9 /* swift_select_type.h */,
+				F4E728FB25002891007FDFD9 /* swift_select_type.c */,
 			);
 			path = type;
 			sourceTree = "<group>";
@@ -1026,6 +1031,7 @@
 				F44D032924BE429E00E77B2A /* info.c in Sources */,
 				F44D036C24BE42B400E77B2A /* pretty_subtype.c in Sources */,
 				F43B6C0124D0064D007493AB /* swift_algorithm.c in Sources */,
+				F4E728FC25002891007FDFD9 /* swift_select_type.c in Sources */,
 				F44D036B24BE42B400E77B2A /* pretty_schema.c in Sources */,
 				F44D032624BE429E00E77B2A /* entity.c in Sources */,
 				F48BF93924C26BB1005B5B0A /* swift_schema.c in Sources */,

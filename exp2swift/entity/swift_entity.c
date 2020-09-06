@@ -36,6 +36,8 @@ char ENTITY_swiftNameInitial( Entity e) {
 	return toupper( e->symbol.name[0] );
 }
 
+const char* superEntity_swiftPrefix = "super_";
+
 const char* ENTITY_canonicalName( Entity e, char buf[BUFSIZ] ) {
 	return canonical_swiftName(e->symbol.name, buf);
 //	char* to = buf;
@@ -235,7 +237,7 @@ static void listLocalAttributes( Entity leaf, Entity entity, int level ) {
 
 	{	int level2 = level+nestingIndent_swift;
 		
-		if( LISTempty(entity->u.entity->attributes) ) {
+		if( LISTis_empty(entity->u.entity->attributes) ) {
 			indent_swift(level2);
 			raw("(no local attributes)\n");
 		}
@@ -282,7 +284,7 @@ void ENTITY_swift( Entity entity, int level,
 
 
 void ENTITY_swiftProtocol(Schema schema, Entity entity, int level, Linked_List dynamic_attrs ) {
-	if( LISTempty(dynamic_attrs) ) return;
+	if( LISTis_empty(dynamic_attrs) ) return;
 	
 	raw("\n");
 	raw("//MARK: - Entity Dynamic Attribute Protocols\n");

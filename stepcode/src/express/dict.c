@@ -40,6 +40,9 @@
 
 char DICT_type; /**< set to type of object found, as a side-effect of DICT lookup routines */
 
+//*TY2020/09/05
+const char* DICT_key;	/**< set as a side-effect of DICTdo routines to the key of current entry */
+
 static Error    ERROR_duplicate_decl;
 static Error    ERROR_duplicate_decl_diff_file;
 
@@ -75,7 +78,7 @@ void DICTcleanup( void ) {
  * error directly if there is a duplicate value.
  * \return 0 on success, 1 on failure
  */
-int DICTdefine( Dictionary dict, char * name, Generic obj, Symbol * sym, char type ) {
+int DICTdefine( Dictionary dict, const char * name, Generic obj, Symbol * sym, char type ) {
     struct Element_ new, *old;
 
     new.key = name;
@@ -123,7 +126,7 @@ int DICTdefine( Dictionary dict, char * name, Generic obj, Symbol * sym, char ty
  * their unusual behavior with respect to scoping and visibility rules
  * \sa DICTdefine()
  */
-int DICT_define( Dictionary dict, char * name, Generic obj, Symbol * sym, char type ) {
+int DICT_define( Dictionary dict, const char * name, Generic obj, Symbol * sym, char type ) {
     struct Element_ e, *e2;
 
     e.key = name;
@@ -151,7 +154,7 @@ int DICT_define( Dictionary dict, char * name, Generic obj, Symbol * sym, char t
     Changed to return void, since the hash code frees the element, there
     is no way to return (without godawful casting) the generic itself.
 */
-void DICTundefine( Dictionary dict, char * name ) {
+void DICTundefine( Dictionary dict, const char * name ) {
     struct Element_ e;
 
     e.key = name;
@@ -163,7 +166,7 @@ void DICTundefine( Dictionary dict, char * name ) {
 ** \param name name to look up
 ** \return the value found, NULL if not found
 */
-Generic DICTlookup( Dictionary dictionary, char * name ) {
+Generic DICTlookup( Dictionary dictionary, const char * name ) {
     struct Element_ e, *ep;
 
     if( !dictionary ) {
@@ -182,7 +185,7 @@ Generic DICTlookup( Dictionary dictionary, char * name ) {
 /** like DICTlookup but returns symbol, too
  * \sa DICTlookup()
  */
-Generic DICTlookup_symbol( Dictionary dictionary, char * name, Symbol ** sym ) {
+Generic DICTlookup_symbol( Dictionary dictionary, const char * name, Symbol ** sym ) {
     struct Element_ e, *ep;
 
     if( !dictionary ) {
@@ -205,5 +208,19 @@ Generic DICTdo( DictionaryEntry * dict_entry ) {
     }
 
     DICT_type = dict_entry->e->type;    /* side-effect! */
+	//*TY2020/09/05
+	DICT_key = dict_entry->e->key;
+	
     return dict_entry->e->data;
 }
+
+//*TY2020/09/06
+const char* DICTdo_key(DictionaryEntry* dict_entry) {
+	if( 0 == HASHlist( dict_entry ) ) {
+			return 0;
+	}
+
+	DICT_type = dict_entry->e->type;    /* side-effect! */
+	return dict_entry->e->key;
+}
+

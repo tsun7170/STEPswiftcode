@@ -60,6 +60,8 @@ typedef struct Link_ {
     struct Link_  * next;
     struct Link_  * prev;
     Generic     data;
+	//*TY2020/09/03
+	Generic aux;
 } * Link;
 
 struct Linked_List_ {
@@ -122,11 +124,17 @@ extern SC_EXPRESS_EXPORT struct freelist_head LIST_fl;
     (((struct Linked_List_*)list)->mark->next->data)
 
 /** function aliases */
+#if 0
 #define LISTadd_all(list, items)                    \
     LISTdo(items, e, Generic) {                     \
         LISTadd_last(list, e);                      \
     } LISTod;
-
+#else
+//*TY2020/09/04
+extern void LISTadd_all(Linked_List list, Linked_List items);
+extern void LISTadd_all_marking_aux(Linked_List list, Linked_List items, Generic aux);
+#endif
+				 
 /***********************/
 /* function prototypes */
 /***********************/
@@ -137,6 +145,14 @@ extern SC_EXPRESS_EXPORT Linked_List LISTcreate PROTO( ( void ) );
 extern SC_EXPRESS_EXPORT Linked_List LISTcopy PROTO( ( Linked_List ) );
 extern SC_EXPRESS_EXPORT void LISTsort PROTO( ( Linked_List, int (*comp)(void*, void*) ) );
 extern SC_EXPRESS_EXPORT void LISTswap PROTO( ( Link, Link ) );
+				 
+//*TY2020/09/04
+				 extern Link LINKadd_after( Link node );
+#define LINKadd_before( node )	LINKadd_after((node)->prev)
+#define LISTLINKadd_first( list )	LINKadd_after((list)->mark)
+#define LISTLINKadd_last( list )	LINKadd_before((list)->mark)				 
+				 
+				 
 extern SC_EXPRESS_EXPORT Generic  LISTadd_first PROTO( ( Linked_List, Generic ) );
 extern SC_EXPRESS_EXPORT Generic  LISTadd_last PROTO( ( Linked_List, Generic ) );
 extern SC_EXPRESS_EXPORT Generic  LISTadd_after PROTO( ( Linked_List, Link, Generic ) );
@@ -147,9 +163,10 @@ extern SC_EXPRESS_EXPORT Generic  LISTget_second PROTO( ( Linked_List ) );
 extern SC_EXPRESS_EXPORT Generic  LISTget_nth PROTO( ( Linked_List, int ) );
 extern SC_EXPRESS_EXPORT void LISTfree PROTO( ( Linked_List ) );
 extern SC_EXPRESS_EXPORT int  LISTget_length PROTO( ( Linked_List ) );
-extern SC_EXPRESS_EXPORT bool LISTempty( Linked_List list );
+extern SC_EXPRESS_EXPORT bool LISTis_empty( Linked_List list );	//*TY2020/09/04 renamed
 
 //*TY2020/07/19
 extern SC_EXPRESS_EXPORT Generic  LISTremove_first_if PROTO( ( Linked_List ) );
-
+extern void LINKremove( Link node );
+#define LISTis_single(list)		(LISTget_second(list)==NULL)				 
 #endif /*LINKED_LIST_H*/

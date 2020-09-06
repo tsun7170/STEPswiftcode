@@ -73,6 +73,8 @@ typedef HashEntry       DictionaryEntry;
 /********************/
 
 extern SC_EXPRESS_EXPORT char DICT_type;  /**< set as a side-effect of DICT lookup routines to type of object found */
+//*TY2020/09/05
+extern const char* DICT_key;	/**< set as a side-effect of DICTdo routines to the key of current entry */
 
 /*******************************/
 /* macro function definitions */
@@ -95,7 +97,7 @@ extern SC_EXPRESS_EXPORT char DICT_type;  /**< set as a side-effect of DICT look
 //*TY2020/06/28 added
 #define DICTsuccess	0
 #define DICTfailure 1
-
+extern const char* DICTdo_key(DictionaryEntry* dict_entry);
 
 /***********************/
 /* function prototypes */
@@ -103,11 +105,11 @@ extern SC_EXPRESS_EXPORT char DICT_type;  /**< set as a side-effect of DICT look
 
 extern SC_EXPRESS_EXPORT void     DICTinitialize PROTO( ( void ) );
 extern SC_EXPRESS_EXPORT void     DICTcleanup PROTO( ( void ) );
-extern SC_EXPRESS_EXPORT int      DICTdefine PROTO( ( Dictionary, char *, Generic, Symbol *, char ) );
-extern SC_EXPRESS_EXPORT int      DICT_define PROTO( ( Dictionary, char *, Generic, Symbol *, char ) );
-extern SC_EXPRESS_EXPORT void     DICTundefine PROTO( ( Dictionary, char * ) );
-extern SC_EXPRESS_EXPORT Generic      DICTlookup PROTO( ( Dictionary, char * ) );
-extern SC_EXPRESS_EXPORT Generic      DICTlookup_symbol PROTO( ( Dictionary, char *, Symbol ** ) );
+extern SC_EXPRESS_EXPORT int      DICTdefine PROTO( ( Dictionary, const char *, Generic, Symbol *, char ) );
+extern SC_EXPRESS_EXPORT int      DICT_define PROTO( ( Dictionary, const char *, Generic, Symbol *, char ) );
+extern SC_EXPRESS_EXPORT void     DICTundefine PROTO( ( Dictionary, const char * ) );
+extern SC_EXPRESS_EXPORT Generic      DICTlookup PROTO( ( Dictionary, const char * ) );
+extern SC_EXPRESS_EXPORT Generic      DICTlookup_symbol PROTO( ( Dictionary, const char *, Symbol ** ) );
 extern SC_EXPRESS_EXPORT Generic      DICTdo PROTO( ( DictionaryEntry * ) );
 extern SC_EXPRESS_EXPORT void     DICTprint PROTO( ( Dictionary ) );
 

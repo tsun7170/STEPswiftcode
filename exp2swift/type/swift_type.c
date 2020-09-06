@@ -24,6 +24,7 @@
 #include "swift_expression.h"
 #include "swift_files.h"
 #include "swift_symbol.h"
+#include "swift_select_type.h"
 
 // returns length of qualification string
 int accumulate_qualification(Scope target, Scope current, char buf[BUFSIZ]) {
@@ -131,79 +132,6 @@ static void enumTypeDefinition_swift(Type type, int level) {
 	raw( "}\n" );
 }
 
-//MARK: - select type
-
-static void selectTypeGroupReference_swift(Type type, TypeBody typeBody, int level) {
-	char buf[BUFSIZ];
-	
-	indent_swift(level);
-	wrap( "public extension %s {\n", TYPE_swiftName(type,type->superscope,buf) );
-
-	{	int level2 = level+nestingIndent_swift;
-		char buf[BUFSIZ];
-
-		indent_swift(level2);
-		raw("// GROUP REFERENCE FOR ENTITY SELECTIONS\n\n");
-		
-		LISTdo( typeBody->list, selection, Type ) {
-			if( !TYPEis_entity(selection) ) continue;
-			
-			indent_swift(level2);
-			raw("public var SUPER_%s: ", ENTITY_swiftName(selection,"","",NO_QUALIFICATION,buf)); 
-			wrap("%s! {\n", ENTITY_swiftName(selection,"","",NO_QUALIFICATION,buf));
-			
-			{	int level3 = level2+nestingIndent_swift;
-				
-				indent_swift(level3);
-				raw("switch self {\n");
-				indent_swift(level3);
-				raw("case .%s(let entityRef): return entityRef\n",selectCase_swiftName(selection, buf));
-				indent_swift(level3);
-				raw("default: return nil\n");
-				indent_swift(level3);				
-				raw("}\n");
-			}
-			
-			indent_swift(level2);
-			raw("}\n\n");
-		} LISTod;				
-	}
-	
-	indent_swift(level);
-	raw( "}\n\n" );
-}
-
-static void selectTypeDefinition_swift(Type type, TypeBody typeBody, int level) {
-	char buf[BUFSIZ];
-	int entity_count = 0;
-	
-	indent_swift(level);
-	wrap( "public enum %s : SDAISelectType {\n", TYPE_swiftName(type,type->superscope,buf) );
-
-	{	int level2 = level+nestingIndent_swift;
-		
-		LISTdo( typeBody->list, selection, Type ) {
-			indent_swift(level2);
-			raw( "case %s(", selectCase_swiftName(selection, buf) );
-			wrap( "%s)", TYPE_swiftName(selection, type->superscope, buf) );
-			if( TYPEis_entity(selection) ) {
-				raw( "\t// %s\n", "(ENTITY)" );
-				++entity_count;
-			}
-			else {
-				raw( "\t// %s\n", "(TYPE)" );
-			}
-		} LISTod;		
-	}
-	
-	indent_swift(level);
-	raw( "}\n\n" );
-	
-	if( entity_count > 0 ) {
-		selectTypeGroupReference_swift(type, typeBody, level);
-	}
-}
-
 
 
 //MARK: - type definition entry point
@@ -226,7 +154,7 @@ void TYPEdefinition_swift( Type t, int level ) {
 				break;
 				
 			case select_:
-				selectTypeDefinition_swift(t, tb, level);
+				selectTypeDefinition_swift(t, level);
 				break;
 				
 			default:
@@ -234,7 +162,7 @@ void TYPEdefinition_swift( Type t, int level ) {
 		}
 	}
 	
-	if( t->where && !LISTempty(t->where) ) {
+	if( t->where && !LISTis_empty(t->where) ) {
 		raw("/*");
 		WHERE_out( t->where, level );
 		raw("*/\n");

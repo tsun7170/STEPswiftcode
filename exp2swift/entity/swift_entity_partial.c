@@ -171,7 +171,7 @@ static void derivedAttributeGetterDefinitionHead
 	raw("internal func %s__getter(SELF: %s) -> ", 
 			attrName, ENTITY_swiftName(entity, "", "", current, buf) );
 	
-	variableType_swift(current, attr, false, level, NOT_IN_COMMENT);
+	variableType_swift(current, attr, NO_FORCE_OPTIONAL, level, NOT_IN_COMMENT);
 }
 
 static void derivedRedefinitionGetterDefinitionHead
@@ -270,7 +270,7 @@ static void derivedAttributeRedefinition_swift(Scope current, Entity entity, Var
 		
 		if( VARis_observed(original_attr) ) {
 			indent_swift(level2);
-			raw("SELF.SUPER_%s.%s = value\n", entityName, attrName );
+			raw("SELF.%s%s.%s = value\n", superEntity_swiftPrefix, entityName, attrName );
 		}
 		
 		indent_swift(level2);
@@ -379,7 +379,7 @@ static void localAttributeDefinitions_swift
 		}
 		raw("\n");
 	}LISTod;
-	 if( LISTempty(local_attributes) ) {
+	 if( LISTis_empty(local_attributes) ) {
 		 indent_swift(level);
 		 raw("// (no local attributes)\n\n");
 	 }
@@ -388,7 +388,7 @@ static void localAttributeDefinitions_swift
 //MARK: - where rule
 static void whereDefinitions_swift( Scope current, Entity entity, int level ) {
 	Linked_List where_rules = TYPEget_where(entity);
-	if( LISTempty(where_rules) ) return;
+	if( LISTis_empty(where_rules) ) return;
 	
 	indent_swift(level);
 	raw("//WHERE RULES\n");
@@ -487,7 +487,7 @@ static void uniqueRule_swift( Scope current, Entity entity, int serial, Linked_L
 
 static void uniqueDefinitions_swift( Scope current, Entity entity, int level ) {
 	Linked_List unique_rules = ENTITYget_uniqueness_list(entity);
-	if( LISTempty(unique_rules) ) return;
+	if( LISTis_empty(unique_rules) ) return;
 	
 	indent_swift(level);
 	raw("//UNIQUE RULES\n");
@@ -509,7 +509,7 @@ static void expressConstructor( Scope current, Entity entity, int level ) {
 	Linked_List params = ENTITYget_constructor_params(entity);
 	
 	indent_swift(level);
-	raw("public%s init(", LISTempty(params) ? " override" : "");
+	raw("public%s init(", LISTis_empty(params) ? " override" : "");
 	ALGargs_swift(current, NO_FORCE_OPTIONAL, params, NO_DROP_SINGLE_LABEL, level);
 	raw(") {\n");
 
@@ -555,7 +555,7 @@ void partialEntityDefinition_swift
 
 void partialEntityAttrOverrideProtocolConformance_swift
  ( Schema schema, Entity entity, int level, Linked_List attr_overrides ) {
-	 if( LISTempty(attr_overrides) ) return;
+	 if( LISTis_empty(attr_overrides) ) return;
 	 
 	 raw("\n");
 	 raw("//MARK: - partial Entity Dynamic Attribute Protocol Conformances\n");
