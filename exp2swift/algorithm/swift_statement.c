@@ -104,7 +104,7 @@ static void LOOPwithIncrementControl_swift( struct Loop_ *loop, int level ) {
 			indent_swift(level2);
 			wrap("if ");
 			EXPR_swift(NULL, loop->while_expr, YES_PAREN);
-			wrap(" != SDAI.TRUE { break }\n");
+			wrap(".isnotTRUE { break }\n");
 		}
 		
 		STMTlist_swift(loop->statements, level2);
@@ -113,7 +113,7 @@ static void LOOPwithIncrementControl_swift( struct Loop_ *loop, int level ) {
 			indent_swift(level2);
 			wrap("if ");
 			EXPR_swift(NULL, loop->until_expr, YES_PAREN);
-			wrap(" == SDAI.TRUE { break }\n");
+			wrap(".isTRUE { break }\n");
 		}
 	}
 	
@@ -124,7 +124,7 @@ static void LOOPwithIncrementControl_swift( struct Loop_ *loop, int level ) {
 static void LOOPwhile_swift( struct Loop_ *loop, int level ) {
 	raw("while ");
 	EXPR_swift(NULL, loop->while_expr, YES_PAREN);
-	wrap(" == SDAI.TRUE {\n");
+	wrap(".isTRUE {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		
@@ -134,7 +134,7 @@ static void LOOPwhile_swift( struct Loop_ *loop, int level ) {
 			indent_swift(level2);
 			wrap("if ");
 			EXPR_swift(NULL, loop->until_expr, YES_PAREN);
-			wrap(" == SDAI.TRUE { break }\n");
+			wrap(".isTRUE { break }\n");
 		}
 	}
 	
@@ -153,7 +153,7 @@ static void LOOPuntil_swift( struct Loop_ *loop, int level ) {
 	indent_swift(level);
 	raw("} while ");
 	EXPR_swift(NULL, loop->until_expr, YES_PAREN);
-	wrap(" != SDAI.TRUE\n");
+	wrap(".isnotTRUE\n");
 }
 
 static void LOOPwoRepeatControl_swift( struct Loop_ *loop, int level ) {
@@ -217,7 +217,7 @@ void STMT_swift( Statement stmt, int level ) {
 		case STMT_COND:
 			raw("if ");
 			EXPR_swift(NULL, stmt->u.cond->test, YES_PAREN);
-			wrap(" == SDAI.TRUE {\n");
+			wrap(".isTRUE {\n");
 			
 			STMTlist_swift(stmt->u.cond->code, level+nestingIndent_swift);
 

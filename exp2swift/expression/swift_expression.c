@@ -104,16 +104,23 @@ void EXPRbounds_swift(Scope SELF, TypeBody tb, bool in_comment ) {
 }
 
 static void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
-	EXPR__swift( SELF, eo->op1, YES_PAREN, eo->op_code, can_wrap );
+	EXPR__swift( SELF, eo->op1, YES_PAREN, eo->op_code, YES_WRAP );
 	wrap_if(YES_WRAP, ".%s",superEntity_swiftPrefix);
 	EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, NO_WRAP );
 }
 
 static void EXPRopIn_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
-	EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, can_wrap );
+	EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, YES_WRAP );
 	positively_wrap();
 	wrap_if(YES_WRAP, ".contains( ");
+	EXPR__swift( SELF, eo->op1, NO_PAREN, eo->op_code, YES_WRAP );
+	raw(" )");
+}
+
+static void EXPRopLike_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
 	EXPR__swift( SELF, eo->op1, YES_PAREN, eo->op_code, YES_WRAP );
+	wrap_if(YES_WRAP, ".isLike( pattern: ");
+	EXPR__swift( SELF, eo->op2, NO_PAREN, eo->op_code, YES_WRAP );
 	raw(" )");
 }
 
@@ -441,7 +448,7 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
 				
 				//MARK:OP_IN
         case OP_IN:
-					EXPRopIn_swift( SELF, oe, can_wrap );
+					EXPRopIn_swift( SELF, oe, YES_WRAP );
 					break;
 				
 				//MARK:OP_INST_EQUAL
@@ -466,7 +473,7 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
 				
 				//MARK:OP_LIKE
         case OP_LIKE:
-					EXPRop2__swift( SELF,SELF, oe, "~=", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+					EXPRopLike_swift(SELF, oe, YES_WRAP);
 					break;
 				
 				//MARK:OP_MOD
