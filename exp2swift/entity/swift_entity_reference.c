@@ -91,7 +91,7 @@ static void attributeRefHead_swift
 		 raw("%s var %s: ", access, attribute_swiftName(attr,buf) );
 	 }
 	 
-	 variableType_swift(current, attr, NO_FORCE_OPTIONAL, level+nestingIndent_swift, NOT_IN_COMMENT);
+	 variableType_swift(current, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 	 
 	 raw(" {\n");
  }

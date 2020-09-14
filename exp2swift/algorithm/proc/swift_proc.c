@@ -88,7 +88,7 @@ void PROC_swift( bool nested, Procedure proc, int level ) {
 				Type base = atag->u.type->head;	//hack!
 				positively_wrap();
 				wrap("%s%s.Element == ",sep,TYPE_swiftName(atag,NULL,buf));
-				TYPE_head_swift(proc->superscope, base, level, NOT_IN_COMMENT);
+				TYPE_head_swift(proc->superscope, base, NOT_IN_COMMENT);
 				sep = ", ";
 			}LISTod;
 		}
@@ -98,7 +98,7 @@ void PROC_swift( bool nested, Procedure proc, int level ) {
 		{	int level2 = level+nestingIndent_swift;
 			
 			ALGscope_swift(proc, level2);
-			STMTlist_swift(proc->u.proc->body, level2);
+			STMTlist_swift(proc, proc->u.proc->body, level2);
 		}
 		
 		indent_swift(level);

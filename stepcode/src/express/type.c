@@ -432,8 +432,8 @@ void TYPEinitialize() {
     Type_Funcall = TYPEcreate( funcall_ );
     Type_Funcall->u.type->body->flags.shared = 1;
 
-    Type_Generic = TYPEcreate( generic_ );
-    Type_Generic->u.type->body->flags.shared = 1;
+//    Type_Generic = TYPEcreate( generic_ );
+//    Type_Generic->u.type->body->flags.shared = 1;
 
     Type_Identifier = TYPEcreate( identifier_ );
     Type_Identifier->u.type->body->flags.shared = 1;
@@ -668,3 +668,48 @@ Dictionary SELECTget_super_entity_list( Type select_type ) {
 	typebody->all_supertypes = result;
 	return result;
 }	
+
+
+//*TY2020/09/14
+bool TYPEs_are_equal(Type t1, Type t2) {
+	if( t1 == t2 ) return true;
+	TypeBody tb1 = TYPEget_body(t1);
+	TypeBody tb2 = TYPEget_body(t2);
+	
+	switch (tb1->type) {
+		case integer_:
+		case real_:
+		case string_:
+		case binary_:
+		case boolean_:
+		case logical_:
+		case number_:
+			return tb1->type == tb2->type;
+			
+		case entity_:
+			return tb1->entity == tb2->entity;
+			
+		case generic_:
+		case aggregate_:
+			return tb1->tag == tb2->tag;
+
+		case array_:
+		case bag_:
+		case set_:
+		case list_:
+			if( tb1->type != tb2->type )return false;
+			if( tb1->flags.unique != tb2->flags.unique )return false;
+			if( tb1->flags.optional != tb2->flags.optional )return false;
+			if( tb1->upper != tb2->upper )return false;
+			if( tb1->lower != tb2->lower )return false;
+			return TYPEs_are_equal(tb1->base, tb2->base);
+			
+		case enumeration_: 
+			break;
+		case select_:
+			break;
+		default:
+			break;
+	}
+	return false;
+}

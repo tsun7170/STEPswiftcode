@@ -12,5 +12,6 @@
 #include "../express/type.h"
 
 extern void selectTypeDefinition_swift(Type select_type,  int level);
+extern void selectTypeExtension_swift(Schema schema, Type select_type,  int level);
 
 #endif /* swift_select_type_h */

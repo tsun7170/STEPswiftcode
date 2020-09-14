@@ -332,4 +332,7 @@ extern Variable SELECTfind_attribute_effective_definition( Type select_type, con
 extern bool SELECTattribute_is_unique( Type select_type, const char* attr_name );
 
 extern Dictionary SELECTget_super_entity_list( Type select_type );	// returns dict of (linked list of selections) keyed by entity name
+
+//*TY2020/09/14
+extern bool TYPEs_are_equal(Type t1, Type t2);
 #endif    /*  TYPE_H  */

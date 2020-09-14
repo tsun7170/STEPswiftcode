@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -78,6 +78,8 @@
 		F48BF95D24C26BFF005B5B0A /* swift_symbol.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF95024C26BFE005B5B0A /* swift_symbol.c */; };
 		F48BF95E24C26BFF005B5B0A /* swift_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF95424C26BFE005B5B0A /* swift_type.c */; };
 		F4E728FC25002891007FDFD9 /* swift_select_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F4E728FB25002891007FDFD9 /* swift_select_type.c */; };
+		F4E7D606250819D2000B5362 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E7D605250819D2000B5362 /* main.swift */; };
+		F4E7D60B250819E2000B5362 /* SwiftSDAIcore in Frameworks */ = {isa = PBXBuildFile; productRef = F4E7D60A250819E2000B5362 /* SwiftSDAIcore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -91,6 +93,15 @@
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 		F48BF92524C0E0C5005B5B0A /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		F4E7D601250819D2000B5362 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -339,6 +350,8 @@
 		F48BF95424C26BFE005B5B0A /* swift_type.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_type.c; sourceTree = "<group>"; };
 		F4E728FA25002891007FDFD9 /* swift_select_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_select_type.h; sourceTree = "<group>"; };
 		F4E728FB25002891007FDFD9 /* swift_select_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_select_type.c; sourceTree = "<group>"; };
+		F4E7D603250819D2000B5362 /* swiftP21read */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = swiftP21read; sourceTree = BUILT_PRODUCTS_DIR; };
+		F4E7D605250819D2000B5362 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -353,6 +366,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4E7D600250819D2000B5362 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4E7D60B250819E2000B5362 /* SwiftSDAIcore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -407,6 +428,7 @@
 				F455D4F324EC73F7004C5320 /* schema */,
 				F44D025924BE40B600E77B2A /* stepcode */,
 				F48BF92824C0E0C5005B5B0A /* yacc&lex */,
+				F4E7D604250819D2000B5362 /* swiftP21read */,
 				F44D024524BE3FDA00E77B2A /* Products */,
 				F45A7F8F24E3B24700669F95 /* Frameworks */,
 			);
@@ -417,6 +439,7 @@
 			children = (
 				F44D025224BE402700E77B2A /* exp2swift */,
 				F48BF92724C0E0C5005B5B0A /* yacc&lex */,
+				F4E7D603250819D2000B5362 /* swiftP21read */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -938,6 +961,14 @@
 			path = type;
 			sourceTree = "<group>";
 		};
+		F4E7D604250819D2000B5362 /* swiftP21read */ = {
+			isa = PBXGroup;
+			children = (
+				F4E7D605250819D2000B5362 /* main.swift */,
+			);
+			path = swiftP21read;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -977,12 +1008,33 @@
 			productReference = F48BF92724C0E0C5005B5B0A /* yacc&lex */;
 			productType = "com.apple.product-type.tool";
 		};
+		F4E7D602250819D2000B5362 /* swiftP21read */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4E7D609250819D2000B5362 /* Build configuration list for PBXNativeTarget "swiftP21read" */;
+			buildPhases = (
+				F4E7D5FF250819D2000B5362 /* Sources */,
+				F4E7D600250819D2000B5362 /* Frameworks */,
+				F4E7D601250819D2000B5362 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = swiftP21read;
+			packageProductDependencies = (
+				F4E7D60A250819E2000B5362 /* SwiftSDAIcore */,
+			);
+			productName = swiftP21read;
+			productReference = F4E7D603250819D2000B5362 /* swiftP21read */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		F44D023C24BE3FDA00E77B2A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1200;
 				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = "Minokamo, Japan";
 				TargetAttributes = {
@@ -991,6 +1043,9 @@
 					};
 					F48BF92624C0E0C5005B5B0A = {
 						CreatedOnToolsVersion = 11.6;
+					};
+					F4E7D602250819D2000B5362 = {
+						CreatedOnToolsVersion = 12.0;
 					};
 				};
 			};
@@ -1009,6 +1064,7 @@
 			targets = (
 				F44D025124BE402700E77B2A /* exp2swift */,
 				F48BF92624C0E0C5005B5B0A /* yacc&lex */,
+				F4E7D602250819D2000B5362 /* swiftP21read */,
 			);
 		};
 /* End PBXProject section */
@@ -1096,6 +1152,14 @@
 				F48BF93024C0E115005B5B0A /* expparse.y in Sources */,
 				F48BF92A24C0E0C5005B5B0A /* main.c in Sources */,
 				F48BF92F24C0E110005B5B0A /* expscan.l in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4E7D5FF250819D2000B5362 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4E7D606250819D2000B5362 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1271,6 +1335,32 @@
 			};
 			name = Release;
 		};
+		F4E7D607250819D2000B5362 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = ZX793TWQF2;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F4E7D608250819D2000B5362 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = ZX793TWQF2;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1301,7 +1391,23 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		F4E7D609250819D2000B5362 /* Build configuration list for PBXNativeTarget "swiftP21read" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4E7D607250819D2000B5362 /* Debug */,
+				F4E7D608250819D2000B5362 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F4E7D60A250819E2000B5362 /* SwiftSDAIcore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftSDAIcore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F44D023C24BE3FDA00E77B2A /* Project object */;
 }

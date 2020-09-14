@@ -256,7 +256,7 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 		indent_swift(level);
 		char buf[BUFSIZ];
 		raw("public var %s: ", attribute_swiftName(attr,buf) );
-		variableType_swift(NULL, attr, YES_FORCE_OPTIONAL, level+nestingIndent_swift, NOT_IN_COMMENT);
+		variableType_swift(NULL, attr, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
 		raw(" {\n");
 
 		{	int level2 = level+nestingIndent_swift;
@@ -332,11 +332,14 @@ void selectTypeDefinition_swift(Type select_type,  int level) {
 	indent_swift(level);
 	raw( "}\n\n" );
 	
+}
+
+void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {
 	// swift enum extension
 	indent_swift(level);
 	{
 		char buf[BUFSIZ];
-		wrap( "public extension %s {\n", TYPE_swiftName(select_type,select_type->superscope,buf) );
+		wrap( "public extension %s {\n", TYPE_swiftName(select_type,schema->superscope,buf) );
 	}
 
 	{	int level2 = level+nestingIndent_swift;
@@ -347,6 +350,4 @@ void selectTypeDefinition_swift(Type select_type,  int level) {
 	
 	indent_swift(level);
 	raw( "}\n\n" );
-
 }
-

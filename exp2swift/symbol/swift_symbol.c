@@ -35,19 +35,19 @@ const char * variable_swiftName(Variable v, char buf[BUFSIZ]) {
 	return canonical_swiftName(v->name->symbol.name, buf);
 }
 
-void variableType_swift(Scope current, Variable v, bool force_optional, int level, bool in_comment) {
+void variableType_swift(Scope current, Variable v, bool force_optional, bool in_comment) {
 	bool optional = force_optional || VARis_optional(v);
-	optionalType_swift(current, v->type, optional, level, in_comment);
+	optionalType_swift(current, v->type, optional, in_comment);
 }
 
-void optionalType_swift(Scope current, Type type, bool optional, int level, bool in_comment) {
+void optionalType_swift(Scope current, Type type, bool optional, bool in_comment) {
 	bool simple_type = 	(type->symbol.name != NULL) || 
 						!(TYPEhas_bounds(type) || TYPEget_unique(type));
 	
 	optional &= !TYPEis_optional(type);
 	
 	if( optional && !simple_type ) raw("(");
-	TYPE_head_swift(current, type, level, in_comment);
+	TYPE_head_swift(current, type, in_comment);
 	if( optional ) {
 		if( !simple_type ) raw(")");
 		raw("! ");

@@ -31,7 +31,7 @@ static void attributeHead_swift
 	indent_swift(level);
 	raw("%s var %s: ",access,partialEntityAttribute_swiftName(attr, buf));
 	
-	variableType_swift(current, attr, NO_FORCE_OPTIONAL, level+nestingIndent_swift, in_comment);
+	variableType_swift(current, attr, NO_FORCE_OPTIONAL, in_comment);
 }
 
 //MARK: explicit attribute
@@ -171,7 +171,7 @@ static void derivedAttributeGetterDefinitionHead
 	raw("internal func %s__getter(SELF: %s) -> ", 
 			attrName, ENTITY_swiftName(entity, "", "", current, buf) );
 	
-	variableType_swift(current, attr, NO_FORCE_OPTIONAL, level, NOT_IN_COMMENT);
+	variableType_swift(current, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 }
 
 static void derivedRedefinitionGetterDefinitionHead
@@ -180,7 +180,7 @@ static void derivedRedefinitionGetterDefinitionHead
 	indent_swift(level);
 	raw("%sfunc %s__getter(complex: SDAI.ComplexEntity) -> ", access, attrName );
 	
-	variableType_swift(current, attr, NO_FORCE_OPTIONAL, level, NOT_IN_COMMENT);
+	variableType_swift(current, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 }
 
 void explicitDynamicAttributeProtocolDefinition_swift

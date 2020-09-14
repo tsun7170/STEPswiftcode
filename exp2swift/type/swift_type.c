@@ -84,7 +84,7 @@ static void typeArias_swift( Type type, int level, bool in_comment ) {
 		char buf[BUFSIZ];
 		raw( "public typealias %s = ", TYPE_swiftName(type, type->superscope, buf) );
 	}
-	TYPE_body_swift(type->superscope, type, level + nestingIndent_swift, in_comment);
+	TYPE_body_swift(type->superscope, type, in_comment);
 	raw("\n");
 }
 
@@ -132,7 +132,8 @@ static void enumTypeDefinition_swift(Type type, int level) {
 	raw( "}\n" );
 }
 
-
+static void enumTypeExtension_swift(Schema schema, Type type, int level) {
+}
 
 //MARK: - type definition entry point
 
@@ -169,36 +170,56 @@ void TYPEdefinition_swift( Type t, int level ) {
 	}
 }
 
+extern void TYPEextension_swift( Schema schema, Type t, int level ) {
+	if( TYPEget_head( t ) ) return;
+	
+		TypeBody tb = TYPEget_body( t );
+		switch( tb->type ) {
+			case enumeration_: 
+				enumTypeExtension_swift(schema, t, level);
+				break;
+				
+			case select_:
+				selectTypeExtension_swift(schema, t, level);
+				break;
+				
+			default:
+				break;
+		}
+
+}
+
+
 //MARK: - type references
 
-void TYPE_head_swift( Scope current, Type t, int level, bool in_comment ) {
+void TYPE_head_swift( Scope current, Type t, bool in_comment ) {
 	if( t->symbol.name ) {
 		char buf[BUFSIZ];
 		wrap( "%s", TYPE_swiftName(t,current,buf) );
 	} else {
-		TYPE_body_swift( current, t, level, in_comment );
+		TYPE_body_swift( current, t, in_comment );
 	}
 }
 
-static void TYPEunique_swift( TypeBody tb, bool in_comment ) {
-    if( tb->flags.unique ) {
-			if( in_comment ) {
-				wrap( "UNIQUE" );
-			}
-			else {
-				wrap( "/*UNIQUE*/" );
-			}
-    }
-}
+//static void TYPEunique_swift( TypeBody tb, bool in_comment ) {
+//    if( tb->flags.unique ) {
+//			if( in_comment ) {
+//				wrap( "UNIQUE" );
+//			}
+//			else {
+//				wrap( "/*UNIQUE*/" );
+//			}
+//    }
+//}
 
-static void TYPEoptional_swift( TypeBody tb ) {
-    if( tb->flags.optional ) {
-        wrap( "? " );
-    }
-}
+//static void TYPEoptional_swift( TypeBody tb ) {
+//    if( tb->flags.optional ) {
+//        wrap( "? " );
+//    }
+//}
 
 
-void TYPE_body_swift( Scope current, Type t, int level, bool in_comment ) {
+void TYPE_body_swift( Scope current, Type t, bool in_comment ) {
 	bool first_time = true;
 	
 	Expression expr;
@@ -247,8 +268,8 @@ void TYPE_body_swift( Scope current, Type t, int level, bool in_comment ) {
 		{
 			char buf[BUFSIZ];
 			wrap( "%s", ENTITY_swiftName(tb->entity,"","",current,buf) );
-			break;
 		}
+			break;
 			
 			//MARK:generic_
 		case generic_:
@@ -256,8 +277,8 @@ void TYPE_body_swift( Scope current, Type t, int level, bool in_comment ) {
 			char buf[BUFSIZ];
 			assert(tb->tag);
 			wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION,buf) );
-			break;
 		}
+			break;
 			
 			//MARK:aggregate_
 		case aggregate_:
@@ -265,11 +286,11 @@ void TYPE_body_swift( Scope current, Type t, int level, bool in_comment ) {
 			char buf[BUFSIZ];
 			assert(tb->tag);
 			wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION,buf) );
-			TYPEoptional_swift(tb);
-			EXPRbounds_swift( NULL, tb, in_comment );
-			TYPEunique_swift(tb, in_comment);
-			break;
+//			TYPEoptional_swift(tb);
+//			EXPRbounds_swift( NULL, tb, in_comment );
+//			TYPEunique_swift(tb, in_comment);
 		}
+			break;
 
 			//MARK:array_,bag_,set_,list_
 		case array_:
@@ -278,7 +299,12 @@ void TYPE_body_swift( Scope current, Type t, int level, bool in_comment ) {
 		case list_:
 			switch( tb->type ) {
 				case array_:
-					wrap( "SDAI.ARRAY" );
+					if( tb->flags.unique ){
+						wrap( "SDAI.UNIQUE_ARRAY" );
+					}
+					else {
+						wrap( "SDAI.ARRAY" );
+					}
 					break;
 					
 				case bag_:
@@ -290,7 +316,12 @@ void TYPE_body_swift( Scope current, Type t, int level, bool in_comment ) {
 					break;
 					
 				case list_:
-					wrap( "SDAI.LIST" );
+					if( tb->flags.unique ){
+						wrap( "SDAI.UNIQUE_LIST" );
+					}
+					else {
+						wrap( "SDAI.LIST" );
+					}
 					break;
 					
 				default:
@@ -299,11 +330,13 @@ void TYPE_body_swift( Scope current, Type t, int level, bool in_comment ) {
 			}
 			
 			raw( "<" );
-			TYPE_head_swift( current, tb->base, level, in_comment );
+			if( tb->flags.optional ) raw("(");
+			TYPE_head_swift( current, tb->base, in_comment );
+			if( tb->flags.optional ) raw(")?");
 			raw(">");
-			TYPEoptional_swift(tb);
+//			TYPEoptional_swift(tb);
 			EXPRbounds_swift( NULL, tb, in_comment );
-			TYPEunique_swift(tb, in_comment);
+//			TYPEunique_swift(tb, in_comment);
 			break;
 			
 			//MARK:enumeration_
@@ -339,10 +372,10 @@ void TYPE_body_swift( Scope current, Type t, int level, bool in_comment ) {
 					
 					/* start new enum item */
 					if( first_time ) {
-						raw( "%*s( ", level, "" );
+//						raw( "%*s( ", level, "" );
 						first_time = false;
 					} else {
-						raw( "%*s ", level, "" );
+//						raw( "%*s ", level, "" );
 					}
 					assert(enumCases[i] != NULL);
 					char buf[BUFSIZ];
@@ -357,6 +390,7 @@ void TYPE_body_swift( Scope current, Type t, int level, bool in_comment ) {
 			//MARK:select_
 		case select_:
 		{
+			int level = 0;
 			wrap( "%sSELECT\n", in_comment ? "" : "/* " );
 			LISTdo( tb->list, selection, Type )
 			/* finish line from previous entity */
@@ -412,7 +446,7 @@ const char* TYPEhead_string_swift( Scope current, Type t, bool in_comment, char 
 	if( prep_buffer(buf, BUFSIZ) ) {
 		abort();
 	}
-	TYPE_head_swift(current, t, 0, in_comment);
+	TYPE_head_swift(current, t, in_comment);
 	finish_buffer();
 	return ( buf );
 }

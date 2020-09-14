@@ -67,7 +67,7 @@ void RULE_swift( Rule rule, int level ) {
 		
 		//rule body
 		ALGscope_swift(rule, level2);
-		STMTlist_swift(rule->u.rule->body, level2);
+		STMTlist_swift(rule, rule->u.rule->body, level2);
 		
 		//where rules
 		raw("\n");

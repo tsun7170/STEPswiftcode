@@ -34,14 +34,15 @@ static void SCOPEconst_swift(Scope current, char* access, Variable v, int level 
 	}
 	
 	/* print attribute type */
-	variableType_swift(current, v, NO_FORCE_OPTIONAL, NOLEVEL, NOT_IN_COMMENT);
+	variableType_swift(current, v, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 	
 	
 	if( v->initializer ) {
 		raw( " = " );
-		positively_wrap();
+		aggressively_wrap();
 		int oldwrap = captureWrapIndent();
-		EXPR_swift( NULL, v->initializer, NO_PAREN );
+//		EXPR_swift( NULL, v->initializer, NO_PAREN );
+		EXPRassignment_rhs_swift(current, v->initializer, v->type);
 		restoreWrapIndent(oldwrap);
 	}
 	

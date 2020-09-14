@@ -18,7 +18,7 @@
 const char* canonical_swiftName(const char* name, char buf[BUFSIZ]);
 
 const char * variable_swiftName(Variable v, char buf[BUFSIZ]);
-void variableType_swift(Scope current, Variable v, bool force_optional, int level, bool in_comment);
-void optionalType_swift(Scope current, Type type, bool optional, int level, bool in_comment);
+void variableType_swift(Scope current, Variable v, bool force_optional, bool in_comment);
+void optionalType_swift(Scope current, Type type, bool optional, bool in_comment);
 
 #endif /* swift_symbol_h */

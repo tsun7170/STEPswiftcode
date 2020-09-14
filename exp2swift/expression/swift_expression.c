@@ -19,6 +19,7 @@
 #include "swift_symbol.h"
 #include "swift_func.h"
 #include "swift_entity.h"
+#include "swift_type.h"
 
 //*TY2020/07/11
 #define YES_PAD	true
@@ -271,13 +272,13 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 				wrap_if(can_wrap, "%s%s(", qual, func );
 			}
 			
-			positively_wrap();
-			int oldwrap = captureWrapIndent();
-			
-			char* sep = "";
-			if( isfunc && (LISTget_second(formals) == NULL) ) formals = NULL;
-			
-			if( formals != NULL ) {	// func call with multiple args
+			if( !LISTis_empty(e->u.funcall.list) ) {
+				positively_wrap();
+				int oldwrap = captureWrapIndent();
+				
+				char* sep = "";
+				bool noLabel = ( isfunc && (LISTget_second(formals) == NULL) );
+				
 				Link formals_iter = LISTLINKfirst(formals);
 				LISTdo( e->u.funcall.list, arg, Expression ) {
 					raw("%s",sep);
@@ -285,30 +286,24 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 					
 					assert(formals_iter != NULL);
 					Variable formal_param = formals_iter->data;
-					{
+					if( !noLabel ) {
 						char buf[BUFSIZ];
 						wrap("%s: ", variable_swiftName(formal_param,buf));
 					}
 					if(VARis_inout(formal_param)) {
 						raw("&");
+						EXPR_swift( SELF, arg, NO_PAREN );
 					}
-					EXPR__swift( SELF, arg, NO_PAREN, OP_UNKNOWN, NO_WRAP );
+					else {
+						EXPRassignment_rhs_swift(SELF, arg, formal_param->type);
+					}
 					
 					sep = ", ";
 					formals_iter = LISTLINKnext(formals, formals_iter);
 				}LISTod
-			}
-			else {	
-				LISTdo( e->u.funcall.list, arg, Expression ) {
-					raw("%s",sep);
-					
-					EXPR__swift( SELF, arg, NO_PAREN, OP_UNKNOWN, YES_WRAP );
-					
-					sep = ", ";
-				}LISTod
+				restoreWrapIndent(oldwrap);
 			}
 			raw( ")" );
-			restoreWrapIndent(oldwrap);
 		}
 			break;
 			
@@ -524,9 +519,10 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
 				//MARK:OP_ARRAY_ELEMENT
         case OP_ARRAY_ELEMENT:
 						EXPR__swift( SELF, oe->op1, YES_PAREN, OP_UNKNOWN, can_wrap );
-            wrap_if(can_wrap, "[SDAI.INDEX(" );
+//            wrap_if(can_wrap, "[SDAI.INDEX(" );
+						raw("[");
             EXPR__swift( SELF, oe->op2, NO_PAREN, OP_UNKNOWN, YES_WRAP );
-            raw( ")]" );
+            raw( "]" );
             break;
 				
 				//MARK:OP_SUBCOMPONENT
@@ -538,6 +534,7 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
             EXPR__swift( SELF, oe->op3, NO_PAREN, OP_UNKNOWN, YES_WRAP );
             raw( ")]" );
             break;
+				
         default:
             wrap_if(can_wrap, "(* unknown op-expression *)" );
     }
@@ -602,3 +599,35 @@ static void EXPRop1_swift( Scope SELF, struct Op_Subexpression * eo, char * opco
     }
 }
 
+static void aggregate_init( Scope SELF, Expression rhs, Type lhsType ) {
+	TypeBody typebody = TYPEget_body( lhsType );
+	if( typebody->upper ){
+		wrap("bound1: ");
+		EXPR_swift(SELF, typebody->lower, NO_PAREN);
+		raw(", ");
+		wrap("bound2: ");
+		EXPR_swift(SELF, typebody->upper, NO_PAREN);
+		raw(", ");
+	}
+	EXPR_swift(SELF, rhs, NO_PAREN);
+}
+
+void EXPRassignment_rhs_swift( Scope SELF, Expression rhs, Type lhsType) {
+	if( TYPEis(lhsType)==generic_ || TYPEis(lhsType)==aggregate_ ) {
+		EXPR_swift(SELF, rhs, NO_PAREN);
+	}
+	else if( TYPEs_are_equal(rhs->return_type, lhsType) ) {
+		EXPR_swift(SELF, rhs, NO_PAREN);
+	}
+	else {
+		TYPE_head_swift(SELF, lhsType, NOT_IN_COMMENT);
+		raw("(");
+		if( TYPEis_aggregate(lhsType) ) {
+			aggregate_init(SELF, rhs, lhsType);
+		}
+		else {
+			EXPR_swift(SELF, rhs, NO_PAREN);
+		}
+		raw(")");
+	}
+}

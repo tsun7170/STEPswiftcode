@@ -15,8 +15,8 @@
 //const char * alias_swiftName(Statement s);
 
 
-void STMT_swift( Statement stmt, int level );
-void STMTlist_swift( Linked_List stmts, int level );
+void STMT_swift( Scope algo, Statement stmt, int level );
+void STMTlist_swift( Scope algo, Linked_List stmts, int level );
 
 
 #endif /* swift_statement_h */

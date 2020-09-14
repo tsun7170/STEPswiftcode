@@ -16,13 +16,8 @@
 #define YES_PAREN	true
 #define NO_PAREN	false
 
-//#define EXPR_swift(		SELF,e,p) \
-//				EXPR__swift(	SELF,e,p, YES_WRAP, OP_UNKNOWN)
-
-
-
-void EXPRbounds_swift( Scope SELF, TypeBody tb, bool in_comment );
-void EXPR_swift( Scope SELF, Expression e, bool paren);
-
+extern void EXPRbounds_swift( Scope SELF, TypeBody tb, bool in_comment );
+extern void EXPR_swift( Scope SELF, Expression e, bool paren);
+extern void EXPRassignment_rhs_swift( Scope SELF, Expression rhs, Type lhsType);
 
 #endif /* swift_expression_h */

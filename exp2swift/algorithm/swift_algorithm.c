@@ -70,7 +70,7 @@ void ALGargs_swift( Scope current, bool force_optional, Linked_List args, bool d
 		if( VARis_inout(formalp) ) {
 			wrap("inout ");
 		}
-		variableType_swift(current, formalp, force_optional, level, NOT_IN_COMMENT);
+		variableType_swift(current, formalp, force_optional, NOT_IN_COMMENT);
 		sep = ", ";
 	}LISTod;
 	

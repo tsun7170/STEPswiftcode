@@ -19,7 +19,7 @@
 //	return s->symbol.name;
 //}
 
-static void CASE_swift( struct Case_Statement_ * case_stmt, int level ) {
+static void CASE_swift( Scope algo, struct Case_Statement_ * case_stmt, int level ) {
 	int level2 = level+nestingIndent_swift;
 	
 	raw("switch ");
@@ -53,14 +53,14 @@ static void CASE_swift( struct Case_Statement_ * case_stmt, int level ) {
 			} LISTod
 			
 			raw(":\n");
-			STMT_swift(case_item->action, level2);
+			STMT_swift(algo, case_item->action, level2);
 			raw("\n");
 		} 
 		else {
 			/* print OTHERWISE */
 			indent_swift(level);
 			raw("default:\n");
-			STMT_swift(case_item->action, level2);
+			STMT_swift(algo, case_item->action, level2);
 		}
 	} LISTod
 	
@@ -68,7 +68,7 @@ static void CASE_swift( struct Case_Statement_ * case_stmt, int level ) {
 	raw("} //end switch\n");
 }
 
-static void LOOPwithIncrementControl_swift( struct Loop_ *loop, int level ) {
+static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int level ) {
 	DictionaryEntry de;
 	DICTdo_init( loop->scope->symbol_table, &de );
 	Variable v = ( Variable )DICTdo( &de );
@@ -107,7 +107,7 @@ static void LOOPwithIncrementControl_swift( struct Loop_ *loop, int level ) {
 			wrap(".isnotTRUE { break }\n");
 		}
 		
-		STMTlist_swift(loop->statements, level2);
+		STMTlist_swift(algo, loop->statements, level2);
 		
 		if( loop->until_expr ) {
 			indent_swift(level2);
@@ -121,14 +121,14 @@ static void LOOPwithIncrementControl_swift( struct Loop_ *loop, int level ) {
 	raw("}\n");
 }
 
-static void LOOPwhile_swift( struct Loop_ *loop, int level ) {
+static void LOOPwhile_swift( Scope algo, struct Loop_ *loop, int level ) {
 	raw("while ");
 	EXPR_swift(NULL, loop->while_expr, YES_PAREN);
 	wrap(".isTRUE {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		
-		STMTlist_swift(loop->statements, level2);
+		STMTlist_swift(algo, loop->statements, level2);
 		
 		if( loop->until_expr ) {
 			indent_swift(level2);
@@ -142,12 +142,12 @@ static void LOOPwhile_swift( struct Loop_ *loop, int level ) {
 	raw("}\n");
 }
 
-static void LOOPuntil_swift( struct Loop_ *loop, int level ) {
+static void LOOPuntil_swift( Scope algo, struct Loop_ *loop, int level ) {
 	raw("repeat {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		
-		STMTlist_swift(loop->statements, level2);
+		STMTlist_swift(algo, loop->statements, level2);
 	}
 	
 	indent_swift(level);
@@ -156,34 +156,34 @@ static void LOOPuntil_swift( struct Loop_ *loop, int level ) {
 	wrap(".isnotTRUE\n");
 }
 
-static void LOOPwoRepeatControl_swift( struct Loop_ *loop, int level ) {
+static void LOOPwoRepeatControl_swift( Scope algo, struct Loop_ *loop, int level ) {
 	raw("while true {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		
-		STMTlist_swift(loop->statements, level2);
+		STMTlist_swift(algo, loop->statements, level2);
 	}
 	
 	indent_swift(level);
 	raw("}\n");
 }
 
-static void LOOP_swift( struct Loop_ *loop, int level ) {
+static void LOOP_swift( Scope algo, struct Loop_ *loop, int level ) {
 	if( loop->scope ) {
-		LOOPwithIncrementControl_swift(loop, level);
+		LOOPwithIncrementControl_swift(algo, loop, level);
 	}
 	else if( loop->while_expr ) {
-		LOOPwhile_swift(loop, level);
+		LOOPwhile_swift(algo, loop, level);
 	}
 	else if( loop->until_expr ) {
-		LOOPuntil_swift(loop, level);
+		LOOPuntil_swift(algo, loop, level);
 	}
 	else {
-		LOOPwoRepeatControl_swift(loop, level);
+		LOOPwoRepeatControl_swift(algo, loop, level);
 	}
 }
 
-void STMT_swift( Statement stmt, int level ) {
+void STMT_swift( Scope algo, Statement stmt, int level ) {
 	indent_swift(level);
 
 	if( !stmt ) {  /* null statement */
@@ -194,21 +194,26 @@ void STMT_swift( Statement stmt, int level ) {
 	switch( stmt->type ) {
 			//MARK: STMT_ASSIGN
 		case STMT_ASSIGN:
-			EXPR_swift(NULL, stmt->u.assign->lhs, NO_PAREN);
-			wrap(" = ");			
-			EXPR_swift(NULL, stmt->u.assign->rhs, NO_PAREN);
+		{
+			Expression lhs = stmt->u.assign->lhs;
+			EXPR_swift(NULL, lhs, NO_PAREN);
+			raw(" = ");			
+			//		EXPR_swift(NULL, stmt->u.assign->rhs, NO_PAREN);
+			aggressively_wrap();
+			EXPRassignment_rhs_swift(NULL, stmt->u.assign->rhs, lhs->return_type);
 			raw("\n");
+		}
 			break;
 			
 			//MARK: STMT_CASE
 		case STMT_CASE:
-			CASE_swift( stmt->u.Case, level );
+			CASE_swift( algo, stmt->u.Case, level );
 			break;
 			
 			//MARK: STMT_COMPOUND
 		case STMT_COMPOUND:
 			raw("//BEGIN\n");
-			STMTlist_swift(stmt->u.compound->statements, level);
+			STMTlist_swift(algo, stmt->u.compound->statements, level);
 			indent_swift(level);
 			raw("//END\n");
 			break;
@@ -219,7 +224,7 @@ void STMT_swift( Statement stmt, int level ) {
 			EXPR_swift(NULL, stmt->u.cond->test, YES_PAREN);
 			wrap(".isTRUE {\n");
 			
-			STMTlist_swift(stmt->u.cond->code, level+nestingIndent_swift);
+			STMTlist_swift(algo, stmt->u.cond->code, level+nestingIndent_swift);
 
 			if( stmt->u.cond->otherwise ) {
 				indent_swift(level);
@@ -227,7 +232,7 @@ void STMT_swift( Statement stmt, int level ) {
 				indent_swift(level);
 				raw("else {\n");
 				
-				STMTlist_swift(stmt->u.cond->otherwise, level+nestingIndent_swift);
+				STMTlist_swift(algo, stmt->u.cond->otherwise, level+nestingIndent_swift);
 			}
 
 			indent_swift(level);
@@ -236,7 +241,7 @@ void STMT_swift( Statement stmt, int level ) {
 			
 			//MARK: STMT_LOOP
 		case STMT_LOOP:
-			LOOP_swift( stmt->u.loop, level );
+			LOOP_swift( algo, stmt->u.loop, level );
 			break;
 			
 			//MARK: STMT_PCALL
@@ -261,8 +266,11 @@ void STMT_swift( Statement stmt, int level ) {
 				}
 				if(VARis_inout(formal_param)) {
 					raw("&");
+					EXPR_swift(NULL, actual_param, NO_PAREN );
 				}
-				EXPR_swift(NULL, actual_param, NO_PAREN );
+				else {
+					EXPRassignment_rhs_swift(NULL, actual_param, formal_param->type);
+				}
 				
 				sep = ", ";
 				formals_iter = LISTLINKnext(formals, formals_iter);
@@ -275,7 +283,9 @@ void STMT_swift( Statement stmt, int level ) {
 		case STMT_RETURN:
 			raw("return ");
 			if( stmt->u.ret->value ) {
-				EXPR_swift(NULL, stmt->u.ret->value, NO_PAREN);
+				assert(algo->u_tag==scope_is_func);
+				EXPRassignment_rhs_swift(algo, stmt->u.ret->value, algo->u.func->return_type);
+//				EXPR_swift(NULL, stmt->u.ret->value, NO_PAREN);
 			}
 			raw("\n");
 			break;
@@ -290,7 +300,7 @@ void STMT_swift( Statement stmt, int level ) {
 			EXPR_swift(NULL, stmt->u.alias->variable->initializer, YES_PAREN);
 			raw(") */\n");
 			
-			STMTlist_swift(stmt->u.alias->statements, level+nestingIndent_swift);
+			STMTlist_swift(algo, stmt->u.alias->statements, level+nestingIndent_swift);
 
 			indent_swift(level);
 		{
@@ -311,8 +321,8 @@ void STMT_swift( Statement stmt, int level ) {
 	}
 }
 
-void STMTlist_swift( Linked_List stmts, int level ) {
+void STMTlist_swift( Scope algo, Linked_List stmts, int level ) {
 	LISTdo(stmts, stmt, Statement) {
-		STMT_swift(stmt, level);
+		STMT_swift(algo, stmt, level);
 	}LISTod;
 }

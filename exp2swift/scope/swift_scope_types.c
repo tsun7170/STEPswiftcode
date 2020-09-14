@@ -47,6 +47,8 @@ static void schemaLevelType_swift( Schema schema, Type type) {
 	TYPEdefinition_swift( type, level + nestingIndent_swift );
 	
 	raw("}\n");
+	
+	TYPEextension_swift( schema, type, level );
 }
 
 void SCHEMAtypeList_swift( Schema schema ) {

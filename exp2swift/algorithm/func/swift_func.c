@@ -81,7 +81,7 @@ void FUNC_swift( bool nested, Function func, int level ) {
 	
 	// return type
 //	positively_wrap();
-	optionalType_swift(func->superscope, func->u.func->return_type, YES_OPTIONAL_TYPE, level, NOT_IN_COMMENT);
+	optionalType_swift(func->superscope, func->u.func->return_type, YES_OPTIONAL_TYPE, NOT_IN_COMMENT);
 	
 	if(!LISTis_empty(aggregates)) {
 		// constraint for aggregate element type
@@ -92,7 +92,7 @@ void FUNC_swift( bool nested, Function func, int level ) {
 			Type base = atag->u.type->head;	//hack!
 			positively_wrap();
 			wrap("%s%s.Element == ",sep,TYPE_swiftName(atag,NULL,buf));
-			TYPE_head_swift(func->superscope, base, level, false);
+			TYPE_head_swift(func->superscope, base, false);
 			sep = ", ";
 		}LISTod;
 	}
@@ -102,7 +102,7 @@ void FUNC_swift( bool nested, Function func, int level ) {
 	{	int level2 = level+nestingIndent_swift;
 		
 		ALGscope_swift(func, level2);
-		STMTlist_swift(func->u.func->body, level2);
+		STMTlist_swift(func, func->u.func->body, level2);
 	}
 	
 	indent_swift(level);

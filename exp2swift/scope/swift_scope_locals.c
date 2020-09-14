@@ -47,13 +47,14 @@ void SCOPElocalList_swift( Scope s, int level ) {
 			raw("var %s: ", variable_swiftName(var,buf));
 		}
 		
-		variableType_swift(s, var, YES_FORCE_OPTIONAL, level, NOT_IN_COMMENT);
+		variableType_swift(s, var, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
 		
 		if( var->initializer ) {
 			raw( " = " );
-			positively_wrap();
+			aggressively_wrap();
 			int oldwrap = captureWrapIndent();
-			EXPR_swift( NULL, var->initializer, NO_PAREN );
+//			EXPR_swift( NULL, var->initializer, NO_PAREN );
+			EXPRassignment_rhs_swift(s, var->initializer, var->type);
 			restoreWrapIndent(oldwrap);
 		}
 		else if( TYPEhas_bounds(var->type) ) {
