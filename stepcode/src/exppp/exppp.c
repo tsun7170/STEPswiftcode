@@ -72,6 +72,9 @@ bool exppp_aggressively_wrap_consts = false;
 bool exppp_terse = false;
 bool exppp_reference_info = false;   /* if true, add commentary about where things came from */
 bool exppp_tail_comment = false;
+//*TY2020/09/19
+bool exppp_annotate_extensively = false;
+
 
 FILE * exppp_fp = NULL;         /* output file */
 char * exppp_buf = 0;           /* output buffer */

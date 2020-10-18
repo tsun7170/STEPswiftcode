@@ -11,6 +11,7 @@
 #include "pp.h"
 
 #include "pretty_expr.h"
+#include "pretty_type.h"
 
 
 /** print array bounds */
@@ -33,6 +34,11 @@ void EXPRbounds_out( TypeBody tb ) {
  * if paren == 0, then parens may be omitted without consequence
  */
 void EXPR__out( Expression e, int paren, unsigned int previous_op ) {
+	//*TY2020/09/19
+	if( exppp_annotate_extensively ){
+		raw("(");
+	}
+	
     int i;  /* trusty temporary */
 
     switch( TYPEis( e->type ) ) {
@@ -155,6 +161,12 @@ void EXPR__out( Expression e, int paren, unsigned int previous_op ) {
             fprintf( stderr, "%s:%d: ERROR - unknown expression, type %d", e->symbol.filename, e->symbol.line, TYPEis( e->type ) );
             abort();
     }
+	//*TY2020/09/19
+	if( exppp_annotate_extensively ){
+		raw("(*");
+		TYPE_head_out(e->return_type, 0);
+		raw("*))");
+	}
 }
 
 /** print expression that has op and operands */
@@ -228,6 +240,11 @@ void EXPRop2__out( struct Op_Subexpression * eo, char * opcode, int paren, int p
     if( pad && paren && ( eo->op_code != previous_op ) ) {
         wrap( "( " );
     }
+	//*TY2020/09/19
+	else if( exppp_annotate_extensively ){
+		raw("(");
+	}
+
     EXPR__out( eo->op1, 1, eo->op_code );
     if( pad ) {
         raw( " " );
@@ -240,6 +257,10 @@ void EXPRop2__out( struct Op_Subexpression * eo, char * opcode, int paren, int p
     if( pad && paren && ( eo->op_code != previous_op ) ) {
         raw( " )" );
     }
+	//*TY2020/09/19
+	else if( exppp_annotate_extensively ){
+		raw(")");
+	}
 }
 
 /** Print out a one-operand operation.  If there were more than two of these
@@ -249,11 +270,19 @@ void EXPRop1_out( struct Op_Subexpression * eo, char * opcode, int paren ) {
     if( paren ) {
         wrap( "( " );
     }
+	//*TY2020/09/19
+	else if( exppp_annotate_extensively ){
+		raw("(");
+	}
     wrap( "%s", opcode );
     EXPR_out( eo->op1, 1 );
     if( paren ) {
         raw( " )" );
     }
+	//*TY2020/09/19
+	else if( exppp_annotate_extensively ){
+		raw(")");
+	}
 }
 
 int EXPRop_length( struct Op_Subexpression * oe ) {

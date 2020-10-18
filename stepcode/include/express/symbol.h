@@ -46,6 +46,7 @@
 #include <sc_export.h>
 #include "basic.h"  /* get basic definitions */
 #include "memory.h"
+#include "symbol.h"
 
 /************/
 /* typedefs */
@@ -81,8 +82,14 @@ extern SC_EXPRESS_EXPORT struct freelist_head SYMBOL_fl;
 #define SYMBOL_new()        (struct Symbol_ *)MEM_new(&SYMBOL_fl)
 #define SYMBOL_destroy(x)   MEM_destroy(&SYMBOL_fl,(Freelist *)(Generic)x)
 
+//*TY2020/09/19
+#define INLINE_SYMBOLset	1
+#if INLINE_SYMBOLset
 #define SYMBOLset(obj)      obj->symbol.line = yylineno; \
                 obj->symbol.filename = current_filename
+#else
+extern void SYMBOLset( void* obj );
+#endif
 
 /***********************/
 /* function prototypes */

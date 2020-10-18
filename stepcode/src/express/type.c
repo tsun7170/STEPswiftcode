@@ -713,3 +713,47 @@ bool TYPEs_are_equal(Type t1, Type t2) {
 	}
 	return false;
 }
+
+Type TYPEget_fundamental_type(Type t) {
+	Type underlying;
+	Type fundamental = t;
+	while ( (underlying = TYPEget_head(fundamental)) ) {
+		fundamental = underlying;
+	}
+	return fundamental;
+}
+
+const char* TYPEget_kind(Type t) {
+	TypeBody tb = t->u.type->body;
+	if( tb != NULL ){
+		switch (TYPEis(t)) {
+			case integer_:	return "INTEGER";
+			case real_:			return "REAL";
+			case string_:		return "STRING";
+			case binary_:		return "BINARY";
+			case boolean_:	return "BOOLEAN";
+			case logical_:	return "LOGICAL";
+			case number_:		return "NUMBER";
+				
+			case entity_:		return "ENTITY";
+				
+			case generic_:	return "GENERIC";
+			case aggregate_:	return "AGGREGATE";
+				
+			case array_:	return "ARRAY";
+			case bag_:		return "BAG";
+			case set_:		return "SET";
+			case list_:		return "LIST";
+				
+			case enumeration_: 	return "ENUMERATION";
+			case select_:	return "SELECT";
+				
+			default:	return "<unknown>";
+		}
+	}
+	else {
+		if( t->symbol.resolved != RESOLVED ) return "<unresolved>";
+		return "<nullbody>";
+	}
+
+}

@@ -568,8 +568,9 @@ void partialEntityAttrOverrideProtocolConformance_swift
 	 char* sep = "";
 	 LISTdo( attr_overrides, attr, Variable ) {
 		 assert(attr->original_attribute);
-		 wrap("%s %s", sep, dynamicAttribute_swiftProtocolName(attr->original_attribute, buf));
-		 sep = ",";
+		 raw(sep);
+		 wrap(dynamicAttribute_swiftProtocolName(attr->original_attribute, buf));
+		 sep = ", ";
 	 }LISTod;
 	 wrap(" {}\n");
 }

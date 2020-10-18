@@ -593,13 +593,17 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
             }
 
             op2->u.variable = v;
-				//*TY2020/07/11
-				op2->u_tag = expr_is_variable;
+				    //*TY2020/07/11
+				    op2->u_tag = expr_is_variable;
 
             /* changed to set return_type */
             op2->return_type = op2->u.variable->type;
-            resolved_all( expr );
+				    //*TY2020/09/19
+				    TYPEresolve( &op2->return_type );
+
+					  resolved_all( expr );
             return( op2->return_type );
+				
         case enumeration_:
             /* enumerations within a select will be handled by `case select_` above,
              * which calls EXP_resolve_op_dot_fuzzy(). */

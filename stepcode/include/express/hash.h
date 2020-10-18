@@ -117,7 +117,7 @@ typedef unsigned long Address;
 
 typedef struct Element_ {
     const char    *    key;
-    char    *    data;
+    void    *    data;	//*TY2020/09/20 changed type from char* to void*
     struct Element_ * next;
     Symbol  *  symbol; /**< for debugging hash conflicts */
     char       type;   /**< user-supplied type */

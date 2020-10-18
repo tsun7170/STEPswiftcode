@@ -71,6 +71,7 @@ void EXPRESSinit_init( void ) {
     EXPRESSgetopt = Handle_Exp2swift_Args;
 	
 	exppp_tail_comment = true;
+//	exppp_annotate_extensively = true;
 //	exppp_reference_info = true;
 }
 

@@ -25,6 +25,7 @@
 #include "swift_files.h"
 #include "swift_symbol.h"
 #include "swift_select_type.h"
+#include "swift_enum_type.h"
 
 // returns length of qualification string
 int accumulate_qualification(Scope target, Scope current, char buf[BUFSIZ]) {
@@ -88,52 +89,6 @@ static void typeArias_swift( Type type, int level, bool in_comment ) {
 	raw("\n");
 }
 
-//MARK: - enum type
-
-static void enumTypeDefinition_swift(Type type, int level) {
-	DictionaryEntry dictEntry;
-	DICTdo_type_init( type->symbol_table, &dictEntry, OBJ_EXPRESSION );
-	int count = 0;
-	while( 0 != DICTdo(&dictEntry)  ) {
-		count++;
-	}
-	
-	indent_swift(level);
-	{
-		char buf[BUFSIZ];
-		wrap( "public enum %s : SDAI.ENUMERATION, SDAIEnumerationType {\n", TYPE_swiftName(type,type->superscope,buf) );
-	}
-	
-	if(count>0) {
-		Expression* enumCases = ( Expression * )sc_calloc( count, sizeof( Expression ) );
-		
-		// sort enum cases
-		DICTdo_type_init( type->symbol_table, &dictEntry, OBJ_EXPRESSION );
-		Expression expr;
-		while( 0 != ( expr = ( Expression )DICTdo( &dictEntry ) ) ) {
-			assert(expr->u.integer >= 1);
-			assert(expr->u.integer <= count);
-			assert(enumCases[expr->u.integer - 1] == NULL);
-			enumCases[expr->u.integer - 1] = expr;
-		}
-		
-		char buf[BUFSIZ];
-
-		for( int i = 0; i < count; i++ ) {
-			indent_swift(level + nestingIndent_swift);
-			assert(enumCases[i] != NULL);
-			raw( "case %s\n", enumCase_swiftName( enumCases[i], buf ) );
-		}
-		
-		sc_free( ( char * )enumCases );
-	}
-	
-	indent_swift(level);
-	raw( "}\n" );
-}
-
-static void enumTypeExtension_swift(Schema schema, Type type, int level) {
-}
 
 //MARK: - type definition entry point
 

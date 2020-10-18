@@ -20,7 +20,9 @@ void TYPE_out( Type t, int level ) {
 
     raw( "%*sTYPE %s =", level, "", t->symbol.name );
     if( TYPEget_head( t ) ) {
-        wrap( " %s", TYPEget_name( TYPEget_head( t ) ) );
+			//*TY2020/09/20
+//        wrap( " %s", TYPEget_name( TYPEget_head( t ) ) );
+			TYPE_head_out(TYPEget_head( t ), level + exppp_nesting_indent);
     } else {
         TYPE_body_out( t, level + exppp_nesting_indent );
     }
@@ -43,17 +45,13 @@ void TYPE_head_out( Type t, int level ) {
 			indent2 = ( indent2 + level ) / 2;
 		}
 		wrap( " %s", t->symbol.name );
-		if( TYPEis_entity(t)) {
-			raw(" (*ENTITY*)");
+		
+		//*TY2020/09/19
+		if( exppp_annotate_extensively ){
+			Type fundamental = TYPEget_fundamental_type(t);
+			raw("(*%s*) ", TYPEget_kind(fundamental));
 		}
-		else if( TYPEis_select(t)) {
-			raw( " (*SELECT*)" );
-		}
-		else if( TYPEis_enumeration(t))
-			raw( " (*ENUM*)" );
-		else {
-			raw( " (*TYPE*)" );
-		}
+		
 		indent2 = old_indent;
 	} else {
 		TYPE_body_out( t, level );
@@ -100,7 +98,12 @@ void TYPE_body_out( Type t, int level ) {
             wrap( " NUMBER" );
             break;
         case entity_:
-            wrap( " %s (*ENTITY*)", tb->entity->symbol.name );
+				if( tb->entity ){
+					wrap( " %s (*ENTITY*)", tb->entity->symbol.name );
+				}
+				else {
+					wrap( " <complex>(*ENTITY*)" );
+				}
             break;
         case aggregate_:
         case array_:
@@ -237,6 +240,21 @@ void TYPE_body_out( Type t, int level ) {
                 wrap( ":%s", tb->tag->symbol.name );
             }
             break;
+				
+				//*TY2020/09/19
+			case attribute_:
+				wrap("<attribute>");
+				break;
+			case identifier_:
+				wrap("<identifier>");
+				break;
+			case runtime_:
+				wrap("<runtime>");
+				break;
+			case unknown_:
+				wrap("<unknown>");
+				break;
+				
         default:
             wrap( " (* unknown type %d *)", tb->type );
     }

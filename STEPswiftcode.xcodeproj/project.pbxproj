@@ -60,6 +60,7 @@
 		F44D037F24BE42B400E77B2A /* pretty_entity.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D036524BE42B400E77B2A /* pretty_entity.c */; };
 		F44D038024BE42B400E77B2A /* pretty_rule.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D036924BE42B400E77B2A /* pretty_rule.c */; };
 		F44D038124BE42B400E77B2A /* pretty_loop.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D036A24BE42B400E77B2A /* pretty_loop.c */; };
+		F45A2EA925173EA100A9E3C2 /* swift_enum_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F45A2EA825173EA100A9E3C2 /* swift_enum_type.c */; };
 		F45A7F8E24D00EEF00669F95 /* swift_statement.c in Sources */ = {isa = PBXBuildFile; fileRef = F45A7F8D24D00EEF00669F95 /* swift_statement.c */; };
 		F48BF92A24C0E0C5005B5B0A /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF92924C0E0C5005B5B0A /* main.c */; };
 		F48BF92F24C0E110005B5B0A /* expscan.l in Sources */ = {isa = PBXBuildFile; fileRef = F44D030A24BE429E00E77B2A /* expscan.l */; };
@@ -314,6 +315,9 @@
 		F44D039D24BE42FD00E77B2A /* de_end.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = de_end.h; sourceTree = "<group>"; };
 		F44D039F24BE42FE00E77B2A /* exppp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = exppp.h; sourceTree = "<group>"; };
 		F455D4F324EC73F7004C5320 /* schema */ = {isa = PBXFileReference; lastKnownFileType = folder; path = schema; sourceTree = "<group>"; };
+		F45A2EA725173EA100A9E3C2 /* swift_enum_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_enum_type.h; sourceTree = "<group>"; };
+		F45A2EA825173EA100A9E3C2 /* swift_enum_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_enum_type.c; sourceTree = "<group>"; };
+		F45A2EAA25188A1300A9E3C2 /* builtin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = builtin.h; sourceTree = "<group>"; };
 		F45A7F8C24D00EEF00669F95 /* swift_statement.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_statement.h; sourceTree = "<group>"; };
 		F45A7F8D24D00EEF00669F95 /* swift_statement.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_statement.c; sourceTree = "<group>"; };
 		F48BF91E24C07A2B005B5B0A /* ordered_attrs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ordered_attrs.h; sourceTree = "<group>"; };
@@ -877,6 +881,7 @@
 				F44D038824BE42FD00E77B2A /* symbol.h */,
 				F44D038424BE42FD00E77B2A /* type.h */,
 				F44D038C24BE42FD00E77B2A /* variable.h */,
+				F45A2EAA25188A1300A9E3C2 /* builtin.h */,
 			);
 			path = express;
 			sourceTree = "<group>";
@@ -957,6 +962,8 @@
 				F48BF95424C26BFE005B5B0A /* swift_type.c */,
 				F4E728FA25002891007FDFD9 /* swift_select_type.h */,
 				F4E728FB25002891007FDFD9 /* swift_select_type.c */,
+				F45A2EA725173EA100A9E3C2 /* swift_enum_type.h */,
+				F45A2EA825173EA100A9E3C2 /* swift_enum_type.c */,
 			);
 			path = type;
 			sourceTree = "<group>";
@@ -1088,6 +1095,7 @@
 				F44D036C24BE42B400E77B2A /* pretty_subtype.c in Sources */,
 				F43B6C0124D0064D007493AB /* swift_algorithm.c in Sources */,
 				F4E728FC25002891007FDFD9 /* swift_select_type.c in Sources */,
+				F45A2EA925173EA100A9E3C2 /* swift_enum_type.c in Sources */,
 				F44D036B24BE42B400E77B2A /* pretty_schema.c in Sources */,
 				F44D032624BE429E00E77B2A /* entity.c in Sources */,
 				F48BF93924C26BB1005B5B0A /* swift_schema.c in Sources */,

@@ -54,3 +54,27 @@ Symbol * SYMBOLcreate( char * name, int line, const char * filename ) {
                                */
     return sym;
 }
+
+//*TY2020/09/19
+#if !INLINE_SYMBOLset
+struct Obj_ {
+	Symbol symbol;
+};
+
+void SYMBOLset( void* o ) {
+	static int last_lineno = -1;
+	static Symbol* last_symbol = NULL;
+	
+	struct Obj_* obj = o;
+	obj->symbol.line = yylineno;
+	obj->symbol.filename = current_filename;
+	
+	if( yylineno != last_lineno ){
+		if( last_symbol != NULL && last_symbol->name != NULL ){
+			printf("SYMBOL[%s]\t at line: %d\n",last_symbol->name, last_symbol->line);
+		}
+		last_symbol = &(obj->symbol);
+		last_lineno = yylineno;
+	}
+}
+#endif

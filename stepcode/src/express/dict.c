@@ -224,3 +224,22 @@ const char* DICTdo_key(DictionaryEntry* dict_entry) {
 	return dict_entry->e->key;
 }
 
+//*TY2002/09/20
+Element DICTdo_tuple(DictionaryEntry* dict_entry) {
+	if( 0 == HASHlist( dict_entry ) ) {
+			return 0;
+	}
+
+	return dict_entry->e;
+}
+
+int DICTcount_type(Dictionary dict, char type) {
+	DictionaryEntry dictEntry;
+	int count = 0;
+	DICTdo_type_init( dict, &dictEntry, type );
+	while( 0 != DICTdo_tuple(&dictEntry)  ) {
+		++count;
+	}
+	return count;
+}
+

@@ -20,6 +20,8 @@ extern SC_EXPPP_EXPORT bool exppp_output_filename_reset;    /**< if true, force 
 extern SC_EXPPP_EXPORT bool exppp_print_to_stdout;          /**< if true, print to stdout */
 extern SC_EXPPP_EXPORT bool exppp_aggressively_wrap_consts; /**< for constants, print one item per line */
 extern SC_EXPPP_EXPORT bool exppp_tail_comment;             /**< print tail comment, such as END_ENTITY; --entity_name */
+//*TY2020/09/19
+extern bool exppp_annotate_extensively;
 
 SC_EXPPP_EXPORT void EXPRESSout( Express e );
 

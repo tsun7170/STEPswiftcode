@@ -335,4 +335,8 @@ extern Dictionary SELECTget_super_entity_list( Type select_type );	// returns di
 
 //*TY2020/09/14
 extern bool TYPEs_are_equal(Type t1, Type t2);
+
+//*TY2020/09/19
+extern Type TYPEget_fundamental_type(Type t);
+extern const char* TYPEget_kind(Type t);
 #endif    /*  TYPE_H  */

@@ -94,11 +94,6 @@ extern const char* DICT_key;	/**< set as a side-effect of DICTdo routines to the
                     }
 #define DICTchange_type(e,typ)      (e)->type = (typ)
 
-//*TY2020/06/28 added
-#define DICTsuccess	0
-#define DICTfailure 1
-extern const char* DICTdo_key(DictionaryEntry* dict_entry);
-
 /***********************/
 /* function prototypes */
 /***********************/
@@ -112,5 +107,13 @@ extern SC_EXPRESS_EXPORT Generic      DICTlookup PROTO( ( Dictionary, const char
 extern SC_EXPRESS_EXPORT Generic      DICTlookup_symbol PROTO( ( Dictionary, const char *, Symbol ** ) );
 extern SC_EXPRESS_EXPORT Generic      DICTdo PROTO( ( DictionaryEntry * ) );
 extern SC_EXPRESS_EXPORT void     DICTprint PROTO( ( Dictionary ) );
+
+//*TY2020/06/28 added
+#define DICTsuccess	0
+#define DICTfailure 1
+extern const char* DICTdo_key(DictionaryEntry* dict_entry);
+extern Element DICTdo_tuple(DictionaryEntry* dict_entry);
+extern int DICTcount_type(Dictionary dict, char type);
+#define DICTcount(dict)		DICTcount_type(dict,OBJ_ANY)
 
 #endif /*DICTIONARY_H*/

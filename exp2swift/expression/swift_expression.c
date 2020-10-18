@@ -12,6 +12,7 @@
 
 #include "exppp.h"
 #include "pp.h"
+#include "builtin.h"
 
 #include "pretty_expr.h"
 
@@ -111,11 +112,25 @@ static void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * eo, bool ca
 }
 
 static void EXPRopIn_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
-	EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, YES_WRAP );
-	positively_wrap();
-	wrap_if(YES_WRAP, ".contains( ");
-	EXPR__swift( SELF, eo->op1, NO_PAREN, eo->op_code, YES_WRAP );
-	raw(" )");
+	if( TYPEis(eo->op1->return_type)==string_ && TYPEis(eo->op2->type)==funcall_ && eo->op2->u.funcall.function==func_typeof ) {
+		Expression arg = LISTget_first(eo->op2->u.funcall.list);
+		wrap_if(YES_WRAP, "SDAI.TYPEOF(");
+		EXPR_swift( SELF, arg, NO_PAREN );
+		raw(", ");
+		wrap_if(YES_WRAP, "IS: ");
+		EXPR__swift( SELF, eo->op1, NO_PAREN, eo->op_code, YES_WRAP );
+		raw(")");
+	}
+	else {
+		EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, YES_WRAP );
+		positively_wrap();
+		wrap_if(YES_WRAP, ".contains(");
+		EXPR__swift( SELF, eo->op1, NO_PAREN, eo->op_code, YES_WRAP );
+		raw(")");		
+	}
+	
+	
+	
 }
 
 static void EXPRopLike_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
@@ -125,11 +140,29 @@ static void EXPRopLike_swift( Scope SELF, struct Op_Subexpression * eo, bool can
 	raw(" )");
 }
 
+static void EXPRopMod_swift( Scope SELF, struct Op_Subexpression* eo, bool can_wrap) {
+	wrap_if(can_wrap, "Int(" );
+	EXPR__swift( SELF, eo->op1, NO_PAREN, eo->op_code, can_wrap );
+	wrap_if(can_wrap, ") % ");
+	wrap_if(can_wrap, "Int(" );
+	EXPR__swift( SELF, eo->op2, NO_PAREN, eo->op_code, can_wrap );
+	wrap_if(can_wrap, ")");
+}
+
+static void EXPRopDIV_swift( Scope SELF, struct Op_Subexpression* eo, bool can_wrap) {
+	wrap_if(can_wrap, "Int(" );
+	EXPR__swift( SELF, eo->op1, NO_PAREN, eo->op_code, can_wrap );
+	wrap_if(can_wrap, ") / ");
+	wrap_if(can_wrap, "Int(" );
+	EXPR__swift( SELF, eo->op2, NO_PAREN, eo->op_code, can_wrap );
+	wrap_if(can_wrap, ")");
+}
+
 static void EXPRrepeat_swift( Scope SELF, Expression val, Expression count) {
 //	assert(val != NULL);
 	assert(count != NULL);
 	
-	wrap_if(YES_WRAP,"SDAI.REPEAT(value: ");
+	wrap_if(YES_WRAP,"SDAI.AIE(");
 	if(val) {
 		EXPR__swift( SELF, val, NO_PAREN, OP_UNKNOWN, YES_WRAP );
 	}
@@ -137,9 +170,9 @@ static void EXPRrepeat_swift( Scope SELF, Expression val, Expression count) {
 		raw("###NULL###");
 	}
 	raw(", ");
-	wrap_if(YES_WRAP,"count: ");
+	wrap_if(YES_WRAP,"repeat:Int(");
 	EXPR__swift( SELF, count, NO_PAREN, OP_UNKNOWN, YES_WRAP );
-	raw(")");
+	raw("))");
 }
 
 //MARK: - main entry point
@@ -236,9 +269,10 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 			EXPR__swift( SELF, e->u.query->aggregate, YES_PAREN, OP_UNKNOWN, can_wrap );
 		{
 			char buf[BUFSIZ];
-			force_wrap();raw( ".QUERY{ %s in ", variable_swiftName(e->u.query->local,buf));
+			aggressively_wrap();
+			raw( ".QUERY{ %s in ", variable_swiftName(e->u.query->local,buf));
 		}
-			EXPR__swift( SELF, e->u.query->expression, YES_PAREN, OP_UNKNOWN, can_wrap );
+			EXPR__swift( SELF, e->u.query->expression, NO_PAREN, OP_UNKNOWN, can_wrap );
 			raw( " }" );
 			break;
 			
@@ -269,12 +303,14 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 					formals = ENTITYget_constructor_params(e->u.funcall.function);
 				}
 				
-				wrap_if(can_wrap, "%s%s(", qual, func );
+				aggressively_wrap();
+				wrap_if(YES_WRAP, "%s%s(", qual, func );
 			}
 			
 			if( !LISTis_empty(e->u.funcall.list) ) {
 				positively_wrap();
 				int oldwrap = captureWrapIndent();
+				if( LISTget_length(e->u.funcall.list)<=1 )restoreWrapIndent(oldwrap);
 				
 				char* sep = "";
 				bool noLabel = ( isfunc && (LISTget_second(formals) == NULL) );
@@ -333,7 +369,9 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 				}
 				else {
 					if(prev != NULL) {
+						wrap_if(can_wrap, "SDAI.AIE(");
 						EXPR__swift( SELF, prev, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+						raw(")");
 						sep = ", ";
 					}
 					prev = arg;
@@ -473,8 +511,9 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
 				
 				//MARK:OP_MOD
         case OP_MOD:
-					EXPRop2__swift( SELF,SELF, oe, "%", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
-					break;
+//					EXPRop2__swift( SELF,SELF, oe, "%", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+					EXPRopMod_swift(SELF, oe, YES_WRAP);
+				break;
 				
 				//MARK:OP_NOT_EQUAL
         case OP_NOT_EQUAL:
@@ -493,7 +532,8 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
 				
 				//MARK:OP_DIV
         case OP_DIV:
-            EXPRop2__swift( SELF,SELF, oe, "DIV", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+//            EXPRop2__swift( SELF,SELF, oe, "DIV", paren, YES_PAD, OP_UNKNOWN, YES_WRAP );
+				EXPRopDIV_swift(SELF, oe, YES_WRAP);
             break;
 				
 				//MARK:OP_MINUS
@@ -520,17 +560,17 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
         case OP_ARRAY_ELEMENT:
 						EXPR__swift( SELF, oe->op1, YES_PAREN, OP_UNKNOWN, can_wrap );
 //            wrap_if(can_wrap, "[SDAI.INDEX(" );
-						raw("[");
+						raw("[Int(");
             EXPR__swift( SELF, oe->op2, NO_PAREN, OP_UNKNOWN, YES_WRAP );
-            raw( "]" );
+            raw( ")]" );
             break;
 				
 				//MARK:OP_SUBCOMPONENT
         case OP_SUBCOMPONENT:
             EXPR__swift( SELF, oe->op1, YES_PAREN, OP_UNKNOWN, can_wrap );
-            wrap_if(can_wrap, "[SDAI.RANGE(" );
+            wrap_if(can_wrap, "[Int(" );
             EXPR__swift( SELF, oe->op2, NO_PAREN, OP_UNKNOWN, YES_WRAP );
-            raw(", " );
+            raw(") ... Int(" );
             EXPR__swift( SELF, oe->op3, NO_PAREN, OP_UNKNOWN, YES_WRAP );
             raw( ")]" );
             break;

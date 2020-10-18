@@ -296,6 +296,28 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 	}
 }
 
+static void selectTypeConstructor_swift(Type select_type,  int level) {
+	
+	TypeBody typeBody = TYPEget_body(select_type);
+	char buf[BUFSIZ];
+
+	indent_swift(level);
+	raw("//MARK: - CONSTRUCTORS\n");
+	
+	LISTdo( typeBody->list, selection, Type ) {
+		indent_swift(level);
+		raw("public init(_ selectValue: %s) {\n", TYPE_swiftName(selection, select_type->superscope, buf));
+		
+		{	int level2 = level+nestingIndent_swift;
+			indent_swift(level2);
+			raw("self = .%s(selectValue)\n", selectCase_swiftName(selection, buf));
+		}
+		
+		indent_swift(level);
+		raw("}\n\n");
+	} LISTod;		
+}
+	
 void selectTypeDefinition_swift(Type select_type,  int level) {
 	
 	listAllSelectionAttributes(select_type, level);
@@ -326,6 +348,15 @@ void selectTypeDefinition_swift(Type select_type,  int level) {
 					raw( "\t// %s\n", "(TYPE)" );
 				}
 			} LISTod;		
+			raw("\n");
+			
+			selectTypeConstructor_swift(select_type, level2);
+			raw("\n");
+			
+			selectTypeGroupReference_swift(select_type, level2);
+			raw("\n");
+
+			selectTypeAttributeReference_swift(select_type, level2);		
 		}
 	}
 	
@@ -335,19 +366,19 @@ void selectTypeDefinition_swift(Type select_type,  int level) {
 }
 
 void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {
-	// swift enum extension
-	indent_swift(level);
-	{
-		char buf[BUFSIZ];
-		wrap( "public extension %s {\n", TYPE_swiftName(select_type,schema->superscope,buf) );
-	}
-
-	{	int level2 = level+nestingIndent_swift;
-		
-		selectTypeGroupReference_swift(select_type, level2);
-		selectTypeAttributeReference_swift(select_type, level2);
-	}
-	
-	indent_swift(level);
-	raw( "}\n\n" );
+//	// swift enum extension
+//	indent_swift(level);
+//	{
+//		char buf[BUFSIZ];
+//		wrap( "public extension %s {\n", TYPE_swiftName(select_type,schema->superscope,buf) );
+//	}
+//
+//	{	int level2 = level+nestingIndent_swift;
+//		
+//		selectTypeGroupReference_swift(select_type, level2);
+//		selectTypeAttributeReference_swift(select_type, level2);
+//	}
+//	
+//	indent_swift(level);
+//	raw( "}\n\n" );
 }
