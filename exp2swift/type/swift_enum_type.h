@@ -11,7 +11,7 @@
 
 #include "../express/type.h"
 
-extern void enumTypeDefinition_swift(Type type, int level);
+extern void enumTypeDefinition_swift(Schema schema, Type type, int level);
 
 extern void enumTypeExtension_swift(Schema schema, Type type, int level);
 

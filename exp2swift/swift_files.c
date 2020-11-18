@@ -97,7 +97,8 @@ void openSwiftFileForSchema(Schema schema) {
 	
 	exppp_output_filename = swift_filename_buffer;
 	exppp_output_filename_reset = true;
-	sprintf( swift_filename_buffer, "%s.swift", SCHEMA_swiftName(schema) );
+	char buf[BUFSIZ];
+	sprintf( swift_filename_buffer, "%s.swift", SCHEMA_swiftName(schema, buf) );
 	
 	error_sym.filename = swift_filename_buffer;
 	

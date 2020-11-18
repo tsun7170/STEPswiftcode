@@ -25,43 +25,43 @@
 
 
 /** print the rules in a scope */
-void SCOPEruleList_swift( Scope s, int level ) {
+void SCOPEruleList_swift(Schema schema, Scope s, int level ) {
 	Rule rule;
 	DictionaryEntry de;
 	
 	DICTdo_type_init( s->symbol_table, &de, OBJ_RULE );
 	while( 0 != ( rule = ( Rule )DICTdo( &de ) ) ) {
-		RULE_swift( rule, level );
+		RULE_swift(schema, rule, level );
 	}
 }
 
 /** print the functions in a scope */
-void SCOPEfuncList_swift( Scope s, int level ) {
+void SCOPEfuncList_swift(Schema schema, Scope s, int level ) {
 	Function func;
 	DictionaryEntry de;
 	
 	DICTdo_type_init( s->symbol_table, &de, OBJ_FUNCTION );
 	while( 0 != ( func = ( Function )DICTdo( &de ) ) ) {
-		FUNC_swift( true, func, level );
+		FUNC_swift(schema, true, func, level );
 	}
 }
 
 /* print the procs in a scope */
-static void SCOPEprocList_swift( Scope s, int level ) {
+static void SCOPEprocList_swift(Schema schema, Scope s, int level ) {
 	Procedure proc;
 	DictionaryEntry de;
 	
 	DICTdo_type_init( s->symbol_table, &de, OBJ_PROCEDURE );
 	while( 0 != ( proc = ( Procedure )DICTdo( &de ) ) ) {
-		PROC_swift( true, proc, level );
+		PROC_swift(schema, true, proc, level );
 	}
 }
 
 
-void SCOPEalgList_swift( Scope s, int level ) {
-    SCOPEruleList_swift( s, level );
-    SCOPEfuncList_swift( s, level );
-    SCOPEprocList_swift( s, level );
+void SCOPEalgList_swift(Schema schema, Scope s, int level ) {
+    SCOPEruleList_swift(schema, s, level );
+    SCOPEfuncList_swift(schema, s, level );
+    SCOPEprocList_swift(schema, s, level );
 }
 
 
@@ -75,12 +75,14 @@ static void schemaLevelRule_swift( Schema schema, Rule rule ) {
 	raw("\n"
 			"import SwiftSDAIcore\n");
 	
-	raw("\n"
-			"extension %s {\n", SCHEMA_swiftName(schema));
+	{	char buf[BUFSIZ];
+		raw("\n"
+				"extension %s {\n", SCHEMA_swiftName(schema, buf));
+	}
 	
 	{	int level2 = level + nestingIndent_swift;
 		
-		RULE_swift(rule, level2);
+		RULE_swift(schema, rule, level2);
 	}
 	raw("}\n");
 }
@@ -94,12 +96,14 @@ static void schemaLevelFunction_swift( Schema schema, Function func ) {
 	raw("\n"
 			"import SwiftSDAIcore\n");
 
-	raw("\n"
-			"extension %s {\n", SCHEMA_swiftName(schema));
+	{	char buf[BUFSIZ];
+		raw("\n"
+				"extension %s {\n", SCHEMA_swiftName(schema, buf));
+	}
 	
 	{	int level2 = level + nestingIndent_swift;
 		
-		FUNC_swift( false, func, level2 );
+		FUNC_swift(schema, false, func, level2 );
 	}
 	raw("}\n");
 }
@@ -112,12 +116,14 @@ static void schemaLevelProcedure_swift( Schema schema, Procedure proc ) {
 	raw("\n"
 			"import SwiftSDAIcore\n");
 
-	raw("\n"
-			"extension %s {\n", SCHEMA_swiftName(schema));
+	{	char buf[BUFSIZ];
+		raw("\n"
+				"extension %s {\n", SCHEMA_swiftName(schema, buf));
+	}
 	
 	{	int level2 = level + nestingIndent_swift;
 		
-		PROC_swift( false, proc, level2 );
+		PROC_swift(schema, false, proc, level2 );
 	}
 	raw("}\n");
 }

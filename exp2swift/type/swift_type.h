@@ -11,8 +11,14 @@
 
 #include "../express/type.h"
 
-#define YES_IN_COMMENT	true
-#define NOT_IN_COMMENT	false
+typedef enum {
+	YES_IN_COMMENT,
+	NOT_IN_COMMENT,
+	WO_COMMENT
+} SwiftOutCommentOption;
+
+//#define YES_IN_COMMENT	true
+//#define NOT_IN_COMMENT	false
 
 #define NO_QUALIFICATION	NULL
 
@@ -23,12 +29,13 @@ extern char TYPE_swiftNameInitial( Type t );
 extern const char* enumCase_swiftName( Expression expr, char buf[BUFSIZ] );
 extern const char* selectCase_swiftName( Type selection, char buf[BUFSIZ] );
 
-extern void TYPEdefinition_swift( Type t, int level );
+extern void TYPEdefinition_swift(Schema schema, Type t, int level );
 extern void TYPEextension_swift( Schema schema, Type t, int level );
 
-extern void TYPE_head_swift( Scope current, Type t, bool in_comment );
-extern void TYPE_body_swift( Scope current, Type t, bool in_comment );
+extern void TYPE_head_swift( Scope current, Type t, SwiftOutCommentOption in_comment );
+extern void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment );
+extern const char* builtinTYPE_body_swiftname( Type t );
 
-extern const char* TYPEhead_string_swift( Scope current, Type t, bool in_comment, char buf[BUFSIZ]);
+extern const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption in_comment, char buf[BUFSIZ]);
 
 #endif /* swift_type_h */

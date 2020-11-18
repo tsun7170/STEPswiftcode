@@ -33,7 +33,7 @@ char 				RULE_swiftNameInitial( Rule rule ) {
 
 //MARK: - main entry point
 
-void RULE_swift( Rule rule, int level ) {
+void RULE_swift(Schema schema, Rule rule, int level ) {
 	// EXPRESS summary
 	beginExpress_swift("RULE DEFINITION");
 	RULE_out(rule, level);
@@ -66,7 +66,7 @@ void RULE_swift( Rule rule, int level ) {
 		}LISTod;
 		
 		//rule body
-		ALGscope_swift(rule, level2);
+		ALGscope_swift(schema, rule, level2);
 		STMTlist_swift(rule, rule->u.rule->body, level2);
 		
 		//where rules

@@ -30,10 +30,11 @@
 #include "swift_scope_types.h"
 #include "swift_scope_entities.h"
 #include "swift_scope_algs.h"
+#include "swift_symbol.h"
 
 
-const char* SCHEMA_swiftName( Schema schema) {
-	return schema->symbol.name;
+const char* SCHEMA_swiftName( Schema schema, char buf[BUFSIZ]) {
+	return canonical_swiftName(schema->symbol.name, buf);
 }
 
 const char* schema_nickname(Schema schema, char buf[BUFSIZ] ) {
@@ -78,7 +79,9 @@ void SCHEMA_swift( Schema schema ) {
 	
 	// swift code generation
 	raw("/* SCHEMA */\n");
-	raw("public enum %s {\n", SCHEMA_swiftName(schema));
+	{	char buf[BUFSIZ];
+		raw("public enum %s {\n", SCHEMA_swiftName(schema, buf));
+	}
 	
 	{	int level2 = level+nestingIndent_swift;
 		SCOPEconstList_swift( false, schema, level2 );

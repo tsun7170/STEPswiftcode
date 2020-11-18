@@ -37,7 +37,7 @@ const char* FUNCcall_swiftName( Expression fcall, char buf[BUFSIZ] ) {
 
 //MARK: - main entry point
 
-void FUNC_swift( bool nested, Function func, int level ) {
+void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 	if(!nested) {
 		// EXPRESS summary
 		beginExpress_swift("FUNCTION DEFINITION");
@@ -81,7 +81,9 @@ void FUNC_swift( bool nested, Function func, int level ) {
 	
 	// return type
 //	positively_wrap();
-	optionalType_swift(func->superscope, func->u.func->return_type, YES_OPTIONAL_TYPE, NOT_IN_COMMENT);
+	bool return_optional = YES_FORCE_OPTIONAL;
+	if( TYPEis_boolean(func->u.func->return_type) || TYPEis_logical(func->u.func->return_type) ) return_optional = NO_FORCE_OPTIONAL;
+	optionalType_swift(func->superscope, func->u.func->return_type, return_optional, NOT_IN_COMMENT);
 	
 	if(!LISTis_empty(aggregates)) {
 		// constraint for aggregate element type
@@ -101,7 +103,7 @@ void FUNC_swift( bool nested, Function func, int level ) {
 	// function body
 	{	int level2 = level+nestingIndent_swift;
 		
-		ALGscope_swift(func, level2);
+		ALGscope_swift(schema, func, level2);
 		STMTlist_swift(func, func->u.func->body, level2);
 	}
 	

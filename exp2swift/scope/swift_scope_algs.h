@@ -11,7 +11,7 @@
 
 #include <express/scope.h>
 
-void SCOPEalgList_swift( Scope s, int level );
+void SCOPEalgList_swift(Schema schema, Scope s, int level );
 
 void SCHEMAalgList_swift( Schema schema );
 

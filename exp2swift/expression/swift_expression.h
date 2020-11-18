@@ -11,12 +11,13 @@
 
 #include "../express/expbasic.h"
 #include "../express/express.h"
+#include "swift_type.h"
 
 //*TY2020/07/11
 #define YES_PAREN	true
 #define NO_PAREN	false
 
-extern void EXPRbounds_swift( Scope SELF, TypeBody tb, bool in_comment );
+extern void EXPRbounds_swift( Scope SELF, TypeBody tb, SwiftOutCommentOption in_comment );
 extern void EXPR_swift( Scope SELF, Expression e, bool paren);
 extern void EXPRassignment_rhs_swift( Scope SELF, Expression rhs, Type lhsType);
 

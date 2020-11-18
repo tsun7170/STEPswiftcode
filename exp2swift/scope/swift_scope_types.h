@@ -11,7 +11,7 @@
 
 #include <express/scope.h>
 
-void SCOPEtypeList_swift( Scope s, int level );
+void SCOPEtypeList_swift(Schema schema, Scope s, int level );
 void SCHEMAtypeList_swift( Schema schema );
 
 #endif /* swift_scope_types_h */

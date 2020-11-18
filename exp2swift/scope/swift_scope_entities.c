@@ -48,8 +48,10 @@ static void schemaLevelEntity_swift( Schema schema, Entity entity) {
 	raw("\n"
 			"import SwiftSDAIcore\n");
 
-	raw("\n"
-			"extension %s {\n", SCHEMA_swiftName(schema));
+	{ char buf[BUFSIZ];
+		raw("\n"
+				"extension %s {\n", SCHEMA_swiftName(schema, buf));
+	}
 	
 	{	int level2 = level + nestingIndent_swift;
 		

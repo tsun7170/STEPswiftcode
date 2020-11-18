@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F40EE5DE254546AB00F293C3 /* swift_type_alias.c in Sources */ = {isa = PBXBuildFile; fileRef = F40EE5DD254546AB00F293C3 /* swift_type_alias.c */; };
+		F40EE5E4254546D800F293C3 /* swift_named_aggregate_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F40EE5E3254546D800F293C3 /* swift_named_aggregate_type.c */; };
+		F40EE5EA254546F200F293C3 /* swift_named_simple_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */; };
+		F40EE5F225457CE300F293C3 /* SwiftSDAIap242 in Frameworks */ = {isa = PBXBuildFile; productRef = F40EE5F125457CE300F293C3 /* SwiftSDAIap242 */; };
 		F43B6BEF24CD3D6C007493AB /* swift_entity_partial.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */; };
 		F43B6BF124CD3E20007493AB /* swift_entity_reference.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF024CD3E20007493AB /* swift_entity_reference.c */; };
 		F43B6BF724CEC040007493AB /* swift_rule.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF624CEC040007493AB /* swift_rule.c */; };
@@ -114,6 +118,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F40EE5DC254546AB00F293C3 /* swift_type_alias.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_type_alias.h; sourceTree = "<group>"; };
+		F40EE5DD254546AB00F293C3 /* swift_type_alias.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_type_alias.c; sourceTree = "<group>"; };
+		F40EE5E2254546D800F293C3 /* swift_named_aggregate_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_named_aggregate_type.h; sourceTree = "<group>"; };
+		F40EE5E3254546D800F293C3 /* swift_named_aggregate_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_named_aggregate_type.c; sourceTree = "<group>"; };
+		F40EE5E8254546F200F293C3 /* swift_named_simple_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_named_simple_type.h; sourceTree = "<group>"; };
+		F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_named_simple_type.c; sourceTree = "<group>"; };
 		F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_partial.c; sourceTree = "<group>"; };
 		F43B6BF024CD3E20007493AB /* swift_entity_reference.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_reference.c; sourceTree = "<group>"; };
 		F43B6BF524CEC040007493AB /* swift_rule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_rule.h; sourceTree = "<group>"; };
@@ -378,6 +388,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F4E7D60B250819E2000B5362 /* SwiftSDAIcore in Frameworks */,
+				F40EE5F225457CE300F293C3 /* SwiftSDAIap242 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -964,6 +975,12 @@
 				F4E728FB25002891007FDFD9 /* swift_select_type.c */,
 				F45A2EA725173EA100A9E3C2 /* swift_enum_type.h */,
 				F45A2EA825173EA100A9E3C2 /* swift_enum_type.c */,
+				F40EE5DC254546AB00F293C3 /* swift_type_alias.h */,
+				F40EE5DD254546AB00F293C3 /* swift_type_alias.c */,
+				F40EE5E2254546D800F293C3 /* swift_named_aggregate_type.h */,
+				F40EE5E3254546D800F293C3 /* swift_named_aggregate_type.c */,
+				F40EE5E8254546F200F293C3 /* swift_named_simple_type.h */,
+				F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */,
 			);
 			path = type;
 			sourceTree = "<group>";
@@ -1030,6 +1047,7 @@
 			name = swiftP21read;
 			packageProductDependencies = (
 				F4E7D60A250819E2000B5362 /* SwiftSDAIcore */,
+				F40EE5F125457CE300F293C3 /* SwiftSDAIap242 */,
 			);
 			productName = swiftP21read;
 			productReference = F4E7D603250819D2000B5362 /* swiftP21read */;
@@ -1042,7 +1060,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1200;
-				LastUpgradeCheck = 1200;
+				LastUpgradeCheck = 1210;
 				ORGANIZATIONNAME = "Minokamo, Japan";
 				TargetAttributes = {
 					F44D025124BE402700E77B2A = {
@@ -1086,6 +1104,7 @@
 				F44D031E24BE429E00E77B2A /* alg.c in Sources */,
 				F44D033124BE429E00E77B2A /* lexact.c in Sources */,
 				F44D037C24BE42B400E77B2A /* exppp.c in Sources */,
+				F40EE5EA254546F200F293C3 /* swift_named_simple_type.c in Sources */,
 				F43B6BFD24CEC064007493AB /* swift_proc.c in Sources */,
 				F48BF93B24C26BB1005B5B0A /* swift_files.c in Sources */,
 				F48BF95524C26BFF005B5B0A /* swift_expression.c in Sources */,
@@ -1119,6 +1138,7 @@
 				F44D037324BE42B400E77B2A /* pretty_expr.c in Sources */,
 				F43B6BF124CD3E20007493AB /* swift_entity_reference.c in Sources */,
 				F44D02EB24BE427C00E77B2A /* path2str.c in Sources */,
+				F40EE5DE254546AB00F293C3 /* swift_type_alias.c in Sources */,
 				F44D033524BE429E00E77B2A /* express.c in Sources */,
 				F44D032A24BE429E00E77B2A /* resolve.c in Sources */,
 				F44D031C24BE429E00E77B2A /* dict.c in Sources */,
@@ -1130,6 +1150,7 @@
 				F44D038024BE42B400E77B2A /* pretty_rule.c in Sources */,
 				F44D032F24BE429E00E77B2A /* type.c in Sources */,
 				F44D037A24BE42B400E77B2A /* pretty_case.c in Sources */,
+				F40EE5E4254546D800F293C3 /* swift_named_aggregate_type.c in Sources */,
 				F48BF95724C26BFF005B5B0A /* swift_scope_algs.c in Sources */,
 				F44D02DE24BE427C00E77B2A /* sc_trace_fprintf.c in Sources */,
 				F44D031F24BE429E00E77B2A /* object.c in Sources */,
@@ -1282,6 +1303,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
 		};
@@ -1346,6 +1368,7 @@
 		F4E7D607250819D2000B5362 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = ZX793TWQF2;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1359,6 +1382,7 @@
 		F4E7D608250819D2000B5362 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = ZX793TWQF2;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1411,6 +1435,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		F40EE5F125457CE300F293C3 /* SwiftSDAIap242 */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftSDAIap242;
+		};
 		F4E7D60A250819E2000B5362 /* SwiftSDAIcore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SwiftSDAIcore;

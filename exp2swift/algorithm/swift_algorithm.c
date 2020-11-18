@@ -77,10 +77,10 @@ void ALGargs_swift( Scope current, bool force_optional, Linked_List args, bool d
 	restoreWrapIndent(indent2save);
 }
 
-void ALGscope_swift( Scope s, int level ) {
-	SCOPEtypeList_swift(s, level);
+void ALGscope_swift(Schema schema, Scope s, int level ) {
+	SCOPEtypeList_swift(schema, s, level);
 	SCOPEentityList_swift(s, level);
-	SCOPEalgList_swift(s, level);
+	SCOPEalgList_swift(schema, s, level);
 	SCOPEconstList_swift(true, s, level);
 	SCOPElocalList_swift(s, level);
 }

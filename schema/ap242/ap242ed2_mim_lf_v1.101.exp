@@ -7396,7 +7396,7 @@ ENTITY area_with_outer_boundary
   SUBTYPE OF (half_space_2d);
   SELF\half_space_2d.base_curve : composite_curve;
 WHERE
-  WR1: base_curve\composite_curve.closed_curve = true;
+  WR1: base_curve\composite_curve.closed_curve = true;	-- //*TY2020/11/10 need to review \composite_curve.
 END_ENTITY;
 
 ENTITY array_placement_group

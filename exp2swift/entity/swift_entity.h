@@ -13,6 +13,9 @@
 #include "../express/expbasic.h"
 #include "../express/express.h"
 
+#define NO_PREFIX ""
+#define NO_POSTFIX ""
+
 extern const char* ENTITY_swiftName( Entity e, const char* prefix, const char* postfix, Scope current, char buf[BUFSIZ] );
 extern char 				ENTITY_swiftNameInitial( Entity e);
 extern const char* ENTITY_canonicalName( Entity e, char buf[BUFSIZ] );
@@ -23,6 +26,7 @@ extern const char* superEntity_swiftPrefix;
 extern const char* attribute_swiftName( Variable attr, char[BUFSIZ] );
 extern const char* partialEntityAttribute_swiftName( Variable attr, char buf[BUFSIZ] );
 extern const char* dynamicAttribute_swiftProtocolName( Variable original, char buf[BUFSIZ] );
+extern bool attribute_need_observer( Variable attr ); 
 
 extern const char* whereRuleLabel_swiftName( Where w, char buf[BUFSIZ] );
 extern const char* uniqueRuleLabel_swiftName( int serial, Linked_List unique, char buf[BUFSIZ] );

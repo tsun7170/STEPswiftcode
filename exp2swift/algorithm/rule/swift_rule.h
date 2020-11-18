@@ -14,6 +14,6 @@
 const char* RULE_swiftName( Rule rule, char buf[BUFSIZ] );
 char 				RULE_swiftNameInitial( Rule rule );
 
-void RULE_swift( Rule rule, int level );
+void RULE_swift(Schema schema, Rule rule, int level );
 
 #endif /* swift_rule_h */

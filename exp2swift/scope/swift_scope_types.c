@@ -22,13 +22,13 @@
 #include "swift_schema.h"
 
 
-void SCOPEtypeList_swift( Scope s, int level ) {
+void SCOPEtypeList_swift(Schema schema, Scope s, int level ) {
 	DictionaryEntry dictEntry;
 	Type type;
 	
 	DICTdo_type_init( s->symbol_table, &dictEntry, OBJ_TYPE );
 	while( 0 != ( type = ( Type )DICTdo( &dictEntry ) ) ) {
-		TYPEdefinition_swift( type, level );
+		TYPEdefinition_swift(schema, type, level );
 	}
 }
 
@@ -41,10 +41,12 @@ static void schemaLevelType_swift( Schema schema, Type type) {
 	raw("\n"
 			"import SwiftSDAIcore\n");
 	
-	raw("\n"
-			"extension %s {\n", SCHEMA_swiftName(schema));
+	{	char buf[BUFSIZ];
+		raw("\n"
+				"extension %s {\n", SCHEMA_swiftName(schema, buf));
+	}
 	
-	TYPEdefinition_swift( type, level + nestingIndent_swift );
+	TYPEdefinition_swift(schema, type, level + nestingIndent_swift );
 	
 	raw("}\n");
 	

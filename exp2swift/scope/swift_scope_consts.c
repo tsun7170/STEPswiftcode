@@ -38,7 +38,7 @@ static void SCOPEconst_swift(Scope current, char* access, Variable v, int level 
 	
 	
 	if( v->initializer ) {
-		raw( " = " );
+		raw( " = SDAI.UNWRAP(" );
 		aggressively_wrap();
 		int oldwrap = captureWrapIndent();
 //		EXPR_swift( NULL, v->initializer, NO_PAREN );
@@ -46,7 +46,7 @@ static void SCOPEconst_swift(Scope current, char* access, Variable v, int level 
 		restoreWrapIndent(oldwrap);
 	}
 	
-	raw( "\n\n" );
+	raw( ")\n\n" );
 }
 
 /** output all consts in this scope */

@@ -37,7 +37,7 @@ const char* PROCcall_swiftName( Statement pcall, char buf[BUFSIZ] ) {
 
 //MARK: - main entry point
 
-void PROC_swift( bool nested, Procedure proc, int level ) {
+void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 	if(!nested) {
 		// EXPRESS summary
 		beginExpress_swift("PROCEDURE DEFINITION");
@@ -97,7 +97,7 @@ void PROC_swift( bool nested, Procedure proc, int level ) {
 		// proc body
 		{	int level2 = level+nestingIndent_swift;
 			
-			ALGscope_swift(proc, level2);
+			ALGscope_swift(schema, proc, level2);
 			STMTlist_swift(proc, proc->u.proc->body, level2);
 		}
 		
