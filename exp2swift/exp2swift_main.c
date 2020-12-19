@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "../express/express.h"
 #include "exppp.h"
+#include "resolve.h"
 
 #include "swift_express.h"
 
@@ -73,6 +74,10 @@ void EXPRESSinit_init( void ) {
 	exppp_tail_comment = true;
 //	exppp_annotate_extensively = true;
 //	exppp_reference_info = true;
+	
+//	print_objects_while_running |= OBJ_PASS_BITS;
+//	print_objects_while_running = OBJ_ANYTHING_BITS;
+
 }
 
 

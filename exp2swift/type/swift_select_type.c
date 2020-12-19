@@ -11,6 +11,7 @@
 
 #include <express/error.h>
 #include <sc_memmgr.h>
+#include <resolve.h>
 
 #include "exppp.h"
 #include "pp.h"
@@ -256,11 +257,12 @@ static void selectTypeGroupReference_swiftProtocol(Schema schema, Type select_ty
 	
 	Dictionary all_supers = SELECTget_super_entity_list(select_type);
 	DictionaryEntry de;
-	Linked_List origins;
+//	Linked_List origins;
+	const char* entity_name;
 	
 	DICTdo_init(all_supers, &de);
-	while( 0 != (origins = DICTdo(&de))) {
-		const char* entity_name = DICT_key;
+	while( 0 != (entity_name = DICTdo_key(&de))) {
+//		const char* entity_name = DICT_key;
 		
 		if( mark ) {
 			indent_swift(level);
@@ -298,11 +300,12 @@ static void selectSubtypeGroupReference_swift(Schema schema, Type select_type, i
 	
 	Dictionary all_supers = SELECTget_super_entity_list(select_type);
 	DictionaryEntry de;
-	Linked_List origins;
+//	Linked_List origins;
+	const char* entity_name;
 	
 	DICTdo_init(all_supers, &de);
-	while( 0 != (origins = DICTdo(&de))) {
-		const char* entity_name = DICT_key;
+	while( 0 != (entity_name = DICTdo_key(&de))) {
+//		const char* entity_name = DICT_key;
 		
 		if( mark ) {
 			indent_swift(level);
@@ -385,13 +388,14 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 static void selectTypeAttributeReference_swiftProtocol(Schema schema, Type select_type, int level) {
 	Dictionary all_attrs = SELECTget_all_attributes(select_type);
 	DictionaryEntry de;
-	Linked_List attr_defs;
+//	Linked_List attr_defs;
+	const char* attr_name;
 	
 	char* mark = "//MARK: ENTITY ATTRIBUTE REFERENCES\n";
 
 	DICTdo_init(all_attrs, &de);
-	while ( 0 != (attr_defs = DICTdo(&de))) {
-		const char* attr_name = DICT_key;
+	while ( 0 != (attr_name = DICTdo_key(&de))) {
+//		const char* attr_name = DICT_key;
 		if( SELECTget_attr_ambiguous_count(select_type, attr_name) > 1 ) continue;
 		
 		if( mark ) {
@@ -415,13 +419,14 @@ static void selectTypeAttributeReference_swiftProtocol(Schema schema, Type selec
 static void selectSubtypeAttributeReference_swift(Schema schema, Type select_type, int level) {
 	Dictionary all_attrs = SELECTget_all_attributes(select_type);
 	DictionaryEntry de;
-	Linked_List attr_defs;
+//	Linked_List attr_defs;
+	const char* attr_name;
 	
 	char* mark = "//MARK: ENTITY ATTRIBUTE REFERENCES\n";
 
 	DICTdo_init(all_attrs, &de);
-	while ( 0 != (attr_defs = DICTdo(&de))) {
-		const char* attr_name = DICT_key;
+	while ( 0 != (attr_name = DICTdo_key(&de))) {
+//		const char* attr_name = DICT_key;
 		if( SELECTget_attr_ambiguous_count(select_type, attr_name) > 1 ) continue;
 		
 		if( mark ) {
@@ -455,26 +460,85 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	indent_swift(level);
 	raw("//MARK: - CONSTRUCTORS\n");
 	
-	LISTdo( typeBody->list, selection, Type ) {
-		if( TYPEis_entity(selection) )continue;
-		if( TYPEis_select(selection) )continue;
+	/*
+	 public init(fundamental: FundamentalType) { self = fundamental }
+	 */
+	indent_swift(level);
+	raw("public init(fundamental: FundamentalType) { self = fundamental }\n\n");
+
+	
+	/*
+	 public init?<T: SDAIUnderlyingType>(possiblyFrom underlyingType: T?){
+	 	guard let underlyingType = underlyingType else { return nil }
+
+	 	if let fundamental = underlyingType.asFundamentalType as? <selection>.FundamentalType {
+	 		self = .<selection>( <selection>(fundamental) )
+	 	}
+	 	...
+	 	else if let base = <selection>(possiblyFrom: underlyingType) {
+	 		self = .<selection>(base)
+	 	}
+	 	else { return nil }
+	 }
+
+	 */
+	
+	indent_swift(level);
+	raw("public init?<T: SDAIUnderlyingType>(possiblyFrom underlyingType: T?){\n");
+	{	int level2 = level+nestingIndent_swift;
+		indent_swift(level2);
+		raw("guard let underlyingType = underlyingType else { return nil }\n\n");
 		
-		indent_swift(level);
-		raw("public init(_ selectValue: %s) {\n", TYPE_swiftName(selection, select_type->superscope, buf));
-		
-		{	int level2 = level+nestingIndent_swift;
-			indent_swift(level2);
-			raw("self = .%s(selectValue)\n", selectCase_swiftName(selection, buf));
+		const char* ifhead = "if";
+		bool emitted = false;
+
+		LISTdo( typeBody->list, selection, Type ) {
+			if( TYPEis_entity(selection) )continue;
+			if( TYPEis_select(selection) ){
+				indent_swift(level2);
+				raw("%s let base = %s(possiblyFrom: underlyingType) {\n",
+						ifhead,TYPE_swiftName(selection, select_type->superscope, buf));
+				{	int level3 = level2+nestingIndent_swift;
+					indent_swift(level3);
+					raw("self = .%s(base)\n",selectCase_swiftName(selection, buf));
+				}
+				indent_swift(level2);
+				raw("}\n");
+				
+				ifhead = "else if";			
+				emitted = true;
+			}
+			else{
+				indent_swift(level2);
+				raw("%s let fundamental = underlyingType.asFundamentalType as? %s.FundamentalType {\n",
+						ifhead,TYPE_swiftName(selection, select_type->superscope, buf));
+				{	int level3 = level2+nestingIndent_swift;
+					indent_swift(level3);
+					raw("self = .%s( ",selectCase_swiftName(selection, buf));
+					raw("%s(fundamental) )\n",TYPE_swiftName(selection, select_type->superscope, buf));
+				}
+				indent_swift(level2);
+				raw("}\n");
+				
+				ifhead = "else if";			
+				emitted = true;
+			}
+		}LISTod;
+		indent_swift(level2);
+		if( emitted ){
+			raw("else { return nil }\n");
 		}
-		
-		indent_swift(level);
-		raw("}\n\n");
-	} LISTod;		
+		else{
+			raw("return nil\n");
+		}
+	}
+	indent_swift(level);
+	raw("}\n\n");
 	
 	
 	/*
-	 public init?(possiblyFrom entityRef: SDAI.EntityReference?) {
-	 	if let complex = entityRef?.complexEntity else { return nil }
+	 public init?(possiblyFrom complex: SDAI.ComplexEntity?) {
+	 	guard let complex = complex else { return nil }
 	 	if let base = complex.entityReference(<selection TYPE>.self) {
 			self = .<selection>(base)
 	 	}
@@ -482,57 +546,96 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 		 self = .<selection>(base)
 	 }
 	 ...
+	 else if let base = <selection>(possiblyFrom: complex) {
+		 self = .<selection>(base)
+	 }
 	 else { rerurn nil }
 	 }
 	 */
 	indent_swift(level);
-	raw("public init?(possiblyFrom entityRef: SDAI.EntityReference?) {\n");
+	raw("public init?(possiblyFrom complex: SDAI.ComplexEntity?) {\n");
 	{	int level2=level+nestingIndent_swift;
 		indent_swift(level2);
-		raw("if let complex = entityRef?.complexEntity else { return nil }\n");
+		raw("guard let complex = complex else { return nil }\n\n");
 		
 		const char* ifhead = "if";
+		bool emitted = false;
 		
 		LISTdo( typeBody->list, selection, Type ) {
-			indent_swift(level2);
-			raw("%s let base = complex.entityReference(%s.self) {\n", ifhead, TYPE_swiftName(selection, select_type->superscope, buf));
-			{	int level3 = level2+nestingIndent_swift;
-				indent_swift(level3);
+			if( TYPEis_entity(selection) ){
+				indent_swift(level2);
+				raw("%s let base = complex.entityReference(%s.self) {", 
+						ifhead, TYPE_swiftName(selection, select_type->superscope, buf));
 				raw("self = .%s(base) }\n", selectCase_swiftName(selection, buf));
+				
+				ifhead = "else if";			
+				emitted = true;
 			}
-		
-			ifhead = "else if";			
+			else if( TYPEis_select(selection) ){
+				indent_swift(level2);
+				raw("%s let base = %s(possiblyFrom: complex) {\n",
+						ifhead,TYPE_swiftName(selection, select_type->superscope, buf));
+				{	int level3 = level2+nestingIndent_swift;
+					indent_swift(level3);
+					raw("self = .%s(base)\n",selectCase_swiftName(selection, buf));
+				}
+				indent_swift(level2);
+				raw("}\n");
+				
+				ifhead = "else if";			
+				emitted = true;
+			}
+
 		} LISTod;		
 		indent_swift(level2);
-		raw("else { return nil }\n");
+		if( emitted ){
+			raw("else { return nil }\n");
+		}
+		else {
+			raw("return nil\n");
+		}
 	}
 	indent_swift(level);
 	raw("}\n\n");
 	
-	/*
-	 public init(_ entityRef: SDAI.EntityReference?) { self.init(possiblyFrom: entityRef)! }
-	 */
-	indent_swift(level);
-	raw("public init(_ entityRef: SDAI.EntityReference?) { self.init(possiblyFrom: entityRef)! }\n\n");
 
 	/*
-	 public required convenience init?<S: SDAISelectType>(possiblyFrom select: S) {
-		if let base = <selection>(possiblyFrom: select) { self.init(base) }
-	  else if let base = <selection>(possiblyFrom: select) { self.init(base) }
+	 public init?<S: SDAISelectType>(possiblyFromSelect select: S?) {
+	 guard let select = select else { return nil }
+	 
+	 	if let fundamental = select.asFundamentalType as? Self {
+	 		self.init(fundamental: fundamental)
+	 	}
+		else if let base = <selection>(possiblyFrom: select) { 
+	 		self = .<selection>(base)
+	 }
 		...
 	 	else { return nil }
 	 } 
 	 	 */
 	indent_swift(level);
-	raw("public required convenience init?<S: SDAISelectType>(possiblyFrom select: S) {\n");
+	raw("public init?<S: SDAISelectType>(possiblyFromSelect select: S?) {\n");
 	{	int level2=level+nestingIndent_swift;
+		indent_swift(level2);
+		raw("guard let select = select else { return nil }\n\n");
 		
-		const char* ifhead = "if";
+		indent_swift(level2);
+		raw("if let fundamental = select.asFundamentalType as? Self {\n");
+		indent_swift(level2+nestingIndent_swift);
+		raw("self.init(fundamental: fundamental)\n");
+		indent_swift(level2);
+		raw("}\n");
 		
 		LISTdo( typeBody->list, selection, Type ) {
 			indent_swift(level2);
-			raw("%s let base = %s(possiblyFrom: select) { self.init(base) }\n", ifhead, selectCase_swiftName(selection, buf));
-			ifhead = "else if";			
+			raw("else if let base = %s(possiblyFrom: select) { self.init(base) }\n", 
+					TYPE_swiftName(selection, select_type->superscope, buf));
+			{	int level3 = level2+nestingIndent_swift;
+				indent_swift(level3);
+				raw("self = .%s(base)\n",selectCase_swiftName(selection, buf));
+			}
+			indent_swift(level2);
+			raw("}\n");
 		} LISTod;		
 		indent_swift(level2);
 		raw("else { return nil }\n");
@@ -540,64 +643,91 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	indent_swift(level);
 	raw("}\n\n");
 	
-	/*
-	 public convenience init<S: SDAISelectType>(_ select: S) { self.init(possiblyFrom: select)! }
-	 */
-	indent_swift(level);
-	raw("public convenience init<S: SDAISelectType>(_ select: S) { self.init(possiblyFrom: select)! }\n\n");
 }
 
 static void selectTypeConstructor_swiftProtocol(Schema schema, Type select_type,  int level) {
-	
-	TypeBody typeBody = TYPEget_body(select_type);
-	char buf[BUFSIZ];
-
-	indent_swift(level);
-	raw("//MARK: CONSTRUCTORS\n");
-
-	LISTdo( typeBody->list, selection, Type ) {
-		if( TYPEis_entity(selection) )continue;
-		if( TYPEis_select(selection) )continue;
-		
-		indent_swift(level);
-		raw("init(_ selectValue: %s)\n", TYPE_swiftName(selection, schema->superscope, buf));
-	} LISTod;		
-
-	indent_swift(level);
-	raw("init(_ entityRef: SDAI.EntityReference)\n");
-
-	indent_swift(level);
-	raw("init<S: SDAISelectType>(_ select: S)\n");
+//	
+//	TypeBody typeBody = TYPEget_body(select_type);
+//	char buf[BUFSIZ];
+//
+//	indent_swift(level);
+//	raw("//MARK: CONSTRUCTORS\n");
+//
+//	LISTdo( typeBody->list, selection, Type ) {
+//		if( TYPEis_entity(selection) )continue;
+//		if( TYPEis_select(selection) )continue;
+//		
+//		indent_swift(level);
+//		raw("init(_ selectValue: %s)\n", TYPE_swiftName(selection, schema->superscope, buf));
+//	} LISTod;		
+//
 }
 
 static void selectSubtypeConstructor_swift(Schema schema, Type select_type,  int level) {
 	
-	TypeBody typeBody = TYPEget_body(select_type);
-	char buf[BUFSIZ];
+//	TypeBody typeBody = TYPEget_body(select_type);
+//	char buf[BUFSIZ];
 
 	indent_swift(level);
 	raw("//MARK: CONSTRUCTORS\n");
 	
-	LISTdo( typeBody->list, selection, Type ) {
-		if( TYPEis_entity(selection) )continue;
-		if( TYPEis_select(selection) )continue;
+	/*
+	 init?(possiblyFrom complex: SDAI.ComplexEntity?) { 
+	 	self.init(fundamental: FundamentalType(possiblyFrom: complex)) 
+	 }
+	 
+	 init?<T: SDAIUnderlyingType>(possiblyFrom underlyingType: T?) { 
+	 	self.init(fundamental: FundamentalType(possiblyFrom: underlyingType)) 
+	 }
+	 
+	 init?<S: SDAISelectType>(possiblyFrom select: S?) { 
+	 	self.init(fundamental: FundamentalType(possiblyFrom: select))
+	 }
+	*/
+	
+	indent_swift(level);
+	raw("init?(possiblyFrom complex: SDAI.ComplexEntity?) {\n");
+	indent_swift(level+nestingIndent_swift);
+	raw("self.init(fundamental: FundamentalType(possiblyFrom: complex))\n");
+	indent_swift(level);
+	raw("}\n\n");
 
-		indent_swift(level);
-		raw("init(_ selectValue: %s) { \n", TYPE_swiftName(selection, schema->superscope, buf));
-		
-		{	int level2 = level+nestingIndent_swift;
-			indent_swift(level2);
-			raw("self.init( Supertype(selectValue) ) }\n");
-		}
-	} LISTod;		
-	
-	raw("\n");
 	indent_swift(level);
-	raw("init(_ entityRef: SDAI.EntityReference) { self.init( Supertype(entityRef) ) }\n");
-	
-	raw("\n");
+	raw("init?<T: SDAIUnderlyingType>(possiblyFrom underlyingType: T?) {\n");
+	indent_swift(level+nestingIndent_swift);
+	raw("self.init(fundamental: FundamentalType(possiblyFrom: underlyingType))\n");
 	indent_swift(level);
-	raw("init<S: SDAISelectType>(_ select: S) { self.init( Supertype(select) ) }\n");
+	raw("}\n\n");
+
+	
+	indent_swift(level);
+	raw("init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
+	indent_swift(level+nestingIndent_swift);
+	raw("self.init(fundamental: FundamentalType(possiblyFrom: select))\n");
+	indent_swift(level);
+	raw("}\n");
+
+	
+//	LISTdo( typeBody->list, selection, Type ) {
+//		if( TYPEis_entity(selection) )continue;
+//		if( TYPEis_select(selection) )continue;
+//
+//		indent_swift(level);
+//		raw("init(_ selectValue: %s) { \n", TYPE_swiftName(selection, schema->superscope, buf));
+//		
+//		{	int level2 = level+nestingIndent_swift;
+//			indent_swift(level2);
+//			raw("self.init( Supertype(selectValue) ) }\n");
+//		}
+//	} LISTod;		
+	
+//	raw("\n");
+//	indent_swift(level);
+//	raw("init(_ entityRef: SDAI.EntityReference) { self.init( Supertype(entityRef) ) }\n");
+//	
+//	raw("\n");
+//	indent_swift(level);
+//	raw("init<S: SDAISelectType>(_ select: S) { self.init( Supertype(select) ) }\n");
 }
 
 //MARK: - value comparison code
@@ -696,12 +826,159 @@ static void selectEntityReference_swift(Type select_type,  int level) {
 }
 
 	
+static void selectUnderlyingTypeConformance_swift(int level, Schema schema, const char *typename) {
+	char buf[BUFSIZ];
+	
+	indent_swift(level);
+	raw("// SDAIUnderlyingType\n");
+	
+	indent_swift(level);
+	raw("public typealias FundamentalType = Self\n");
+	
+	indent_swift(level);
+	raw("public static var typeName: String = ");
+	wrap("\"%s.%s\"\n", SCHEMA_swiftName(schema, buf), typename);
+	
+	indent_swift(level);
+	raw("public var asFundamentalType: FundamentalType { return self }\n");
+	
+//	indent_swift(level);
+//	raw("public init(_ fundamental: FundamentalType) {\n");
+//	indent_swift(level+nestingIndent_swift);
+//	raw("self = fundamental\n");
+//	indent_swift(level);
+//	raw( "}\n" );
+}
+
+static void selectVarForwarding_swift(Type select_type, const char* var_name, const char* var_type, int level) {
+	TypeBody typeBody = TYPEget_body(select_type);
+	char buf[BUFSIZ];
+
+	indent_swift(level);
+	raw("public var %s: %s {\n", var_name, var_type);
+	{	int level2 = level+nestingIndent_swift;
+		
+		indent_swift(level2);
+		raw("switch self {\n");
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			indent_swift(level2);
+			raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
+			raw("return selection.%s\n", var_name);
+		} LISTod;		
+		
+		indent_swift(level2);
+		raw("}\n");
+	}
+	indent_swift(level);
+	raw("}\n");
+}
+
+static void selectAggregateTypeConformance_swift(Type select_type, Type aggregate_base, int level) {
+	TypeBody typeBody = TYPEget_body(select_type);
+	char buf[BUFSIZ];
+	
+	indent_swift(level);
+	raw("// SDAIAggregationType\n");
+
+	indent_swift(level);
+	wrap("public typealias ELEMENT = %s\n", TYPE_swiftName(aggregate_base,select_type->superscope,buf));
+
+	selectVarForwarding_swift(select_type, "hiBound", "Int?", level);
+	selectVarForwarding_swift(select_type, "hiIndex", "Int",  level);
+	selectVarForwarding_swift(select_type, "loBound", "Int",  level);
+	selectVarForwarding_swift(select_type, "loIndex", "Int",  level);
+	selectVarForwarding_swift(select_type, "size",    "Int",  level);
+	
+	raw("\n");
+	indent_swift(level);
+	raw("public subscript(index: Int?) -> ELEMENT? {\n");
+	{	int level2 = level+nestingIndent_swift;
+		
+		indent_swift(level2);
+		raw("switch self {\n");
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			indent_swift(level2);
+			raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
+			raw("return selection[index]\n");
+		} LISTod;		
+		
+		indent_swift(level2);
+		raw("}\n");
+	}
+	indent_swift(level);
+	raw("}\n");
+
+	raw("\n");
+	indent_swift(level);
+	raw("public func CONTAINS(_ elem: ELEMENT?) -> SDAI.LOGICAL {\n");
+	{	int level2 = level+nestingIndent_swift;
+		
+		indent_swift(level2);
+		raw("switch self {\n");
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			indent_swift(level2);
+			raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
+			raw("return selection.CONTAINS(elem)\n");
+		} LISTod;		
+		
+		indent_swift(level2);
+		raw("}\n");
+	}
+	indent_swift(level);
+	raw("}\n");
+
+	raw("\n");
+	indent_swift(level);
+	wrap("public typealias RESULT_AGGREGATE = SDAI.BAG<ELEMENT>\n");
+	indent_swift(level);
+	raw("public func QUERY(logical_expression: (ELEMENT) -> SDAI.LOGICAL ) -> RESULT_AGGREGATE {\n");
+	{	int level2 = level+nestingIndent_swift;
+		
+		indent_swift(level2);
+		raw("switch self {\n");
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			indent_swift(level2);
+			raw("case .%s(let selection): \n", selectCase_swiftName(selection, buf));
+			{	int level3 = level2+nestingIndent_swift;
+				indent_swift(level3);
+				raw("let result = RESULT_AGGREGATE.SwiftType( selection.QUERY(logical_expression:logical_expression) )\n");
+				indent_swift(level3);
+				raw("return RESULT_AGGREGATE(from:result)\n");
+			}
+		} LISTod;		
+		
+		indent_swift(level2);
+		raw("}\n");
+	}
+	indent_swift(level);
+	raw("}\n");
+
+	raw("\n");
+	indent_swift(level);
+	raw("public var _observer: EntityReferenceObserver? {\n");
+	{	int level2 = level+nestingIndent_swift;
+		
+		indent_swift(level2);
+		raw("get {retutn nil}\n");
+		indent_swift(level2);
+		raw("set {}\n");
+	}
+	indent_swift(level);
+	raw("}\n");
+
+}
+
 //MARK: - main entry points	
 void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 	
 	listAllSelectionAttributes(select_type, level);
 	TypeBody typeBody = TYPEget_body(select_type);
-	
+	Type common_aggregate_base = TYPE_retrieve_aggregate_base(select_type, NULL);
+
 	// swift enum definition
 	{
 		char buf[BUFSIZ];
@@ -750,24 +1027,15 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 			selectTypeMembers_swift(select_type, level2);
 			raw("\n");
 			 
-			indent_swift(level2);
-			raw("// SDAIUnderlyingType\n");
-			indent_swift(level2);
-			raw("public typealias FundamentalType = Self\n");
-			indent_swift(level2);
-			raw("public static var typeName: String = ");
-			wrap("\"%s.%s\"\n", SCHEMA_swiftName(schema, buf), typename);
-			indent_swift(level2);
-			raw("public var asFundamentalType: FundamentalType { return self }\n");
-			indent_swift(level2);
-			raw("public init(_ fundamental: FundamentalType) {\n");
-			indent_swift(level2+nestingIndent_swift);
-			raw("self = fundamental\n");
-			indent_swift(level2);
-			raw( "}\n" );
+			selectUnderlyingTypeConformance_swift(level2, schema, typename);
 			raw("\n");
 
 			selectEntityReference_swift(select_type, level2);
+			
+			if( common_aggregate_base != NULL ){
+				raw("\n");
+				selectAggregateTypeConformance_swift(select_type, common_aggregate_base, level2);				
+			}
 		}
 	}
 	
@@ -782,14 +1050,29 @@ void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {
 
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);
+	Type common_aggregate_base = TYPE_retrieve_aggregate_base(select_type, NULL);
 
 	raw("\n\n//MARK: - SELECT TYPE HIERARCHY\n");
 	//type protocol
 	indent_swift(level);
 	raw( "public protocol %s__%s__type: ", schemaname, typename);
-	wrap("SDAISelectType {\n");
+	wrap("SDAISelectType");
+	if( common_aggregate_base != NULL ){
+		wrap(", SDAIAggregationType ");
+//	}
+//	if( common_aggregate_base != NULL ){
+		if( common_aggregate_base == Type_Entity ){
+			wrap("where ELEMENT == SDAI.EntityReference");
+		}
+		else {
+			char buf[BUFSIZ];
+			wrap("where ELEMENT == %s", TYPE_swiftName(common_aggregate_base,schema->superscope,buf));
+		}
+	}
 	
+	raw(" {\n");
 	{	int level2 = level+nestingIndent_swift;
+		
 		selectTypeConstructor_swiftProtocol(schema, select_type, level2);
 		raw("\n");
 		

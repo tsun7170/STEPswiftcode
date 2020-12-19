@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <sc_stdbool.h>
 #include <stdlib.h>
+#include <resolve.h>
 
 #include "exppp.h"
 #include "pp.h"
@@ -22,21 +23,18 @@
 #include "swift_entity.h"
 #include "swift_type.h"
 
-//*TY2020/07/11
-#define YES_PAD	true
-#define NO_PAD	false
-#define YES_WRAP	true
-#define NO_WRAP	false
+//#define YES_PAD	true
+//#define NO_PAD	false
 #define OPCODE_FROM_EXPRESS	( char * )0
 
 
-#define EXPRop2_swift(	SELF1,SELF2,oe,string,paren,pad) \
-				EXPRop2__swift(	SELF1,SELF2,oe,string,paren,pad,		OP_UNKNOWN, YES_WRAP)
+//#define EXPRop2_swift(	SELF1,SELF2,oe,string,paren,pad) \
+//				EXPRop2__swift(	SELF1,SELF2,oe,string,paren,pad,		OP_UNKNOWN, YES_WRAP)
+//
+//#define EXPRop_swift(		SELF,oe,paren) \
+//				EXPRop__swift(	SELF,oe,paren,		OP_UNKNOWN, YES_WRAP)
 
-#define EXPRop_swift(		SELF,oe,paren) \
-				EXPRop__swift(	SELF,oe,paren,		OP_UNKNOWN, YES_WRAP)
-
-static void EXPR__swift( Scope SELF, Expression e, 
+static void EXPR__swift( Scope SELF, Expression e, Type target_type, 
 												bool paren, unsigned int previous_op, bool can_wrap );
 
 
@@ -44,18 +42,18 @@ static void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
 													bool paren, unsigned int previous_op, bool can_wrap );
 
 static void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * eo, char * opcode, 
-													 bool paren, bool pad, unsigned int previous_op, bool can_wrap );
+													 bool paren, unsigned int previous_op, bool can_wrap );
 
 static void EXPRop1_swift( Scope SELF, struct Op_Subexpression * eo, char * opcode, 
 													bool paren, bool can_wrap );
 
 
-void EXPR_swift( Scope SELF, Expression e, bool paren) {
-	EXPR__swift( SELF,e, paren, YES_WRAP, OP_UNKNOWN );
+void EXPR_swift( Scope SELF, Expression e, Type target_type, bool paren) {
+	EXPR__swift( SELF,e,target_type, paren, YES_WRAP, OP_UNKNOWN );
 }
 
 
-
+//MARK: - string literal
 static void simpleStringLiteral_swift(const char* instring ) {
 	int inlen = (int)strlen( instring );
 	wrap_provisionally(inlen);
@@ -92,7 +90,7 @@ static void encodedStringLiteral_swift(const char* instring ) {
 	raw("\"");
 }
 
-
+//MARK: - aggregation bounds
 void EXPRbounds_swift(Scope SELF, TypeBody tb, SwiftOutCommentOption in_comment ) {
     if( !tb->upper ) {
         return;
@@ -100,81 +98,218 @@ void EXPRbounds_swift(Scope SELF, TypeBody tb, SwiftOutCommentOption in_comment 
 
 	if( in_comment != WO_COMMENT ){
 		wrap( "%s[", in_comment==YES_IN_COMMENT ? "" : "/*" );
-		EXPR_swift(SELF, tb->lower, YES_PAREN );
+		EXPR_swift(SELF, tb->lower, Type_Integer, YES_PAREN );
 		raw( ":" );
-		EXPR_swift(SELF, tb->upper, YES_PAREN );
+		EXPR_swift(SELF, tb->upper, Type_Integer, YES_PAREN );
 		raw( "]%s ", in_comment==YES_IN_COMMENT ? "" : "*/" );
 	}
 }
 
-static void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
-	EXPR__swift( SELF, eo->op1, YES_PAREN, eo->op_code, YES_WRAP );
-	wrap_if(YES_WRAP, ".%s",superEntity_swiftPrefix);
-	EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, NO_WRAP );
+//MARK: - special operators
+static void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * oe, bool can_wrap ) {
+	EXPR__swift( SELF, oe->op2, oe->op2->return_type, NO_PAREN, oe->op_code, can_wrap );	// should be an entity reference
+	raw("(");
+	EXPR__swift( SELF, oe->op1, oe->op1->return_type, NO_PAREN, oe->op_code, YES_WRAP );
+	raw(")");
 }
 
-static void EXPRopIn_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
-	if( TYPEis(eo->op1->return_type)==string_ && TYPEis(eo->op2->type)==funcall_ && eo->op2->u.funcall.function==func_typeof ) {
-		Expression arg = LISTget_first(eo->op2->u.funcall.list);
+static void EXPRopDot_swift( Scope SELF, struct Op_Subexpression * oe, bool can_wrap ) {
+	if( !EXPRresult_is_optional(oe->op1) ) {
+		EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, can_wrap );
+	}
+	else {
+		EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, can_wrap );
+		raw("?");
+	}
+	wrap_if(YES_WRAP, ".");
+	EXPR__swift( NULL, oe->op2, oe->op2->return_type, YES_PAREN, oe->op_code, NO_WRAP );
+}
+
+//MARK: TYPEOF()
+static void EXPRopIn_swift( Scope SELF, struct Op_Subexpression * oe, bool can_wrap ) {
+	if( TYPEis(oe->op1->type)==string_ && TYPEis(oe->op2->type)==funcall_ && oe->op2->u.funcall.function==func_typeof ) {
+		Expression arg = LISTget_first(oe->op2->u.funcall.list);
 		wrap_if(can_wrap, "SDAI.TYPEOF(");
-		EXPR_swift( SELF, arg, NO_PAREN );
+		EXPR_swift( SELF, arg, arg->return_type, NO_PAREN );
 		raw(", ");
-		wrap_if(YES_WRAP, "IS: ");
-		EXPR__swift( SELF, eo->op1, NO_PAREN, eo->op_code, YES_WRAP );
+		char buf[BUFSIZ];
+		assert(oe->op1->symbol.name != NULL);
+		wrap_if(YES_WRAP, "IS: %s.self", canonical_swiftName(oe->op1->symbol.name, buf));
+//		EXPR__swift( SELF, oe->op1, Type_String, NO_PAREN, oe->op_code, YES_WRAP );
 		raw(")");
 	}
 	else {
-		EXPR__swift( SELF, eo->op2, YES_PAREN, eo->op_code, YES_WRAP );
+		EXPR__swift( SELF, oe->op2, oe->op2->return_type, YES_PAREN, oe->op_code, YES_WRAP );
+		if( EXPRresult_is_optional(oe->op2) ) raw("?");
 		positively_wrap();
 		wrap_if(YES_WRAP, ".CONTAINS(");
-		EXPR__swift( SELF, eo->op1, NO_PAREN, eo->op_code, YES_WRAP );
+		EXPR__swift( SELF, oe->op1, TYPEget_base_type(oe->op2->return_type), NO_PAREN, oe->op_code, YES_WRAP );
 		raw(")");		
 	}
-	
-	
-	
 }
 
-static void EXPRopLike_swift( Scope SELF, struct Op_Subexpression * eo, bool can_wrap ) {
-	EXPR__swift( SELF, eo->op1, YES_PAREN, eo->op_code, YES_WRAP );
+static void EXPRopLike_swift( Scope SELF, struct Op_Subexpression * oe, bool can_wrap ) {
+	EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, YES_WRAP );
+	if( EXPRresult_is_optional(oe->op1) ) raw("?");
 	wrap_if(YES_WRAP, ".ISLIKE( PATTERN: ");
-	EXPR__swift( SELF, eo->op2, NO_PAREN, eo->op_code, YES_WRAP );
+	EXPR__swift( SELF, oe->op2, Type_String, NO_PAREN, oe->op_code, YES_WRAP );
 	raw(" )");
 }
 
-//static void EXPRopMod_swift( Scope SELF, struct Op_Subexpression* eo, bool can_wrap) {
-//	wrap_if(can_wrap, "SDAI.INTEGER(" );
-//	EXPR__swift( SELF, eo->op1, NO_PAREN, eo->op_code, can_wrap );
-//	wrap_if(can_wrap, ") % ");
-//	wrap_if(can_wrap, "SDAI.INTEGER(" );
-//	EXPR__swift( SELF, eo->op2, NO_PAREN, eo->op_code, can_wrap );
-//	wrap_if(can_wrap, ")");
-//}
-//
-//static void EXPRopDIV_swift( Scope SELF, struct Op_Subexpression* eo, bool can_wrap) {
-//	wrap_if(can_wrap, "SDAI.INTEGER(" );
-//	EXPR__swift( SELF, eo->op1, NO_PAREN, eo->op_code, can_wrap );
-//	wrap_if(can_wrap, ") / ");
-//	wrap_if(can_wrap, "SDAI.INTEGER(" );
-//	EXPR__swift( SELF, eo->op2, NO_PAREN, eo->op_code, can_wrap );
-//	wrap_if(can_wrap, ")");
-//}
 
-static void EXPRrepeat_swift( Scope SELF, Expression val, Expression count) {
+//MARK: - aggregate initializer
+static void EXPRrepeat_swift( Scope SELF, Expression val, Expression count, Type basetype) {
 //	assert(val != NULL);
 	assert(count != NULL);
 	
 	wrap_if(YES_WRAP,"SDAI.AIE(");
 	if(val) {
-		EXPR__swift( SELF, val, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+//		EXPR__swift( SELF, val, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+		EXPRassignment_rhs_swift(SELF, val, basetype, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 	}
 	else {
 		raw("###NULL###");
 	}
 	raw(", ");
 	wrap_if(YES_WRAP,"repeat:Int(");
-	EXPR__swift( SELF, count, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+	EXPR__swift( SELF, count, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP );
 	raw("))");
+}
+
+//MARK: - expression return type check
+static bool operator_returns_optional(struct Op_Subexpression * oe) {
+	switch( oe->op_code ) {
+			//MARK: - Arithmetic Op
+		case OP_NEGATE:
+		case OP_PLUS:
+		case OP_MINUS:
+		case OP_TIMES:
+		case OP_REAL_DIV:
+		case OP_EXP:
+		case OP_DIV:
+		case OP_MOD:
+			return true;
+			
+			//MARK: - Relational Op
+		case OP_EQUAL:
+		case OP_NOT_EQUAL:
+		case OP_GREATER_THAN:
+		case OP_LESS_THAN:
+		case OP_GREATER_EQUAL:
+		case OP_LESS_EQUAL:
+		case OP_INST_EQUAL:
+		case OP_INST_NOT_EQUAL:
+		case OP_IN:
+		case OP_LIKE:
+			return false;
+			
+			
+			//MARK: - Logical Op
+		case OP_NOT:
+		case OP_AND:
+		case OP_OR:
+		case OP_XOR:
+			return false;
+			
+			//MARK: - String Op
+		case OP_SUBCOMPONENT:
+			return true;
+			
+			//MARK: - Aggregate Op
+		case OP_ARRAY_ELEMENT:
+			return true;
+			
+			//MARK: - Reference Op
+		case OP_DOT:
+			return EXPRresult_is_optional(oe->op2);
+			
+		case OP_GROUP:
+			return true;
+			
+			//MARK: - Complex Entity Constructor
+		case OP_CONCAT:
+			return true;
+			
+			//case OP_ANDOR:
+			
+		default:
+			fprintf( stderr, "ERROR - unknown op-expression\n" );
+			abort();
+	}
+}
+
+bool EXPRresult_is_optional(Expression e) {
+	switch( TYPEis( e->type ) ) {
+		case integer_:
+		case real_:
+		case binary_:
+		case logical_:
+		case boolean_:
+		case string_:
+			return false;
+			
+		case attribute_:
+			return VARis_optional(e->u.variable);
+			
+		case entity_:
+			return false;
+			
+		case identifier_:
+			if( e->u_tag == expr_is_variable ){
+				return VARis_optional(e->u.variable);
+			}
+			return true;	// attribute of generic entity
+			
+		case enumeration_:
+			return false;
+			
+		case query_:
+			return false;
+			
+		case self_:
+			return false;	
+			
+		case funcall_:
+			if( e->u.funcall.function->u_tag != scope_is_func ) return false;
+			if( TYPEis_boolean(e->u.funcall.function->u.func->return_type) ) return false;
+			if( TYPEis_logical(e->u.funcall.function->u.func->return_type) ) return false;
+			return true;
+			
+		case op_:
+			return operator_returns_optional(&e->e);
+			
+		case aggregate_:
+			return false;
+
+		default:
+			fprintf( stderr, "%s:%d: ERROR - unknown expression, type %d", e->symbol.filename, e->symbol.line, TYPEis( e->type ) );
+			abort();
+	}
+}
+
+// special func calls
+static void emit_usedin_call( Scope SELF, Expression e, bool can_wrap ){
+	wrap_if(can_wrap, "SDAI.USEDIN(" );
+	Expression arg1 = LISTget_first(e->u.funcall.list);
+	Expression arg2 = LISTget_second(e->u.funcall.list);
+	
+	wrap("T: ");
+	EXPRassignment_rhs_swift(SELF, arg1, Type_Generic, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+
+	if( (arg2 != NULL) && (strlen(arg2->symbol.name) > 0) ){
+		raw(", ");
+		assert( TYPEis_string(arg2->type) );
+		char* sep = strrchr(arg2->symbol.name, '.');
+		assert( sep != NULL );
+		char buf[BUFSIZ];
+		int symlen = (int)(sep - arg2->symbol.name);
+		assert( symlen < BUFSIZ );
+		wrap("ENTITY: %s.self, ", canonical_swiftName_n(arg2->symbol.name, buf, symlen));
+		wrap("ATTR: ");
+		simpleStringLiteral_swift(sep+1);
+	}
+	
+	raw(")");
 }
 
 //MARK: - main entry point
@@ -184,7 +319,7 @@ static void EXPRrepeat_swift( Scope SELF, Expression val, Expression count) {
  *    precedence/associativity is not a problem) parens may be omitted.
  * if paren == 0, then parens may be omitted without consequence
  */
-void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op, bool can_wrap  ) {
+void EXPR__swift( Scope SELF, Expression e, Type target_type, bool paren, unsigned int previous_op, bool can_wrap  ) {
 //	int i;  /* trusty temporary */
 		
 	switch( TYPEis( e->type ) ) {
@@ -251,7 +386,7 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 						char buf[BUFSIZ];
 						raw("(/*%s*/",canonical_swiftName(e->symbol.name,buf));
 					}
-					EXPR__swift(SELF, v->initializer, NO_PAREN, OP_UNKNOWN, can_wrap);
+					EXPR__swift(SELF, v->initializer, target_type, NO_PAREN, OP_UNKNOWN, can_wrap);
 					raw(")");
 					break;
 				}
@@ -268,13 +403,16 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 			
 			//MARK: query_
 		case query_:
-			EXPR__swift( SELF, e->u.query->aggregate, YES_PAREN, OP_UNKNOWN, can_wrap );
+			EXPR__swift( SELF, e->u.query->aggregate, e->u.query->aggregate->return_type, YES_PAREN, OP_UNKNOWN, can_wrap );
+			if( EXPRresult_is_optional(e->u.query->aggregate) ) raw("?");
 		{
 			char buf[BUFSIZ];
 			aggressively_wrap();
 			raw( ".QUERY{ %s in ", variable_swiftName(e->u.query->local,buf));
 		}
-			EXPR__swift( SELF, e->u.query->expression, NO_PAREN, OP_UNKNOWN, can_wrap );
+			
+//			EXPR__swift( SELF, e->u.query->expression, NO_PAREN, OP_UNKNOWN, can_wrap );
+			EXPRassignment_rhs_swift(SELF, e->u.query->expression, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw( " }" );
 			break;
 			
@@ -286,8 +424,15 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 			//MARK: funcall_
 		case funcall_:
 		{
+			// special treatment for usedin() func.
+			if( e->u.funcall.function == FUNC_USEDIN ){
+				emit_usedin_call(SELF, e, can_wrap);
+				break;
+			}
+			
 			bool isfunc = (e->u.funcall.function->u_tag == scope_is_func);
 			assert(isfunc || (e->u.funcall.function->u_tag == scope_is_entity));
+			
 			
 			Linked_List formals;
 			{
@@ -330,10 +475,10 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 					}
 					if(VARis_inout(formal_param)) {
 						raw("&");
-						EXPR_swift( SELF, arg, NO_PAREN );
+						EXPR_swift( SELF, arg, arg->return_type, NO_PAREN );
 					}
 					else {
-						EXPRassignment_rhs_swift(SELF, arg, formal_param->type);
+						EXPRassignment_rhs_swift(SELF, arg, formal_param->type, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 					}
 					
 					sep = ", ";
@@ -358,6 +503,11 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 				break;
 			}
 			
+			Type basetype = TYPE_retrieve_aggregate_base(e->return_type, NULL);
+			if( basetype == NULL || TYPEis_runtime(basetype) ){
+				basetype = TYPE_retrieve_aggregate_base(target_type, NULL);
+			}
+			
 			wrap_if(can_wrap, "[" );
 			char* sep = "";
 			Expression prev = NULL;
@@ -370,14 +520,26 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 				/* if repeat is true, the previous Expression repeats and this one is the count */
 				
 				if( repeat ) {
-					EXPRrepeat_swift(SELF, prev, arg);
+					EXPRrepeat_swift(SELF, prev, arg, basetype);
 					sep = ", ";
 					prev = NULL;
 				}
 				else {
 					if(prev != NULL) {
 						wrap_if(can_wrap, "SDAI.AIE(");
-						EXPR__swift( SELF, prev, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+						if( prev->return_type == basetype ){
+							EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+						}
+						else if( TYPEis_runtime(basetype) ){
+							raw("/*runtime*/");
+							EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+						}
+						else {
+							TYPE_head_swift(SELF, basetype, WO_COMMENT);
+							raw("(");
+							EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+							raw(")");
+						}
 						raw(")");
 						sep = ", ";
 					}
@@ -389,7 +551,19 @@ void EXPR__swift( Scope SELF, Expression e, bool paren, unsigned int previous_op
 				raw(sep);
 				positively_wrap();
 				wrap_if(can_wrap, "SDAI.AIE(");
-				EXPR__swift( SELF, prev, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+				if( prev->return_type == basetype ){
+					EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+				}
+				else if( TYPEis_runtime(basetype) ){
+					raw("/*runtime*/");
+					EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+				}
+				else {
+					TYPE_head_swift(SELF, basetype, WO_COMMENT);
+					raw("(");
+					EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+					raw(")");
+				}
 				raw(")");
 			}
 			raw( "]" );
@@ -441,81 +615,79 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
 				
 			//MARK:OP_PLUS
 			case OP_PLUS:
-				EXPRop2__swift( SELF,SELF, oe, "+", paren, YES_PAD, previous_op, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " + ", paren, previous_op, can_wrap );
+				break;
+				
+				//MARK:OP_TIMES
+			case OP_TIMES:
+				EXPRop2__swift( SELF,SELF, oe, " * ", paren, previous_op, can_wrap );
 				break;
 				
 			//MARK:OP_MINUS
 			case OP_MINUS:
-				EXPRop2__swift( SELF,SELF, oe, "-", paren, YES_PAD, OP_UNKNOWN, can_wrap );
-				break;
-				
-			//MARK:OP_TIMES
-			case OP_TIMES:
-				EXPRop2__swift( SELF,SELF, oe, "*", paren, YES_PAD, previous_op, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " - ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 			//MARK:OP_REAL_DIV
 			case OP_REAL_DIV:
-				EXPRop2__swift( SELF,SELF, oe, "/", paren, YES_PAD, OP_UNKNOWN, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " / ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 			//MARK:OP_EXP
 			case OP_EXP:
-				EXPRop2__swift( SELF,SELF, oe, "**", paren, YES_PAD, OP_UNKNOWN, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " ** ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 				//MARK:OP_DIV
 			case OP_DIV:
-				EXPRop2__swift( SELF,SELF, oe, "./.", paren, YES_PAD, OP_UNKNOWN, can_wrap );
-				//				EXPRopDIV_swift(SELF, oe, YES_WRAP);
+				EXPRop2__swift( SELF,SELF, oe, " ./. ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 				//MARK:OP_MOD
 			case OP_MOD:
-				EXPRop2__swift( SELF,SELF, oe, "%", paren, YES_PAD, OP_UNKNOWN, can_wrap );
-				//				EXPRopMod_swift(SELF, oe, YES_WRAP);
+				EXPRop2__swift( SELF,SELF, oe, " % ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 				
 		//MARK: - Relational Op
 			//MARK:OP_EQUAL
 			case OP_EQUAL:
-				EXPRop2__swift( SELF,SELF, oe, ".==.", paren, YES_PAD, previous_op, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " .==. ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 			//MARK:OP_NOT_EQUAL
 			case OP_NOT_EQUAL:
-				EXPRop2__swift( SELF,SELF, oe, ".!=.", paren, YES_PAD, OP_UNKNOWN, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " .!=. ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 			//MARK:OP_GREATER_THAN
 			case OP_GREATER_THAN:
-				EXPRop2__swift( SELF,SELF, oe, ">", paren, YES_PAD, OP_UNKNOWN, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " > ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 			//MARK:OP_LESS_THAN
 			case OP_LESS_THAN:
-				EXPRop2__swift( SELF,SELF, oe, "<", paren, YES_PAD, OP_UNKNOWN, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " < ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 			//MARK:OP_GREATER_EQUAL
 			case OP_GREATER_EQUAL:
-				EXPRop2__swift( SELF,SELF, oe, ">=", paren, YES_PAD, OP_UNKNOWN, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " >= ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 			//MARK:OP_LESS_EQUAL
 			case OP_LESS_EQUAL:
-				EXPRop2__swift( SELF,SELF, oe, "<=", paren, YES_PAD, OP_UNKNOWN, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " <= ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 			//MARK:OP_INST_EQUAL
 			case OP_INST_EQUAL:
-				EXPRop2__swift( SELF,SELF, oe, ".===.", paren, YES_PAD, OP_UNKNOWN, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " .===. ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 			//MARK:OP_INST_NOT_EQUAL
 			case OP_INST_NOT_EQUAL:
-				EXPRop2__swift( SELF,SELF, oe, ".!==.", paren, YES_PAD, OP_UNKNOWN, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " .!==. ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 			//MARK:OP_IN
@@ -537,27 +709,27 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
 				
 			//MARK:OP_AND
 			case OP_AND:
-				EXPRop2__swift( SELF,SELF, oe, "&&", paren, YES_PAD, previous_op, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " && ", paren, previous_op, can_wrap );
 				break;
 				
 			//MARK:OP_OR
 			case OP_OR:
-				EXPRop2__swift( SELF,SELF, oe, "||", paren, YES_PAD, previous_op, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " || ", paren, previous_op, can_wrap );
 				break;
 				
 			//MARK:OP_XOR
 			case OP_XOR:
-				EXPRop2__swift( SELF,SELF, oe, ".!=.", paren, YES_PAD, previous_op, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " .!=. ", paren, OP_UNKNOWN, can_wrap );
 				break;
 				
 		//MARK: - String Op
 			//MARK:OP_SUBCOMPONENT
 			case OP_SUBCOMPONENT:
-				EXPR__swift( SELF, oe->op1, YES_PAREN, OP_UNKNOWN, can_wrap );
+				EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, OP_UNKNOWN, can_wrap );
 				wrap_if(can_wrap, "[" );
-				EXPR__swift( SELF, oe->op2, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+				EXPR__swift( SELF, oe->op2, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP );
 				raw(" ... " );
-				EXPR__swift( SELF, oe->op3, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+				EXPR__swift( SELF, oe->op3, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP );
 				raw( "]" );
 				break;
 				
@@ -565,17 +737,19 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
 		//MARK: - Aggregate Op
 			//MARK:OP_ARRAY_ELEMENT
 			case OP_ARRAY_ELEMENT:
-				EXPR__swift( SELF, oe->op1, YES_PAREN, OP_UNKNOWN, can_wrap );
-				//            wrap_if(can_wrap, "[SDAI.INDEX(" );
+				EXPR__swift( SELF, oe->op1,oe->op1->return_type, YES_PAREN, OP_UNKNOWN, can_wrap );
+				if( EXPRresult_is_optional(oe->op1) ){
+					raw("?");
+				}
 				raw("[");
-				EXPR__swift( SELF, oe->op2, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+				EXPR__swift( SELF, oe->op2, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP );
 				raw( "]" );
 				break;
 				
 		//MARK: - Reference Op
 			//MARK:OP_DOT
 			case OP_DOT:
-				EXPRop2__swift( SELF,NULL, oe, ".", paren, NO_PAD, OP_UNKNOWN, can_wrap );
+				EXPRopDot_swift( SELF, oe, can_wrap );
 				break;
 				
 			//MARK:OP_GROUP
@@ -587,7 +761,7 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
 		//MARK: - Complex Entity Constructor
 			//MARK:OP_CONCAT
 			case OP_CONCAT:
-				EXPRop2__swift( SELF,SELF, oe, ".||.", paren, YES_PAD, previous_op, can_wrap );
+				EXPRop2__swift( SELF,SELF, oe, " .||. ", paren, previous_op, can_wrap );
 				break;
 				
 				
@@ -601,33 +775,33 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
     }
 }
 
-void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * eo, char * opcode, 
-										bool paren, bool pad, unsigned int previous_op, bool can_wrap ) {
+void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * oe, char * opcode, 
+										bool paren, unsigned int previous_op, bool can_wrap ) {
 	bool can_wrap2 = YES_WRAP;
-	if( eo->op_code == OP_DOT ) {
+	if( oe->op_code == OP_DOT ) {
 		can_wrap = YES_WRAP;
 		can_wrap2 = NO_WRAP;
 	}
 	
-	if( pad && paren && ( eo->op_code != previous_op ) ) {
+	if( paren && ( oe->op_code != previous_op ) ) {
 		wrap_if(can_wrap, "( " );
 	}
 	
 	//OPERAND1
-	EXPR__swift( SELF1, eo->op1, YES_PAREN, eo->op_code, can_wrap );
-	if( pad ) {
-		raw( " " );
-	}
+#if 0
+	raw("/*");
+	TYPE_head_swift(SELF1, oe->op1->return_type, YES_IN_COMMENT);
+	raw("*/");
+#endif
+	EXPRassignment_rhs_swift(SELF1, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, can_wrap);
 
-	if( eo->op_code == OP_DOT ) positively_wrap();
+	if( oe->op_code == OP_DOT ) positively_wrap();
 	
 	//OP CODE
-	wrap_if(can_wrap, "%s", ( opcode ? opcode : EXPop_table[eo->op_code].token ) );
-	if( pad ) {
-		wrap_if(can_wrap, " " );
-	}
+	assert(opcode != NULL);
+	wrap_if(can_wrap, "%s", opcode);
 
-	switch (eo->op_code) {
+	switch (oe->op_code) {
 		case OP_AND:
 		case OP_OR:
 		case OP_CONCAT:
@@ -639,8 +813,13 @@ void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * eo, cha
 	}
 	
 	//OPERAND2
-	EXPR__swift( SELF2, eo->op2, YES_PAREN, eo->op_code, can_wrap2 );
-	if( pad && paren && ( eo->op_code != previous_op ) ) {
+#if 0
+	raw("/*");
+	TYPE_head_swift(SELF2, oe->op2->return_type, YES_IN_COMMENT);
+	raw("*/");
+#endif
+	EXPRassignment_rhs_swift(SELF2, oe->op2, oe->op2->return_type, YES_PAREN, oe->op_code, can_wrap2);
+	if( paren && ( oe->op_code != previous_op ) ) {
 		raw( " )" );
 	}
 }
@@ -648,13 +827,13 @@ void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * eo, cha
 /** Print out a one-operand operation.  If there were more than two of these
  * I'd generalize it to do padding, but it's not worth it.
  */
-static void EXPRop1_swift( Scope SELF, struct Op_Subexpression * eo, char * opcode, 
+static void EXPRop1_swift( Scope SELF, struct Op_Subexpression * oe, char * opcode, 
 													bool paren, bool can_wrap ) {
     if( paren ) {
         wrap_if(can_wrap, "( " );
     }
     wrap_if(can_wrap, "%s", opcode );
-    EXPR__swift( SELF, eo->op1, YES_PAREN, OP_UNKNOWN, can_wrap );
+    EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, OP_UNKNOWN, can_wrap );
     if( paren ) {
         raw( " )" );
     }
@@ -668,47 +847,66 @@ static void aggregate_init( Scope SELF, Expression rhs, Type lhsType ) {
 		TypeBody typebody = TYPEget_body( lhsType );
 		if( typebody->upper ){
 			wrap("bound1: ");
-			EXPR_swift(SELF, typebody->lower, NO_PAREN);
+			EXPR_swift(SELF, typebody->lower, Type_Integer, NO_PAREN);
 			raw(", ");
 			wrap("bound2: ");
-			EXPR_swift(SELF, typebody->upper, NO_PAREN);
+			EXPR_swift(SELF, typebody->upper, Type_Integer, NO_PAREN);
 			raw(", ");
 		}
-		EXPR_swift(SELF, rhs, NO_PAREN);
+		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
 
 		raw(")");
 	}
 	else {		
-		EXPR_swift(SELF, rhs, NO_PAREN);
+		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
 	}
 }
 
-void EXPRassignment_rhs_swift( Scope SELF, Expression rhs, Type lhsType) {
-	if( TYPEis(lhsType)==generic_ || TYPEis(lhsType)==aggregate_ ) {
-		EXPR_swift(SELF, rhs, NO_PAREN);
+void EXPRassignment_rhs_swift( Scope SELF, Expression rhs, Type lhsType, bool paren, unsigned int previous_op, bool can_wrap) {
+	if( lhsType == NULL ) {
+//		raw("/*unknown lhs type*/");
+		EXPR__swift(SELF, rhs, rhs->return_type, paren, previous_op, can_wrap);
+		return;
 	}
-	else if( TYPEs_are_equal(rhs->return_type, lhsType) ) {
-		if( TYPEis_aggregate_raw(rhs->type) ) {
+	
+	if( TYPEcontains_generic(lhsType) ) {
+//		raw("/*generic lhs type*/");
+		EXPR__swift(SELF, rhs, rhs->return_type, paren, previous_op, can_wrap);
+		return;
+	}
+	
+	if( TYPEs_are_equal(rhs->return_type, lhsType) ) {
+//		raw("/*equal lhs type*/");
+		if( TYPEis_AGGREGATE(rhs->type) ) {
 			aggregate_init(SELF, rhs, lhsType);
+			return;;
 		}
-		else {
-			EXPR_swift(SELF, rhs, NO_PAREN);
-		}
+		
+		EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
+		return;
 	}
-	else {
-		if( TYPEis_aggregate(lhsType) ) {
-			aggregate_init(SELF, rhs, lhsType);
-		}
-		else {
-			if( !isLITERAL_INFINITY(rhs) ) {
-				TYPE_head_swift(SELF, lhsType, WO_COMMENT);
-				raw("(");
-				EXPR_swift(SELF, rhs, NO_PAREN);
-				raw(")");
-			}
-			else {
-				EXPR_swift(SELF, rhs, NO_PAREN);
-			}
-		}
+	
+	if( TYPEis_aggregation_data_type(lhsType) ) {
+//		raw("/*%s lhs type*/",TYPEis_runtime(lhsType)? "runtime":"unknown");
+		aggregate_init(SELF, rhs, lhsType);
+		return;
 	}
+	
+	if( lhsType == Type_Entity ) {
+//		raw("SDAI.EntityReference(");
+		EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
+		raw(")");
+		return;
+	}
+	
+	if( !isLITERAL_INFINITY(rhs) ) {
+		TYPE_head_swift(SELF, lhsType, WO_COMMENT);	// wrap with explicit type cast
+		raw("(");
+		EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
+		raw(")");
+		return;
+	}
+
+	EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
+	return;
 }

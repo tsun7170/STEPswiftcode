@@ -66,7 +66,7 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		}LISTod;
 		
 		//rule body
-		ALGscope_swift(schema, rule, level2);
+		ALGscope_declarations_swift(schema, rule, level2);
 		STMTlist_swift(rule, rule->u.rule->body, level2);
 		
 		//where rules
@@ -79,7 +79,7 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 			
 			char buf[BUFSIZ];
 			raw("let %s = ",whereRuleLabel_swiftName(where, buf));
-			EXPR_swift(NULL,where->expr,YES_PAREN);
+			EXPR_swift(NULL,where->expr,Type_Logical,YES_PAREN);
 			raw("\n\n");
 		}LISTod;
 		

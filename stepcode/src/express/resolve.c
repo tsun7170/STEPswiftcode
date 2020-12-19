@@ -273,36 +273,52 @@ void RESOLVEcleanup( void ) {
 
 /**
 ** Retrieve the aggregate type from the underlying types of the select type t_select
-** \param t_select the select type to retrieve the aggregate type from
-** \param t_agg the current aggregate type
+** \param t_root the select type to retrieve the aggregate type from
+** \param t_agg_base the current aggregate base type
 ** \return the aggregate type
 */
-Type TYPE_retrieve_aggregate( Type t_select, Type t_agg ) {
-    if( TYPEis_select( t_select ) ) {
-        /* parse the underlying types */
-        LISTdo_links( t_select->u.type->body->list, link )
-        /* the current underlying type */
-        Type t = ( Type ) link->data;
-        if( TYPEis_select( t ) ) {
-            t_agg = TYPE_retrieve_aggregate( t, t_agg );
-        } else if( TYPEis_aggregate( t ) ) {
-            if( t_agg ) {
-                if( t_agg != t->u.type->body->base ) {
-                    /* 2 underlying types do not have to the same base */
-                    return 0;
-                }
-            } else {
-                t_agg = t->u.type->body->base;
-            }
-        } else {
-            /* the underlying type is neither a select nor an aggregate */
-            return 0;
-        }
-
-        LISTod;
-    }
-
-    return t_agg;
+Type TYPE_retrieve_aggregate_base( Type t_root, Type t_agg_base ) {
+	if( t_root == NULL )return t_agg_base;
+	
+	if( TYPEis_select( t_root ) ) {
+		/* parse the underlying types */
+		LISTdo_links( t_root->u.type->body->list, link ){
+			/* the current underlying type */
+			Type t_select_case = ( Type ) link->data;
+				t_agg_base = TYPE_retrieve_aggregate_base( t_select_case, t_agg_base );
+			
+			/* the underlying select case types did not resolve to a common aggregate base type */
+			if( t_agg_base == 0 )return 0;;
+		}LISTod;
+		return t_agg_base;
+	}
+	
+	if( TYPEis_aggregation_data_type(t_root) ){
+		if( t_agg_base ) {
+			Type another_base = t_root->u.type->body->base;
+			if( t_agg_base == another_base ) return t_agg_base;
+			
+			/* 2 underlying types do not have to the same base */
+			//*TY2020/11/29 check if the fundamental types match
+			t_agg_base = TYPEget_fundamental_type(t_agg_base);
+			another_base = TYPEget_fundamental_type(another_base);
+			if( t_agg_base == another_base ) return t_agg_base;
+			
+			//check if base types are entity types
+			if( TYPEis_entity(t_agg_base) && TYPEis_entity(another_base) ){
+				t_agg_base = Type_Entity;
+				return t_agg_base;
+			}
+			
+			//give up. two base types are dissimilar.
+			return 0;
+		} 
+		t_agg_base = t_root->u.type->body->base;
+		return t_agg_base;
+	}
+	
+	/* the underlying select case type is neither a select nor an aggregate */
+	return t_agg_base;
 }
 
 /**
@@ -386,7 +402,7 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
 
                 /* why is this here?  (snc) */
                 if( func == FUNC_USEDIN ) {
-                    expr->return_type = Type_Bag_Of_Generic;
+									expr->return_type = FUNC_USEDIN->u.func->return_type; //*TY2020/12/02 was:Type_Bag_Of_Generic;
                 }
             }
             if( !func_args_checked ) {
@@ -557,11 +573,11 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
                 resolve_failed( expr );
                 break;
             }
-            if( TYPEis_aggregate( expr->return_type ) ) {
+            if( TYPEis_aggregation_data_type( expr->return_type ) ) {
                 type = expr->u.query->aggregate->return_type->u.type->body->base;
             } else if( TYPEis_select( expr->return_type ) ) {
                 /* retrieve the common aggregate type */
-                type = TYPE_retrieve_aggregate( expr->return_type, 0 );
+                type = TYPE_retrieve_aggregate_base( expr->return_type, 0 );
                 if( !type ) {
                     ERRORreport_with_symbol( ERROR_query_requires_aggregate, &expr->u.query->aggregate->symbol );
                     resolve_failed( expr );
@@ -688,7 +704,7 @@ void TYPE_resolve( Type * typeaddr /*, Scope scope*/ ) {
 
         resolve_in_progress( type );
 
-        if( TYPEis_aggregate( type ) ) {
+        if( TYPEis_aggregation_data_type( type ) ) {
             TYPEresolve( &body->base );
             /* only really critical failure point for future use */
             /* of this type is the base type, ignore others (above) */
@@ -795,7 +811,7 @@ void VAR_resolve_types( Variable v ) {
         Variable attr;
         Type type = v->type;
 
-        if( TYPEis_aggregate( type ) ) {
+        if( TYPEis_aggregation_data_type( type ) ) {
             /* pull entity out of aggregate type defn for ... */
             /* inverse var: set (or bag) of entity for ...; */
             type = type->u.type->body->base;
@@ -1463,7 +1479,7 @@ static void TYPEresolve_expressions( Type t, Scope s ) {
             break;
         }
 
-        if( !TYPEis_aggregate( t ) ) {
+        if( !TYPEis_aggregation_data_type( t ) ) {
             break;
         }
 
@@ -1480,6 +1496,20 @@ static void TYPEresolve_expressions( Type t, Scope s ) {
     }
 
     self = self_old;
+}
+
+//*TY2020/11/28
+static void ALGresolve_variable(Variable var){
+	Type var_type = VARget_type(var);
+	if( VARis_constant(var) )return;
+//	if( VARis_inout(var) )return;
+	if( TYPEis_logical(var_type) || TYPEis_boolean(var_type) )return;
+	var->flags.optional = true;
+}
+static void ALGresolve_parameters( Linked_List parameters ){
+	LISTdo(parameters, formalp, Variable){
+		ALGresolve_variable(formalp);	
+	}LISTod;
 }
 
 void SCOPEresolve_expressions_statements( Scope s ) {
@@ -1507,10 +1537,14 @@ void SCOPEresolve_expressions_statements( Scope s ) {
                 break;
             case OBJ_FUNCTION:
                 ALGresolve_expressions_statements( ( Scope )x, ( ( Scope )x )->u.func->body );
+						//*TY2020/11/28
+						ALGresolve_parameters( ((Function)x)->u.func->parameters);
                 break;
             case OBJ_PROCEDURE:
                 ALGresolve_expressions_statements( ( Scope )x, ( ( Scope )x )->u.proc->body );
-                break;
+						//*TY2020/11/28
+						ALGresolve_parameters( ((Procedure)x)->u.proc->parameters);
+								 break;
             case OBJ_RULE:
                 ALGresolve_expressions_statements( ( Scope )x, ( ( Scope )x )->u.rule->body );
 
@@ -1522,6 +1556,8 @@ void SCOPEresolve_expressions_statements( Scope s ) {
                 if( v->initializer ) {
                     EXPresolve( v->initializer, s, v->type );
                 }
+						//*TY2020/11/28
+						ALGresolve_variable(v);
                 break;
             case OBJ_TYPE:
                 TYPEresolve_expressions( ( Type )x, s );
@@ -1541,6 +1577,7 @@ static int WHEREresolve( Linked_List list, Scope scope, int need_self ) {
     LISTdo( list, w, Where )
     /* check if we've been here before */
     /* i'm not sure why, but it happens */
+	//*TY2020/11/21 because WHEREresolve is called from ENTITYresolve_expressions and TYPEresolve_expressions
     status |= w->label->resolved;
     if( w->label->resolved & ( RESOLVED | RESOLVE_FAILED ) ) {
         break;

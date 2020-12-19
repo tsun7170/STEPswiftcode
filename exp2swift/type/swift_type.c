@@ -116,9 +116,11 @@ void TYPEdefinition_swift(Schema schema, Type t, int level ) {
 			case set_:
 			case list_:
 				namedAggregateTypeDefinition_swift(schema, t, level);
+				break;
 				
 			default:
 				namedSimpleTypeDefinition_swift(schema, t, level);
+				break;
 		}
 	}
 	
@@ -149,9 +151,11 @@ extern void TYPEextension_swift( Schema schema, Type t, int level ) {
 			case set_:
 			case list_:
 				namedAggregateTypeExtension_swift(schema, t, level);
+				break;
 				
 			default:
 				namedSimpleTypeExtension_swift(schema, t, level);
+				break;
 		}
 	}
 }
@@ -240,26 +244,47 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 	//MARK:entity_
 		case entity_:
 		{
-			char buf[BUFSIZ];
-			wrap( "%s", ENTITY_swiftName(tb->entity,"","",current,buf) );
+			if( t == Type_Entity ){
+				wrap( "SDAI.GENERIC_ENTITY" );
+			}
+			else {
+				char buf[BUFSIZ];
+				wrap( "%s", ENTITY_swiftName(tb->entity,"","",current,buf) );
+			}
 		}
 			break;
 			
 	//MARK:generic_
 		case generic_:
 		{
-			char buf[BUFSIZ];
-			assert(tb->tag);
-			wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION,buf) );
+			if( tb->tag == NULL ){
+				wrap("SDAI.GENERIC");
+			}
+			else {
+				char buf[BUFSIZ];
+				wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION,buf) );
+			}
 		}
 			break;
 			
 	//MARK:aggregate_
 		case aggregate_:
 		{
-			char buf[BUFSIZ];
-			assert(tb->tag);
-			wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION,buf) );
+			if( tb->tag == NULL ){
+				wrap("SDAI.AGGREGATE");
+				if( tb->base != NULL ){
+					raw( "<" );
+					TYPE_head_swift( current, tb->base, in_comment );
+					raw(">");
+				}
+				else {
+					raw("<SDAI.GENERIC>");
+				}
+			}
+			else {
+				char buf[BUFSIZ];
+				wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION,buf) );
+			}
 		}
 			break;
 
@@ -276,6 +301,18 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 			EXPRbounds_swift( NULL, tb, in_comment );
 			break;
 			
+		case runtime_:
+			switch (in_comment) {
+				case YES_IN_COMMENT:
+					wrap( "runtime" );
+					break;
+					
+				case NOT_IN_COMMENT:
+				case WO_COMMENT:
+					wrap( " /*runtime*/" );
+					break;
+			}
+			break;
 			
 		default:
 			switch (in_comment) {

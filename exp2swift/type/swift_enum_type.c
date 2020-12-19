@@ -79,7 +79,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw("public var asFundamentalType: FundamentalType { return self }\n");
 		indent_swift(level2);
-		raw("public init(_ fundamental: FundamentalType) {\n");
+		raw("public init(fundamental: FundamentalType) {\n");
 		indent_swift(level2+nestingIndent_swift);
 		raw("self = fundamental\n");
 		indent_swift(level2);

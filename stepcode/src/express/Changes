@@ -164,7 +164,7 @@ I.e.,
 
 OBJget_class(type)	->		TYPEget_type(type)
 
-if (class == Class_Aggregate_Type) ->	if (TYPEis_aggregate(class))
+if (class == Class_Aggregate_Type) ->	if (TYPEis_aggregation_data_type(class))
 
 Rationale: underlying type system changed completely.  Class/object
 system gone, but efficiently faked.  Can no longer call object type

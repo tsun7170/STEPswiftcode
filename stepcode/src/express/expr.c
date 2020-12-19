@@ -579,6 +579,11 @@ Type EXPresolve_op_dot( Expression expr, Scope scope ) {
             return( v->type );
         case entity_:
         case op_:   /* (op1).op2 */
+				//*TY2020/12/2
+				if( TYPEis_generic_entity(op1type) ){
+					return( Type_Runtime );
+				}
+				
             v = ENTITYresolve_attr_ref( op1type->u.type->body->entity,
                                         ( struct Symbol_ * )0, &op2->symbol );
             if( !v ) {
@@ -724,6 +729,10 @@ Type EXPresolve_op_group( Expression expr, Scope scope ) {
             return( Type_Runtime );
         case self_:
         case entity_:
+				//*TY2020/12/2
+				if( TYPEis_generic_entity(op1type) ){
+					return( Type_Runtime );
+				}
             /* Get entity denoted by "X\" */
             tmp = ( ( op1type->u.type->body->type == self_ )
                     ? scope
@@ -888,7 +897,7 @@ Type EXPresolve_op_array_like( Expression e, Scope s ) {
     EXPresolve_op_default( e, s );
     op1type = e->e.op1->return_type;
 
-    if( TYPEis_aggregate( op1type ) ) {
+    if( TYPEis_aggregation_data_type( op1type ) ) {
         return( op1type->u.type->body->base );
     } else if( TYPEis_string( op1type ) ) {
         return( op1type );
@@ -915,7 +924,7 @@ Type EXPresolve_op_array_like( Expression e, Scope s ) {
 
         /* count aggregates and non-aggregates, check aggregate types */
         LISTdo( op1type->u.type->body->list, item, Type ) {
-            if( TYPEis_aggregate( item ) ) {
+            if( TYPEis_aggregation_data_type( item ) ) {
                 numAggr++;
                 if( lasttype == TYPE_NULL ) {
                     lasttype = item;
@@ -961,6 +970,28 @@ Type EXPresolve_op_int_div_like( Expression e, Scope s ) {
     return Type_Integer;
 }
 
+//*TY2020/12/03
+static Type EXPresolve_operand_aggregate_type(Expression op1, Type op2type) {
+	Type op1type = op1->return_type;
+	if( TYPEis_AGGREGATE(op1type) && TYPEis_runtime(TYPEget_base_type(op1type)) ) {
+		
+		if( TYPEis_aggregation_data_type(op2type) && !TYPEis_runtime(TYPEget_base_type(op2type)) ){
+			op1->return_type = op2type;
+		}
+		else if( TYPEis_select(op2type) ){
+			Type select_base = TYPE_retrieve_aggregate_base(op2type,NULL);
+			if( select_base != NULL ){
+				Type substitute = TYPEcreate( bag_ );
+				substitute->u.type->body->base = select_base;
+				resolved_all( substitute );
+				op1->return_type = substitute;
+			}
+		}
+		
+	}
+	return op1->return_type;
+}
+
 Type EXPresolve_op_plus_like( Expression e, Scope s ) {
     /* i.e., Integer or Real */
     EXPresolve_op_default( e, s );
@@ -977,14 +1008,80 @@ Type EXPresolve_op_plus_like( Expression e, Scope s ) {
     /*     and list+set=? */
 
     /* crude but sufficient */
-    if( ( TYPEis_aggregate( e->e.op1->return_type ) ) ||
-            ( TYPEis_aggregate( e->e.op2->return_type ) ) ) {
-        return Type_Aggregate;
+	Type op1type = e->e.op1->return_type;
+	Type op2type = e->e.op2->return_type;
+    if( TYPEis_aggregation_data_type( op1type ) || TYPEis_aggregation_data_type( op2type ) ) {
+			//*TY2020/12/01
+			op1type = EXPresolve_operand_aggregate_type(e->e.op1, op2type);
+			op2type = EXPresolve_operand_aggregate_type(e->e.op2, op1type);
+			
+			TypeType agg_type = aggregate_;
+			switch (BIN_EXPget_operator(e)) {
+				case OP_TIMES:
+					if( TYPEcanbe_bag(op1type) && TYPEcanbe_bag(op2type) ){
+						agg_type = bag_;
+					}
+					else if( TYPEcanbe_set(op1type) || TYPEcanbe_set(op2type) ){
+						agg_type = set_;
+					}
+					break;
+					
+				case OP_PLUS:
+					if( TYPEcanbe_bag(op1type) || (TYPEcanbe_bag(op2type)&&(!TYPEis_aggregation_data_type(op1type))) ){
+						agg_type = bag_;
+					}else if( TYPEcanbe_set(op1type) || (TYPEcanbe_set(op2type)&&(!TYPEis_aggregation_data_type(op1type))) ){
+						agg_type = set_;
+					}
+					else if( TYPEcanbe_list(op1type) || (TYPEcanbe_list(op2type)&&(!TYPEis_aggregation_data_type(op1type))) ){
+						agg_type = list_;
+					}
+					break;
+					
+				case OP_MINUS:
+					if( TYPEcanbe_bag(op1type) ){
+						agg_type = bag_;
+					}
+					else if( TYPEcanbe_set(op1type) ){
+						agg_type = set_;
+					}
+					break;
+					
+				default:
+					break;
+			}
+
+			Type agg_basetype = Type_Runtime;
+			if( !TYPEis_aggregation_data_type(op1type) ){
+				assert( TYPEis_aggregation_data_type(op2type) );
+				agg_basetype = TYPE_retrieve_aggregate_base(op2type, op1type);
+			}
+			else if( !TYPEis_aggregation_data_type(op2type) ){
+				agg_basetype = TYPE_retrieve_aggregate_base(op1type, op2type);
+			}
+			else if( TYPEis_runtime(TYPEget_base_type(op1type)) ){
+				agg_basetype = TYPEget_base_type(op2type);
+			}
+			else if( TYPEis_runtime(TYPEget_base_type(op2type)) ){
+				agg_basetype = TYPEget_base_type(op1type);
+			}
+			else{
+				agg_basetype = TYPE_retrieve_aggregate_base(op1type, TYPEget_base_type(op2type));
+				if( agg_basetype == NULL ){
+					agg_basetype = Type_Runtime;
+				}
+			}
+			if( agg_basetype == NULL ){
+				agg_basetype = Type_Runtime;
+			}
+
+			Type resulttype = TYPEcreate( agg_type );
+			resulttype->u.type->body->base = agg_basetype;
+			resolved_all( resulttype );
+       return resulttype;
     }
 
     /* crude but sufficient */
-    if( ( e->e.op1->return_type->u.type->body->type == real_ ) ||
-            ( e->e.op2->return_type->u.type->body->type == real_ ) ) {
+    if( TYPEis_real(op1type) || TYPEis_real(op2type) ) {
         return( Type_Real );
     }
     return Type_Integer;

@@ -13,12 +13,14 @@
 #include "../express/express.h"
 #include "swift_type.h"
 
-//*TY2020/07/11
 #define YES_PAREN	true
 #define NO_PAREN	false
+#define YES_WRAP	true
+#define NO_WRAP	false
 
+extern bool EXPRresult_is_optional(Expression e);
 extern void EXPRbounds_swift( Scope SELF, TypeBody tb, SwiftOutCommentOption in_comment );
-extern void EXPR_swift( Scope SELF, Expression e, bool paren);
-extern void EXPRassignment_rhs_swift( Scope SELF, Expression rhs, Type lhsType);
+extern void EXPR_swift( Scope SELF, Expression e, Type target_type, bool paren);
+extern void EXPRassignment_rhs_swift( Scope SELF, Expression rhs, Type lhsType, bool paren, unsigned int previous_op, bool can_wrap);
 
 #endif /* swift_expression_h */

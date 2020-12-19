@@ -164,7 +164,7 @@ static void explicitSetter_swift(Variable attr, Entity entity, int level, Entity
 				wrap("let oldValue = self.%s\n", attribute_swiftName(attr,buf) );
 			}
 			
-			if( TYPEis_aggregate(attr->type)) {
+			if( TYPEis_aggregation_data_type(attr->type)) {
 				newValue = aggregateAttributeObserversCall_swift(partial, attr, level2);
 			}
 			else {
@@ -176,10 +176,17 @@ static void explicitSetter_swift(Variable attr, Entity entity, int level, Entity
 		partialEntityReference_swift(entity, partial);
 		if( VARis_redeclaring(attr) ){
 			wrap(".%s = ", partialAttr );
+			if( !VARis_optional(attr) ){
+				wrap("SDAI.UNWRAP(");
+			}
 			Variable original = VARget_redeclaring_attr(attr);
 			aggressively_wrap();
 			variableType_swift(entity, original, NO_FORCE_OPTIONAL, WO_COMMENT);
-			raw("(%s)\n", newValue );
+			raw("(%s)", newValue );
+			if( !VARis_optional(attr) ){
+				raw(")");
+			}
+			raw("\n");
 		}
 		else {
 			wrap(".%s = %s\n", partialAttr, newValue );
@@ -205,16 +212,23 @@ static void explicitStaticGetter_swift(Variable attr, Entity entity, int level, 
 	{	int level2 = level+nestingIndent_swift;
 		indent_swift(level2);
 		raw("return ");
+		if( !VARis_optional(attr) ){
+			raw("SDAI.UNWRAP(");
+		}
 		if( VARis_redeclaring(attr) ){
 			variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 			raw("( ");
 			partialEntityReference_swift(entity, partial);
-			wrap(".%s )\n", partialAttr );
+			wrap(".%s )", partialAttr );
 		}
 		else {
 			partialEntityReference_swift(entity, partial);
-			wrap(".%s\n", partialAttr );
+			wrap(".%s", partialAttr );
 		}
+		if( !VARis_optional(attr) ){
+			raw(")");
+		}
+		raw("\n");
 	}
 	indent_swift(level);
 	raw("}\n");
@@ -285,10 +299,17 @@ static void explicitDynamicGetterSetter_swift(Variable attr, Entity entity, int 
 			}
 			else {
 				wrap("return " );
+				if( !VARis_optional(attr) ){
+					wrap("SDAI.UNWRAP(");
+				}
 				variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 				wrap("(resolved" );
 				wrap(".%s__getter(", partialAttr );
-				wrap("complex: self.complexEntity))\n", partialAttr );
+				wrap("complex: self.complexEntity))" );
+				if( !VARis_optional(attr) ){
+					raw(")");
+				}
+				raw("\n");
 			} 
 		}
 		indent_swift(level2);
@@ -305,10 +326,17 @@ static void explicitDynamicGetterSetter_swift(Variable attr, Entity entity, int 
 				wrap(".%s\n", partialAttr );
 			}
 			else {
+				if( !VARis_optional(attr) ){
+					wrap("SDAI.UNWRAP(");
+				}
 				variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 				raw("(");
 				partialEntityReference_swift(entity, original->defined_in);
-				wrap(".%s)\n", partialAttr );
+				wrap(".%s)", partialAttr );
+				if( !VARis_optional(attr) ){
+					raw(")");
+				}
+				raw("\n");
 			}
 			
 		}
@@ -369,11 +397,14 @@ static void derivedGetter_swift(Variable attr, Entity entity, int level, Entity 
 	{	int level2 = level+nestingIndent_swift;
 		indent_swift(level2);
 		raw("return ");
+		if( !VARis_optional(attr) ){
+			raw("SDAI.UNWRAP(");
+		}
 		if( entity == partial ){
 			partialEntityReference_swift(entity, partial);
 			wrap(".%s__getter(SELF: ", partialEntityAttribute_swiftName(attr, partialAttr) );
 			superEntityReference_swift(entity, partial);
-			raw(")\n");
+			raw(")");
 		}
 		else {
 			variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
@@ -381,8 +412,12 @@ static void derivedGetter_swift(Variable attr, Entity entity, int level, Entity 
 			partialEntityReference_swift(entity, partial);
 			wrap(".%s__getter(SELF: ", partialEntityAttribute_swiftName(attr, partialAttr) );
 			superEntityReference_swift(entity, partial);
-			raw("))\n");
+			raw("))");
 		}
+		if( !VARis_optional(attr) ){
+			raw(")");
+		}
+		raw("\n");
 	}
 	indent_swift(level);
 	raw("}\n");
@@ -532,19 +567,19 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 	raw("//INITIALIZERS\n");
 	
 	/*
-	 public convenience init(_ entityRef: SDAI.EntityReference) {
-		 let complex = entityRef.complexEntity
-		 self.init(complex: complex)!
+	 public convenience init?(_ entityRef: SDAI.EntityReference?) {
+		 let complex = entityRef?.complexEntity
+		 self.init(complex: complex)
 	 }
 	 */
 	indent_swift(level);
-	raw( "public convenience init(_ entityRef: SDAI.EntityReference) {\n");
+	raw( "public convenience init?(_ entityRef: SDAI.EntityReference?) {\n");
 	{	int level2 = level+nestingIndent_swift;
 		
 		indent_swift(level2);
-		raw( "let complex = entityRef.complexEntity\n");
+		raw( "let complex = entityRef?.complexEntity\n");
 		indent_swift(level2);
-		raw( "self.init(complex: complex)!\n");
+		raw( "self.init(complex: complex)\n");
 	}
 	indent_swift(level);
 	raw( "}\n\n");
@@ -588,17 +623,17 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 	raw( "}\n\n");
 	
 	/*
-	 public required convenience init?<S: SDAISelectType>(possiblyFrom select: S) {
-		 guard let entityRef = select.entityReference else { return nil }
+	 public required convenience init?<S: SDAISelectType>(possiblyFrom select: S?) {
+		 guard let entityRef = select?.entityReference else { return nil }
 		 self.init(complex: entityRef.complexEntity)
 	 }
 	 */
 	indent_swift(level);
-	raw( "public required convenience init?<S: SDAISelectType>(possiblyFrom select: S) {\n");
+	raw( "public required convenience init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
 	{	int level2=level+nestingIndent_swift;
 		
 		indent_swift(level2);
-		raw( "guard let entityRef = select.entityReference else { return nil }\n" );
+		raw( "guard let entityRef = select?.entityReference else { return nil }\n" );
 		indent_swift(level2);
 		raw( "self.init(complex: entityRef.complexEntity)\n");
 	}
@@ -606,13 +641,13 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 	raw( "}\n\n");
 	
 	/*
-	 public convenience init<S: SDAISelectType>(_ select: S) { self.init(possiblyFrom: select)! }
-	 public convenience init(_ complex: SDAI.ComplexEntity?) { self.init(complex: complex)! }
+	 public convenience init?<S: SDAISelectType>(_ select: S?) { self.init(possiblyFrom: select) }
+	 public convenience init?(_ complex: SDAI.ComplexEntity?) { self.init(complex: complex) }
 	 */
 	indent_swift(level);
-	raw( "public convenience init<S: SDAISelectType>(_ select: S) { self.init(possiblyFrom: select)! }\n");
+	raw( "public convenience init?<S: SDAISelectType>(_ select: S?) { self.init(possiblyFrom: select) }\n");
 	indent_swift(level);
-	raw( "public convenience init(_ complex: SDAI.ComplexEntity?) { self.init(complex: complex)! }\n\n");
+	raw( "public convenience init?(_ complex: SDAI.ComplexEntity?) { self.init(complex: complex) }\n\n");
 	
 }
 

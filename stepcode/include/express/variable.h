@@ -150,7 +150,7 @@ extern SC_EXPRESS_EXPORT struct freelist_head VAR_fl;
 //#define ATTRget_name_string(v)	(_VARis_redeclaring(v) ? _VARget_redeclaring_attr_name_string(v) : (v)->name->symbol.name)
 #define ATTRget_name_string(v)	VARget_simple_name(v)
 #define ATTRget_type_string(v)	(TYPEhead_to_string((v)->type))
-#define ATTRget_base_type(v)		( TYPEis_aggregate((v)->type) ? TYPEget_base_type((v)->type) : (v)->type )
+#define ATTRget_base_type(v)		( TYPEis_aggregation_data_type((v)->type) ? TYPEget_base_type((v)->type) : (v)->type )
 #define ATTR_EXPLICIT	'E'		// overriders dictionary entry type
 #define ATTR_DERIVED	'D'		// overriders dictionary entry type
 

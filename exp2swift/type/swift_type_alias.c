@@ -42,7 +42,7 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		indent_swift(level2);
 		raw("public typealias FundamentalType = Supertype.FundamentalType\n");
 		indent_swift(level2);
-		raw( "public init(_ fundamental: FundamentalType) {\n" );
+		raw( "public init(fundamental: FundamentalType) {\n" );
 		
 		{	int level3 = level2+nestingIndent_swift;
 			indent_swift(level3);

@@ -15,11 +15,11 @@
 #define YES_OPTIONAL_TYPE	true
 #define NON_OPTIONAL_TYPE	false
 
+extern const char* canonical_swiftName_n(const char* name, char* buf, int maxlen);
+extern const char* canonical_swiftName(const char* name, char buf[BUFSIZ]);
 
-const char* canonical_swiftName(const char* name, char buf[BUFSIZ]);
-
-const char * variable_swiftName(Variable v, char buf[BUFSIZ]);
-void variableType_swift(Scope current, Variable v, bool force_optional, SwiftOutCommentOption in_comment);
-void optionalType_swift(Scope current, Type type, bool optional, SwiftOutCommentOption in_comment);
+extern const char * variable_swiftName(Variable v, char buf[BUFSIZ]);
+extern void variableType_swift(Scope current, Variable v, bool force_optional, SwiftOutCommentOption in_comment);
+extern void optionalType_swift(Scope current, Type type, bool optional, SwiftOutCommentOption in_comment);
 
 #endif /* swift_symbol_h */

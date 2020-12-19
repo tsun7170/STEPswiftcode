@@ -47,14 +47,18 @@ void SCOPElocalList_swift( Scope s, int level ) {
 			raw("var %s: ", variable_swiftName(var,buf));
 		}
 		
-		variableType_swift(s, var, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
+//		bool force_optional = true;
+//		if( TYPEis_boolean(VARget_type(var)) || TYPEis_logical(VARget_type(var)) ) {
+//			force_optional = false;
+//		}
+		variableType_swift(s, var, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 		
 		if( var->initializer ) {
 			raw( " = " );
 			aggressively_wrap();
 			int oldwrap = captureWrapIndent();
 //			EXPR_swift( NULL, var->initializer, NO_PAREN );
-			EXPRassignment_rhs_swift(s, var->initializer, var->type);
+			EXPRassignment_rhs_swift(s, var->initializer, var->type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 			restoreWrapIndent(oldwrap);
 		}
 		else if( TYPEhas_bounds(var->type) ) {
@@ -88,9 +92,9 @@ void SCOPElocalList_swift( Scope s, int level ) {
 			positively_wrap();
 			int oldwrap = captureWrapIndent();
 			wrap("%s(bound1:",aggr);
-			EXPR_swift(NULL,TYPEget_body(var->type)->lower, NO_PAREN);
+			EXPR_swift(NULL,TYPEget_body(var->type)->lower,Type_Integer, NO_PAREN);
 			raw(", bound2:");
-			EXPR_swift(NULL,TYPEget_body(var->type)->upper, NO_PAREN);
+			EXPR_swift(NULL,TYPEget_body(var->type)->upper,Type_Integer, NO_PAREN);
 			raw(")");
 			restoreWrapIndent(oldwrap);
 		}

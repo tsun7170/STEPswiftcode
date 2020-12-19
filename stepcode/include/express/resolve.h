@@ -79,6 +79,10 @@ extern SC_EXPRESS_EXPORT void SCOPEresolve_expressions_statements PROTO( ( Scope
 extern SC_EXPRESS_EXPORT void SCOPEresolve_subsupers PROTO( ( Scope ) );
 extern SC_EXPRESS_EXPORT void SCOPEresolve_types PROTO( ( Scope ) );
 extern SC_EXPRESS_EXPORT void TYPE_resolve PROTO( ( Type * ) );
+
+//*TY2020/11/29
+extern SC_EXPRESS_EXPORT Type TYPE_retrieve_aggregate_base( Type t_select, Type t_agg_base );
+
 extern SC_EXPRESS_EXPORT void EXP_resolve PROTO( ( Expression, Scope, Type ) );
 extern SC_EXPRESS_EXPORT void ALGresolve PROTO( ( Scope ) );
 extern SC_EXPRESS_EXPORT void SCHEMAresolve PROTO( ( Scope ) );

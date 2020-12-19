@@ -162,6 +162,10 @@ Type Type_Bag_Of_Generic;
 //*TY2020/08/02
 Type Type_List_Of_Generic;
 Type Type_Aggregate_Of_Generic;
+Type Type_Set_Of_GenericEntity;
+Type Type_Bag_Of_GenericEntity;
+Type Type_List_Of_GenericEntity;
+Type Type_Aggregate_Of_GenericEntity;
 
 struct freelist_head TYPEHEAD_fl;
 struct freelist_head TYPEBODY_fl;
@@ -396,60 +400,92 @@ void TYPEinitialize() {
     Type_Boolean->u.type->body->flags.shared = 1;
     resolved_all( Type_Boolean );
 
+	Type_Attribute = TYPEcreate( attribute_ );
+	Type_Attribute->u.type->body->flags.shared = 1;
+	resolved_all( Type_Attribute );
+
+	Type_Entity = TYPEcreate( entity_ );
+	Type_Entity->u.type->body->flags.shared = 1;
+	resolved_all( Type_Entity );
+
+	Type_Funcall = TYPEcreate( funcall_ );
+	Type_Funcall->u.type->body->flags.shared = 1;
+	resolved_all( Type_Funcall );
+
     Type_Generic = TYPEcreate( generic_ );
     Type_Generic->u.type->body->flags.shared = 1;
-    resolved_all( Type_Generic );
+	resolved_all( Type_Generic );
 
+	Type_Identifier = TYPEcreate( identifier_ );
+	Type_Identifier->u.type->body->flags.shared = 1;
+	resolved_all( Type_Identifier );
+
+	Type_Repeat = TYPEcreate( integer_ );
+	Type_Repeat->u.type->body->flags.shared = 1;
+	Type_Repeat->u.type->body->flags.repeat = 1;
+	resolved_all( Type_Repeat );
+
+	Type_Oneof = TYPEcreate( oneof_ );
+	Type_Oneof->u.type->body->flags.shared = 1;
+	resolved_all( Type_Oneof );
+
+	Type_Query = TYPEcreate( query_ );
+	Type_Query->u.type->body->flags.shared = 1;
+	resolved_all( Type_Query );
+
+	Type_Self = TYPEcreate( self_ );
+	Type_Self->u.type->body->flags.shared = 1;
+	resolved_all( Type_Self );
+	
+	
+	
     Type_Set_Of_String = TYPEcreate( set_ );
     Type_Set_Of_String->u.type->body->flags.shared = 1;
     Type_Set_Of_String->u.type->body->base = Type_String;
+	resolved_all( Type_Set_Of_String );
 
     Type_Set_Of_Generic = TYPEcreate( set_ );
     Type_Set_Of_Generic->u.type->body->flags.shared = 1;
     Type_Set_Of_Generic->u.type->body->base = Type_Generic;
+	resolved_all( Type_Set_Of_Generic );
 
     Type_Bag_Of_Generic = TYPEcreate( bag_ );
     Type_Bag_Of_Generic->u.type->body->flags.shared = 1;
     Type_Bag_Of_Generic->u.type->body->base = Type_Generic;
+	resolved_all( Type_Bag_Of_Generic );
 
 	//*TY2020/08/02
 	Type_List_Of_Generic = TYPEcreate( list_ );
 	Type_List_Of_Generic->u.type->body->flags.shared = 1;
 	Type_List_Of_Generic->u.type->body->base = Type_Generic;
+	resolved_all( Type_List_Of_Generic );
 //
 	Type_Aggregate_Of_Generic = TYPEcreate( aggregate_ );
 	Type_Aggregate_Of_Generic->u.type->body->flags.shared = 1;
 	Type_Aggregate_Of_Generic->u.type->body->base = Type_Generic;
+	resolved_all( Type_Aggregate_Of_Generic );
+//
+	Type_Set_Of_GenericEntity = TYPEcreate( set_ );
+	Type_Set_Of_GenericEntity->u.type->body->flags.shared = 1;
+	Type_Set_Of_GenericEntity->u.type->body->base = Type_Entity;
+	resolved_all( Type_Set_Of_GenericEntity );
+//
+	Type_Bag_Of_GenericEntity = TYPEcreate( bag_ );
+	Type_Bag_Of_GenericEntity->u.type->body->flags.shared = 1;
+	Type_Bag_Of_GenericEntity->u.type->body->base = Type_Entity;
+	resolved_all( Type_Bag_Of_GenericEntity );
+//
+	Type_List_Of_GenericEntity = TYPEcreate( list_ );
+	Type_List_Of_GenericEntity->u.type->body->flags.shared = 1;
+	Type_List_Of_GenericEntity->u.type->body->base = Type_Entity;
+	resolved_all( Type_List_Of_GenericEntity );
+//
+	Type_Aggregate_Of_GenericEntity = TYPEcreate( aggregate_ );
+	Type_Aggregate_Of_GenericEntity->u.type->body->flags.shared = 1;
+	Type_Aggregate_Of_GenericEntity->u.type->body->base = Type_Entity;
+	resolved_all( Type_Aggregate_Of_GenericEntity );
 	
 	
-	
-    Type_Attribute = TYPEcreate( attribute_ );
-    Type_Attribute->u.type->body->flags.shared = 1;
-
-    Type_Entity = TYPEcreate( entity_ );
-    Type_Entity->u.type->body->flags.shared = 1;
-
-    Type_Funcall = TYPEcreate( funcall_ );
-    Type_Funcall->u.type->body->flags.shared = 1;
-
-//    Type_Generic = TYPEcreate( generic_ );
-//    Type_Generic->u.type->body->flags.shared = 1;
-
-    Type_Identifier = TYPEcreate( identifier_ );
-    Type_Identifier->u.type->body->flags.shared = 1;
-
-    Type_Repeat = TYPEcreate( integer_ );
-    Type_Repeat->u.type->body->flags.shared = 1;
-    Type_Repeat->u.type->body->flags.repeat = 1;
-
-    Type_Oneof = TYPEcreate( oneof_ );
-    Type_Oneof->u.type->body->flags.shared = 1;
-
-    Type_Query = TYPEcreate( query_ );
-    Type_Query->u.type->body->flags.shared = 1;
-
-    Type_Self = TYPEcreate( self_ );
-    Type_Self->u.type->body->flags.shared = 1;
 
     ERROR_corrupted_type =
         ERRORcreate( "Corrupted type in %s", SEVERITY_DUMP );
@@ -470,7 +506,7 @@ void TYPEcleanup( void ) {
  * Retrieve the base type of an aggregate.
  */
 Type TYPEget_nonaggregate_base_type( Type t ) {
-    while( TYPEis_aggregate( t ) ) {
+    while( TYPEis_aggregation_data_type( t ) ) {
         t = t->u.type->body->base;
     }
     return t;
@@ -756,4 +792,12 @@ const char* TYPEget_kind(Type t) {
 		return "<nullbody>";
 	}
 
+}
+
+//*TY2002/11/19
+bool TYPEcontains_generic(Type t) {
+	if( TYPEis_generic(t) ) return true;
+	if( TYPEis_AGGREGATE(t) ) return true;
+	if( TYPEis_aggregation_data_type(t) ) return TYPEcontains_generic(TYPEget_base_type(t));
+	return false;
 }

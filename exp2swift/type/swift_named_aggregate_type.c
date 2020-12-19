@@ -47,7 +47,7 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw( "public var rep: Supertype\n" );
 		indent_swift(level2);
-		raw( "public init(_ fundamental: FundamentalType) {\n" );
+		raw( "public init(fundamental: FundamentalType) {\n" );
 		
 		{	int level3 = level2+nestingIndent_swift;
 			indent_swift(level3);

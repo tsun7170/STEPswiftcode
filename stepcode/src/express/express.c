@@ -449,7 +449,7 @@ void EXPRESSinitialize( void ) {
     funcdef( func_typeof, KW_TYPEOF, 1, Type_Set_Of_String );
 		funcdef_param(func_typeof, "V", Type_Generic, NO__OPT, NO__VAR);
 
-    funcdef( FUNC_USEDIN, KW_USEDIN,  2, Type_Bag_Of_Generic );
+    funcdef( FUNC_USEDIN, KW_USEDIN,  2, Type_Bag_Of_GenericEntity );
 		funcdef_param(FUNC_USEDIN, "T", Type_Generic, NO__OPT, NO__VAR);
 		funcdef_param(FUNC_USEDIN, "R", Type_String, NO__OPT, NO__VAR);
 

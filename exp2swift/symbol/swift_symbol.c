@@ -12,9 +12,9 @@
 #include "swift_files.h"
 #include "swift_type.h"
 
-const char* canonical_swiftName(const char* name, char buf[BUFSIZ]) {
+const char* canonical_swiftName_n(const char* name, char* buf, int maxlen) {
 	char* to = buf;
-	int remain = BUFSIZ-1;
+	int remain = maxlen;
 	for(const char* from = name; *from; ++from ) {
 		if( islower(*from) ) {
 			(*to) = toupper(*from);
@@ -28,6 +28,25 @@ const char* canonical_swiftName(const char* name, char buf[BUFSIZ]) {
 	}
 	(*to) = 0;
 	return buf;
+}
+
+const char* canonical_swiftName(const char* name, char buf[BUFSIZ]) {
+	return canonical_swiftName_n(name, buf, BUFSIZ-1);
+//	char* to = buf;
+//	int remain = BUFSIZ-1;
+//	for(const char* from = name; *from; ++from ) {
+//		if( islower(*from) ) {
+//			(*to) = toupper(*from);
+//		}
+//		else {
+//			(*to) = (*from);
+//		}
+//		++to;
+//		--remain;
+//		if( remain == 0 ) break;
+//	}
+//	(*to) = 0;
+//	return buf;
 }
 
 

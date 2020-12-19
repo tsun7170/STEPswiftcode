@@ -76,7 +76,7 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 	
 	// parameters
 	raw("(");
-	ALGargs_swift( func->superscope, YES_FORCE_OPTIONAL, func->u.func->parameters, YES_DROP_SINGLE_LABEL, level );
+	ALGargs_swift( func->superscope, NO_FORCE_OPTIONAL, func->u.func->parameters, YES_DROP_SINGLE_LABEL, level );
 	raw(") -> ");
 	
 	// return type
@@ -103,7 +103,7 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 	// function body
 	{	int level2 = level+nestingIndent_swift;
 		
-		ALGscope_swift(schema, func, level2);
+		ALGscope_declarations_swift(schema, func, level2);
 		STMTlist_swift(func, func->u.func->body, level2);
 	}
 	

@@ -42,7 +42,7 @@ static void SCOPEconst_swift(Scope current, char* access, Variable v, int level 
 		aggressively_wrap();
 		int oldwrap = captureWrapIndent();
 //		EXPR_swift( NULL, v->initializer, NO_PAREN );
-		EXPRassignment_rhs_swift(current, v->initializer, v->type);
+		EXPRassignment_rhs_swift(current, v->initializer, v->type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 		restoreWrapIndent(oldwrap);
 	}
 	

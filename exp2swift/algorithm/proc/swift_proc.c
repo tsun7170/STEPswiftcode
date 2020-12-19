@@ -76,7 +76,7 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 		
 		// parameters
 		raw("(");
-		ALGargs_swift( proc->superscope, YES_FORCE_OPTIONAL, proc->u.proc->parameters, YES_DROP_SINGLE_LABEL, level );
+		ALGargs_swift( proc->superscope, NO_FORCE_OPTIONAL, proc->u.proc->parameters, YES_DROP_SINGLE_LABEL, level );
 		raw(")");
 				
 		if(!LISTis_empty(aggregates)) {
@@ -97,7 +97,7 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 		// proc body
 		{	int level2 = level+nestingIndent_swift;
 			
-			ALGscope_swift(schema, proc, level2);
+			ALGscope_declarations_swift(schema, proc, level2);
 			STMTlist_swift(proc, proc->u.proc->body, level2);
 		}
 		

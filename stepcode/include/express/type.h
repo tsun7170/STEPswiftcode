@@ -222,6 +222,10 @@ extern SC_EXPRESS_EXPORT Type Type_Bag_Of_Generic;
 //*TY2020/08/02
 extern SC_EXPRESS_EXPORT Type Type_List_Of_Generic;
 extern SC_EXPRESS_EXPORT Type Type_Aggregate_Of_Generic;
+extern SC_EXPRESS_EXPORT Type Type_Set_Of_GenericEntity;
+extern SC_EXPRESS_EXPORT Type Type_Bag_Of_GenericEntity;
+extern SC_EXPRESS_EXPORT Type Type_List_Of_GenericEntity;
+extern SC_EXPRESS_EXPORT Type Type_Aggregate_Of_GenericEntity;
 
 extern SC_EXPRESS_EXPORT struct freelist_head TYPEHEAD_fl;
 extern SC_EXPRESS_EXPORT struct freelist_head TYPEBODY_fl;
@@ -248,9 +252,13 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 #define TYPEis_oneof(t)     ((t)->u.type->body->type == oneof_)
 #define TYPEis_entity(t)    ((t)->u.type->body->type == entity_)
 #define TYPEis_enumeration(t)   ((t)->u.type->body->type == enumeration_)
-#define TYPEis_aggregate(t) ((t)->u.type->body->base)
-#define TYPEis_aggregate_raw(t) ((t)->u.type->body->type == aggregate_)
+#define TYPEis_aggregation_data_type(t) ((t)->u.type->body->base)	//*TY2020/11/19 renamed
+#define TYPEis_AGGREGATE(t) ((t)->u.type->body->type == aggregate_)	//*TY2020/11/19 renamed
+#define TYPEis_generic(t)		((t)->u.type->body->type == generic_)	//*TY2020/11/19 added
 #define TYPEis_array(t)     ((t)->u.type->body->type == array_)
+#define TYPEis_bag(t)     ((t)->u.type->body->type == bag_)	//*TY2020/12/05 added
+#define TYPEis_set(t)     ((t)->u.type->body->type == set_)	//*TY2020/12/05 added
+#define TYPEis_list(t)     ((t)->u.type->body->type == list_)	//*TY2020/12/05 added
 #define TYPEis_select(t)    ((t)->u.type->body->type == select_)
 #define TYPEis_reference(t) ((t)->u.type->body->type == reference_)
 #define TYPEis_unknown(t)   ((t)->u.type->body->type == unknown_)
@@ -258,6 +266,13 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 #define TYPEis_shared(t)    ((t)->u.type->body->flags.shared)
 #define TYPEis_optional(t)  ((t)->u.type->body->flags.optional)
 #define TYPEis_encoded(t)   ((t)->u.type->body->flags.encoded)
+#define TYPEis_generic_entity(t) (TYPEis_entity(t) && (t)->u.type->body->entity == NULL)	//*TY2020/12/2
+
+//*TY2020/12/05
+#define TYPEcanbe_array(t)	(TYPEis_array(t) || TYPEis_AGGREGATE(t))
+#define TYPEcanbe_bag(t)	(TYPEis_bag(t) || TYPEis_AGGREGATE(t))
+#define TYPEcanbe_set(t)	(TYPEis_set(t) || TYPEis_AGGREGATE(t))
+#define TYPEcanbe_list(t)	(TYPEis_list(t) || TYPEis_AGGREGATE(t))
 
 #define TYPEget_symbol(t)   (&(t)->symbol)
 
@@ -339,4 +354,7 @@ extern bool TYPEs_are_equal(Type t1, Type t2);
 //*TY2020/09/19
 extern Type TYPEget_fundamental_type(Type t);
 extern const char* TYPEget_kind(Type t);
+
+//*TY2002/11/19
+extern bool TYPEcontains_generic(Type t);
 #endif    /*  TYPE_H  */

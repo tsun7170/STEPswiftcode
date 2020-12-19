@@ -305,6 +305,7 @@ Variable ENTITYfind_inherited_attribute( struct Scope_ *entity, char * name,
  * report errors as appropriate
  */
 Variable ENTITYresolve_attr_ref( Entity e, Symbol * grp_ref, Symbol * attr_ref ) {
+	assert( e != NULL );	//*TY202/12/2
     extern Error ERROR_unknown_supertype;
     extern Error ERROR_unknown_attr_in_entity;
     Entity ref_entity;
