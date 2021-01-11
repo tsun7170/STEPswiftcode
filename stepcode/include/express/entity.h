@@ -98,8 +98,11 @@ struct Entity_ {
     Type        type;               /**< type pointing back to ourself, useful to have when evaluating expressions involving entities */
 	//*TY2020/07/19 added
 	Linked_List supertype_list;	// list of all supertypes consistent with P21 spec (including SELF entity at the end).
-	Dictionary all_attributes;	// dict of (linked_list of attr) keyed by attr simple name. linked_list is sorted from most sub-entity to super-entity (first item is the effective attr definition, if it is not an ambiguous definition)
+	Dictionary all_attributes;	// dict of (linked_list of attr) keyed by attr simple name. linked_list is sorted from most sub-entity to super-entity (first item is the effective attr definition, if it is not an ambiguous definition), including possible subtype attributes. linked list of attr contains aux flag of true indicating the origin is subtype, while aux flag of false indicating the origin is self/supertype.
 	Linked_List constructor_params;	// parameters for the implicit constructor
+	//*TY2021/01/10 added
+	Linked_List subtype_list; // list of all possible subtypes (excluding SELF)
+//	Dictionary all_subtype_attributes; // dict of (linked list of attr) keyed by attr simple name, for all possible subtypes, sorted from nearest to the subject entity to the farthest subtype inheritances.
 };
 
 /********************/
@@ -159,19 +162,23 @@ extern SC_EXPRESS_EXPORT bool      ENTITYhas_supertype PROTO( ( Entity sub, Enti
 //*TY2020/07/11
 extern bool ENTITYis_a( Entity entity , Entity sup );
 extern Linked_List ENTITYget_super_entity_list( Entity entity ); // including starting entity
+//*TY2021/1/6
+extern Entity ENTITYget_common_super( Entity e1, Entity e2);
+//*TY2021/01/10
+extern Linked_List ENTITYget_sub_entity_list( Entity entity ); // excluding starting entity
 
 
 // attribute related queries
 extern SC_EXPRESS_EXPORT Variable     ENTITYfind_inherited_attribute PROTO( ( struct Scope_ *, char *, struct Symbol_ **, bool ) );
 //*TY2020/07/19
-extern Variable ENTITYfind_attribute_effective_definition( Entity entity, char* attr_name );
+extern Variable ENTITYfind_attribute_effective_definition( Entity entity, const char* attr_name );
 extern SC_EXPRESS_EXPORT Variable     ENTITYget_named_attribute PROTO( ( Entity, char * ) );
 extern SC_EXPRESS_EXPORT bool      ENTITYdeclares_variable PROTO( ( Entity, struct Variable_ * ) );
 //*TY2020/07/19 changed the function signature
 //extern SC_EXPRESS_EXPORT Linked_List  ENTITYget_all_attributes PROTO( ( Entity ) );
 extern SC_EXPRESS_EXPORT Dictionary  ENTITYget_all_attributes PROTO( ( Entity ) ); // returns dict of (linked_list of attr) keyed by attr simple name
 //*TY2020/07/11
-extern int ENTITYget_attr_ambiguous_count( Entity entity, char* attrName );	// 0: not defined anywhere, 1: unique defintion, >1: ambiguous definition
+extern int ENTITYget_attr_ambiguous_count( Entity entity, const char* attrName );	// 0: not defined anywhere, 1: unique defintion, >1: ambiguous definition
 //*TY2020/08/09
 extern Linked_List ENTITYget_constructor_params( Entity entity );
 

@@ -53,7 +53,7 @@ void DICTprint( Dictionary dict ) {
     HASHlistinit( dict, &de );
 
     while( 0 != ( e = ( HASHlist( &de ) ) ) ) {
-        fprintf( stderr, "key <%s>  data <%s>  line <%d>  <\"%c\" %s>  <%s>\n",
+        fprintf( stderr, "key <%s> \tdata <%s> \tline <%d> \t<\"%c\" %s> \t<%s>\n",
                 e->key, e->data, e->symbol->line, e->type,
                 OBJget_type( e->type ), e->symbol->filename );
     }

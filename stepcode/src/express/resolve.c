@@ -294,27 +294,29 @@ Type TYPE_retrieve_aggregate_base( Type t_root, Type t_agg_base ) {
 	}
 	
 	if( TYPEis_aggregation_data_type(t_root) ){
-		if( t_agg_base ) {
-			Type another_base = t_root->u.type->body->base;
-			if( t_agg_base == another_base ) return t_agg_base;
-			
-			/* 2 underlying types do not have to the same base */
-			//*TY2020/11/29 check if the fundamental types match
-			t_agg_base = TYPEget_fundamental_type(t_agg_base);
-			another_base = TYPEget_fundamental_type(another_base);
-			if( t_agg_base == another_base ) return t_agg_base;
-			
-			//check if base types are entity types
-			if( TYPEis_entity(t_agg_base) && TYPEis_entity(another_base) ){
-				t_agg_base = Type_Entity;
-				return t_agg_base;
-			}
-			
-			//give up. two base types are dissimilar.
-			return 0;
-		} 
-		t_agg_base = t_root->u.type->body->base;
-		return t_agg_base;
+//		if( t_agg_base ) {
+//			Type another_base = t_root->u.type->body->base;
+//			if( t_agg_base == another_base ) return t_agg_base;
+//			
+//			/* 2 underlying types do not have to the same base */
+//			//*TY2020/11/29 check if the fundamental types match
+//			t_agg_base = TYPEget_fundamental_type(t_agg_base);
+//			another_base = TYPEget_fundamental_type(another_base);
+//			if( t_agg_base == another_base ) return t_agg_base;
+//			
+//			//check if base types are entity types
+//			if( TYPEis_entity(t_agg_base) && TYPEis_entity(another_base) ){
+//				t_agg_base = Type_Entity;
+//				return t_agg_base;
+//			}
+//			
+//			//give up. two base types are dissimilar.
+//			return 0;
+//		} 
+//		t_agg_base = t_root->u.type->body->base;
+//		return t_agg_base;
+		
+		return TYPEget_common(t_root->u.type->body->base, t_agg_base);
 	}
 	
 	/* the underlying select case type is neither a select nor an aggregate */
@@ -397,6 +399,10 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
                 if( func == FUNC_NVL ) {
                     EXPresolve( ( Expression )LISTget_first( expr->u.funcall.list ), scope, typecheck );
                     EXPresolve( ( Expression )LISTget_second( expr->u.funcall.list ), scope, typecheck );
+									//*TY2020/12/30
+									Type arg1type = (( Expression )LISTget_first( expr->u.funcall.list ))->return_type;
+									expr->return_type = arg1type;
+									
                     func_args_checked = true;
                 }
 
@@ -595,6 +601,7 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
             EXPresolve( expr->u.query->expression, expr->u.query->scope, Type_Dont_Care );
             expr->symbol.resolved = expr->u.query->expression->symbol.resolved;
             break;
+			case indeterminate_:	//*TY2020/12/31
         case integer_:
         case real_:
         case string_:
@@ -1196,6 +1203,21 @@ void TYPEcheck_select_cyclicity( Type t ) {
     }
 }
 
+//*TY2020/12/17 added
+static void ENUMresolve_ambiguity( Type t ) {
+	DictionaryEntry de;
+	Element e;
+//	const char* enumcase;
+	DICTdo_type_init(t->superscope->enum_table, &de, OBJ_ENUM);
+	while( 0 != (e = DICTdo_tuple(&de)) ) {
+		assert(e->type == OBJ_ENUM);
+		if( DICTlookup(t->superscope->symbol_table, e->key) != NULL ){
+			// enumcase symbol conflicts with other symbol in scope
+			DICTchange_type(e, OBJ_AMBIG_ENUM);
+		}
+	}
+}
+
 void ENTITYresolve_types( Entity e );
 
 /** also resolves inheritance counts and sub/super consistency */
@@ -1213,10 +1235,18 @@ void SCOPEresolve_types( Scope s ) {
     DICTdo_init( s->symbol_table, &de );
     while( 0 != ( x = DICTdo( &de ) ) ) {
         switch( DICT_type ) {
+						//*TY2021/1/2
+					case OBJ_TAG:
+						break;
+						
             case OBJ_TYPE:
                 if( ERRORis_enabled( ERROR_select_loop ) ) {
                     TYPEcheck_select_cyclicity( ( Type )x );
                 }
+						//*TY2020/12/27 added emum case symbol ambiguity check
+						if( TYPEis_enumeration((Type)x) ) {
+							ENUMresolve_ambiguity( (Type)x );
+						}
                 break;
             case OBJ_VARIABLE:  /* really constants */
                 var = ( Variable )x;
@@ -1295,6 +1325,14 @@ void SCOPEresolve_subsupers( Scope scope ) {
                 t = ( Type )x;
                 TYPEresolve( &t );
                 break;
+						
+						//*TY2021/1/2
+						case OBJ_TAG:
+							TYPEresolve( &(((Type)x)->u.type->head) );
+							t = ((Type)x)->u.type->head;
+							assert( (t->u.type->head != NULL) || (t->u.type->body != NULL) );
+							break;					
+						
             default:
                 /* ignored everything else */
                 break;

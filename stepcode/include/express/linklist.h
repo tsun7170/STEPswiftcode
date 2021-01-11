@@ -111,6 +111,10 @@ extern SC_EXPRESS_EXPORT struct freelist_head LIST_fl;
        ( _ ## uniq ## p = _ ## uniq ## p->next ) != _ ## uniq ## l->mark; ) {   \
         ( elt ) = ( type ) ( ( _ ## uniq ## p )->data );
 
+//*TY2021/01/10 for aux access
+#define LIST_aux	LIST_aux_n(a)
+#define LIST_aux_n(uniq)	(( _ ## uniq ## p )->aux)
+
 #define LISTdo_links(list, link)                    \
    {Linked_List     __i = (list);                   \
     Link        link;                               \
@@ -147,7 +151,7 @@ extern SC_EXPRESS_EXPORT void LISTsort PROTO( ( Linked_List, int (*comp)(void*, 
 extern SC_EXPRESS_EXPORT void LISTswap PROTO( ( Link, Link ) );
 				 
 //*TY2020/09/04
-				 extern Link LINKadd_after( Link node );
+extern Link LINKadd_after( Link node );
 #define LINKadd_before( node )	LINKadd_after((node)->prev)
 #define LISTLINKadd_first( list )	LINKadd_after((list)->mark)
 #define LISTLINKadd_last( list )	LINKadd_before((list)->mark)				 
@@ -164,6 +168,10 @@ extern SC_EXPRESS_EXPORT Generic  LISTget_nth PROTO( ( Linked_List, int ) );
 extern SC_EXPRESS_EXPORT void LISTfree PROTO( ( Linked_List ) );
 extern SC_EXPRESS_EXPORT int  LISTget_length PROTO( ( Linked_List ) );
 extern SC_EXPRESS_EXPORT bool LISTis_empty( Linked_List list );	//*TY2020/09/04 renamed
+				 
+//*TY2021/01/10				 
+extern Generic  LISTadd_last_marking_aux ( Linked_List list, Generic item, Generic aux );
+extern Generic  LISTget_first_aux ( Linked_List list );
 
 //*TY2020/07/19
 extern SC_EXPRESS_EXPORT Generic  LISTremove_first_if PROTO( ( Linked_List ) );

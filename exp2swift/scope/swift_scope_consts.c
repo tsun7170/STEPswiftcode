@@ -38,7 +38,12 @@ static void SCOPEconst_swift(Scope current, char* access, Variable v, int level 
 	
 	
 	if( v->initializer ) {
-		raw( " = SDAI.UNWRAP(" );
+		if( TYPEis_logical(VARget_type(v)) ){
+			raw( " = SDAI.LOGICAL(" );
+		}
+		else{
+			raw( " = SDAI.UNWRAP(" );
+		}
 		aggressively_wrap();
 		int oldwrap = captureWrapIndent();
 //		EXPR_swift( NULL, v->initializer, NO_PAREN );

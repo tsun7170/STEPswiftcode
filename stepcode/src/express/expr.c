@@ -123,53 +123,53 @@ Expression EXPcreate( Type type ) {
     e->type = type;
     e->return_type = Type_Unknown;
 	//*TY2020/08/23
-	if(type==Type_Aggregate){
-		if(all_aggregate_initializers == NULL){
-			all_aggregate_initializers = LISTcreate();
-		}
-		LISTadd_last(all_aggregate_initializers, e);
-	}
+//	if(type==Type_Aggregate){
+//		if(all_aggregate_initializers == NULL){
+//			all_aggregate_initializers = LISTcreate();
+//		}
+//		LISTadd_last(all_aggregate_initializers, e);
+//	}
     return( e );
 }
 
 //*TY2020/08/23
-Linked_List all_aggregate_initializers = NULL;
-static void check_aggr(int expr_no, Expression expr, const char* message, bool printit) {
-	Expression prev = NULL;
-	bool prev_repeat = false;
-	if(printit && expr_no==37) printf("expr[%d]@%p\t u.list@%p\n",expr_no,expr,expr->u.list);
-	
-	int i = 1;
-	LISTdo(expr->u.list, arg, Expression) {
-		if(printit && expr_no==37){
-			printf("list[%d]:@%p\t u_tag=%d\t type@%p\t typebody(type:%d)@%p\n",i,arg,arg->u_tag,arg->type,arg->type->u.type->body->type,arg->type->u.type->body);
-		}
-		bool repeat = arg->type->u.type->body->flags.repeat;
-		if( repeat ) {
-			assert(prev != NULL);
-			assert(prev_repeat == false);
-			prev = NULL;
-			prev_repeat = false;
-		}
-		else {
-			prev = arg;
-			prev_repeat = repeat;
-		}
-		++i;
-	}LISTod;
-}
-void check_aggregate_initializers(const char* message, bool printit) {
-	if(all_aggregate_initializers == NULL) {
-		if(printit) printf("%s: no aggregate initializers defined\n", message);
-		return;
-	}
-	int count_of_initializers = LISTget_length(all_aggregate_initializers);
-	if(printit)printf("%s: count of aggregate initializers = %d\n", message, count_of_initializers);
-	int i = 0;
-	LISTdo(all_aggregate_initializers, expr, Expression) {
-		check_aggr(++i, expr, message,printit);
-	}LISTod;
-}
+//Linked_List all_aggregate_initializers = NULL;
+//static void check_aggr(int expr_no, Expression expr, const char* message, bool printit) {
+//	Expression prev = NULL;
+//	bool prev_repeat = false;
+//	if(printit && expr_no==37) printf("expr[%d]@%p\t u.list@%p\n",expr_no,expr,expr->u.list);
+//	
+//	int i = 1;
+//	LISTdo(expr->u.list, arg, Expression) {
+//		if(printit && expr_no==37){
+//			printf("list[%d]:@%p\t u_tag=%d\t type@%p\t typebody(type:%d)@%p\n",i,arg,arg->u_tag,arg->type,arg->type->u.type->body->type,arg->type->u.type->body);
+//		}
+//		bool repeat = arg->type->u.type->body->flags.repeat;
+//		if( repeat ) {
+//			assert(prev != NULL);
+//			assert(prev_repeat == false);
+//			prev = NULL;
+//			prev_repeat = false;
+//		}
+//		else {
+//			prev = arg;
+//			prev_repeat = repeat;
+//		}
+//		++i;
+//	}LISTod;
+//}
+//void check_aggregate_initializers(const char* message, bool printit) {
+//	if(all_aggregate_initializers == NULL) {
+//		if(printit) printf("%s: no aggregate initializers defined\n", message);
+//		return;
+//	}
+//	int count_of_initializers = LISTget_length(all_aggregate_initializers);
+//	if(printit)printf("%s: count of aggregate initializers = %d\n", message, count_of_initializers);
+//	int i = 0;
+//	LISTdo(all_aggregate_initializers, expr, Expression) {
+//		check_aggr(++i, expr, message,printit);
+//	}LISTod;
+//}
 
 
 /**
@@ -213,7 +213,7 @@ Expression  createLITERAL_E(void) {
 	return e;
 }
 Expression  createLITERAL_INFINITY(void) {
-	Expression e = EXPcreate_simple( Type_Integer );
+	Expression e = EXPcreate_simple( Type_Indeterminate );	//*TY2020/12/31 changed type
 	e->u.integer = INT_MAX;
 	e->u_tag = expr_is_integer;
 	resolved_all( e );
@@ -970,6 +970,13 @@ Type EXPresolve_op_int_div_like( Expression e, Scope s ) {
     return Type_Integer;
 }
 
+//*TY2021/01/11
+Type EXPresolve_op_repeat( Expression e, Scope s ) {
+		EXPresolve_op_default( e, s );
+		return e->e.op1->return_type;
+}
+
+
 //*TY2020/12/03
 static Type EXPresolve_operand_aggregate_type(Expression op1, Type op2type) {
 	Type op1type = op1->return_type;
@@ -1136,6 +1143,7 @@ void EXPop_init() {
     EXPop_create( OP_TIMES, "*",      EXPresolve_op_plus_like );
     EXPop_create( OP_XOR, "XOR",      EXPresolve_op_logical );
     EXPop_create( OP_UNKNOWN, "UNKNOWN OP",   EXPresolve_op_unknown );
+	EXPop_create( OP_REPEAT, ":",   EXPresolve_op_repeat );	//*TY2021/01/11
 }
 
 

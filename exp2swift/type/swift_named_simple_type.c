@@ -39,6 +39,10 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 		raw("\n");
 		indent_swift(level2);
 		raw("public typealias FundamentalType = Supertype.FundamentalType\n");
+		indent_swift(level2);
+		raw("public typealias Value = Supertype.Value\n");
+		indent_swift(level2);
+		raw("public typealias SwiftType = Supertype.SwiftType\n");
 
 		indent_swift(level2);
 		raw("public static var typeName: String = ");
@@ -51,7 +55,7 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 		
 		{	int level3 = level2+nestingIndent_swift;
 			indent_swift(level3);
-			raw( "rep = Supertype(fundamental)\n" );
+			raw( "rep = Supertype(fundamental: fundamental)\n" );
 		}
 		
 		indent_swift(level2);
@@ -63,23 +67,25 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 }
 
 void namedSimpleTypeExtension_swift( Schema schema, Type type, int level) {
-	char buf[BUFSIZ];
+	char typebuf[BUFSIZ];
+	const char* typename = TYPE_swiftName(type,type->superscope,typebuf);
+
+	char schemabuf[BUFSIZ];
+	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);
+
+//	char buf[BUFSIZ];
 
 	raw("\n\n//MARK: - DEFINED TYPE HIERARCHY\n");
 
 	indent_swift(level);
-	raw( "public protocol %s__", SCHEMA_swiftName(schema, buf));
-	raw( "%s__type: ", TYPE_swiftName(type,type->superscope,buf));
-	wrap("SDAI__");
-	raw( "%s__subtype {}\n\n", builtinTYPE_body_swiftname(type) );
+	raw( "public protocol %s__%s__type: ", schemaname, typename);
+	wrap("SDAI__%s__subtype {}\n\n", builtinTYPE_body_swiftname(type) );
 	 
 	indent_swift(level);
-	raw( "public protocol %s__", SCHEMA_swiftName(schema, buf));
-	raw( "%s__subtype: ", TYPE_swiftName(type,type->superscope,buf));
-	wrap("%s__", SCHEMA_swiftName(schema, buf));
-	raw( "%s__type\n", TYPE_swiftName(type,type->superscope,buf));
-	indent_swift(level);
-	raw( "where Supertype == %s\n", TYPE_swiftName(type,schema->superscope,buf));
+	raw( "public protocol %s__%s__subtype: ", schemaname, typename);
+	wrap("%s__%s__type\n", schemaname, typename);
+//	indent_swift(level);
+//	raw( "where Supertype == %s\n", TYPE_swiftName(type,schema->superscope,buf));
 	indent_swift(level);
 	raw( "{}\n");
 }

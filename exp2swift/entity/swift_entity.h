@@ -13,17 +13,17 @@
 #include "../express/expbasic.h"
 #include "../express/express.h"
 
-#define NO_PREFIX ""
-#define NO_POSTFIX ""
-
-extern const char* ENTITY_swiftName( Entity e, const char* prefix, const char* postfix, Scope current, char buf[BUFSIZ] );
+extern const char* ENTITY_swiftName( Entity e, Scope current, char buf[BUFSIZ] );
+extern const char* as_entitySwiftName_n( const char* symbol_name, char* buf, int bufsize );
 extern char 				ENTITY_swiftNameInitial( Entity e);
 extern const char* ENTITY_canonicalName( Entity e, char buf[BUFSIZ] );
 extern const char* ENTITY_swiftProtocolName( Entity e, char buf[BUFSIZ]);
 extern const char* partialEntity_swiftName( Entity e, char buf[BUFSIZ] );
 extern const char* superEntity_swiftPrefix;
+extern const char* subEntity_swiftPrefix;
 
 extern const char* attribute_swiftName( Variable attr, char[BUFSIZ] );
+extern const char* as_attributeSwiftName_n( const char* symbol_name, char* buf, int bufsize );
 extern const char* partialEntityAttribute_swiftName( Variable attr, char buf[BUFSIZ] );
 extern const char* dynamicAttribute_swiftProtocolName( Variable original, char buf[BUFSIZ] );
 extern bool attribute_need_observer( Variable attr ); 

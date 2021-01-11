@@ -129,12 +129,14 @@ void enumTypeExtension_swift(Schema schema, Type type, int level) {
 	
 	indent_swift(level);
 	raw( "public protocol %s__%s__subtype: ", schemaname, typename );
-	wrap("%s__%s__type, SDAIDefinedType ", schemaname, typename );
-	force_wrap();
+	wrap("%s__%s__type, SDAIDefinedType\n", schemaname, typename );
 	indent_swift(level);
-	raw("where ");
-//	int oldindent = captureWrapIndent();
-	raw("Supertype == %s.%s\n", schemaname, typename);
+	wrap("where Supertype: %s__%s__type\n", schemaname, typename);
+//	force_wrap();
+//	indent_swift(level);
+//	raw("where ");
+////	int oldindent = captureWrapIndent();
+//	raw("Supertype == %s.%s\n", schemaname, typename);
 //	force_wrap();
 //	wrap( "Supertype.FundamentalType == %s.%s\n", schemaname, typename);
 //	restoreWrapIndent(oldindent);

@@ -92,65 +92,178 @@ static void encodedStringLiteral_swift(const char* instring ) {
 
 //MARK: - aggregation bounds
 void EXPRbounds_swift(Scope SELF, TypeBody tb, SwiftOutCommentOption in_comment ) {
-    if( !tb->upper ) {
-        return;
-    }
-
-	if( in_comment != WO_COMMENT ){
+	if( !tb->upper ) return;
+	if( in_comment == WO_COMMENT ) return;
+	
 		wrap( "%s[", in_comment==YES_IN_COMMENT ? "" : "/*" );
 		EXPR_swift(SELF, tb->lower, Type_Integer, YES_PAREN );
 		raw( ":" );
 		EXPR_swift(SELF, tb->upper, Type_Integer, YES_PAREN );
 		raw( "]%s ", in_comment==YES_IN_COMMENT ? "" : "*/" );
-	}
 }
 
 //MARK: - special operators
 static void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * oe, bool can_wrap ) {
-	EXPR__swift( SELF, oe->op2, oe->op2->return_type, NO_PAREN, oe->op_code, can_wrap );	// should be an entity reference
+//	if( TYPEis_entity(oe->op2->type) ){
+//		char buf[BUFSIZ];
+//		wrap_if(can_wrap, TYPE_swiftName(oe->op2->type, SELF, buf));
+//	}
+//	else 
+	{
+//		assert( TYPEis_identifier(oe->op2->type) );
+		// need to resolve expression type
+		char buf[BUFSIZ];
+		Entity ent = SCOPEfind(SELF, (char*)canonical_dictName(oe->op2->symbol.name, buf), SCOPE_FIND_ENTITY);
+		if( ent != NULL ){
+			wrap_if(can_wrap, ENTITY_swiftName(ent, SELF, buf));
+		}
+		else {
+			// symbol not found; probably error in source
+			EXPR__swift( SELF, oe->op2, oe->op2->return_type, NO_PAREN, oe->op_code, NO_WRAP );	// should be an entity reference
+		}
+	}
+	
 	raw("(");
 	EXPR__swift( SELF, oe->op1, oe->op1->return_type, NO_PAREN, oe->op_code, YES_WRAP );
 	raw(")");
 }
 
 static void EXPRopDot_swift( Scope SELF, struct Op_Subexpression * oe, bool can_wrap ) {
-	if( !EXPRresult_is_optional(oe->op1) ) {
-		EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, can_wrap );
-	}
-	else {
-		EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, can_wrap );
-		raw("?");
+	switch( EXPRresult_is_optional(oe->op1, CHECK_SHALLOW) ){
+		case no_optional:
+			EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, can_wrap );
+			break;
+		case yes_optional:
+			EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, can_wrap );
+			raw("?");
+			break;
+		case unknown:
+			raw("SDAI.FORCE_OPTIONAL(");
+			EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, can_wrap );
+			raw(")?");			
+			break;
 	}
 	wrap_if(YES_WRAP, ".");
 	EXPR__swift( NULL, oe->op2, oe->op2->return_type, YES_PAREN, oe->op_code, NO_WRAP );
 }
 
-//MARK: TYPEOF()
+//MARK: USEDIN()
+static void emit_usedin_call( Scope SELF, Expression e, bool can_wrap ){
+	wrap_if(can_wrap, "SDAI.USEDIN(" );
+	Expression arg1 = LISTget_first(e->u.funcall.list);
+	Expression arg2 = LISTget_second(e->u.funcall.list);
+	
+	wrap("T: ");
+	EXPRassignment_rhs_swift(SELF, arg1, Type_Generic, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+
+	if( (arg2 != NULL) && (strlen(arg2->symbol.name) > 0) ){
+		raw(", ");
+		
+		assert( TYPEis_string(arg2->type) );
+		char* attrsep = strrchr(arg2->symbol.name, '.');
+		assert( attrsep != NULL );
+		int symlen = (int)(attrsep - arg2->symbol.name);
+		assert( symlen < BUFSIZ );
+		
+		char buf[BUFSIZ];
+		canonical_dictName_n(arg2->symbol.name, buf, symlen);
+		char* entsep = strrchr(buf, '.');
+		assert(entsep != NULL);
+		Entity ent = SCOPEfind(SELF, entsep+1, SCOPE_FIND_ENTITY);
+		if( ent != NULL ){
+			wrap("ENTITY: %s.self, ", ENTITY_swiftName(ent, SELF, buf));
+		}
+		else {
+			// entity not found; probably error in source
+			wrap("ENTITY: %s.self, ", canonical_swiftName_n(arg2->symbol.name, buf, symlen));
+		}
+		
+		wrap("ATTR: ");
+		simpleStringLiteral_swift(attrsep+1);
+	}
+	
+	raw(")");
+}
+
+//MARK: CONTAINS(), TYPEOF()
 static void EXPRopIn_swift( Scope SELF, struct Op_Subexpression * oe, bool can_wrap ) {
 	if( TYPEis(oe->op1->type)==string_ && TYPEis(oe->op2->type)==funcall_ && oe->op2->u.funcall.function==func_typeof ) {
+		// TYPEOF( IS:)
 		Expression arg = LISTget_first(oe->op2->u.funcall.list);
 		wrap_if(can_wrap, "SDAI.TYPEOF(");
 		EXPR_swift( SELF, arg, arg->return_type, NO_PAREN );
 		raw(", ");
 		char buf[BUFSIZ];
 		assert(oe->op1->symbol.name != NULL);
-		wrap_if(YES_WRAP, "IS: %s.self", canonical_swiftName(oe->op1->symbol.name, buf));
-//		EXPR__swift( SELF, oe->op1, Type_String, NO_PAREN, oe->op_code, YES_WRAP );
+		char* sep = NULL;
+		if( (sep = strchr(oe->op1->symbol.name, '.')) != NULL ){
+			Generic x = SCOPEfind(SELF, (char*)canonical_dictName(sep+1, buf), SCOPE_FIND_TYPE | SCOPE_FIND_ENTITY);
+			if( x != NULL ){
+				if( DICT_type == OBJ_TYPE ){
+					wrap_if(YES_WRAP, "IS: %s.self", TYPE_swiftName((Type)x, SELF, buf) );
+				}
+				else {
+					assert(DICT_type == OBJ_ENTITY);
+					wrap_if(YES_WRAP, "IS: %s.self", ENTITY_swiftName((Entity)x, SELF, buf) );
+				}
+				
+			}
+			else {
+				// unknown type/entity; probably error in source
+				wrap_if(YES_WRAP, "IS: %s.self", canonical_swiftName(oe->op1->symbol.name, buf));
+			}
+		}
+		else {
+			wrap_if(YES_WRAP, "IS: SDAI.%s.self", canonical_swiftName(oe->op1->symbol.name, buf));
+		}
 		raw(")");
 	}
 	else {
+		// .CONTAINS()
+//		switch (EXPRresult_is_optional(oe->op2)) {
+//			case no_optional:
+//				EXPR__swift( SELF, oe->op2, oe->op2->return_type, YES_PAREN, oe->op_code, can_wrap );
+//				break;
+//			case yes_optional:
+//				EXPR__swift( SELF, oe->op2, oe->op2->return_type, YES_PAREN, oe->op_code, can_wrap );
+//				raw("?");
+//				break;
+//			case unknown:
+//				raw("SDAI.FORCE_OPTIONAL(");
+//				EXPR__swift( SELF, oe->op2, oe->op2->return_type, YES_PAREN, oe->op_code, YES_WRAP );
+//				raw(")?");
+//				break;
+//		}
+//		wrap(".CONTAINS(");
+//		EXPR__swift( SELF, oe->op1, TYPEget_base_type(oe->op2->return_type), NO_PAREN, oe->op_code, YES_WRAP );
+//		raw(")");
+
+		wrap_if(can_wrap, "SDAI.AGGREGATE(");
 		EXPR__swift( SELF, oe->op2, oe->op2->return_type, YES_PAREN, oe->op_code, YES_WRAP );
-		if( EXPRresult_is_optional(oe->op2) ) raw("?");
-		positively_wrap();
-		wrap_if(YES_WRAP, ".CONTAINS(");
-		EXPR__swift( SELF, oe->op1, TYPEget_base_type(oe->op2->return_type), NO_PAREN, oe->op_code, YES_WRAP );
+		raw(", ");
+		wrap("CONTAINS: ");
+		EXPRassignment_rhs_swift(SELF, oe->op1, TYPEget_base_type(oe->op2->return_type), NO_PAREN, oe->op_code, YES_WRAP);
+//		EXPR__swift( SELF, oe->op1, TYPEget_base_type(oe->op2->return_type), NO_PAREN, oe->op_code, YES_WRAP );
 		raw(")");		
 	}
 }
 
+//MARK: ISLIKE()
 static void EXPRopLike_swift( Scope SELF, struct Op_Subexpression * oe, bool can_wrap ) {
-	EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, YES_WRAP );
-	if( EXPRresult_is_optional(oe->op1) ) raw("?");
+	switch (EXPRresult_is_optional(oe->op1, CHECK_DEEP)) {
+		case no_optional:
+			EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, YES_WRAP );
+			break;
+		case yes_optional:
+			EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, YES_WRAP );
+			raw("?");
+			break;
+		case unknown:
+			raw("SDAI.FORCE_OPTIONAL(");
+			EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, YES_WRAP );
+			raw(")?");
+			break;
+	}
 	wrap_if(YES_WRAP, ".ISLIKE( PATTERN: ");
 	EXPR__swift( SELF, oe->op2, Type_String, NO_PAREN, oe->op_code, YES_WRAP );
 	raw(" )");
@@ -177,7 +290,7 @@ static void EXPRrepeat_swift( Scope SELF, Expression val, Expression count, Type
 }
 
 //MARK: - expression return type check
-static bool operator_returns_optional(struct Op_Subexpression * oe) {
+static type_optionality operator_returns_optional(struct Op_Subexpression * oe, bool deep) {
 	switch( oe->op_code ) {
 			//MARK: - Arithmetic Op
 		case OP_NEGATE:
@@ -188,7 +301,7 @@ static bool operator_returns_optional(struct Op_Subexpression * oe) {
 		case OP_EXP:
 		case OP_DIV:
 		case OP_MOD:
-			return true;
+			return yes_optional;
 			
 			//MARK: - Relational Op
 		case OP_EQUAL:
@@ -201,7 +314,7 @@ static bool operator_returns_optional(struct Op_Subexpression * oe) {
 		case OP_INST_NOT_EQUAL:
 		case OP_IN:
 		case OP_LIKE:
-			return false;
+			return yes_optional;
 			
 			
 			//MARK: - Logical Op
@@ -209,26 +322,41 @@ static bool operator_returns_optional(struct Op_Subexpression * oe) {
 		case OP_AND:
 		case OP_OR:
 		case OP_XOR:
-			return false;
+			return yes_optional;
 			
 			//MARK: - String Op
 		case OP_SUBCOMPONENT:
-			return true;
+			return yes_optional;
 			
 			//MARK: - Aggregate Op
 		case OP_ARRAY_ELEMENT:
-			return true;
+			return yes_optional;
 			
 			//MARK: - Reference Op
 		case OP_DOT:
-			return EXPRresult_is_optional(oe->op2);
+			if( deep ){
+				switch (EXPRresult_is_optional(oe->op1, deep)) {
+					case no_optional:
+						return EXPRresult_is_optional(oe->op2, deep);
+						
+					case yes_optional:
+						return yes_optional;
+						
+					case unknown:
+						if( EXPRresult_is_optional(oe->op2, deep) == yes_optional ) return yes_optional;
+						return unknown;
+				}
+			}
+			else {
+				return EXPRresult_is_optional(oe->op2, deep);
+			}
 			
 		case OP_GROUP:
-			return true;
+			return yes_optional;
 			
 			//MARK: - Complex Entity Constructor
 		case OP_CONCAT:
-			return true;
+			return yes_optional;
 			
 			//case OP_ANDOR:
 			
@@ -238,48 +366,50 @@ static bool operator_returns_optional(struct Op_Subexpression * oe) {
 	}
 }
 
-bool EXPRresult_is_optional(Expression e) {
+//MARK: - optionality check
+type_optionality EXPRresult_is_optional(Expression e, bool deep) {
 	switch( TYPEis( e->type ) ) {
+		case indeterminate_:
 		case integer_:
 		case real_:
 		case binary_:
 		case logical_:
 		case boolean_:
 		case string_:
-			return false;
+			return no_optional;
 			
 		case attribute_:
-			return VARis_optional(e->u.variable);
+			return VARis_optional(e->u.variable)? yes_optional : no_optional;
 			
 		case entity_:
-			return false;
+			return no_optional;
 			
 		case identifier_:
 			if( e->u_tag == expr_is_variable ){
-				return VARis_optional(e->u.variable);
+				return VARis_optional(e->u.variable)? yes_optional : no_optional;
 			}
-			return true;	// attribute of generic entity
+			return unknown;	// attribute of generic entity
 			
 		case enumeration_:
-			return false;
+			return no_optional;
 			
 		case query_:
-			return false;
+			return no_optional;
 			
 		case self_:
-			return false;	
+			return no_optional;	
 			
 		case funcall_:
-			if( e->u.funcall.function->u_tag != scope_is_func ) return false;
-			if( TYPEis_boolean(e->u.funcall.function->u.func->return_type) ) return false;
-			if( TYPEis_logical(e->u.funcall.function->u.func->return_type) ) return false;
-			return true;
+			if( e->u.funcall.function->u_tag != scope_is_func ) return no_optional;
+			if( TYPEis_boolean(e->u.funcall.function->u.func->return_type) ) return no_optional;
+			if( TYPEis_logical(e->u.funcall.function->u.func->return_type) ) return no_optional;
+			return yes_optional;
 			
 		case op_:
-			return operator_returns_optional(&e->e);
+			return operator_returns_optional(&e->e, deep);
 			
 		case aggregate_:
-			return false;
+			return no_optional;
 
 		default:
 			fprintf( stderr, "%s:%d: ERROR - unknown expression, type %d", e->symbol.filename, e->symbol.line, TYPEis( e->type ) );
@@ -287,30 +417,6 @@ bool EXPRresult_is_optional(Expression e) {
 	}
 }
 
-// special func calls
-static void emit_usedin_call( Scope SELF, Expression e, bool can_wrap ){
-	wrap_if(can_wrap, "SDAI.USEDIN(" );
-	Expression arg1 = LISTget_first(e->u.funcall.list);
-	Expression arg2 = LISTget_second(e->u.funcall.list);
-	
-	wrap("T: ");
-	EXPRassignment_rhs_swift(SELF, arg1, Type_Generic, NO_PAREN, OP_UNKNOWN, YES_WRAP);
-
-	if( (arg2 != NULL) && (strlen(arg2->symbol.name) > 0) ){
-		raw(", ");
-		assert( TYPEis_string(arg2->type) );
-		char* sep = strrchr(arg2->symbol.name, '.');
-		assert( sep != NULL );
-		char buf[BUFSIZ];
-		int symlen = (int)(sep - arg2->symbol.name);
-		assert( symlen < BUFSIZ );
-		wrap("ENTITY: %s.self, ", canonical_swiftName_n(arg2->symbol.name, buf, symlen));
-		wrap("ATTR: ");
-		simpleStringLiteral_swift(sep+1);
-	}
-	
-	raw(")");
-}
 
 //MARK: - main entry point
 /**
@@ -323,9 +429,15 @@ void EXPR__swift( Scope SELF, Expression e, Type target_type, bool paren, unsign
 //	int i;  /* trusty temporary */
 		
 	switch( TYPEis( e->type ) ) {
+			//MARK: indeterminate_
+		case indeterminate_:
+			wrap_if(can_wrap, "nil" );
+			break;
+			
 			//MARK: integer_
 		case integer_:
 			if( isLITERAL_INFINITY(e) ) {	//*TY2020/08/26
+//				wrap_if(can_wrap, "SDAI.INDETERMINATE" );
 				wrap_if(can_wrap, "nil" );
 			} else {
 				wrap_if(can_wrap, "%d", e->u.integer );
@@ -376,9 +488,9 @@ void EXPR__swift( Scope SELF, Expression e, Type target_type, bool paren, unsign
 			
 			//MARK: attribute_, entity_, identifier_, enumeration_
 		case attribute_:
-		case entity_:
+//		case entity_:
 		case identifier_:
-		case enumeration_:			
+//		case enumeration_:			
 			if( e->u_tag == expr_is_variable ) {
 				Variable v = e->u.variable;
 				if( v->flags.alias ) {
@@ -390,21 +502,54 @@ void EXPR__swift( Scope SELF, Expression e, Type target_type, bool paren, unsign
 					raw(")");
 					break;
 				}
+				if(VARis_redeclaring(v)){
+					v = v->original_attribute;
+				}
 				Entity ent = v->defined_in;
 				if( ENTITYis_a(SELF, ent) ) {
 					wrap_if(can_wrap, "SELF.");
+					can_wrap = false;
 				}
+//				else {
+//					ENTITYis_a(SELF, ent); // for debug
+//				}
 			}
 		{
 			char buf[BUFSIZ];
-			raw( "%s", canonical_swiftName(e->symbol.name,buf) );
+			wrap_if(can_wrap, canonical_swiftName(e->symbol.name,buf) );
+		}
+			break;
+
+		case enumeration_:			
+		case entity_:
+		{
+			char buf[BUFSIZ];
+			if( (e->type->symbol.name != NULL) && (strcmp(e->symbol.name, e->type->symbol.name) == 0) ){
+				wrap_if(can_wrap, TYPE_swiftName(e->type, SELF, buf));
+			}
+			else {
+				// probably enum case label
+				wrap_if(can_wrap, canonical_swiftName(e->symbol.name,buf) );
+			}
 		}
 			break;
 			
 			//MARK: query_
 		case query_:
-			EXPR__swift( SELF, e->u.query->aggregate, e->u.query->aggregate->return_type, YES_PAREN, OP_UNKNOWN, can_wrap );
-			if( EXPRresult_is_optional(e->u.query->aggregate) ) raw("?");
+			switch(EXPRresult_is_optional(e->u.query->aggregate, CHECK_SHALLOW)) {
+				case no_optional:
+					EXPR__swift( SELF, e->u.query->aggregate, e->u.query->aggregate->return_type, YES_PAREN, OP_UNKNOWN, can_wrap );
+					break;
+				case yes_optional:
+					EXPR__swift( SELF, e->u.query->aggregate, e->u.query->aggregate->return_type, YES_PAREN, OP_UNKNOWN, can_wrap );
+					raw("?");
+					break;
+				case unknown:
+					raw("SDAI.FORCE_OPTIONAL(");
+					EXPR__swift( SELF, e->u.query->aggregate, e->u.query->aggregate->return_type, YES_PAREN, OP_UNKNOWN, can_wrap );
+					raw(")?");					
+					break;
+			}
 		{
 			char buf[BUFSIZ];
 			aggressively_wrap();
@@ -477,6 +622,16 @@ void EXPR__swift( Scope SELF, Expression e, Type target_type, bool paren, unsign
 						raw("&");
 						EXPR_swift( SELF, arg, arg->return_type, NO_PAREN );
 					}
+					else if( !VARis_optional(formal_param) ) {
+						if( TYPEis_logical(VARget_type(formal_param)) ){
+							raw("SDAI.LOGICAL(");
+						}
+						else{
+							raw("SDAI.UNWRAP(");
+						}
+						EXPRassignment_rhs_swift(SELF, arg, formal_param->type, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+						raw(")");
+					}
 					else {
 						EXPRassignment_rhs_swift(SELF, arg, formal_param->type, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 					}
@@ -510,62 +665,74 @@ void EXPR__swift( Scope SELF, Expression e, Type target_type, bool paren, unsign
 			
 			wrap_if(can_wrap, "[" );
 			char* sep = "";
-			Expression prev = NULL;
+//			Expression prev = NULL;
 			
 			LISTdo( e->u.list, arg, Expression ) {
 				raw(sep);
-				positively_wrap();
+				aggressively_wrap();
 				
-				bool repeat = arg->type->u.type->body->flags.repeat;
-				/* if repeat is true, the previous Expression repeats and this one is the count */
+//				bool repeat = arg->type->u.type->body->flags.repeat;
+//				/* if repeat is true, the previous Expression repeats and this one is the count */
 				
-				if( repeat ) {
-					EXPRrepeat_swift(SELF, prev, arg, basetype);
-					sep = ", ";
-					prev = NULL;
-				}
-				else {
-					if(prev != NULL) {
-						wrap_if(can_wrap, "SDAI.AIE(");
-						if( prev->return_type == basetype ){
-							EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
-						}
-						else if( TYPEis_runtime(basetype) ){
-							raw("/*runtime*/");
-							EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
-						}
-						else {
-							TYPE_head_swift(SELF, basetype, WO_COMMENT);
-							raw("(");
-							EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
-							raw(")");
-						}
-						raw(")");
-						sep = ", ";
-					}
-					prev = arg;
-				}
-			} LISTod
-			
-			if(prev != NULL) {
-				raw(sep);
-				positively_wrap();
-				wrap_if(can_wrap, "SDAI.AIE(");
-				if( prev->return_type == basetype ){
-					EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
-				}
-				else if( TYPEis_runtime(basetype) ){
-					raw("/*runtime*/");
-					EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
-				}
-				else {
-					TYPE_head_swift(SELF, basetype, WO_COMMENT);
-					raw("(");
-					EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+//				if( repeat ) {
+//					EXPRrepeat_swift(SELF, prev, arg, basetype);
+//					sep = ", ";
+//					prev = NULL;
+//				}
+//				else {
+//					if(prev != NULL) {
+				wrap_if(YES_WRAP,"SDAI.AIE(");
+				if( TYPEis(arg->type) == op_ && ARY_EXPget_operator(arg) == OP_REPEAT ){
+//					EXPRrepeat_swift(SELF, ARY_EXPget_operand(arg), BIN_EXPget_operand(arg), basetype);
+					EXPRassignment_rhs_swift(SELF, ARY_EXPget_operand(arg), basetype, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+					raw(", ");
+					wrap_if(YES_WRAP,"repeat:Int(");
+					EXPR__swift( SELF, BIN_EXPget_operand(arg), Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP );
 					raw(")");
 				}
+				else{
+					EXPRassignment_rhs_swift(SELF, arg, basetype, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+
+//					if( arg->return_type == basetype ){
+//						EXPR__swift( SELF, arg, arg->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+//					}
+//					else if( TYPEis_runtime(basetype) ){
+//						raw("/*runtime*/");
+//						EXPR__swift( SELF, arg, arg->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+//					}
+//					else {
+//						TYPE_head_swift(SELF, basetype, WO_COMMENT);
+//						raw("(");
+//						EXPR__swift( SELF, arg, arg->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+//						raw(")");
+//					}
+				}
 				raw(")");
-			}
+				sep = ", ";
+//					}
+//					prev = arg;
+//				}
+			} LISTod
+			
+//			if(prev != NULL) {
+//				raw(sep);
+//				positively_wrap();
+//				wrap_if(can_wrap, "SDAI.AIE(");
+//				if( prev->return_type == basetype ){
+//					EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+//				}
+//				else if( TYPEis_runtime(basetype) ){
+//					raw("/*runtime*/");
+//					EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+//				}
+//				else {
+//					TYPE_head_swift(SELF, basetype, WO_COMMENT);
+//					raw("(");
+//					EXPR__swift( SELF, prev, prev->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP );
+//					raw(")");
+//				}
+//				raw(")");
+//			}
 			raw( "]" );
 		}
 			break;
@@ -737,9 +904,19 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,
 		//MARK: - Aggregate Op
 			//MARK:OP_ARRAY_ELEMENT
 			case OP_ARRAY_ELEMENT:
-				EXPR__swift( SELF, oe->op1,oe->op1->return_type, YES_PAREN, OP_UNKNOWN, can_wrap );
-				if( EXPRresult_is_optional(oe->op1) ){
-					raw("?");
+				switch (EXPRresult_is_optional(oe->op1, CHECK_SHALLOW)) {
+					case no_optional:
+						EXPR__swift( SELF, oe->op1,oe->op1->return_type, YES_PAREN, OP_UNKNOWN, can_wrap );
+						break;
+					case yes_optional:
+						EXPR__swift( SELF, oe->op1,oe->op1->return_type, YES_PAREN, OP_UNKNOWN, can_wrap );
+						raw("?");
+						break;
+					case unknown:
+						raw("SDAI.FORCE_OPTIONAL(");
+						EXPR__swift( SELF, oe->op1,oe->op1->return_type, YES_PAREN, OP_UNKNOWN, can_wrap );
+						raw(")?");
+						break;
 				}
 				raw("[");
 				EXPR__swift( SELF, oe->op2, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP );
@@ -779,12 +956,13 @@ void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * oe, cha
 										bool paren, unsigned int previous_op, bool can_wrap ) {
 	bool can_wrap2 = YES_WRAP;
 	if( oe->op_code == OP_DOT ) {
-		can_wrap = YES_WRAP;
+//		can_wrap = YES_WRAP;
 		can_wrap2 = NO_WRAP;
 	}
 	
 	if( paren && ( oe->op_code != previous_op ) ) {
 		wrap_if(can_wrap, "( " );
+		can_wrap = YES_WRAP;
 	}
 	
 	//OPERAND1
@@ -793,7 +971,22 @@ void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * oe, cha
 	TYPE_head_swift(SELF1, oe->op1->return_type, YES_IN_COMMENT);
 	raw("*/");
 #endif
-	EXPRassignment_rhs_swift(SELF1, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, can_wrap);
+	if( TYPEis_AGGREGATE(oe->op1->type) ){
+		EXPRassignment_rhs_swift(SELF1, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, can_wrap);
+	}
+	else{
+		switch ( EXPRresult_is_optional(oe->op1, CHECK_DEEP) ) {
+			case yes_optional:
+				EXPRassignment_rhs_swift(SELF1, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, can_wrap);
+				break;
+			case no_optional:				
+			case unknown:
+				raw("SDAI.FORCE_OPTIONAL(");
+				EXPRassignment_rhs_swift(SELF1, oe->op1, oe->op1->return_type, NO_PAREN, oe->op_code, can_wrap);
+				raw(")");
+				break;
+		}
+	}
 
 	if( oe->op_code == OP_DOT ) positively_wrap();
 	
@@ -818,7 +1011,23 @@ void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * oe, cha
 	TYPE_head_swift(SELF2, oe->op2->return_type, YES_IN_COMMENT);
 	raw("*/");
 #endif
-	EXPRassignment_rhs_swift(SELF2, oe->op2, oe->op2->return_type, YES_PAREN, oe->op_code, can_wrap2);
+	if( TYPEis_AGGREGATE(oe->op2->type) ){
+		EXPRassignment_rhs_swift(SELF2, oe->op2, oe->op2->return_type, YES_PAREN, oe->op_code, can_wrap2);
+}
+	else {
+		switch ( EXPRresult_is_optional(oe->op2, CHECK_DEEP) ) {
+			case yes_optional:
+				EXPRassignment_rhs_swift(SELF2, oe->op2, oe->op2->return_type, YES_PAREN, oe->op_code, can_wrap2);
+				break;
+			case no_optional:				
+			case unknown:
+				raw("SDAI.FORCE_OPTIONAL(");
+				EXPRassignment_rhs_swift(SELF2, oe->op2, oe->op2->return_type, NO_PAREN, oe->op_code, can_wrap2);
+				raw(")");
+				break;
+		}
+	}
+
 	if( paren && ( oe->op_code != previous_op ) ) {
 		raw( " )" );
 	}
@@ -840,31 +1049,111 @@ static void EXPRop1_swift( Scope SELF, struct Op_Subexpression * oe, char * opco
 }
 
 static void aggregate_init( Scope SELF, Expression rhs, Type lhsType ) {
-	if( !isLITERAL_INFINITY(rhs) ){
+	TypeBody lhs_tb = TYPEget_body( lhsType );
+
+//	if( !TYPEcontains_generic(lhsType) ) {
+//		if( isLITERAL_INFINITY(rhs) ) {
+//			raw("(nil as ");
+//			TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+//			raw("?)");
+//			return;
+//		}
+//
+//		if( TYPEis_AGGREGATE(rhs->return_type) ) {
+//			TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+//			raw("(");
+//			if( lhs_tb->upper ){
+//				wrap("bound1: ");
+//				EXPRassignment_rhs_swift(SELF, lhs_tb->lower, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+//				raw(", ");
+//				wrap("bound2: ");
+//				EXPRassignment_rhs_swift(SELF, lhs_tb->upper, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+//				raw(", ");
+//				aggressively_wrap();
+//			}
+//			EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
+//			raw(")");
+//			return;
+//		}
+//		
+//		if( TYPEs_are_equal(lhsType, rhs->return_type) ){
+//			EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
+//			return;
+//		}
+//		
+//		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+//		raw("(");
+//		if( lhs_tb->upper ){
+//			wrap("bound1: ");
+//			EXPRassignment_rhs_swift(SELF, lhs_tb->lower, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+//			raw(", ");
+//			wrap("bound2: ");
+//			EXPRassignment_rhs_swift(SELF, lhs_tb->upper, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+//			raw(", ");
+//			aggressively_wrap();
+//		}
+//		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
+//		raw(")");
+//		return;
+//	}
+
+	if( TYPEis_AGGREGATE(lhsType) && lhs_tb->tag == NULL ){
+		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
+		return;
+	}
+	
+	if( isLITERAL_INFINITY(rhs) ) {
+		raw("(nil as ");
+		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+		raw("?)");
+		return;
+	}
+
+	if( TYPEis_AGGREGATE(rhs->return_type) ) {
 		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
 		raw("(");
-
-		TypeBody typebody = TYPEget_body( lhsType );
-		if( typebody->upper ){
+		if( lhs_tb->upper ){
 			wrap("bound1: ");
-			EXPR_swift(SELF, typebody->lower, Type_Integer, NO_PAREN);
+			EXPRassignment_rhs_swift(SELF, lhs_tb->lower, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw(", ");
 			wrap("bound2: ");
-			EXPR_swift(SELF, typebody->upper, Type_Integer, NO_PAREN);
+			EXPRassignment_rhs_swift(SELF, lhs_tb->upper, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw(", ");
+			aggressively_wrap();
 		}
 		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
-
 		raw(")");
+		return;
 	}
-	else {		
+
+	if( TYPEs_are_equal(lhsType, rhs->return_type) ){
 		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
+		return;
 	}
+	
+	TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+	raw("(");
+	if( lhs_tb->upper ){
+		wrap("bound1: ");
+		EXPRassignment_rhs_swift(SELF, lhs_tb->lower, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+		raw(", ");
+		wrap("bound2: ");
+		EXPRassignment_rhs_swift(SELF, lhs_tb->upper, Type_Integer, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+		raw(", ");
+		aggressively_wrap();
+	}
+	EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
+	raw(")");
 }
 
 void EXPRassignment_rhs_swift( Scope SELF, Expression rhs, Type lhsType, bool paren, unsigned int previous_op, bool can_wrap) {
 	if( lhsType == NULL ) {
-//		raw("/*unknown lhs type*/");
+		//		raw("/*unknown lhs type*/");
+		EXPR__swift(SELF, rhs, rhs->return_type, paren, previous_op, can_wrap);
+		return;
+	}
+	if( TYPEis_runtime(lhsType) ){
+		raw("/*runtime*/");
 		EXPR__swift(SELF, rhs, rhs->return_type, paren, previous_op, can_wrap);
 		return;
 	}
@@ -875,12 +1164,19 @@ void EXPRassignment_rhs_swift( Scope SELF, Expression rhs, Type lhsType, bool pa
 		return;
 	}
 	
-	if( TYPEs_are_equal(rhs->return_type, lhsType) ) {
+	if( isLITERAL_INFINITY(rhs) ) {
+		raw("(nil as ");
+		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+		raw("?)");
+		return;
+	}
+	
+	if( TYPEs_are_equal(lhsType, rhs->return_type) ) {
 //		raw("/*equal lhs type*/");
-		if( TYPEis_AGGREGATE(rhs->type) ) {
-			aggregate_init(SELF, rhs, lhsType);
-			return;;
-		}
+//		if( TYPEis_AGGREGATE(rhs->type) ) {
+//			aggregate_init(SELF, rhs, lhsType);
+//			return;;
+//		}
 		
 		EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
 		return;
@@ -899,14 +1195,14 @@ void EXPRassignment_rhs_swift( Scope SELF, Expression rhs, Type lhsType, bool pa
 		return;
 	}
 	
-	if( !isLITERAL_INFINITY(rhs) ) {
+//	if( !isLITERAL_INFINITY(rhs) ) {
 		TYPE_head_swift(SELF, lhsType, WO_COMMENT);	// wrap with explicit type cast
 		raw("(");
 		EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
 		raw(")");
 		return;
-	}
-
-	EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
-	return;
+//	}
+//
+//	EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
+//	return;
 }

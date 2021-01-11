@@ -33,6 +33,7 @@
 // returns length of qualification string
 int accumulate_qualification(Scope target, Scope current, char buf[BUFSIZ]) {
 	int qual_len = 0;
+	if( target == NULL ) return qual_len;
 	if( current == NO_QUALIFICATION ) return qual_len;
 	if( target == current ) return qual_len;
 	if( target->superscope == NULL ) return qual_len;	// target is not enclosed by current
@@ -58,8 +59,31 @@ int accumulate_qualification(Scope target, Scope current, char buf[BUFSIZ]) {
 
 const char* TYPE_swiftName( Type t, Scope current, char buf[BUFSIZ] ) {
 	int qual_len = accumulate_qualification(t->superscope, current, buf);
+	
+	const char* prefix = "";
+	if( TYPEget_head(t) ){
+		prefix = "t";
+	}
+	else {
+		switch (TYPEis(t)) {
+			case entity_:
+				prefix = "e";
+				break;
+			case select_:
+				prefix = "s";
+				break;
+			case enumeration_:
+				prefix = "n";
+				break;
+				
+			default:
+				prefix = "t";
+				break;
+		}
+	}
+	
 	char buf2[BUFSIZ];
-	snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s", canonical_swiftName(t->symbol.name, buf2));
+	snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s%s", prefix,canonical_swiftName(t->symbol.name, buf2));
 	return buf;
 }
 
@@ -72,7 +96,9 @@ const char* enumCase_swiftName( Expression expr, char buf[BUFSIZ] ) {
 }
 
 const char* selectCase_swiftName( Type selection, char buf[BUFSIZ] ) {
-	return canonical_swiftName(selection->symbol.name, buf);
+	buf[0] = '_';
+	canonical_swiftName_n(selection->symbol.name, buf+1, BUFSIZ-2);
+	return buf;
 }
 
 //MARK: - type definitions
@@ -193,6 +219,7 @@ const char* builtinTYPE_body_swiftname( Type t ) {
 	TypeBody tb = TYPEget_body( t );
 	
 	switch( tb->type ) {
+		case indeterminate_: return( "INDETERMINATE" );
 		case integer_:	return( "INTEGER" );
 		case real_:			return( "REAL" );
 		case string_:		return( "STRING" );
@@ -230,6 +257,10 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 	
 	switch( tb->type ) {
 	//MARK: SIMPLE TYPES
+		case indeterminate_:
+			wrap("/*INDETERMINATE*/");
+			break;
+			
 		case integer_:
 		case real_:
 		case string_:
@@ -249,7 +280,7 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 			}
 			else {
 				char buf[BUFSIZ];
-				wrap( "%s", ENTITY_swiftName(tb->entity,"","",current,buf) );
+				wrap( "%s", ENTITY_swiftName(tb->entity, current, buf) );
 			}
 		}
 			break;

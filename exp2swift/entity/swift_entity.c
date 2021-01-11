@@ -24,11 +24,17 @@
 #include "swift_symbol.h"
 
 
-const char* ENTITY_swiftName( Entity e, const char* prefix, const char* postfix, Scope current, char buf[BUFSIZ] ) {
+const char* ENTITY_swiftName( Entity e, Scope current, char buf[BUFSIZ] ) {
 	int qual_len = accumulate_qualification(e->superscope, current, buf);
+//	char buf2[BUFSIZ];
+//	snprintf(&buf[qual_len], BUFSIZ-qual_len, "e%s", canonical_swiftName(e->symbol.name, buf2));
+//	return buf;
+	return as_entitySwiftName_n(e->symbol.name, &buf[qual_len], BUFSIZ-qual_len);
+}
+
+const char* as_entitySwiftName_n( const char* symbol_name, char* buf, int bufsize ) {
 	char buf2[BUFSIZ];
-	snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s%s%s", 
-					 prefix, canonical_swiftName(e->symbol.name, buf2), postfix);
+	snprintf(buf, bufsize, "e%s", canonical_swiftName(symbol_name, buf2));
 	return buf;
 }
 
@@ -37,28 +43,16 @@ char ENTITY_swiftNameInitial( Entity e) {
 }
 
 const char* superEntity_swiftPrefix = "super_";
+const char* subEntity_swiftPrefix = "sub_";
 
 const char* ENTITY_canonicalName( Entity e, char buf[BUFSIZ] ) {
 	return canonical_swiftName(e->symbol.name, buf);
-//	char* to = buf;
-//	int remain = BUFSIZ-1;
-//	for(char* from = e->symbol.name; *from; ++from ) {
-//		if( islower(*from) ) {
-//			(*to) = toupper(*from);
-//		}
-//		else {
-//			(*to) = (*from);
-//		}
-//		++to;
-//		--remain;
-//		if( remain == 0 ) break;
-//	}
-//	(*to) = 0;
-//	return buf;
 }
 
 const char* ENTITY_swiftProtocolName( Entity e, char buf[BUFSIZ]) {
-	return ENTITY_swiftName(e, "", "_protocol", NO_QUALIFICATION, buf);
+	char buf2[BUFSIZ];
+	snprintf(buf, BUFSIZ, "%s_protocol",ENTITY_swiftName(e, NO_QUALIFICATION, buf2));
+	return buf;
 }
 
 const char* partialEntity_swiftName( Entity e, char buf[BUFSIZ] ) {
@@ -67,8 +61,13 @@ const char* partialEntity_swiftName( Entity e, char buf[BUFSIZ] ) {
 }
 
 const char* attribute_swiftName( Variable attr, char buf[BUFSIZ] ) {
-	return canonical_swiftName(ATTRget_name_string(attr), buf);
+//	return canonical_swiftName(ATTRget_name_string(attr), buf);
+	return as_attributeSwiftName_n(ATTRget_name_string(attr), buf, BUFSIZ);
 }
+const char* as_attributeSwiftName_n( const char* symbol_name, char* buf, int bufsize ) {
+	return canonical_swiftName_n(symbol_name, buf, bufsize);
+}
+
 
 const char* partialEntityAttribute_swiftName( Variable attr, char buf[BUFSIZ] ) {
 	snprintf(buf, BUFSIZ, "_%s", ATTRget_name_string(attr));
@@ -79,7 +78,7 @@ const char* dynamicAttribute_swiftProtocolName( Variable original, char buf[BUFS
 	char buf2[BUFSIZ];
 	char buf3[BUFSIZ];
 	snprintf(buf, BUFSIZ, "%s__%s__provider", 
-					 ENTITY_swiftName(original->defined_in, "","",NO_QUALIFICATION,buf2), 
+					 ENTITY_swiftName(original->defined_in, NO_QUALIFICATION, buf2), 
 					 attribute_swiftName(original,buf3));
 	return buf;
 }
@@ -254,14 +253,14 @@ static void attribute_out( Entity leaf, Variable v, int level ) {
 
 static int entity_no;
 
-static void listLocalAttributes( Entity leaf, Entity entity, int level ) {
+static void listLocalAttributes( Entity leaf, Entity entity, int level, const char* label ) {
 	++entity_no;
 	indent_swift(level);
 	if( entity == leaf ) {
 		raw("ENTITY(SELF)\t");
 	}
 	else {
-		raw("ENTITY(%d)\t", entity_no);
+		raw("%s ENTITY(%d)\t", label, entity_no);
 	}
 	raw("%s\n", entity->symbol.name);
 
@@ -280,10 +279,12 @@ static void listLocalAttributes( Entity leaf, Entity entity, int level ) {
 }
 
 static void listAllAttributes( Entity leaf, Entity entity, int level ) {
-	Linked_List supertypes = ENTITYget_super_entity_list(leaf);
-	
-	LISTdo(supertypes, super, Entity ) {
-		listLocalAttributes(leaf, super, level);
+	LISTdo(ENTITYget_super_entity_list(leaf), super, Entity ) {
+		listLocalAttributes(leaf, super, level, "SUPER-");
+	} LISTod;
+
+	LISTdo(ENTITYget_sub_entity_list(leaf), sub, Entity ) {
+		listLocalAttributes(leaf, sub, level, "SUB-");
 	} LISTod;
 }
 

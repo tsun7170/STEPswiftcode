@@ -42,6 +42,10 @@ void EXPR__out( Expression e, int paren, unsigned int previous_op ) {
     int i;  /* trusty temporary */
 
     switch( TYPEis( e->type ) ) {
+				case indeterminate_:	//*TY2020/12/31
+					wrap( "?" );
+					break;
+				
         case integer_:
             if( isLITERAL_INFINITY(e) ) {	//*TY2020/08/26
                 wrap( "?" );
@@ -194,6 +198,7 @@ void EXPRop__out( struct Op_Subexpression * oe, int paren, unsigned int previous
         case OP_LIKE:
         case OP_MOD:
         case OP_NOT_EQUAL:
+			case OP_REPEAT:	//*TY2021/01/11
             EXPRop2_out( oe, ( char * )0, paren, PAD );
             break;
         case OP_NOT:
@@ -306,6 +311,10 @@ void EXPRstring( char * buffer, Expression e ) {
     int i;
 
     switch( TYPEis( e->type ) ) {
+			case indeterminate_:	//*TY2020/12/31
+				strcpy( buffer, "?" );
+				break;
+				
         case integer_:
             if( isLITERAL_INFINITY(e) ) {	//*TY2020/08/26
                 strcpy( buffer, "?" );

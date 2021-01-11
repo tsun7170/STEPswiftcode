@@ -92,11 +92,12 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 				sep = ", ";
 			}LISTod;
 		}
-		wrap(" {\n");
+		wrap(" {\n\n");
 		
 		// proc body
 		{	int level2 = level+nestingIndent_swift;
 			
+			ALGvarnize_args_swift(proc->u.proc->parameters, level2);
 			ALGscope_declarations_swift(schema, proc, level2);
 			STMTlist_swift(proc, proc->u.proc->body, level2);
 		}

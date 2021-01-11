@@ -27,10 +27,11 @@
 //MARK: - entity reference
 
 static void supertypeReferenceDefinition_swift(Entity entity, int level ) {
+	int entity_index = 0;
+
 	/*
 	 public let super_<SUPERENTITY>: <SUPERENTITY> 	// [n]	 
-	 */
-	
+	 */	
 	raw("\n");
 	indent_swift(level);
 	raw("//SUPERTYPES\n");
@@ -39,14 +40,30 @@ static void supertypeReferenceDefinition_swift(Entity entity, int level ) {
 	
 	char buf1[BUFSIZ];
 	char buf2[BUFSIZ];
-	int entity_index = 0;
 	LISTdo( supertypes, super, Entity ) {
-//		if( super == entity ) continue;
 		indent_swift(level);
 		wrap("public let %s%s: %s \t// [%d]\n", 
 				 superEntity_swiftPrefix,
-				 ENTITY_swiftName(super,NO_PREFIX,NO_POSTFIX,NO_QUALIFICATION,buf1), 
-				 ENTITY_swiftName(super,NO_PREFIX,NO_POSTFIX,entity,buf2), 
+				 ENTITY_swiftName(super, NO_QUALIFICATION, buf1), 
+				 ENTITY_swiftName(super, entity, buf2), 
+				 ++entity_index);
+	}LISTod;
+
+	/*
+	 public let sub_<SUPERENTITY>: <SUPERENTITY>? 	// [n]	 
+	 */	
+	raw("\n");
+	indent_swift(level);
+	raw("//SUBTYPES\n");
+	
+	Linked_List subtypes = ENTITYget_sub_entity_list(entity);
+	
+	LISTdo( subtypes, sub, Entity ) {
+		indent_swift(level);
+		wrap("public let %s%s: %s? \t// [%d]\n", 
+				 subEntity_swiftPrefix,
+				 ENTITY_swiftName(sub, NO_QUALIFICATION, buf1), 
+				 ENTITY_swiftName(sub, entity, buf2), 
 				 ++entity_index);
 	}LISTod;
 }
@@ -67,38 +84,39 @@ static void partialEntityReferenceDefinition_swift( Entity entity, int level ) {
 }
 
 
-static void superEntityReference_swift(Entity entity, Entity supertype) {
+static void superEntityReference_swift(Entity entity, Entity supertype, bool is_subtype_attr, bool can_wrap) {
 	if( supertype == entity ) {
-		wrap("self");
+		wrap_if(can_wrap,"self");
 	}
 	else {
 		char buf[BUFSIZ];
-		wrap("%s%s", superEntity_swiftPrefix, ENTITY_swiftName(supertype,"","",NO_QUALIFICATION,buf) );
+		wrap_if(can_wrap,"%s%s", (is_subtype_attr ? subEntity_swiftPrefix : superEntity_swiftPrefix), ENTITY_swiftName(supertype, NO_QUALIFICATION, buf) );
 	}
 }
 
-static void partialEntityReference_swift(Entity entity, Entity partial) {
-	superEntityReference_swift(entity, partial);
+static void partialEntityReference_swift(Entity entity, Entity partial, bool is_subtype_attr, bool can_wrap) {
+	superEntityReference_swift(entity, partial, is_subtype_attr, can_wrap);
+	if( is_subtype_attr )raw("?");
 	wrap(".partialEntity");
 }
 
 //MARK: - Attirbute References
 
-static void attributeRefHead_swift(Entity entity, char* access, Variable attr, int level, char* label) {	
+static void attributeRefHead_swift(Entity entity, char* access, Variable attr, bool is_subtype_attr, int level, char* label) {	
 	 
 	 indent_swift(level);
 	 {
 		 char buf[BUFSIZ];
 		 raw("//in ENTITY: %s(%s)\t//%s\n", 
-				 (entity==attr->defined_in ? "SELF" : "SUPER"), 
-				 ENTITY_swiftName(attr->defined_in,"","",NO_QUALIFICATION,buf), 
+				 (entity==attr->defined_in ? "SELF" : (is_subtype_attr ? "SUB" : "SUPER")), 
+				 ENTITY_swiftName(attr->defined_in, NO_QUALIFICATION, buf), 
 				 label);
 		 
 		 indent_swift(level);
 		 raw("%s var %s: ", access, attribute_swiftName(attr,buf) );
 	 }
 	 
-	 variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
+	variableType_swift(entity, attr, (is_subtype_attr ? YES_FORCE_OPTIONAL : NO_FORCE_OPTIONAL), NOT_IN_COMMENT);
 	 
 	 raw(" {\n");
  }
@@ -140,7 +158,7 @@ static const char* aggregateAttributeObserversCall_swift(Entity partial, Variabl
 }
 
 //MARK: - explicit static attribute access
-static void explicitSetter_swift(Variable attr, Entity entity, int level, Entity partial, char *partialAttr) {
+static void explicitSetter_swift(Variable attr, bool is_subtype_attr, Entity entity, int level, Entity partial, char *partialAttr) {
 	/*
 	 set(newValue) {
 		 let oldValue = self.<ATTR>
@@ -173,11 +191,22 @@ static void explicitSetter_swift(Variable attr, Entity entity, int level, Entity
 		}
 		
 		indent_swift(level2);
-		partialEntityReference_swift(entity, partial);
 		if( VARis_redeclaring(attr) ){
+			if( is_subtype_attr ){
+				superEntityReference_swift(entity, attr->defined_in, is_subtype_attr, YES_WRAP);
+				raw("?");
+				wrap(".");
+			}
+			partialEntityReference_swift(entity, partial, false, NO_WRAP);
+
 			wrap(".%s = ", partialAttr );
 			if( !VARis_optional(attr) ){
-				wrap("SDAI.UNWRAP(");
+				if( TYPEis_logical(VARget_type(attr)) ){
+					wrap("SDAI.LOGICAL(");
+				}
+				else{
+					wrap("SDAI.UNWRAP(");
+				}
 			}
 			Variable original = VARget_redeclaring_attr(attr);
 			aggressively_wrap();
@@ -189,14 +218,25 @@ static void explicitSetter_swift(Variable attr, Entity entity, int level, Entity
 			raw("\n");
 		}
 		else {
-			wrap(".%s = %s\n", partialAttr, newValue );
+			partialEntityReference_swift(entity, partial, is_subtype_attr, YES_WRAP);
+			if( VARis_optional(attr) ){
+				wrap(".%s = %s\n", partialAttr, newValue );
+			} 
+			else {
+				if( TYPEis_logical(VARget_type(attr)) ){
+					wrap(".%s = SDAI.LOGICAL(%s)\n", partialAttr, newValue );
+				}
+				else{
+					wrap(".%s = SDAI.UNWRAP(%s)\n", partialAttr, newValue );
+				}
+			}
 		}
 	}
 	indent_swift(level);
 	raw("}\n");
 }
 
-static void explicitStaticGetter_swift(Variable attr, Entity entity, int level, Entity partial, char *partialAttr) {
+static void explicitStaticGetter_swift(Variable attr, bool is_subtype_attr, Entity entity, int level, Entity partial, char *partialAttr) {
 	/*
 	 get {
 		 return self.partialEntity.<partialAttr>
@@ -212,21 +252,32 @@ static void explicitStaticGetter_swift(Variable attr, Entity entity, int level, 
 	{	int level2 = level+nestingIndent_swift;
 		indent_swift(level2);
 		raw("return ");
-		if( !VARis_optional(attr) ){
-			raw("SDAI.UNWRAP(");
+		if( !is_subtype_attr && !VARis_optional(attr) ){
+			raw("SDAI.UNWRAP( ");
+		}
+		else if( TYPEis_logical(VARget_type(attr)) ){
+			raw("SDAI.LOGICAL( ");
 		}
 		if( VARis_redeclaring(attr) ){
-			variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
+			variableType_swift(entity, attr, NO_FORCE_OPTIONAL, WO_COMMENT);
 			raw("( ");
-			partialEntityReference_swift(entity, partial);
+			if( is_subtype_attr ){
+				superEntityReference_swift(entity, attr->defined_in, is_subtype_attr,YES_WRAP);
+				raw("?");
+				wrap(".");
+			}
+			partialEntityReference_swift(entity, partial, false, NO_WRAP);
 			wrap(".%s )", partialAttr );
 		}
 		else {
-			partialEntityReference_swift(entity, partial);
+			partialEntityReference_swift(entity, partial, is_subtype_attr, YES_WRAP);
 			wrap(".%s", partialAttr );
 		}
-		if( !VARis_optional(attr) ){
-			raw(")");
+		if( !is_subtype_attr && !VARis_optional(attr) ){
+			raw(" )");
+		}
+		else if( TYPEis_logical(VARget_type(attr)) ){
+			raw(" )");
 		}
 		raw("\n");
 	}
@@ -234,19 +285,19 @@ static void explicitStaticGetter_swift(Variable attr, Entity entity, int level, 
 	raw("}\n");
 }
 
-static void explicitStaticGetterSetter_swift(Variable attr, Entity entity, int level, Entity partial) {
+static void explicitStaticGetterSetter_swift(Variable attr, bool is_subtype_attr, Entity entity, int level, Entity partial) {
 	char partialAttr[BUFSIZ];
 	partialEntityAttribute_swiftName(attr, partialAttr);
 	
 	// getter
-	explicitStaticGetter_swift(attr, entity, level, partial, partialAttr);
+	explicitStaticGetter_swift(attr, is_subtype_attr, entity, level, partial, partialAttr);
 	
 	// setter
-	explicitSetter_swift(attr, entity, level, partial, partialAttr);
+	explicitSetter_swift(attr, is_subtype_attr, entity, level, partial, partialAttr);
 }
 
 //MARK: - explicit dynamic attribute access
-static void explicitDynamicGetterSetter_swift(Variable attr, Entity entity, int level, Entity partial, Variable original) {
+static void explicitDynamicGetterSetter_swift(Variable attr, bool is_subtype_attr, Entity entity, int level, Entity partial, Variable original) {
 	/*
 	 get {
 		 if let resolved = self.complexEntity.resolvePartialEntityInstance(from: [
@@ -299,15 +350,21 @@ static void explicitDynamicGetterSetter_swift(Variable attr, Entity entity, int 
 			}
 			else {
 				wrap("return " );
-				if( !VARis_optional(attr) ){
-					wrap("SDAI.UNWRAP(");
+				if( !is_subtype_attr && !VARis_optional(attr) ){
+					wrap("SDAI.UNWRAP( ");
 				}
-				variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
+				else if( TYPEis_logical(VARget_type(attr)) ){
+					raw("SDAI.LOGICAL( ");
+				}
+				variableType_swift(entity, attr, NO_FORCE_OPTIONAL, WO_COMMENT);
 				wrap("(resolved" );
 				wrap(".%s__getter(", partialAttr );
 				wrap("complex: self.complexEntity))" );
-				if( !VARis_optional(attr) ){
-					raw(")");
+				if( !is_subtype_attr && !VARis_optional(attr) ){
+					raw(" )");
+				}
+				else if( TYPEis_logical(VARget_type(attr)) ){
+					raw(" )");
 				}
 				raw("\n");
 			} 
@@ -322,19 +379,31 @@ static void explicitDynamicGetterSetter_swift(Variable attr, Entity entity, int 
 			indent_swift(level3);
 			raw("return ");
 			if( attr == original ){
-				partialEntityReference_swift(entity, original->defined_in);
+				partialEntityReference_swift(entity, original->defined_in, is_subtype_attr, YES_WRAP);
 				wrap(".%s\n", partialAttr );
 			}
 			else {
-				if( !VARis_optional(attr) ){
-					wrap("SDAI.UNWRAP(");
+				if( !is_subtype_attr && !VARis_optional(attr) ){
+					wrap("SDAI.UNWRAP( ");
+				}
+				else if( TYPEis_logical(VARget_type(attr)) ){
+					raw("SDAI.LOGICAL( ");
 				}
 				variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 				raw("(");
-				partialEntityReference_swift(entity, original->defined_in);
+
+				if( is_subtype_attr ){
+					superEntityReference_swift(entity, attr->defined_in, is_subtype_attr, YES_WRAP);
+					raw("?");
+					wrap(".");
+				}
+				partialEntityReference_swift(entity, original->defined_in, false, NO_WRAP);
 				wrap(".%s)", partialAttr );
-				if( !VARis_optional(attr) ){
-					raw(")");
+				if( !is_subtype_attr && !VARis_optional(attr) ){
+					raw(" )");
+				}
+				else if( TYPEis_logical(VARget_type(attr)) ){
+					raw(" )");
 				}
 				raw("\n");
 			}
@@ -347,33 +416,33 @@ static void explicitDynamicGetterSetter_swift(Variable attr, Entity entity, int 
 	raw("}\n");
 	
 	// setter
-	explicitSetter_swift(attr, entity, level, partial, partialAttr);
+	explicitSetter_swift(attr, is_subtype_attr, entity, level, partial, partialAttr);
 }
 
 
-static void explicitAttributeReference_swift(Entity entity, Variable attr, int level) {
+static void explicitAttributeReference_swift(Entity entity, Variable attr, bool is_subtype_attr, int level) {
 	Entity partial = attr->defined_in;
 	
 	if( VARis_dynamic(attr) ) {
-		attributeRefHead_swift( entity, "public", attr, level, 
+		attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, 
 													 (VARis_observed(attr) 
 														? "EXPLICIT(DYNAMIC)(OBSERVED)" 
 														: "EXPLICIT(DYNAMIC)") );
 		{	int level2 = level+nestingIndent_swift;
 			
-			explicitDynamicGetterSetter_swift(attr, entity, level2, partial, attr);
+			explicitDynamicGetterSetter_swift(attr, is_subtype_attr, entity, level2, partial, attr);
 		}
 		indent_swift(level);
 		raw("}\n");
 	}
 	else {
-		attributeRefHead_swift( entity, "public", attr, level, 
+		attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, 
 													 (VARis_observed(attr) 
 														? "EXPLICIT(OBSERVED)" 
 														: "EXPLICIT") );
 		{	int level2 = level+nestingIndent_swift;
 			
-			explicitStaticGetterSetter_swift(attr, entity, level2, partial);
+			explicitStaticGetterSetter_swift(attr, is_subtype_attr, entity, level2, partial);
 		}
 		indent_swift(level);
 		raw("}\n");
@@ -381,7 +450,7 @@ static void explicitAttributeReference_swift(Entity entity, Variable attr, int l
 }
 
 //MARK: - derived attribute access
-static void derivedGetter_swift(Variable attr, Entity entity, int level, Entity partial) {
+static void derivedGetter_swift(Variable attr, bool is_subtype_attr, Entity entity, int level, Entity partial) {
 	/*
 	 get {
 		 return self.partialEntity._<attr>__getter(SELF: self)
@@ -395,27 +464,47 @@ static void derivedGetter_swift(Variable attr, Entity entity, int level, Entity 
 	indent_swift(level);
 	raw("get {\n");
 	{	int level2 = level+nestingIndent_swift;
+		if( is_subtype_attr ){
+			indent_swift(level2);
+			raw("guard let origin");
+			raw(" = ");
+			superEntityReference_swift(entity, partial, is_subtype_attr, YES_WRAP);
+			raw(" else { return nil }\n");
+		}
+		else {
+			raw("let origin");
+			raw(" = ");
+			superEntityReference_swift(entity, partial, is_subtype_attr, YES_WRAP);
+			raw("\n");
+
+		}
 		indent_swift(level2);
 		raw("return ");
-		if( !VARis_optional(attr) ){
-			raw("SDAI.UNWRAP(");
+		if( !is_subtype_attr && !VARis_optional(attr) ){
+			raw("SDAI.UNWRAP( ");
+		}
+		else if( TYPEis_logical(VARget_type(attr)) ){
+			raw("SDAI.LOGICAL( ");
 		}
 		if( entity == partial ){
-			partialEntityReference_swift(entity, partial);
-			wrap(".%s__getter(SELF: ", partialEntityAttribute_swiftName(attr, partialAttr) );
-			superEntityReference_swift(entity, partial);
+//			partialEntityReference_swift(entity, partial, is_subtype_attr);
+			wrap("origin.partialEntity.%s__getter(SELF: origin", partialEntityAttribute_swiftName(attr, partialAttr) );
+//			superEntityReference_swift(entity, partial, is_subtype_attr);
 			raw(")");
 		}
 		else {
-			variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
+			variableType_swift(entity, attr, NO_FORCE_OPTIONAL, WO_COMMENT);
 			raw("(");
-			partialEntityReference_swift(entity, partial);
-			wrap(".%s__getter(SELF: ", partialEntityAttribute_swiftName(attr, partialAttr) );
-			superEntityReference_swift(entity, partial);
+//			partialEntityReference_swift(entity, partial, is_subtype_attr);
+			wrap("origin.partialEntity.%s__getter(SELF: origin", partialEntityAttribute_swiftName(attr, partialAttr) );
+//			superEntityReference_swift(entity, partial, is_subtype_attr);
 			raw("))");
 		}
-		if( !VARis_optional(attr) ){
-			raw(")");
+		if( !is_subtype_attr && !VARis_optional(attr) ){
+			raw(" )");
+		}
+		else if( TYPEis_logical(VARget_type(attr)) ){
+			raw(" )");
 		}
 		raw("\n");
 	}
@@ -423,30 +512,30 @@ static void derivedGetter_swift(Variable attr, Entity entity, int level, Entity 
 	raw("}\n");
 }
 
-static void explicitAttributeOverrideReference_swift(Entity entity, Variable attr, int level) {
+static void explicitAttributeOverrideReference_swift(Entity entity, Variable attr, bool is_subtype_attr, int level) {
 	Variable original = VARget_redeclaring_attr(attr);
 	Entity partial = original->defined_in;
 	
 	if( VARis_dynamic(original) ) {
-		attributeRefHead_swift( entity, "public", attr, level, 
+		attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, 
 													 (VARis_observed(attr) 
 														? "EXPLICIT REDEF(DYNAMIC)(OBSERVED)" 
 														: "EXPLICIT REDEF(DYNAMIC)") );
 		{	int level2 = level+nestingIndent_swift;
 			
-			explicitDynamicGetterSetter_swift(attr, entity, level2, partial, original);
+			explicitDynamicGetterSetter_swift(attr, is_subtype_attr, entity, level2, partial, original);
 		}
 		indent_swift(level);
 		raw("}\n");
 	}
 	else {
-		attributeRefHead_swift( entity, "public", attr, level, 
+		attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, 
 													 (VARis_observed(attr) 
 														? "EXPLICIT REDEF(OBSERVED)" 
 														: "EXPLICIT REDEF") );
 		{	int level2 = level+nestingIndent_swift;
 			
-			explicitStaticGetterSetter_swift(attr, entity, level2, partial);		
+			explicitStaticGetterSetter_swift(attr, is_subtype_attr, entity, level2, partial);		
 		}
 		indent_swift(level);
 		raw("}\n");
@@ -455,43 +544,43 @@ static void explicitAttributeOverrideReference_swift(Entity entity, Variable att
 }
 
 
-static void derivedAttributeReference_swift(Entity entity, Variable attr, int level) {
+static void derivedAttributeReference_swift(Entity entity, Variable attr, bool is_subtype_attr, int level) {
 	Entity partial = attr->defined_in;
 	
-	attributeRefHead_swift( entity, "public", attr, level, "DERIVE" );
+	attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, "DERIVE" );
 	{	int level2 = level+nestingIndent_swift;
 		
-		derivedGetter_swift(attr, entity, level2, partial);
+		derivedGetter_swift(attr, is_subtype_attr, entity, level2, partial);
 	}
 	indent_swift(level);
 	raw("}\n");
 }
 
-static void derivedAttributeOverrideReference_swift(Entity entity, Variable attr, int level) {
+static void derivedAttributeOverrideReference_swift(Entity entity, Variable attr, bool is_subtype_attr, int level) {
 	Entity partial = attr->defined_in;
 	
 	assert(VARis_dynamic(attr));
-	attributeRefHead_swift( entity, "public", attr, level, "EXPLICIT REDEF(DERIVE)" );
+	attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, "EXPLICIT REDEF(DERIVE)" );
 	{	int level2 = level+nestingIndent_swift;
 
-		derivedGetter_swift(attr, entity, level2, partial);
+		derivedGetter_swift(attr, is_subtype_attr, entity, level2, partial);
 	}
 	indent_swift(level);
 	raw("}\n");
 }
 
 //MARK: - inverse attrivute access
-static void inverseAttributeReference_swift(Entity entity, Variable attr, int level) {
+static void inverseAttributeReference_swift(Entity entity, Variable attr, bool is_subtype_attr, int level) {
 	Entity partial = attr->defined_in;
 	char partialAttr[BUFSIZ];
 	partialEntityAttribute_swiftName(attr, partialAttr);
 
-	attributeRefHead_swift( entity, "public", attr, level, "INVERSE" );
+	attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, "INVERSE" );
 	
 	{	int level2 = level+nestingIndent_swift;
 		
 		// getter
-		explicitStaticGetter_swift(attr, entity, level2, partial, partialAttr);
+		explicitStaticGetter_swift(attr, is_subtype_attr, entity, level2, partial, partialAttr);
 	}
 	
 	indent_swift(level);
@@ -513,34 +602,38 @@ static void entityAttributeReferences_swift( Entity entity, int level ){
 	while( 0 != ( attr_defs = ( Linked_List )DICTdo( &de ) ) ) {
 		Variable attr = LISTget_first(attr_defs);
 		char* attrName = VARget_simple_name(attr);
-
+		bool is_subtype_attr = LISTget_first_aux(attr_defs);
+		
 		if( ENTITYget_attr_ambiguous_count(entity, attrName) > 1 ) {
 			indent_swift(level);
-			wrap("// %s: (AMBIGUOUS REF)\n\n", attrName);
+			char buf[BUFSIZ];
+			wrap("// %s: (%d AMBIGUOUS REFs)\n\n", as_attributeSwiftName_n(attrName, buf, BUFSIZ), LISTget_length(attr_defs));
 			continue;
 		}
 		
-		LISTadd_last(effective_attrs, attr);
+//		LISTadd_last(effective_attrs, attr);
+		LISTadd_last_marking_aux(effective_attrs, attr, (Generic)is_subtype_attr);
 	}
 	
 	LISTdo(effective_attrs, attr, Variable) {
+		bool is_subtype_attr = LIST_aux;
 		if( VARis_redeclaring(attr) ) {
 			if( VARis_derived(attr) ) {
-				derivedAttributeOverrideReference_swift(entity, attr, level);
+				derivedAttributeOverrideReference_swift(entity, attr, is_subtype_attr, level);
 			}
 			else {
-				explicitAttributeOverrideReference_swift(entity, attr, level);
+				explicitAttributeOverrideReference_swift(entity, attr, is_subtype_attr, level);
 			}
 		}
 		else {
 			if( VARis_derived(attr) ) {
-				derivedAttributeReference_swift(entity, attr, level);
+				derivedAttributeReference_swift(entity, attr, is_subtype_attr, level);
 			}
 			else if( VARis_inverse(attr) ){
-				inverseAttributeReference_swift(entity, attr, level);
+				inverseAttributeReference_swift(entity, attr, is_subtype_attr, level);
 			}
 			else {	// explicit
-				explicitAttributeReference_swift(entity, attr, level);
+				explicitAttributeReference_swift(entity, attr, is_subtype_attr, level);
 			}
 		}
 		raw("\n");
@@ -604,15 +697,24 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 		indent_swift(level2);
 		raw( "self.partialEntity = partial\n\n");
 		
-		Linked_List supertypes = ENTITYget_super_entity_list(entity);
-		LISTdo( supertypes, super, Entity ) {
-	//		if( super == entity ) continue;
+		LISTdo( ENTITYget_super_entity_list(entity), super, Entity ) {
+//		if( super == entity ) continue;
 			indent_swift(level2);
 			wrap("self.%s%s = ", 
 					 superEntity_swiftPrefix,
-					 ENTITY_swiftName(super,NO_PREFIX,NO_POSTFIX,NO_QUALIFICATION,buf) );
+					 ENTITY_swiftName(super, NO_QUALIFICATION, buf) );
 			wrap("( complexEntity?.entityReference(%s.self) )!\n", 
-					 ENTITY_swiftName(super,NO_PREFIX,NO_POSTFIX,entity,buf) );
+					 ENTITY_swiftName(super, entity, buf) );
+		}LISTod;
+		raw("\n");
+		
+		LISTdo( ENTITYget_sub_entity_list(entity), sub, Entity ) {
+			indent_swift(level2);
+			wrap("self.%s%s = ", 
+					 subEntity_swiftPrefix,
+					 ENTITY_swiftName(sub, NO_QUALIFICATION, buf) );
+			wrap("complexEntity?.entityReference(%s.self)\n", 
+					 ENTITY_swiftName(sub, entity, buf) );
 		}LISTod;
 		raw("\n");
 		
@@ -659,7 +761,7 @@ void entityReferenceDefinition_swift( Entity entity, int level ) {
 	{
 		char buf[BUFSIZ];
 		wrap("public class %s : SDAI.EntityReference {\n", 
-				 ENTITY_swiftName(entity, "", "", NO_QUALIFICATION, buf));
+				 ENTITY_swiftName(entity, NO_QUALIFICATION, buf));
 	}
 	
 	{	int level2 = level+nestingIndent_swift;

@@ -2311,17 +2311,13 @@ static void yy_reduce(
       case 12: /* aggregate_init_body ::= aggregate_init_element TOK_COLON expression */
 //#line 369 "expparse.y"
 {
-	check_aggregate_initializers("before rule12:", yyTraceFILE!=NULL);
     yygotominor.yy371 = LISTcreate();
-	check_aggregate_initializers("after LISTcreate:", yyTraceFILE!=NULL);
 	
-    LISTadd_last(yygotominor.yy371, (Generic)yymsp[-2].minor.yy401);
-	check_aggregate_initializers("afrer LISTadd_last:", yyTraceFILE!=NULL);
-	
-   LISTadd_last(yygotominor.yy371, (Generic)yymsp[0].minor.yy401);
-
-    yymsp[0].minor.yy401->type = Type_Repeat;
-	check_aggregate_initializers("after rule12:", yyTraceFILE!=NULL);
+//    LISTadd_last(yygotominor.yy371, (Generic)yymsp[-2].minor.yy401);
+//    LISTadd_last(yygotominor.yy371, (Generic)yymsp[0].minor.yy401);
+//    yymsp[0].minor.yy401->type = Type_Repeat;
+	//*TY2021/01/11
+	LISTadd_last(yygotominor.yy371, BIN_EXPcreate(OP_REPEAT, (Generic)yymsp[-2].minor.yy401, (Generic)yymsp[0].minor.yy401) );
 }
 //#line 2318 "expparse.c"
         break;
@@ -2340,10 +2336,12 @@ static void yy_reduce(
 {
     yygotominor.yy371 = yymsp[-4].minor.yy371;
 
-    LISTadd_last(yygotominor.yy371, (Generic)yymsp[-2].minor.yy401);
-    LISTadd_last(yygotominor.yy371, (Generic)yymsp[0].minor.yy401);
-
-    yymsp[0].minor.yy401->type = Type_Repeat;
+//    LISTadd_last(yygotominor.yy371, (Generic)yymsp[-2].minor.yy401);
+//    LISTadd_last(yygotominor.yy371, (Generic)yymsp[0].minor.yy401);
+//
+//    yymsp[0].minor.yy401->type = Type_Repeat;
+	//*TY2021/01/11
+	LISTadd_last(yygotominor.yy371, BIN_EXPcreate(OP_REPEAT, (Generic)yymsp[-2].minor.yy401, (Generic)yymsp[0].minor.yy401) );
 }
 //#line 2340 "expparse.c"
         break;

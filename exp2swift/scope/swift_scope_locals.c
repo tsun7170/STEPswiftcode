@@ -27,41 +27,55 @@
 void SCOPElocalList_swift( Scope s, int level ) {
 	Variable var;
 	DictionaryEntry de;
-	
-	int i_local = 0;
+	Linked_List orderedLocals = 0; /**< this list is used to order the vars the same way they were in the file */
+	int num_locals = 0;
 	
 	DICTdo_type_init( s->symbol_table, &de, OBJ_VARIABLE );
-	while( 0 != ( var = ( Variable )DICTdo( &de ) ) ) {
-		if( VARis_constant(var) ) continue;
-		if( VARis_parameter(var) ) continue;
-		
-		if( ++i_local==1 ) {
-			raw("\n");
-			indent_swift(level);
-			raw("//LOCAL\n");
+	while( 0 != (var = DICTdo(&de)) ) {
+		if( var->flags.constant ) {
+			continue;
 		}
-		
+		if( var->flags.parameter ) {
+			continue;
+		}
+		++num_locals;
+		if( !orderedLocals ) {
+			orderedLocals = LISTcreate();
+			LISTadd_first( orderedLocals, (Generic) var );
+		} else {
+			/* sort by v->offset */
+			SCOPElocals_order( orderedLocals, var );
+		}
+	}
+
+	if( num_locals == 0 )return;
+	
+	indent_swift(level);
+	raw("//LOCAL\n");
+
+	LISTdo( orderedLocals, var, Variable ) {
 		indent_swift(level);
 		{
 			char buf[BUFSIZ];
 			raw("var %s: ", variable_swiftName(var,buf));
 		}
 		
-//		bool force_optional = true;
-//		if( TYPEis_boolean(VARget_type(var)) || TYPEis_logical(VARget_type(var)) ) {
-//			force_optional = false;
-//		}
+		//		bool force_optional = true;
+		//		if( TYPEis_boolean(VARget_type(var)) || TYPEis_logical(VARget_type(var)) ) {
+		//			force_optional = false;
+		//		}
 		variableType_swift(s, var, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 		
 		if( var->initializer ) {
 			raw( " = " );
 			aggressively_wrap();
-			int oldwrap = captureWrapIndent();
-//			EXPR_swift( NULL, var->initializer, NO_PAREN );
-			EXPRassignment_rhs_swift(s, var->initializer, var->type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
-			restoreWrapIndent(oldwrap);
+			{	int oldwrap = captureWrapIndent();
+				//			EXPR_swift( NULL, var->initializer, NO_PAREN );
+				EXPRassignment_rhs_swift(s, var->initializer, var->type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+				restoreWrapIndent(oldwrap);
+			}
 		}
-		else if( TYPEhas_bounds(var->type) ) {
+		else if( TYPEhas_bounds(var->type) && !VARis_optional(var) ) {
 			char buf[BUFSIZ];
 			const char* aggr;
 			switch (TYPEget_type(var->type)) {
@@ -90,24 +104,24 @@ void SCOPElocalList_swift( Scope s, int level ) {
 			}
 			raw( " = " );
 			positively_wrap();
-			int oldwrap = captureWrapIndent();
-			wrap("%s(bound1:",aggr);
-			EXPR_swift(NULL,TYPEget_body(var->type)->lower,Type_Integer, NO_PAREN);
-			raw(", bound2:");
-			EXPR_swift(NULL,TYPEget_body(var->type)->upper,Type_Integer, NO_PAREN);
-			raw(")");
-			restoreWrapIndent(oldwrap);
+			{	int oldwrap = captureWrapIndent();
+				wrap("%s(bound1: ",aggr);
+				//			EXPR_swift(s,TYPEget_body(var->type)->lower,Type_Integer, NO_PAREN);
+				EXPRassignment_rhs_swift(s, TYPEget_body(var->type)->lower, Type_Integer, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+				raw(", bound2: ");
+				//			EXPR_swift(s,TYPEget_body(var->type)->upper,Type_Integer, NO_PAREN);
+				EXPRassignment_rhs_swift(s, TYPEget_body(var->type)->upper, Type_Integer, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+				raw(")");
+				restoreWrapIndent(oldwrap);
+			}
 		}
-		
 		raw( "\n" );
-	}
-		
-	if(i_local > 1) {
+	}LISTod;
+			
+	if(num_locals > 1) {
 		indent_swift(level);
 		raw("//END_LOCAL\n");
 	}
-	if(i_local > 0 ) {
-		raw("\n");
-	}
+	raw("\n");
 }
 

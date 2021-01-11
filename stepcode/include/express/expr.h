@@ -84,6 +84,7 @@ typedef enum {
     OP_NOT,         OP_NOT_EQUAL,       OP_OR,
     OP_PLUS,        OP_REAL_DIV,        OP_SUBCOMPONENT,
     OP_TIMES,       OP_XOR,         OP_UNKNOWN,
+	OP_REPEAT,	//*TY2021/1/11
     OP_LAST /**< must be last - used only to size tables */
 } Op_Code;
 
@@ -271,11 +272,11 @@ extern SC_EXPRESS_EXPORT struct freelist_head QUAL_ATTR_fl;
 #define BIN_LITget_value(e)     ((e)->u.binary)
 #define AGGR_LITget_value(e)        ((e)->u.list)
 #define EXPget_type(e)          ((e)->type)
-#define ARY_EXPget_operand(e)       ((e)->e.op1)
-#define ARY_EXPget_operator(e)      ((e)->e.op_code)
-#define BIN_EXPget_operand(e)       ((e)->e.op2)
-#define TERN_EXPget_second_operand(e)   ((e)->e.op2)
-#define TERN_EXPget_third_operand(e)    ((e)->e.op3)
+#define ARY_EXPget_operand(expr)       ((expr)->e.op1)
+#define ARY_EXPget_operator(expr)      ((expr)->e.op_code)
+#define BIN_EXPget_operand(expr)       ((expr)->e.op2)
+#define TERN_EXPget_second_operand(expr)   ((expr)->e.op2)
+#define TERN_EXPget_third_operand(expr)    ((expr)->e.op3)
 #define QUERYget_variable(e)        ((e)->u.query->local)
 #define QUERYget_source(e)      ((e)->u.query->aggregate)
 #define QUERYget_discriminant(e)    ((e)->u.query->expression)
@@ -298,6 +299,6 @@ extern SC_EXPRESS_EXPORT Type     EXPtype PROTO( ( Expression, struct Scope_ * )
 extern SC_EXPRESS_EXPORT int      EXPget_integer_value PROTO( ( Expression ) );
 
 //*TY2020/08/23
-extern Linked_List all_aggregate_initializers;
-extern void check_aggregate_initializers(const char* message, bool print);
+//extern Linked_List all_aggregate_initializers;
+//extern void check_aggregate_initializers(const char* message, bool print);
 #endif /*EXPRESSION_H*/

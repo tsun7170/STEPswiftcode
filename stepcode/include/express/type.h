@@ -99,7 +99,9 @@ enum type_enum {
     derived_,   /**< ?*/
     funcall_,   /**< a function call and actual parameters */
 
-    self_
+    self_,
+	
+		indeterminate_	//*ty2020/12/31 added
 };
 
 /*****************/
@@ -220,12 +222,23 @@ extern SC_EXPRESS_EXPORT Type Type_Set_Of_String;
 extern SC_EXPRESS_EXPORT Type Type_Set_Of_Generic;
 extern SC_EXPRESS_EXPORT Type Type_Bag_Of_Generic;
 //*TY2020/08/02
+extern SC_EXPRESS_EXPORT Type Type_Indeterminate;
 extern SC_EXPRESS_EXPORT Type Type_List_Of_Generic;
 extern SC_EXPRESS_EXPORT Type Type_Aggregate_Of_Generic;
 extern SC_EXPRESS_EXPORT Type Type_Set_Of_GenericEntity;
 extern SC_EXPRESS_EXPORT Type Type_Bag_Of_GenericEntity;
 extern SC_EXPRESS_EXPORT Type Type_List_Of_GenericEntity;
 extern SC_EXPRESS_EXPORT Type Type_Aggregate_Of_GenericEntity;
+
+
+//*TY2021/1/1
+#define Type_Binary_Generic		Type_Generic
+#define Type_Boolean_Generic	Type_Generic
+#define Type_Integer_Generic	Type_Generic
+#define Type_Number_Generic		Type_Generic
+#define Type_Real_Generic			Type_Generic
+#define Type_String_Generic		Type_Generic
+
 
 extern SC_EXPRESS_EXPORT struct freelist_head TYPEHEAD_fl;
 extern SC_EXPRESS_EXPORT struct freelist_head TYPEBODY_fl;
@@ -347,6 +360,10 @@ extern Variable SELECTfind_attribute_effective_definition( Type select_type, con
 extern bool SELECTattribute_is_unique( Type select_type, const char* attr_name );
 
 extern Dictionary SELECTget_super_entity_list( Type select_type );	// returns dict of (linked list of selections) keyed by entity name
+
+//*TY2021/1/5
+extern Type SELECTfind_common_type(Linked_List attr_defs);
+extern Type TYPEget_common(Type t, Type tref);
 
 //*TY2020/09/14
 extern bool TYPEs_are_equal(Type t1, Type t2);

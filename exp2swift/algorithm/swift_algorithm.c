@@ -28,13 +28,19 @@ void ALGget_generics( Scope s, Linked_List generics, Linked_List aggregates ) {
 	assert(generics);
 	assert(aggregates);
 	
+//	DICTprint(s->symbol_table);	//*TY2020/12/31 for debug
+//	printf("\n");
+	
 	DictionaryEntry dictEntry;
 	Type tag;
 	
 	DICTdo_type_init( s->symbol_table, &dictEntry, OBJ_TAG );
 	while( 0 != ( tag = ( Type )DICTdo( &dictEntry ) ) ) {
+//		printf("KEY:<%s> \tTYPE:<%c> \t\n",DICT_key,DICT_type);
+		if( DICT_type != OBJ_TAG ) continue;
+		
 		TypeBody base = TYPEget_body(tag->u.type->head);
-		if(!base) {	// hack!
+		if(!base) {
 			LISTadd_last(aggregates, tag);
 			continue;
 		}
@@ -48,6 +54,7 @@ void ALGget_generics( Scope s, Linked_List generics, Linked_List aggregates ) {
 				break;
 				
 			default:
+				LISTadd_last(aggregates, tag);
 				break;
 		}
 	}
@@ -55,6 +62,7 @@ void ALGget_generics( Scope s, Linked_List generics, Linked_List aggregates ) {
 
 
 void ALGargs_swift( Scope current, bool force_optional, Linked_List args, bool drop_single_label, int level ) {
+	aggressively_wrap();
 	int indent2save = captureWrapIndent();
 	
 	bool single_param = drop_single_label && (LISTget_second(args) == NULL);
@@ -75,6 +83,19 @@ void ALGargs_swift( Scope current, bool force_optional, Linked_List args, bool d
 	}LISTod;
 	
 	restoreWrapIndent(indent2save);
+}
+
+void ALGvarnize_args_swift( Linked_List args, int level ) {
+	bool generated = false;
+	LISTdo(args, formalp, Variable) {
+		if( VARis_inout(formalp) ) continue;
+		indent_swift(level);
+		char buf[BUFSIZ];
+		raw("var %s = ", variable_swiftName(formalp,buf));
+		raw("%s\n",buf);
+		generated = true;
+	}LISTod;
+	if( generated )raw("\n");
 }
 
 void ALGscope_declarations_swift(Schema schema, Scope s, int level ) {

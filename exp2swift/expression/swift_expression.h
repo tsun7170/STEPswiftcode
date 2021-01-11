@@ -18,7 +18,14 @@
 #define YES_WRAP	true
 #define NO_WRAP	false
 
-extern bool EXPRresult_is_optional(Expression e);
+#define CHECK_DEEP	true
+#define CHECK_SHALLOW	false
+
+typedef enum  {
+	yes_optional, no_optional, unknown
+} type_optionality;
+
+extern type_optionality EXPRresult_is_optional(Expression e, bool deep);
 extern void EXPRbounds_swift( Scope SELF, TypeBody tb, SwiftOutCommentOption in_comment );
 extern void EXPR_swift( Scope SELF, Expression e, Type target_type, bool paren);
 extern void EXPRassignment_rhs_swift( Scope SELF, Expression rhs, Type lhsType, bool paren, unsigned int previous_op, bool can_wrap);

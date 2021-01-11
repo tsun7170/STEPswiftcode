@@ -79,7 +79,7 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 			
 			char buf[BUFSIZ];
 			raw("let %s = ",whereRuleLabel_swiftName(where, buf));
-			EXPR_swift(NULL,where->expr,Type_Logical,YES_PAREN);
+			EXPR_swift(schema,where->expr,Type_Logical,YES_PAREN);
 			raw("\n\n");
 		}LISTod;
 		

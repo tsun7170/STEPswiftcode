@@ -160,12 +160,14 @@ Type Type_Set_Of_Generic;
 Type Type_Bag_Of_Generic;
 
 //*TY2020/08/02
+Type Type_Indeterminate;
 Type Type_List_Of_Generic;
 Type Type_Aggregate_Of_Generic;
 Type Type_Set_Of_GenericEntity;
 Type Type_Bag_Of_GenericEntity;
 Type Type_List_Of_GenericEntity;
 Type Type_Aggregate_Of_GenericEntity;
+
 
 struct freelist_head TYPEHEAD_fl;
 struct freelist_head TYPEBODY_fl;
@@ -437,6 +439,10 @@ void TYPEinitialize() {
 	Type_Self->u.type->body->flags.shared = 1;
 	resolved_all( Type_Self );
 	
+	//*TY2020/12/31
+	Type_Indeterminate = TYPEcreate( indeterminate_ );
+	Type_Indeterminate->u.type->body->flags.shared = 1;
+	resolved_all( Type_Indeterminate );
 	
 	
     Type_Set_Of_String = TYPEcreate( set_ );
@@ -606,16 +612,29 @@ Dictionary SELECTget_all_attributes ( Type select_type ) {
 
 // returns 0: not defined anywhere, 1: unique defintion, >1: ambiguous definition
 int SELECTget_attr_ambiguous_count( Type select_type, const char* attrName ) {
-	assert(TYPEis_select(select_type));
+	assert( TYPEis_select(select_type) );
 	Dictionary all_attrs = SELECTget_all_attributes(select_type);
 	Linked_List attr_defs = DICTlookup(all_attrs, attrName);
 	if( attr_defs == NULL )return 0;
 	
 	Entity defined_entity = NULL;
+	Type attr_type = NULL;
 	LISTdo(attr_defs, attr, Variable) {
 		if( VARis_redeclaring(attr) ) attr = attr->original_attribute;
-		if( defined_entity != NULL && attr->defined_in != defined_entity ) return 2;
-		defined_entity = attr->defined_in;		
+		if( attr_type == NULL ) attr_type = VARget_type(attr);
+		
+		//		if( defined_entity != NULL && attr->defined_in != defined_entity ) return 2;
+		if( defined_entity != NULL ){
+			if ( attr->defined_in != defined_entity ){
+				if( TYPEget_common(attr_type, VARget_type(attr)) == NULL ) return 2;
+				//			if( !TYPEs_are_equal(attr_type, VARget_type(attr)) && 
+				//				 !TYPEs_are_equal(VARget_type(attr), attr_type) &&
+				//				 !(TYPEis_entity(attr_type) && TYPEis_entity(VARget_type(attr))) ) return 2;
+			}
+		}
+		else {
+			defined_entity = attr->defined_in;		
+		}
 	}LISTod;
 	
 	assert(defined_entity != NULL);
@@ -705,40 +724,101 @@ Dictionary SELECTget_super_entity_list( Type select_type ) {
 	return result;
 }	
 
+// find common type among list of attribute definitions
+Type SELECTfind_common_type(Linked_List attr_defs) {
+	Type common = NULL;
+	LISTdo(attr_defs, attr, Variable) {
+		common = TYPEget_common(VARget_type(attr), common);
+	}LISTod;
+	
+	// tentative handling; not needed if TYPEget_common get smarter
+	if( common == Type_Entity ){
+		common = NULL;
+		LISTdo(attr_defs, attr, Variable) {
+			if( VARis_redeclaring(attr) ) attr = attr->original_attribute;
+			common = TYPEget_common(VARget_type(attr), common);
+		}LISTod;
+	}
+	return common;
+}
+
+
+//*TY2021/1/6
+Type TYPEget_common(Type t, Type tref) {
+	if( tref == NULL ) return t;
+	if( t == tref ) return tref;
+	
+	tref = TYPEget_fundamental_type(tref);
+	t = TYPEget_fundamental_type(t);
+	if( t == tref ) return tref;
+	
+	if( TYPEis_entity(tref) && TYPEis_entity(t) ) {
+		Entity common_super = ENTITYget_common_super(ENT_TYPEget_entity(tref), ENT_TYPEget_entity(t));
+		if(common_super == NULL) return Type_Entity;
+		return common_super->u.entity->type;
+	}
+	
+//	return Type_Generic;
+	return NULL;
+}
+
 
 //*TY2020/09/14
-bool TYPEs_are_equal(Type t1, Type t2) {
-	if( t1 == t2 ) return true;
-	TypeBody tb1 = TYPEget_body(t1);
-	TypeBody tb2 = TYPEget_body(t2);
+bool TYPEs_are_equal(Type lhstype, Type rhstype) {
+	if( lhstype == rhstype ) return true;
+	TypeBody lhstb = TYPEget_body(lhstype);
+	TypeBody rhstb = TYPEget_body(rhstype);
 	
-	switch (tb1->type) {
+	switch (lhstb->type) {
+		case indeterminate_:
+			break;
 		case integer_:
 		case real_:
 		case string_:
 		case binary_:
 		case boolean_:
-		case logical_:
+//			break;
+			return  (lhstype->symbol.name == rhstype->symbol.name) && (lhstb->type == rhstb->type);
+
 		case number_:
-			return tb1->type == tb2->type;
+			if(lhstype->symbol.name != rhstype->symbol.name) return false;
+			switch( rhstb->type) {
+//				case integer_:
+//				case real_:
+				case number_:
+					return true;
+				default:
+					return false;
+			}
+
+		case logical_:
+			if(lhstype->symbol.name != rhstype->symbol.name) return false;
+			switch( rhstb->type) {
+//				case boolean_:
+				case logical_:
+					return true;
+				default:
+					return false;
+			}
 			
 		case entity_:
-			return tb1->entity == tb2->entity;
+			if( lhstype == Type_Entity && TYPEis_entity(rhstype) ) return true;
+			return lhstb->entity == rhstb->entity;
 			
 		case generic_:
 		case aggregate_:
-			return tb1->tag == tb2->tag;
+			return (lhstb->type == rhstb->type) && (lhstb->tag == rhstb->tag);
 
 		case array_:
 		case bag_:
 		case set_:
 		case list_:
-			if( tb1->type != tb2->type )return false;
-			if( tb1->flags.unique != tb2->flags.unique )return false;
-			if( tb1->flags.optional != tb2->flags.optional )return false;
-			if( tb1->upper != tb2->upper )return false;
-			if( tb1->lower != tb2->lower )return false;
-			return TYPEs_are_equal(tb1->base, tb2->base);
+			if( lhstb->type != rhstb->type )return false;
+			if( lhstb->flags.unique != rhstb->flags.unique )return false;
+			if( lhstb->flags.optional != rhstb->flags.optional )return false;
+			if( lhstb->upper != NULL && lhstb->upper != rhstb->upper )return false;
+			if( lhstb->lower != NULL && lhstb->lower != rhstb->lower )return false;
+			return TYPEs_are_equal(lhstb->base, rhstb->base);
 			
 		case enumeration_: 
 			break;
@@ -763,6 +843,7 @@ const char* TYPEget_kind(Type t) {
 	TypeBody tb = t->u.type->body;
 	if( tb != NULL ){
 		switch (TYPEis(t)) {
+			case indeterminate_: return "INDETERMINATE";
 			case integer_:	return "INTEGER";
 			case real_:			return "REAL";
 			case string_:		return "STRING";

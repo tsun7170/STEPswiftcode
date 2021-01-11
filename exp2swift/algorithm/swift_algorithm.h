@@ -12,14 +12,15 @@
 #include <express/linklist.h>
 #include <express/scope.h>
 
-void ALGget_generics( Scope s, Linked_List generics, Linked_List aggregates );
+extern void ALGget_generics( Scope s, Linked_List generics, Linked_List aggregates );
 
 #define YES_FORCE_OPTIONAL	true
 #define NO_FORCE_OPTIONAL		false
 #define YES_DROP_SINGLE_LABEL	true
 #define NO_DROP_SINGLE_LABEL	false
-void ALGargs_swift( Scope current, bool force_optional, Linked_List args, bool drop_single_label, int level );
-void ALGscope_declarations_swift(Schema schema, Scope s, int level );
+extern void ALGargs_swift( Scope current, bool force_optional, Linked_List args, bool drop_single_label, int level );
+extern void ALGvarnize_args_swift( Linked_List args, int level );
+extern void ALGscope_declarations_swift(Schema schema, Scope s, int level );
 
 
 #endif /* swift_algorithm_h */

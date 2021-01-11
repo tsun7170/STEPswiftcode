@@ -191,45 +191,23 @@ struct Scope_ * ENTITYfind_inherited_entity( struct Scope_ *entity, char * name,
 }
 
 //*TY2020/07/18
-#if 0
-static int ENTITY_check_attr_declarations( Entity leaf, Entity entity, char* attrName, int found ) {
-	if( SCOPE_search_visited(entity) ) return found;
-	
-	/* first look locally */
-	Variable attr = ( Variable )DICTlookup( entity->symbol_table, attrName );
-	if( attr!=NULL && !VARis_redeclaring(attr) ) {
-		found += 1;
-		if( entity == leaf ) {
-			return found;
-		}
-		if( found > 1 ) return found;
-	}
-
-	/* check supertypes */
-	LISTdo( entity->u.entity->supertypes, super, Entity )
-	found = ENTITY_check_attr_declarations(leaf, super, attrName, found);
-	if( found > 1 ) return found;
-	LISTod;
-
-	return found;
-}
-int ENTITYget_attr_ambiguous_count( Entity entity, char* attrName ) {
-	SCOPE_begin_search();
-	int found = ENTITY_check_attr_declarations(entity, entity, attrName, 0);
-	SCOPE_end_search();
-	return found;
-}
-#endif
-int ENTITYget_attr_ambiguous_count( Entity entity, char* attrName ) {
+int ENTITYget_attr_ambiguous_count( Entity entity, const char* attrName ) {
 	Dictionary all_attrs = ENTITYget_all_attributes(entity);
 	Linked_List attr_defs = DICTlookup(all_attrs, attrName);
 	if( attr_defs == NULL )return 0;
 	
 	Entity defined_entity = NULL;
-	LISTdo(attr_defs, attr, Variable) {
+	bool defined_entity_is_subtype = false;
+	LISTdo(attr_defs, attr, Variable) {		
 		if( VARis_redeclaring(attr) ) attr = attr->original_attribute;
-		if( defined_entity != NULL && attr->defined_in != defined_entity ) return 2;
-		defined_entity = attr->defined_in;		
+		if( defined_entity != NULL ){
+			if( (defined_entity_is_subtype == (bool)LIST_aux) && 
+				 	(attr->defined_in != defined_entity) ) return 2;
+		}
+		else{
+			defined_entity = attr->defined_in;		
+			defined_entity_is_subtype = LIST_aux;
+		}
 	}LISTod;
 	
 	assert(defined_entity != NULL);
@@ -433,6 +411,14 @@ void ENTITYadd_instance( Entity entity, Generic instance ) {
     LISTadd_last( entity->u.entity->instances, instance );
 }
 
+//*TY2021/1/6
+Entity ENTITYget_common_super( Entity e1, Entity e2) {
+	if( e1 == e2 ) return e1;
+	
+	return NULL;
+}
+
+
 //*TY2020/07/11
 bool ENTITYis_a( Entity entity, Entity sup ) {
 	if( sup==NULL || entity==NULL ) return false;
@@ -448,15 +434,15 @@ bool ENTITYis_a( Entity entity, Entity sup ) {
 ** Look for a certain entity in the supertype graph of an entity.
 */
 bool ENTITYhas_supertype( Entity sub, Entity sup ) {
-    LISTdo( sub->u.entity->supertypes, sup1, Entity )
-    if( sup1 == sup ) {
-        return true;
-    }
-    if( ENTITYhas_supertype( sup1, sup ) ) {
-        return true;
-    }
-    LISTod;
-    return false;
+	LISTdo( sub->u.entity->supertypes, sup1, Entity ) {
+		if( sup1 == sup ) {
+			return true;
+		}
+		if( ENTITYhas_supertype( sup1, sup ) ) {
+			return true;
+		}
+	}LISTod;
+	return false;
 }
 
 /**
@@ -517,19 +503,36 @@ static void ENTITY_build_all_attributes( Linked_List queue, Dictionary result  )
 	while ( (entity = LISTremove_first_if(queue)) != NULL ) {
 		if( SCOPE_search_visited(entity) ) continue;
 		
-		LISTdo( entity->u.entity->supertypes, super, Entity )
-		LISTadd_last(queue, super);
-		LISTod;
+		LISTadd_all(queue, ENTITYget_supertypes(entity));
 
-    LISTdo( entity->u.entity->attributes, attr, Generic )
-		char* attr_name = VARget_simple_name(attr);
-		Linked_List attr_list = DICTlookup(result, attr_name);
-		if( attr_list == NULL ) {
-			attr_list = LISTcreate();
-			DICTdefine(result, attr_name, attr_list, NULL, OBJ_UNKNOWN);
-		}
-		LISTadd_last(attr_list, attr);
-		LISTod;
+		LISTdo( ENTITYget_attributes(entity), attr, Generic ){
+			char* attr_name = VARget_simple_name(attr);
+			Linked_List attr_list = DICTlookup(result, attr_name);
+			if( attr_list == NULL ) {
+				attr_list = LISTcreate();
+				DICTdefine(result, attr_name, attr_list, NULL, OBJ_UNKNOWN);
+			}
+			LISTadd_last(attr_list, attr);
+		}LISTod;
+	}
+}
+//*TY2021/01/10 added for subtype search
+static void ENTITY_build_all_subtype_attributes( Linked_List queue, Dictionary result  ) {
+	Entity entity;
+	while ( (entity = LISTremove_first_if(queue)) != NULL ) {
+		if( SCOPE_search_visited(entity) ) continue;
+		
+		LISTadd_all(queue, ENTITYget_subtypes(entity));
+
+		LISTdo( ENTITYget_attributes(entity), attr, Generic ){
+			char* attr_name = VARget_simple_name(attr);
+			Linked_List attr_list = DICTlookup(result, attr_name);
+			if( attr_list == NULL ) {
+				attr_list = LISTcreate();
+				DICTdefine(result, attr_name, attr_list, NULL, OBJ_UNKNOWN);
+			}
+			LISTadd_last_marking_aux(attr_list, attr, (Generic)true);
+		}LISTod;
 	}
 }
 Dictionary ENTITYget_all_attributes( Entity entity ) {
@@ -542,6 +545,8 @@ Dictionary ENTITYget_all_attributes( Entity entity ) {
 	
 	SCOPE_begin_search();
 	ENTITY_build_all_attributes(queue, result);
+	LISTadd_all(queue, ENTITYget_subtypes(entity));
+	ENTITY_build_all_subtype_attributes(queue, result);
 	SCOPE_end_search();
 	
 	entity->u.entity->all_attributes = result;
@@ -550,7 +555,7 @@ Dictionary ENTITYget_all_attributes( Entity entity ) {
 }
 
 //*TY2020/07/19
-Variable ENTITYfind_attribute_effective_definition( Entity entity, char* attr_name ) {
+Variable ENTITYfind_attribute_effective_definition( Entity entity, const char* attr_name ) {
 	if( ENTITYget_attr_ambiguous_count(entity, attr_name) > 1 ) return NULL;
 		
 	Dictionary all_attrs = ENTITYget_all_attributes(entity);
@@ -598,6 +603,29 @@ Linked_List ENTITYget_super_entity_list( Entity entity ) {
 	SCOPE_end_search();
 	
 	entity->u.entity->supertype_list = result;
+	return result;
+}
+
+//*TY2021/01/10
+static void ENTITY_build_sub_entitiy_list( Entity entity, Linked_List result ) {
+	if( SCOPE_search_visited(entity) ) return;
+	
+	LISTdo( entity->u.entity->subtypes, sub, Entity )
+	ENTITY_build_sub_entitiy_list(sub, result);
+	LISTod;
+	
+	LISTadd_last(result, entity);
+}
+Linked_List ENTITYget_sub_entity_list( Entity entity ) {
+	if( entity->u.entity->subtype_list ) return entity->u.entity->subtype_list;
+	
+	Linked_List result = LISTcreate();
+	
+	SCOPE_begin_search();
+	ENTITY_build_sub_entitiy_list( entity, result );
+	SCOPE_end_search();
+	
+	entity->u.entity->subtype_list = result;
 	return result;
 }
 

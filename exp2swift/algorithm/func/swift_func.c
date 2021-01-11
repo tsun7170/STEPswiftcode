@@ -77,32 +77,34 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 	// parameters
 	raw("(");
 	ALGargs_swift( func->superscope, NO_FORCE_OPTIONAL, func->u.func->parameters, YES_DROP_SINGLE_LABEL, level );
-	raw(") -> ");
+	raw(") ");
 	
 	// return type
-//	positively_wrap();
+	aggressively_wrap();
 	bool return_optional = YES_FORCE_OPTIONAL;
 	if( TYPEis_boolean(func->u.func->return_type) || TYPEis_logical(func->u.func->return_type) ) return_optional = NO_FORCE_OPTIONAL;
+	raw("-> ");
 	optionalType_swift(func->superscope, func->u.func->return_type, return_optional, NOT_IN_COMMENT);
 	
 	if(!LISTis_empty(aggregates)) {
 		// constraint for aggregate element type
-		raw(" ");
+		raw("\n");
+		indent_swift(level);
 		char buf[BUFSIZ];
 		char* sep = "where ";
 		LISTdo(aggregates, atag, Type) {
-			Type base = atag->u.type->head;	//hack!
+			Type base = atag->u.type->head;	
 			positively_wrap();
-			wrap("%s%s.Element == ",sep,TYPE_swiftName(atag,NULL,buf));
+			wrap("%s%s.ELEMENT == ",sep,TYPE_swiftName(atag,NULL,buf));
 			TYPE_head_swift(func->superscope, base, false);
 			sep = ", ";
 		}LISTod;
 	}
-	wrap(" {\n");
+	wrap(" {\n\n");
 	
 	// function body
 	{	int level2 = level+nestingIndent_swift;
-		
+		ALGvarnize_args_swift(func->u.func->parameters, level2);
 		ALGscope_declarations_swift(schema, func, level2);
 		STMTlist_swift(func, func->u.func->body, level2);
 	}

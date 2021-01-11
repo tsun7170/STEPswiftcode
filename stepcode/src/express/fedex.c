@@ -235,7 +235,7 @@ int main( int argc, char ** argv ) {
         return result;
     }
 //*TY2020/08/23
-	check_aggregate_initializers("after EXPRESSparse", true);
+//	check_aggregate_initializers("after EXPRESSparse", true);
 	
 #ifdef debugging
     if( malloc_debug_resolve ) {
@@ -253,7 +253,7 @@ int main( int argc, char ** argv ) {
             return result;
         }
 			//*TY2020/08/23
-				check_aggregate_initializers("after EXPRESSresolve",true);
+//				check_aggregate_initializers("after EXPRESSresolve",true);
     }
 
     if( EXPRESSbackend ) {

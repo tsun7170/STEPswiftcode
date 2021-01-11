@@ -161,24 +161,18 @@ Generic LISTadd_first( Linked_List list, Generic item ) {
 }
 
 Generic LISTadd_last( Linked_List list, Generic item ) {
-#if 0
-    Link        node;
-
-    node = LINK_new();
-    node->data = item;
-    ( node->prev = list->mark->prev )->next = node;
-    ( list->mark->prev = node )->next = list->mark;
-    return item;
-#else
+	return LISTadd_last_marking_aux(list, item, NULL);
+}
+Generic LISTadd_last_marking_aux ( Linked_List list, Generic item, Generic aux ) {
 	//*TY2020/09/04
 	int n = LISTget_length(list);
 
 	Link node = LISTLINKadd_last(list);
 	node->data = item;
+	node->aux = aux;
 	
 	assert(LISTget_length(list) == n+1);
 	return item;
-#endif
 }
 
 Generic LISTadd_after( Linked_List list, Link link, Generic item ) {
@@ -283,6 +277,18 @@ Generic LISTget_first( Linked_List list ) {
     }
     item = node->data;
     return item;
+}
+//*TY2021/01/10
+Generic LISTget_first_aux( Linked_List list ) {
+		Link node;
+		Generic item;
+
+		node = list->mark->next;
+		if( node == list->mark ) {
+				return NULL;
+		}
+		item = node->aux;
+		return item;
 }
 
 Generic LISTget_second( Linked_List list ) {

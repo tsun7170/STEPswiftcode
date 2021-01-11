@@ -36,7 +36,7 @@ static void listSelectionEntityAttributes(Type select_type, Entity entity, int l
 	Linked_List attr_defs_from_entity;
 	
 	DICTdo_init( all_attrs_from_entity, &de );
-	while( 0 != ( attr_defs_from_entity = ( Linked_List )DICTdo( &de ) ) ) {
+	while( 0 != (attr_defs_from_entity=DICTdo(&de)) ) {
 		Variable attr = LISTget_first(attr_defs_from_entity);
 		char* attr_name = VARget_simple_name(attr);
 
@@ -191,7 +191,7 @@ static void selectTypeGroupReference_swift(Type select_type, int level) {
 		}
 		
 		indent_swift(level);
-		raw("public var %s%s: ", superEntity_swiftPrefix, canonical_swiftName(entity_name, buf)); 
+		raw("public var %s%s: ", superEntity_swiftPrefix, as_entitySwiftName_n(entity_name, buf, sizeof(buf))); 
 		wrap("%s? {\n", buf);
 		
 		{	int level2 = level+nestingIndent_swift;
@@ -204,15 +204,15 @@ static void selectTypeGroupReference_swift(Type select_type, int level) {
 				if( TYPEis_select(selection) ) {
 					indent_swift(level2);
 					raw("case .%s(let select): return select",selectCase_swiftName(selection, buf));
-					wrap(".%s%s\n",superEntity_swiftPrefix,canonical_swiftName(entity_name, buf));
+					wrap(".%s%s\n",superEntity_swiftPrefix,as_entitySwiftName_n(entity_name, buf, sizeof(buf)));
 				}
 				else {
 					Entity entity = TYPEget_body(selection)->entity;
 					
 					indent_swift(level2);
-					raw("case .%s(let entity): return entity",ENTITY_swiftName(entity, "", "", NULL, buf));
+					raw("case .%s(let entity): return entity",selectCase_swiftName(selection, buf));
 					if( entity->symbol.name != entity_name ) {
-						wrap(".%s%s",superEntity_swiftPrefix,canonical_swiftName(entity_name, buf));
+						wrap(".%s%s",superEntity_swiftPrefix,as_entitySwiftName_n(entity_name, buf, sizeof(buf)));
 					}
 					raw("\n");
 				}
@@ -271,7 +271,7 @@ static void selectTypeGroupReference_swiftProtocol(Schema schema, Type select_ty
 		}
 		
 		indent_swift(level);
-		raw("var %s%s: ", superEntity_swiftPrefix, canonical_swiftName(entity_name, buf)); 
+		raw("var %s%s: ", superEntity_swiftPrefix, as_entitySwiftName_n(entity_name, buf, sizeof(buf))); 
 		wrap("%s.%s? { get }\n", schemaname,buf);
 	}
 }
@@ -314,7 +314,7 @@ static void selectSubtypeGroupReference_swift(Schema schema, Type select_type, i
 		}
 		
 		indent_swift(level);
-		raw("var %s%s: ", superEntity_swiftPrefix, canonical_swiftName(entity_name, buf)); 
+		raw("var %s%s: ", superEntity_swiftPrefix, as_entitySwiftName_n(entity_name, buf, sizeof(buf))); 
 		wrap("%s.%s? { rep.%s%s }\n", schemaname, buf, superEntity_swiftPrefix, buf);
 	}
 }
@@ -341,12 +341,16 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 			mark = NULL;
 		}
 		
-		Variable attr = SELECTfind_attribute_effective_definition(select_type, attr_name);
-		
+//		Variable attr = SELECTfind_attribute_effective_definition(select_type, attr_name);
+		Type attr_type = SELECTfind_common_type(attr_defs);
+		if( attr_type == NULL ) continue;
+			
 		indent_swift(level);
 		char buf[BUFSIZ];
-		raw("public var %s: ", attribute_swiftName(attr,buf) );
-		variableType_swift(NULL, attr, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
+//		raw("public var %s: ", attribute_swiftName(attr,buf) );
+//		variableType_swift(NULL, attr, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
+		raw("public var %s: ", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+		optionalType_swift(NULL, attr_type, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
 		raw(" {\n");
 
 		{	int level2 = level+nestingIndent_swift;
@@ -358,16 +362,39 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 			LISTdo_links(attr_defs, def) {
 				Type selection = def->aux;
 				if( TYPEis_select(selection) ) {
+					Variable base_attr = SELECTfind_attribute_effective_definition(selection, attr_name);
+					assert(base_attr != NULL);
+					
 					indent_swift(level2);
-					raw("case .%s(let select): return select",selectCase_swiftName(selection, buf));
-					wrap(".%s\n", attribute_swiftName(attr,buf));
+					raw("case .%s(let select): return ",selectCase_swiftName(selection, buf));
+			
+					if( TYPEs_are_equal(attr_type, base_attr->type) ){
+						wrap("select.%s\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+					}
+					else {
+						TYPE_head_swift(NULL, attr_type, WO_COMMENT);
+						wrap("(select.%s)\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+					}
 				}
 				else {
 					Entity entity = TYPEget_body(selection)->entity;
-					
-					indent_swift(level2);
-					raw("case .%s(let entity): return entity",ENTITY_swiftName(entity, "", "", NULL, buf));
-					wrap(".%s\n", attribute_swiftName(attr,buf));
+					Variable base_attr = ENTITYfind_attribute_effective_definition(entity, attr_name);
+					if( base_attr != NULL ){
+						indent_swift(level2);
+						raw("case .%s(let entity): return ",selectCase_swiftName(selection, buf));
+						
+						if( TYPEs_are_equal(attr_type, base_attr->type) ){
+							wrap("entity.%s\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+						}
+						else {
+							TYPE_head_swift(NULL, attr_type, WO_COMMENT);
+							wrap("(entity.%s)\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+						}
+					}
+					else {
+						indent_swift(level2);
+						raw("case .%s(let entity): return nil // AMBIGUOUS ATTRIBUTE (ENTITY LEVEL)\n",selectCase_swiftName(selection, buf));
+					}
 				}
 				--unhandled;
 			}LISTod;		
@@ -388,14 +415,14 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 static void selectTypeAttributeReference_swiftProtocol(Schema schema, Type select_type, int level) {
 	Dictionary all_attrs = SELECTget_all_attributes(select_type);
 	DictionaryEntry de;
-//	Linked_List attr_defs;
-	const char* attr_name;
+	Linked_List attr_defs;
+//	const char* attr_name;
 	
 	char* mark = "//MARK: ENTITY ATTRIBUTE REFERENCES\n";
 
 	DICTdo_init(all_attrs, &de);
-	while ( 0 != (attr_name = DICTdo_key(&de))) {
-//		const char* attr_name = DICT_key;
+	while ( 0 != (attr_defs = DICTdo(&de))) {
+		const char* attr_name = DICT_key;
 		if( SELECTget_attr_ambiguous_count(select_type, attr_name) > 1 ) continue;
 		
 		if( mark ) {
@@ -404,29 +431,34 @@ static void selectTypeAttributeReference_swiftProtocol(Schema schema, Type selec
 			mark = NULL;
 		}
 		
-		Variable attr = SELECTfind_attribute_effective_definition(select_type, attr_name);
+//		Variable attr = SELECTfind_attribute_effective_definition(select_type, attr_name);
+//		
+//		indent_swift(level);
+//		char buf[BUFSIZ];
+//		raw("var %s: ", attribute_swiftName(attr,buf) );
+//		variableType_swift(schema->superscope, attr, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
+
+		Type attr_type = SELECTfind_common_type(attr_defs);
+		if( attr_type == NULL ) continue;
 		
 		indent_swift(level);
 		char buf[BUFSIZ];
-		raw("var %s: ", attribute_swiftName(attr,buf) );
-//		raw(SCHEMA_swiftName(schema, buf));
-//		positively_wrap();
-//		raw(".");
-		variableType_swift(schema->superscope, attr, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
+		raw("var %s: ", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+		optionalType_swift(schema->superscope, attr_type, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
 		raw(" { get }\n");
 	}
 }
 static void selectSubtypeAttributeReference_swift(Schema schema, Type select_type, int level) {
 	Dictionary all_attrs = SELECTget_all_attributes(select_type);
 	DictionaryEntry de;
-//	Linked_List attr_defs;
-	const char* attr_name;
+	Linked_List attr_defs;
+//	const char* attr_name;
 	
 	char* mark = "//MARK: ENTITY ATTRIBUTE REFERENCES\n";
 
 	DICTdo_init(all_attrs, &de);
-	while ( 0 != (attr_name = DICTdo_key(&de))) {
-//		const char* attr_name = DICT_key;
+	while ( 0 != (attr_defs = DICTdo(&de))) {
+		const char* attr_name = DICT_key;
 		if( SELECTget_attr_ambiguous_count(select_type, attr_name) > 1 ) continue;
 		
 		if( mark ) {
@@ -435,19 +467,22 @@ static void selectSubtypeAttributeReference_swift(Schema schema, Type select_typ
 			mark = NULL;
 		}
 		
-		Variable attr = SELECTfind_attribute_effective_definition(select_type, attr_name);
+//		Variable attr = SELECTfind_attribute_effective_definition(select_type, attr_name);
+//		
+//		indent_swift(level);
+//		char attrNameBuf[BUFSIZ];
+//		raw("var %s: ", attribute_swiftName(attr,attrNameBuf) );
+//		variableType_swift(schema->superscope, attr, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
+		
+		Type attr_type = SELECTfind_common_type(attr_defs);
+		if( attr_type == NULL ) continue;
 		
 		indent_swift(level);
-		char attrNameBuf[BUFSIZ];
-		raw("var %s: ", attribute_swiftName(attr,attrNameBuf) );
-//		{
-//			char buf[BUFSIZ];
-//			raw(SCHEMA_swiftName(schema, buf));
-//		}
-//		positively_wrap();
-//		raw(".");
-		variableType_swift(schema->superscope, attr, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
-		raw(" { rep.%s }\n", attrNameBuf);
+		char buf[BUFSIZ];
+		raw("var %s: ", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+		optionalType_swift(schema->superscope, attr_type, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
+
+		raw(" { rep.%s }\n", attr_name);
 	}
 }
 
@@ -494,6 +529,22 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 
 		LISTdo( typeBody->list, selection, Type ) {
 			if( TYPEis_entity(selection) )continue;
+			indent_swift(level2);
+			raw("%s let base = underlyingType as? %s {\n",
+					ifhead,TYPE_swiftName(selection, select_type->superscope, buf));
+			{	int level3 = level2+nestingIndent_swift;
+				indent_swift(level3);
+				raw("self = .%s(base)\n",selectCase_swiftName(selection, buf));
+			}
+			indent_swift(level2);
+			raw("}\n");
+
+			ifhead = "else if";			
+			emitted = true;
+		}LISTod;
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			if( TYPEis_entity(selection) )continue;
 			if( TYPEis_select(selection) ){
 				indent_swift(level2);
 				raw("%s let base = %s(possiblyFrom: underlyingType) {\n",
@@ -515,7 +566,7 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 				{	int level3 = level2+nestingIndent_swift;
 					indent_swift(level3);
 					raw("self = .%s( ",selectCase_swiftName(selection, buf));
-					raw("%s(fundamental) )\n",TYPE_swiftName(selection, select_type->superscope, buf));
+					raw("%s(fundamental: fundamental) )\n",TYPE_swiftName(selection, select_type->superscope, buf));
 				}
 				indent_swift(level2);
 				raw("}\n");
@@ -600,7 +651,7 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	
 
 	/*
-	 public init?<S: SDAISelectType>(possiblyFromSelect select: S?) {
+	 public init?<S: SDAISelectType>(possiblyFrom select: S?) {
 	 guard let select = select else { return nil }
 	 
 	 	if let fundamental = select.asFundamentalType as? Self {
@@ -614,7 +665,7 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	 } 
 	 	 */
 	indent_swift(level);
-	raw("public init?<S: SDAISelectType>(possiblyFromSelect select: S?) {\n");
+	raw("public init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
 	{	int level2=level+nestingIndent_swift;
 		indent_swift(level2);
 		raw("guard let select = select else { return nil }\n\n");
@@ -628,7 +679,7 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 		
 		LISTdo( typeBody->list, selection, Type ) {
 			indent_swift(level2);
-			raw("else if let base = %s(possiblyFrom: select) { self.init(base) }\n", 
+			raw("else if let base = %s(possiblyFrom: select) {\n", 
 					TYPE_swiftName(selection, select_type->superscope, buf));
 			{	int level3 = level2+nestingIndent_swift;
 				indent_swift(level3);
@@ -747,7 +798,7 @@ static void selectTypeValueComparison_swift(Type select_type,  int level) {
 		
 		LISTdo( typeBody->list, selection, Type ) {
 			indent_swift(level2);
-			raw("case .%s(let selection): return selection.isValueEqual(to: rhs)\n", selectCase_swiftName(selection, buf));
+			raw("case .%s(let selection): return selection.value.isValueEqual(to: rhs)\n", selectCase_swiftName(selection, buf));
 		} LISTod;		
 		
 		indent_swift(level2);
@@ -805,16 +856,16 @@ static void selectEntityReference_swift(Type select_type,  int level) {
 		
 		LISTdo( typeBody->list, selection, Type ) {
 			indent_swift(level2);
-			raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
+			raw("case .%s", selectCase_swiftName(selection, buf));
 
 			if( TYPEis_entity(selection)){
-				raw("return selection\n");
+				raw("(let selection): return selection\n");
 			}
 			else if( TYPEis_select(selection)){
-				raw("return selection.entityReference\n");
+				raw("(let selection): return selection.entityReference\n");
 			}
 			else {
-				raw("return nil\n");
+				raw(": return nil\n");
 			}
 		} LISTod;		
 		
@@ -902,6 +953,26 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 			indent_swift(level2);
 			raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
 			raw("return selection[index]\n");
+		} LISTod;		
+		
+		indent_swift(level2);
+		raw("}\n");
+	}
+	indent_swift(level);
+	raw("}\n");
+
+	raw("\n");
+	indent_swift(level);
+	raw("public func makeIterator() -> AnyIterator<ELEMENT?> {\n");
+	{	int level2 = level+nestingIndent_swift;
+		
+		indent_swift(level2);
+		raw("switch self {\n");
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			indent_swift(level2);
+			raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
+			raw("return AnyIterator<ELEMENT?>(selection.makeIterator())\n");
 		} LISTod;		
 		
 		indent_swift(level2);
@@ -1088,12 +1159,14 @@ void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {
 	// subtype protocol
 	indent_swift(level);
 	raw( "public protocol %s__%s__subtype: ", schemaname, typename );
-	wrap("%s__%s__type, SDAIDefinedType ", schemaname, typename );
-	force_wrap();
+	wrap("%s__%s__type, SDAIDefinedType\n", schemaname, typename );
 	indent_swift(level);
-	raw("where ");
-//	int oldindent = captureWrapIndent();
-	raw("Supertype == %s.%s\n", schemaname, typename);
+	wrap("where Supertype: %s__%s__type\n", schemaname, typename);
+//	force_wrap();
+//	indent_swift(level);
+//	raw("where ");
+////	int oldindent = captureWrapIndent();
+//	raw("Supertype == %s.%s\n", schemaname, typename);
 //	force_wrap();
 //	wrap( "Supertype.FundamentalType == %s.%s\n", schemaname, typename);
 //	restoreWrapIndent(oldindent);

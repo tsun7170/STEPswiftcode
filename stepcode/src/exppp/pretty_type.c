@@ -76,6 +76,10 @@ void TYPE_body_out( Type t, int level ) {
     TypeBody tb = TYPEget_body( t );
 
     switch( tb->type ) {
+			case indeterminate_:	//*TY2020/12/31
+				wrap( " (*INDETERMINATE*)" );
+				break;
+				
         case integer_:
             wrap( " INTEGER" );
             break;
