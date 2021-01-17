@@ -23,6 +23,7 @@ extern const char* canonical_dictName(const char* name, char buf[BUFSIZ]);
 
 
 extern const char * variable_swiftName(Variable v, char buf[BUFSIZ]);
+extern const char * asVariable_swiftName_n(const char* symbol_name, char* buf, int maxlen);
 extern void variableType_swift(Scope current, Variable v, bool force_optional, SwiftOutCommentOption in_comment);
 extern void optionalType_swift(Scope current, Type type, bool optional, SwiftOutCommentOption in_comment);
 

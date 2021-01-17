@@ -26,26 +26,28 @@ static void CASE_swift( Scope algo, struct Case_Statement_ * case_stmt, int leve
 	EXPR_swift(algo, case_stmt->selector, case_stmt->selector->return_type, NO_PAREN);
 	raw(" {\n");
 	
+	bool otherwise_emitted = false;
+	
 	LISTdo( case_stmt->cases, case_item, Case_Item ) {
 		if( case_item->labels ) {
-			// case label mark
-			indent_swift(level);
-			raw("//MARK:");
-			indent_with_char(level/nestingIndent_swift-3, '.');
-			
+//			// case label mark
+//			indent_swift(level);
+//			raw("//MARK:");
+//			indent_with_char(level/nestingIndent_swift-3, '.');
+//			
 			char* sep = "";
-			LISTdo_n( case_item->labels, label, Expression, b ) {
-				raw("%s",sep);
-				EXPR_swift(algo, label, NULL, NO_PAREN);
-				sep = ", ";
-			} LISTod
-			raw("\n");
+//			LISTdo_n( case_item->labels, label, Expression, b ) {
+//				raw("%s",sep);
+//				EXPR_swift(algo, label, NULL, NO_PAREN);
+//				sep = ", ";
+//			} LISTod
+//			raw("\n");
 						
 			// case label
 			indent_swift(level);
 			raw("case ");
 			
-			sep = "";
+//			sep = "";
 			LISTdo_n( case_item->labels, label, Expression, b ) {
 				raw("%s",sep);
 				EXPR_swift(algo, label, NULL, NO_PAREN);
@@ -61,8 +63,14 @@ static void CASE_swift( Scope algo, struct Case_Statement_ * case_stmt, int leve
 			indent_swift(level);
 			raw("default:\n");
 			STMT_swift(algo, case_item->action, level2);
+			otherwise_emitted = true;
 		}
 	} LISTod
+	
+	if( !otherwise_emitted ){
+		indent_swift(level);
+		raw("default: break\n");
+	}
 	
 	indent_swift(level);
 	raw("} //end switch\n");
@@ -195,7 +203,7 @@ void STMT_swift( Scope algo, Statement stmt, int level ) {
 			raw(" = ");			
 			//		EXPR_swift(NULL, stmt->u.assign->rhs, NO_PAREN);
 			aggressively_wrap();
-			EXPRassignment_rhs_swift(algo, stmt->u.assign->rhs, lhs->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, stmt->u.assign->rhs, lhs->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 			raw("\n");
 		}
 			break;
@@ -265,7 +273,7 @@ void STMT_swift( Scope algo, Statement stmt, int level ) {
 					EXPR_swift(algo, actual_param, actual_param->return_type, NO_PAREN );
 				}
 				else {
-					EXPRassignment_rhs_swift(algo, actual_param, formal_param->type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+					EXPRassignment_rhs_swift(YES_RESOLVING_GENERIC, algo, actual_param, formal_param->type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 				}
 				
 				sep = ", ";
@@ -280,7 +288,7 @@ void STMT_swift( Scope algo, Statement stmt, int level ) {
 			raw("return ");
 			if( stmt->u.ret->value ) {
 				assert(algo->u_tag==scope_is_func);
-				EXPRassignment_rhs_swift(algo, stmt->u.ret->value, algo->u.func->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, stmt->u.ret->value, algo->u.func->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 //				EXPR_swift(NULL, stmt->u.ret->value, NO_PAREN);
 			}
 			raw("\n");

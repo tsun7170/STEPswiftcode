@@ -267,7 +267,7 @@ void positively_wrap(void) {
 	if( curpos > (exppp_linelength *2)/3 ) force_wrap(); 
 }
 void aggressively_wrap(void) {
-	if( curpos > (exppp_linelength )/2 ) force_wrap(); 
+	if( curpos > (exppp_linelength )/3 ) force_wrap(); 
 }
 int captureWrapIndent(void) {
 	int old_indent2 = indent2;

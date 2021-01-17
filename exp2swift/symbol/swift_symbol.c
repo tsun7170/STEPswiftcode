@@ -89,7 +89,12 @@ extern const char* canonical_dictName(const char* name, char buf[BUFSIZ]) {
 
 
 const char * variable_swiftName(Variable v, char buf[BUFSIZ]) {
-	return canonical_swiftName(v->name->symbol.name, buf);
+//	return canonical_swiftName(v->name->symbol.name, buf);
+	return asVariable_swiftName_n(v->name->symbol.name, buf, BUFSIZ);
+}
+
+const char * asVariable_swiftName_n(const char* symbol_name, char* buf, int maxlen){
+	return canonical_swiftName_n(symbol_name, buf, maxlen);
 }
 
 void variableType_swift(Scope current, Variable v, bool force_optional, SwiftOutCommentOption in_comment) {

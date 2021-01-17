@@ -30,8 +30,8 @@
 
 //MARK: - select type
 
-static void listSelectionEntityAttributes(Type select_type, Entity entity, int level) {
-	Dictionary all_attrs_from_entity = ENTITYget_all_attributes(entity);
+static void listSelectionEntityAttributes(Type select_type, Entity case_entity, int level) {
+	Dictionary all_attrs_from_entity = ENTITYget_all_attributes(case_entity);
 	DictionaryEntry de;
 	Linked_List attr_defs_from_entity;
 	
@@ -43,19 +43,19 @@ static void listSelectionEntityAttributes(Type select_type, Entity entity, int l
 		indent_swift(level);
 		raw("ATTR:  %s: ",attr_name);
 
-		if( ENTITYget_attr_ambiguous_count(entity, attr_name) > 1 ) {
-			wrap("(AMBIGUOUS(ENTITY LEVEL))\n");			
+		if( ENTITYget_attr_ambiguous_count(case_entity, attr_name) > 1 ) {
+			wrap("(AMBIGUOUS (CASE LEVEL))\n");			
 		}
 		else {
 			TYPE_head_out(attr->type, level);
 			
 			if( SELECTget_attr_ambiguous_count(select_type, attr_name) > 1 ) {
-				if( VARis_redeclaring(attr) ) attr = attr->original_attribute;
-				wrap("(AMBIGUOUS(SELECT LEVEL), ");			
-				wrap("ORIGIN = %s)", attr->defined_in->symbol.name);			
+//				if( VARis_redeclaring(attr) ) attr = attr->original_attribute;
+				wrap(" (AMBIGUOUS (SELECT LEVEL))");			
+//				wrap("ORIGIN = %s)", attr->defined_in->symbol.name);			
 			}
 			else if( !SELECTattribute_is_unique(select_type, attr_name) ) {
-				raw(" ***");
+				raw(" *** Multiple Select Case Sources ***");
 			}
 			raw("\n");
 		}
@@ -63,8 +63,8 @@ static void listSelectionEntityAttributes(Type select_type, Entity entity, int l
 
 }
 
-static void listSelectionSelectAttributes(Type select_type, Type select, int level) {
-	Dictionary all_attrs_from_select = SELECTget_all_attributes(select_type);
+static void listSelectionSelectAttributes(Type select_type, Type case_select_type, int level) {
+	Dictionary all_attrs_from_select = SELECTget_all_attributes(case_select_type);
 	DictionaryEntry de;
 	Linked_List attr_defs;
 	
@@ -76,28 +76,31 @@ static void listSelectionSelectAttributes(Type select_type, Type select, int lev
 		indent_swift(level);
 		raw("ATTR:  %s: ",attr_name);
 		
-		if( SELECTget_attr_ambiguous_count(select_type, attr_name) > 1 ) {
-			wrap("(AMBIGUOUS(SELECT LEVEL), ");
-			wrap("ORIGINS = ");
-			char* sep = "";
-			LISTdo(attr_defs, amb, Variable) {
-				if( VARis_redeclaring(amb) ) amb = amb->original_attribute;
-				Entity origin = amb->defined_in;
-				raw(sep);
-				wrap(origin->symbol.name);
-				sep = ", ";
-			}LISTod;
-			raw(")");
+		if( SELECTget_attr_ambiguous_count(case_select_type, attr_name) > 1 ) {
+			wrap("(AMBIGUOUS (CASE LEVEL))\n");
+//			wrap("ORIGINS = ");
+//			char* sep = "";
+//			LISTdo(attr_defs, amb, Variable) {
+//				if( VARis_redeclaring(amb) ) amb = amb->original_attribute;
+//				Entity origin = amb->defined_in;
+//				raw(sep);
+//				wrap(origin->symbol.name);
+//				sep = ", ";
+//			}LISTod;
+//			raw(")\n");
 		}
 		else {
-			attr = SELECTfind_attribute_effective_definition(select_type, attr_name);
+			attr = SELECTfind_attribute_effective_definition(case_select_type, attr_name);
 			TYPE_head_out(attr->type, level);
 			
-			if( !SELECTattribute_is_unique(select_type, attr_name) ) {
-				raw(" ***");
+			if( SELECTget_attr_ambiguous_count(select_type, attr_name) > 1 ) {
+				wrap(" (AMBIGUOUS (SELECT LEVEL))");			
 			}
+			else if( !SELECTattribute_is_unique(case_select_type, attr_name) ) {
+				raw(" *** Multiple Select Case Sources ***");
+			}
+			raw("\n");		
 		}
-		raw("\n");		
 	}
 }
 
@@ -321,8 +324,8 @@ static void selectSubtypeGroupReference_swift(Schema schema, Type select_type, i
 
 //MARK: - attribute reference codes
 static void selectTypeAttributeReference_swift(Type select_type, int level) {
-	TypeBody typeBody = TYPEget_body(select_type);
-	int selection_count = LISTget_length(typeBody->list);
+	TypeBody typebody = TYPEget_body(select_type);
+	int selection_case_count = LISTget_length(typebody->list);
 
 	Dictionary all_attrs = SELECTget_all_attributes(select_type);
 	DictionaryEntry de;
@@ -341,47 +344,30 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 			mark = NULL;
 		}
 		
-//		Variable attr = SELECTfind_attribute_effective_definition(select_type, attr_name);
 		Type attr_type = SELECTfind_common_type(attr_defs);
 		if( attr_type == NULL ) continue;
 			
 		indent_swift(level);
 		char buf[BUFSIZ];
-//		raw("public var %s: ", attribute_swiftName(attr,buf) );
-//		variableType_swift(NULL, attr, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
 		raw("public var %s: ", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
-		optionalType_swift(NULL, attr_type, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
+		optionalType_swift(NO_QUALIFICATION, attr_type, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
 		raw(" {\n");
 
 		{	int level2 = level+nestingIndent_swift;
 			
 			indent_swift(level2);
 			raw("switch self {\n");
-			int unhandled = selection_count;
+			int unhandled = selection_case_count;
 			
-			LISTdo_links(attr_defs, def) {
-				Type selection = def->aux;
-				if( TYPEis_select(selection) ) {
-					Variable base_attr = SELECTfind_attribute_effective_definition(selection, attr_name);
-					assert(base_attr != NULL);
-					
-					indent_swift(level2);
-					raw("case .%s(let select): return ",selectCase_swiftName(selection, buf));
-			
-					if( TYPEs_are_equal(attr_type, base_attr->type) ){
-						wrap("select.%s\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
-					}
-					else {
-						TYPE_head_swift(NULL, attr_type, WO_COMMENT);
-						wrap("(select.%s)\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
-					}
-				}
-				else {
-					Entity entity = TYPEget_body(selection)->entity;
-					Variable base_attr = ENTITYfind_attribute_effective_definition(entity, attr_name);
+			LISTdo(typebody->list, selection_case, Type){
+				if( TYPEis_entity(selection_case) ) {
+					Entity case_entity = TYPEget_body(selection_case)->entity;
+
+					Variable base_attr = ENTITYfind_attribute_effective_definition(case_entity, attr_name);
 					if( base_attr != NULL ){
 						indent_swift(level2);
-						raw("case .%s(let entity): return ",selectCase_swiftName(selection, buf));
+						--unhandled;
+						raw("case .%s(let entity): return ",selectCase_swiftName(selection_case, buf));
 						
 						if( TYPEs_are_equal(attr_type, base_attr->type) ){
 							wrap("entity.%s\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
@@ -391,13 +377,80 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 							wrap("(entity.%s)\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
 						}
 					}
-					else {
+					else if( ENTITYget_attr_ambiguous_count(case_entity, attr_name) > 1 ){
 						indent_swift(level2);
-						raw("case .%s(let entity): return nil // AMBIGUOUS ATTRIBUTE (ENTITY LEVEL)\n",selectCase_swiftName(selection, buf));
+						--unhandled;
+						raw("case .%s/*(let entity)*/: return nil // AMBIGUOUS ATTRIBUTE ",selectCase_swiftName(selection_case, buf));
+						raw("for %s\n", TYPE_swiftName(selection_case, NO_QUALIFICATION, buf));
 					}
 				}
-				--unhandled;
-			}LISTod;		
+
+				else if( TYPEis_select(selection_case) ) {
+					Variable base_attr = SELECTfind_attribute_effective_definition(selection_case, attr_name);
+					if(base_attr != NULL ){
+						indent_swift(level2);
+						--unhandled;
+						raw("case .%s(let select): return ",selectCase_swiftName(selection_case, buf));
+						
+						if( TYPEs_are_equal(attr_type, base_attr->type) ){
+							wrap("select.%s\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+						}
+						else {
+							TYPE_head_swift(NULL, attr_type, WO_COMMENT);
+							wrap("(select.%s)\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+						}
+					}
+					else if( SELECTget_attr_ambiguous_count(selection_case, attr_name) > 1 ){
+						indent_swift(level2);
+						--unhandled;
+						raw("case .%s/*(let select)*/: return nil // AMBIGUOUS ATTRIBUTE ",selectCase_swiftName(selection_case, buf));
+						raw("for %s\n", TYPE_swiftName(selection_case, NO_QUALIFICATION, buf));
+					}
+				}				
+			}LISTod;
+			
+//			
+//			LISTdo_links(attr_defs, def) {
+//				Type selection = def->aux;
+//				if( TYPEis_select(selection) ) {
+//					Variable base_attr = SELECTfind_attribute_effective_definition(selection, attr_name);
+//					assert(base_attr != NULL);
+//					
+//					indent_swift(level2);
+//					raw("case .%s(let select): return ",selectCase_swiftName(selection, buf));
+//			
+//					if( TYPEs_are_equal(attr_type, base_attr->type) ){
+//						wrap("select.%s\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+//					}
+//					else {
+//						TYPE_head_swift(NULL, attr_type, WO_COMMENT);
+//						wrap("(select.%s)\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+//					}
+//				}
+//				
+//				else {
+//					Entity entity = TYPEget_body(selection)->entity;
+//					Variable base_attr = ENTITYfind_attribute_effective_definition(entity, attr_name);
+//					if( base_attr != NULL ){
+//						indent_swift(level2);
+//						raw("case .%s(let entity): return ",selectCase_swiftName(selection, buf));
+//						
+//						if( TYPEs_are_equal(attr_type, base_attr->type) ){
+//							wrap("entity.%s\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+//						}
+//						else {
+//							TYPE_head_swift(NULL, attr_type, WO_COMMENT);
+//							wrap("(entity.%s)\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+//						}
+//					}
+//					else {
+//						indent_swift(level2);
+//						raw("// case .%s(let entity): return nil // AMBIGUOUS ATTRIBUTE (ENTITY LEVEL)\n",selectCase_swiftName(selection, buf));
+//						continue;
+//					}
+//				}
+//				--unhandled;
+//			}LISTod;		
 			
 			if( unhandled > 0 ){
 				indent_swift(level2);
@@ -425,21 +478,14 @@ static void selectTypeAttributeReference_swiftProtocol(Schema schema, Type selec
 		const char* attr_name = DICT_key;
 		if( SELECTget_attr_ambiguous_count(select_type, attr_name) > 1 ) continue;
 		
+		Type attr_type = SELECTfind_common_type(attr_defs);
+		if( attr_type == NULL ) continue;
+		
 		if( mark ) {
 			indent_swift(level);
 			raw(mark);
 			mark = NULL;
 		}
-		
-//		Variable attr = SELECTfind_attribute_effective_definition(select_type, attr_name);
-//		
-//		indent_swift(level);
-//		char buf[BUFSIZ];
-//		raw("var %s: ", attribute_swiftName(attr,buf) );
-//		variableType_swift(schema->superscope, attr, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
-
-		Type attr_type = SELECTfind_common_type(attr_defs);
-		if( attr_type == NULL ) continue;
 		
 		indent_swift(level);
 		char buf[BUFSIZ];
@@ -461,28 +507,21 @@ static void selectSubtypeAttributeReference_swift(Schema schema, Type select_typ
 		const char* attr_name = DICT_key;
 		if( SELECTget_attr_ambiguous_count(select_type, attr_name) > 1 ) continue;
 		
+		Type attr_type = SELECTfind_common_type(attr_defs);
+		if( attr_type == NULL ) continue;
+		
 		if( mark ) {
 			indent_swift(level);
 			raw(mark);
 			mark = NULL;
 		}
 		
-//		Variable attr = SELECTfind_attribute_effective_definition(select_type, attr_name);
-//		
-//		indent_swift(level);
-//		char attrNameBuf[BUFSIZ];
-//		raw("var %s: ", attribute_swiftName(attr,attrNameBuf) );
-//		variableType_swift(schema->superscope, attr, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
-		
-		Type attr_type = SELECTfind_common_type(attr_defs);
-		if( attr_type == NULL ) continue;
-		
 		indent_swift(level);
-		char buf[BUFSIZ];
-		raw("var %s: ", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+		char attr_swift_name[BUFSIZ];
+		raw("var %s: ", as_attributeSwiftName_n(attr_name, attr_swift_name, BUFSIZ));
 		optionalType_swift(schema->superscope, attr_type, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
 
-		raw(" { rep.%s }\n", attr_name);
+		raw(" { rep.%s }\n", attr_swift_name);
 	}
 }
 

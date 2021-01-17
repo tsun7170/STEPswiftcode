@@ -47,7 +47,7 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		char buf[BUFSIZ];
 		raw("func %s( ", RULE_swiftName(rule,buf));
 	}
-	wrap("allEntityInstances: SDAI.AGGREGATE<SDAI.CompexEntity> ) -> SDAI.LOGICAL {\n");
+	wrap("allEntityInstances: SDAI.SET<SDAI.ComplexEntity> ) -> SDAI.LOGICAL {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		

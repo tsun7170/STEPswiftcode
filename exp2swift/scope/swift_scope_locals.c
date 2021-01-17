@@ -68,10 +68,15 @@ void SCOPElocalList_swift( Scope s, int level ) {
 		
 		if( var->initializer ) {
 			raw( " = " );
-			aggressively_wrap();
+			if( TYPEis_aggregation_data_type(var->type) ){
+				force_wrap();
+			}
+			else {
+				aggressively_wrap();
+			}
 			{	int oldwrap = captureWrapIndent();
 				//			EXPR_swift( NULL, var->initializer, NO_PAREN );
-				EXPRassignment_rhs_swift(s, var->initializer, var->type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, var->initializer, var->type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 				restoreWrapIndent(oldwrap);
 			}
 		}
@@ -103,14 +108,16 @@ void SCOPElocalList_swift( Scope s, int level ) {
 					break;
 			}
 			raw( " = " );
-			positively_wrap();
+			force_wrap();
+//			aggressively_wrap();
+//			positively_wrap();
 			{	int oldwrap = captureWrapIndent();
 				wrap("%s(bound1: ",aggr);
 				//			EXPR_swift(s,TYPEget_body(var->type)->lower,Type_Integer, NO_PAREN);
-				EXPRassignment_rhs_swift(s, TYPEget_body(var->type)->lower, Type_Integer, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, TYPEget_body(var->type)->lower, Type_Integer, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 				raw(", bound2: ");
 				//			EXPR_swift(s,TYPEget_body(var->type)->upper,Type_Integer, NO_PAREN);
-				EXPRassignment_rhs_swift(s, TYPEget_body(var->type)->upper, Type_Integer, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, TYPEget_body(var->type)->upper, Type_Integer, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 				raw(")");
 				restoreWrapIndent(oldwrap);
 			}

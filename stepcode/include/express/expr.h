@@ -163,6 +163,7 @@ union expr_union {
                               * and self expr, some funcall's and any
                               * expr that results in an entity */
     Variable variable;  /**< attribute reference */
+	Generic user_defined;	//*TY2021/01/17
 };
 //*TY2020/07/11
 typedef enum {
@@ -178,7 +179,8 @@ typedef enum {
 	expr_is_list,
 	expr_is_expression,
 	expr_is_entity,
-	expr_is_variable
+	expr_is_variable,
+	expr_is_user_defined
 } expr_union_tag;
 
 /** The difference between 'type' and 'return_type' is illustrated

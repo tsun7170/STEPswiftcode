@@ -519,76 +519,94 @@ Type TYPEget_nonaggregate_base_type( Type t ) {
 }
 
 //MARK: - select type related
-static void put_origin(Linked_List list, Scope origin) {
-	LISTdo_links(list, link) {
-		link->aux = origin;
-	}LISTod;
-}
-static void filter_out_shadowed_attr_definitions(Linked_List attr_list) {
-	Link pivot = LISTLINKfirst(attr_list);
-	
-	while( pivot->next != attr_list->mark ){
-		Variable pivot_attr = (Variable)(pivot->data);
-		assert(pivot_attr!=NULL);
-		if( VARis_redeclaring(pivot_attr) ) pivot_attr = pivot_attr->original_attribute;
-		Entity defined_in = pivot_attr->defined_in;
-		Link next;
-		for( Link node = pivot->next; ((void)(next=node->next), node!=attr_list->mark); node = next ){
-			Variable attr = (Variable)node->data;
-			if( VARis_redeclaring(attr) ) attr = attr->original_attribute;
-			if( attr->defined_in != defined_in ) continue;
-			
-			LINKremove(node);
-		}
-		pivot = pivot->next;
-		if(pivot == attr_list->mark) break;
-	}
-}
-static void add_attributes_from_entity(Type selection, Dictionary result) {
-	Entity entity = TYPEget_body(selection)->entity;
-	assert(entity->u_tag==scope_is_entity);
-	Dictionary all_attrs_from_entity = ENTITYget_all_attributes(entity);
+//static void put_origin(Linked_List list, Scope origin) {
+//	LISTdo_links(list, link) {
+//		link->aux = origin;
+//	}LISTod;
+//}
+//static void filter_out_shadowed_attr_definitions(Linked_List attr_list) {
+//	Link pivot = LISTLINKfirst(attr_list);
+//	
+//	while( pivot->next != attr_list->mark ){
+//		Variable pivot_attr = (Variable)(pivot->data);
+//		assert(pivot_attr!=NULL);
+//		if( VARis_redeclaring(pivot_attr) ) pivot_attr = pivot_attr->original_attribute;
+//		Entity defined_in = pivot_attr->defined_in;
+//		
+//		Link next;
+//		for( Link node = pivot->next; ((void)(next=node->next), node!=attr_list->mark); node = next ){
+//			Variable attr = (Variable)node->data;
+//			if( VARis_redeclaring(attr) ) attr = attr->original_attribute;
+//			if( attr->defined_in != defined_in ) continue;
+//			
+//			LINKremove(node);
+//		}
+//		pivot = pivot->next;
+//		if(pivot == attr_list->mark) break;
+//	}
+//}
+static void add_attributes_from_entity(Type selection_case, Dictionary result) {
+	Entity case_entity = TYPEget_body(selection_case)->entity;
+	assert(case_entity->u_tag==scope_is_entity);
+	Dictionary all_attrs_from_entity = ENTITYget_all_attributes(case_entity);
 	DictionaryEntry de;
-	Linked_List attr_defs_from_entity;
-	
-	DICTdo_init( all_attrs_from_entity, &de );
-	while( 0 != ( attr_defs_from_entity = DICTdo(&de) ) ) {
-//		Variable attr = LISTget_first(attr_defs_from_entity);
-//		char* attr_name = VARget_simple_name(attr);
-		const char* attr_name = DICT_key;
+	const char* attr_name;
+
+	DICTdo_init(all_attrs_from_entity, &de);
+	while( 0 != (attr_name = DICTdo_key(&de))) {
+		if( ENTITYget_attr_ambiguous_count(case_entity, attr_name) > 1 )continue;
 		
-		Linked_List effective_attrs = LISTcopy(attr_defs_from_entity);
-		filter_out_shadowed_attr_definitions(effective_attrs);
-		put_origin(effective_attrs, selection);
-		
-		Linked_List select_attr_list = DICTlookup(result, attr_name);
-		if( select_attr_list == NULL ) {
-			select_attr_list = LISTcreate();
-			DICTdefine(result, attr_name, select_attr_list, NULL, OBJ_UNKNOWN);
+		Linked_List defined_attr_list = DICTlookup(result, attr_name);
+		if( defined_attr_list == NULL ) {
+			defined_attr_list = LISTcreate();
+			DICTdefine(result, attr_name, defined_attr_list, NULL, OBJ_UNKNOWN);
 		}
-		LISTadd_all(select_attr_list, effective_attrs);
+		Link added = LISTLINKadd_last(defined_attr_list);
+		added->data = ENTITYfind_attribute_effective_definition(case_entity, attr_name);
+		added->aux = selection_case;
+		assert(added->data != NULL);
 	}
+	
+	
+//	Linked_List attr_defs_from_entity;
+//	DICTdo_init( all_attrs_from_entity, &de );
+//	while( 0 != ( attr_defs_from_entity = DICTdo(&de) ) ) {
+//		const char* attr_name = DICT_key;
+//		
+//		Linked_List effective_attrs = LISTcopy(attr_defs_from_entity);
+//		filter_out_shadowed_attr_definitions(effective_attrs);
+//		put_origin(effective_attrs, selection_case);
+//		
+//		Linked_List select_attr_list = DICTlookup(result, attr_name);
+//		if( select_attr_list == NULL ) {
+//			select_attr_list = LISTcreate();
+//			DICTdefine(result, attr_name, select_attr_list, NULL, OBJ_UNKNOWN);
+//		}
+//		LISTadd_all(select_attr_list, effective_attrs);
+//	}
 }
-static void add_attributes_from_select(Type selection, Dictionary result) {
-	Dictionary all_attrs_from_selection = SELECTget_all_attributes(selection);
+
+static void add_attributes_from_select(Type selection_case, Dictionary result) {
+	Dictionary all_attrs_from_selection = SELECTget_all_attributes(selection_case);
 	DictionaryEntry de;
 	const char* attr_name;
 	
 	DICTdo_init(all_attrs_from_selection, &de);
 	while( 0 != (attr_name = DICTdo_key(&de))) {
-		if( SELECTget_attr_ambiguous_count(selection, attr_name) > 1 )continue;
+		if( SELECTget_attr_ambiguous_count(selection_case, attr_name) > 1 )continue;
 		
-		Linked_List select_attr_list = DICTlookup(result, attr_name);
-		if( select_attr_list == NULL ) {
-			select_attr_list = LISTcreate();
-			DICTdefine(result, attr_name, select_attr_list, NULL, OBJ_UNKNOWN);
+		Linked_List defined_attr_list = DICTlookup(result, attr_name);
+		if( defined_attr_list == NULL ) {
+			defined_attr_list = LISTcreate();
+			DICTdefine(result, attr_name, defined_attr_list, NULL, OBJ_UNKNOWN);
 		}
-		Link added = LISTLINKadd_last(select_attr_list);
-		added->data = SELECTfind_attribute_effective_definition(selection, attr_name);
-		added->aux = selection;
+		Link added = LISTLINKadd_last(defined_attr_list);
+		added->data = SELECTfind_attribute_effective_definition(selection_case, attr_name);
+		added->aux = selection_case;
 		assert(added->data != NULL);
 	}
 }
+
 Dictionary SELECTget_all_attributes ( Type select_type ) {
 	assert(TYPEis_select(select_type));
 	TypeBody typebody = TYPEget_body(select_type);
@@ -596,12 +614,12 @@ Dictionary SELECTget_all_attributes ( Type select_type ) {
 	
 	Dictionary result = DICTcreate(25);
 
-	LISTdo(typebody->list, selection, Type) {
-		if( TYPEis_entity(selection) ) {
-			add_attributes_from_entity(selection, result);
+	LISTdo(typebody->list, selection_case, Type) {
+		if( TYPEis_entity(selection_case) ) {
+			add_attributes_from_entity(selection_case, result);
 		}
-		else if( TYPEis_select(selection) ) {
-			add_attributes_from_select(selection, result);
+		else if( TYPEis_select(selection_case) ) {
+			add_attributes_from_select(selection_case, result);
 		}
 	}LISTod;
 	
@@ -610,7 +628,7 @@ Dictionary SELECTget_all_attributes ( Type select_type ) {
 }
 
 
-// returns 0: not defined anywhere, 1: unique defintion, >1: ambiguous definition
+// returns 0: not defined anywhere, 1: unique (common type) defintion, >1: ambiguous definition with different attr type
 int SELECTget_attr_ambiguous_count( Type select_type, const char* attrName ) {
 	assert( TYPEis_select(select_type) );
 	Dictionary all_attrs = SELECTget_all_attributes(select_type);

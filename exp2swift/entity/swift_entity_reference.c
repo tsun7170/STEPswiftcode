@@ -121,29 +121,36 @@ static void attributeRefHead_swift(Entity entity, char* access, Variable attr, b
 	 raw(" {\n");
  }
 
-static void simpleAttribureObserversCall_swift(Entity partial, Variable attr, int level) {
+static void simpleAttribureObserversCall_swift(Entity partial, Variable attr, bool is_subtype_attr, int level) {
 	/*
 	 _<partial>._<attr>__observer( SELF:self, removing:oldValue, adding:newValue )
 	 */
 	
 	char buf[BUFSIZ];
 	
+	bool optional = (VARis_optional(attr) || is_subtype_attr);
+	
 	indent_swift(level);
 	raw("%s",partialEntity_swiftName(partial, buf));
 	wrap(".%s__observer(", partialEntityAttribute_swiftName(attr, buf));
 	
 	if( TYPEis_entity(attr->type) ){
-		wrap(" SELF:self, removing:oldValue, adding:newValue )\n");
+		wrap(" SELF: self, removing: oldValue, adding: newValue )\n");
 	}
 	else {
 		// attr type should be select type
-		wrap(" SELF:self, removing:oldValue.asFundamentalType.entityReference, adding:newValue.asFundamentalType.entityReference )\n");
+		if( optional ){
+			wrap(" SELF: self, removing: oldValue?.asFundamentalType.entityReference, adding: newValue?.asFundamentalType.entityReference )\n");
+		}
+		else{
+			wrap(" SELF: self, removing: oldValue.asFundamentalType.entityReference, adding: newValue.asFundamentalType.entityReference )\n");
+		}
 
 	}
 	
 }
 
-static const char* aggregateAttributeObserversCall_swift(Entity partial, Variable attr, int level) {
+static const char* aggregateAttributeObserversCall_swift(Entity partial, Variable attr, bool is_subtype_attr, int level) {
 	/*
 	 newAggregate = _<partial>._<attr>__aggregateObserver( SELF:self, oldAggregate:oldValue, newAggregate:newValue )
 	 */
@@ -175,6 +182,21 @@ static void explicitSetter_swift(Variable attr, bool is_subtype_attr, Entity ent
 	raw("set(%s) {\n", newValue);
 	{	int level2 = level+nestingIndent_swift;
 		
+		indent_swift(level2);
+		if( is_subtype_attr ){
+			raw("guard let partial = ");
+			superEntityReference_swift(entity, attr->defined_in, is_subtype_attr, YES_WRAP);
+			raw("?");
+			wrap(".");
+			partialEntityReference_swift(entity, partial, false, NO_WRAP);
+			wrap(" else { return }\n");
+		}
+		else{
+			raw("let partial = ");
+			partialEntityReference_swift(entity, partial, false, NO_WRAP);
+			raw("\n");
+		}
+		
 		if( attribute_need_observer(attr) ) {
 			indent_swift(level2);
 			{
@@ -183,23 +205,23 @@ static void explicitSetter_swift(Variable attr, bool is_subtype_attr, Entity ent
 			}
 			
 			if( TYPEis_aggregation_data_type(attr->type)) {
-				newValue = aggregateAttributeObserversCall_swift(partial, attr, level2);
+				newValue = aggregateAttributeObserversCall_swift(partial, attr, is_subtype_attr, level2);
 			}
 			else {
-				simpleAttribureObserversCall_swift(partial, attr, level2);
+				simpleAttribureObserversCall_swift(partial, attr, is_subtype_attr, level2);
 			}
 		}
 		
 		indent_swift(level2);
 		if( VARis_redeclaring(attr) ){
-			if( is_subtype_attr ){
-				superEntityReference_swift(entity, attr->defined_in, is_subtype_attr, YES_WRAP);
-				raw("?");
-				wrap(".");
-			}
-			partialEntityReference_swift(entity, partial, false, NO_WRAP);
+//			if( is_subtype_attr ){
+//				superEntityReference_swift(entity, attr->defined_in, is_subtype_attr, YES_WRAP);
+//				raw("?");
+//				wrap(".");
+//			}
+//			partialEntityReference_swift(entity, partial, false, NO_WRAP);
 
-			wrap(".%s = ", partialAttr );
+			wrap("partial.%s = ", partialAttr );
 			if( !VARis_optional(attr) ){
 				if( TYPEis_logical(VARget_type(attr)) ){
 					wrap("SDAI.LOGICAL(");
@@ -218,16 +240,16 @@ static void explicitSetter_swift(Variable attr, bool is_subtype_attr, Entity ent
 			raw("\n");
 		}
 		else {
-			partialEntityReference_swift(entity, partial, is_subtype_attr, YES_WRAP);
+//			partialEntityReference_swift(entity, partial, is_subtype_attr, YES_WRAP);
 			if( VARis_optional(attr) ){
-				wrap(".%s = %s\n", partialAttr, newValue );
+				wrap("partial.%s = %s\n", partialAttr, newValue );
 			} 
 			else {
 				if( TYPEis_logical(VARget_type(attr)) ){
-					wrap(".%s = SDAI.LOGICAL(%s)\n", partialAttr, newValue );
+					wrap("partial.%s = SDAI.LOGICAL(%s)\n", partialAttr, newValue );
 				}
 				else{
-					wrap(".%s = SDAI.UNWRAP(%s)\n", partialAttr, newValue );
+					wrap("partial.%s = SDAI.UNWRAP(%s)\n", partialAttr, newValue );
 				}
 			}
 		}

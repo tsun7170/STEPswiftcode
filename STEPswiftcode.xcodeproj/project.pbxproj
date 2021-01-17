@@ -66,6 +66,7 @@
 		F44D038124BE42B400E77B2A /* pretty_loop.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D036A24BE42B400E77B2A /* pretty_loop.c */; };
 		F45A2EA925173EA100A9E3C2 /* swift_enum_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F45A2EA825173EA100A9E3C2 /* swift_enum_type.c */; };
 		F45A7F8E24D00EEF00669F95 /* swift_statement.c in Sources */ = {isa = PBXBuildFile; fileRef = F45A7F8D24D00EEF00669F95 /* swift_statement.c */; };
+		F45D5E7A25B2C6E900CACCF9 /* decompose_expression.c in Sources */ = {isa = PBXBuildFile; fileRef = F45D5E7925B2C6E800CACCF9 /* decompose_expression.c */; };
 		F47CCCDF257D801500FB0438 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47CCCDE257D801500FB0438 /* main.swift */; };
 		F47CCCE8257E2B7600FB0438 /* SwiftSDAIcore in Frameworks */ = {isa = PBXBuildFile; productRef = F47CCCE7257E2B7600FB0438 /* SwiftSDAIcore */; };
 		F48BF92A24C0E0C5005B5B0A /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF92924C0E0C5005B5B0A /* main.c */; };
@@ -341,6 +342,8 @@
 		F45A2EAA25188A1300A9E3C2 /* builtin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = builtin.h; sourceTree = "<group>"; };
 		F45A7F8C24D00EEF00669F95 /* swift_statement.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_statement.h; sourceTree = "<group>"; };
 		F45A7F8D24D00EEF00669F95 /* swift_statement.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_statement.c; sourceTree = "<group>"; };
+		F45D5E7825B2C6E800CACCF9 /* decompose_expression.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = decompose_expression.h; sourceTree = "<group>"; };
+		F45D5E7925B2C6E800CACCF9 /* decompose_expression.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = decompose_expression.c; sourceTree = "<group>"; };
 		F47CCCDC257D801500FB0438 /* SDAISwiftCore */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SDAISwiftCore; sourceTree = BUILT_PRODUCTS_DIR; };
 		F47CCCDE257D801500FB0438 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		F48BF91E24C07A2B005B5B0A /* ordered_attrs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ordered_attrs.h; sourceTree = "<group>"; };
@@ -956,6 +959,8 @@
 			children = (
 				F48BF93D24C26BFE005B5B0A /* swift_expression.c */,
 				F48BF93E24C26BFE005B5B0A /* swift_expression.h */,
+				F45D5E7825B2C6E800CACCF9 /* decompose_expression.h */,
+				F45D5E7925B2C6E800CACCF9 /* decompose_expression.c */,
 			);
 			path = expression;
 			sourceTree = "<group>";
@@ -1172,6 +1177,7 @@
 				F45A2EA925173EA100A9E3C2 /* swift_enum_type.c in Sources */,
 				F44D036B24BE42B400E77B2A /* pretty_schema.c in Sources */,
 				F44D032624BE429E00E77B2A /* entity.c in Sources */,
+				F45D5E7A25B2C6E900CACCF9 /* decompose_expression.c in Sources */,
 				F48BF93924C26BB1005B5B0A /* swift_schema.c in Sources */,
 				F44D033624BE429E00E77B2A /* expr.c in Sources */,
 				F44D037924BE42B400E77B2A /* pretty_alg.c in Sources */,

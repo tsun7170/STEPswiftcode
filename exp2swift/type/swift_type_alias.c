@@ -39,8 +39,6 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		indent_swift(level2);
 		raw( "public typealias Supertype = %s\n", TYPE_swiftName(original, type->superscope, buf));
 		indent_swift(level2);
-		raw( "public var rep: Supertype\n" );
-		indent_swift(level2);
 		raw("public typealias FundamentalType = Supertype.FundamentalType\n");
 		indent_swift(level2);
 		raw("public typealias Value = Supertype.Value\n");

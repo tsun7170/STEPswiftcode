@@ -92,6 +92,7 @@ extern SC_EXPRESS_EXPORT struct freelist_head LIST_fl;
 
 //*TY2020/08/02
 #define LISTLINKfirst(list)					((list)->mark->next)
+#define LISTLINKlast(list)					((list)->mark->prev)
 #define LISTLINKis_last(list,link)	(LINKnext(link)==LISTLINKfirst(list))
 #define LISTLINKnext(list,link)			( LISTLINKis_last(list,link) ? NULL : LINKnext(link) )
 
@@ -177,4 +178,6 @@ extern Generic  LISTget_first_aux ( Linked_List list );
 extern SC_EXPRESS_EXPORT Generic  LISTremove_first_if PROTO( ( Linked_List ) );
 extern void LINKremove( Link node );
 #define LISTis_single(list)		(LISTget_second(list)==NULL)				 
+				 
+				 
 #endif /*LINKED_LIST_H*/

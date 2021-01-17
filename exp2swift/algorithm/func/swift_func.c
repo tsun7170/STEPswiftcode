@@ -82,7 +82,7 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 	// return type
 	aggressively_wrap();
 	bool return_optional = YES_FORCE_OPTIONAL;
-	if( TYPEis_boolean(func->u.func->return_type) || TYPEis_logical(func->u.func->return_type) ) return_optional = NO_FORCE_OPTIONAL;
+	if( TYPEis_logical(func->u.func->return_type) ) return_optional = NO_FORCE_OPTIONAL;
 	raw("-> ");
 	optionalType_swift(func->superscope, func->u.func->return_type, return_optional, NOT_IN_COMMENT);
 	

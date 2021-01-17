@@ -24,6 +24,7 @@
 #include "swift_algorithm.h"
 #include "swift_symbol.h"
 #include "swift_schema.h"
+#include "decompose_expression.h"
 
 
 static void attributeHead_swift
@@ -300,7 +301,7 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 		indent_swift(level2);
 		raw("return ");
 		if( VARis_optional(attr) ){
-			EXPRassignment_rhs_swift(entity, VARget_initializer(attr), VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, VARget_initializer(attr), VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
 		}
 		else {
 			if( TYPEis_logical(VARget_type(attr)) ){
@@ -309,7 +310,7 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 			else {
 				raw("SDAI.UNWRAP(");
 			}
-			EXPRassignment_rhs_swift(entity, VARget_initializer(attr), VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, VARget_initializer(attr), VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw(")");
 		}
 		
@@ -375,7 +376,7 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 		indent_swift(level2);
 		raw("let value = ");
 //		EXPR_swift(entity, VARget_initializer(attr), VARget_type(attr), NO_PAREN );
-		EXPRassignment_rhs_swift(entity, VARget_initializer(attr), VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
+		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, VARget_initializer(attr), VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
 		raw("\n");
 		
 		if( attribute_need_observer(original_attr) ) {
@@ -572,10 +573,18 @@ static void whereDefinitions_swift( Entity entity, int level ) {
 				 ENTITY_swiftName(entity, NO_QUALIFICATION, buf) );
 		
 		{	int level2 = level+nestingIndent_swift;
+			int tempvar_id = 1;
+			Linked_List tempvars;
+			Expression simplified = EXPR_decompose(where->expr, &tempvar_id, &tempvars);
+			EXPR_tempvars_swift(entity, tempvars, level2);
+			
 			indent_swift(level2);
-			raw("SDAI.LOGICAL( ");
-			EXPR_swift(entity, where->expr, Type_Logical, NO_PAREN);			
+			raw("return SDAI.LOGICAL( ");
+//			EXPR_swift(entity, where->expr, Type_Logical, NO_PAREN);			
+			EXPR_swift(entity, simplified, Type_Logical, NO_PAREN);			
 			raw(" )\n");
+			
+			EXPR_delete_tempvar_definitions(tempvars);
 		}
 		
 		indent_swift(level);

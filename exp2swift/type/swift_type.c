@@ -61,10 +61,14 @@ const char* TYPE_swiftName( Type t, Scope current, char buf[BUFSIZ] ) {
 	int qual_len = accumulate_qualification(t->superscope, current, buf);
 	
 	const char* prefix = "";
-	if( TYPEget_head(t) ){
-		prefix = "t";
+//	if( TYPEget_head(t) ){
+//		prefix = "r";
+//	}
+//	else 
+	if( TYPEget_body(t) == NULL ){
+		prefix = "g";
 	}
-	else {
+	else{
 		switch (TYPEis(t)) {
 			case entity_:
 				prefix = "e";
@@ -74,6 +78,10 @@ const char* TYPE_swiftName( Type t, Scope current, char buf[BUFSIZ] ) {
 				break;
 			case enumeration_:
 				prefix = "n";
+				break;
+			case generic_:
+			case aggregate_:
+				prefix = "g";
 				break;
 				
 			default:
