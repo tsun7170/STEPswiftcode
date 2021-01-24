@@ -62,6 +62,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("\n");
 		indent_swift(level2);
 		raw("// SDAIGenericType\n");
+
 		indent_swift(level2);
 		raw("public var typeMembers: Set<SDAI.STRING> {\n");
 		indent_swift(level2+nestingIndent_swift);
@@ -71,19 +72,33 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		 
 		indent_swift(level2);
 		raw("// SDAIUnderlyingType\n");
+
 		indent_swift(level2);
 		raw("public typealias FundamentalType = Self\n");
+
 		indent_swift(level2);
 		raw("public static var typeName: String = ");
 		wrap("\"%s.%s\"\n", SCHEMA_swiftName(schema, buf), typename);
+		
 		indent_swift(level2);
-		raw("public var asFundamentalType: FundamentalType { return self }\n");
+		raw("public var asFundamentalType: FundamentalType { return self }\n\n");
+
 		indent_swift(level2);
 		raw("public init(fundamental: FundamentalType) {\n");
 		indent_swift(level2+nestingIndent_swift);
 		raw("self = fundamental\n");
 		indent_swift(level2);
-		raw( "}\n" );
+		raw("}\n\n" );
+
+		indent_swift(level2);
+		raw("public init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
+		indent_swift(level2+nestingIndent_swift);
+		raw("guard let enumval = select?.enumValue(enumType: Self.self) else { return nil }\n");
+		indent_swift(level2+nestingIndent_swift);
+		raw("self = enumval\n");
+		indent_swift(level2);
+		raw("}\n");
+
 	}
 	
 	indent_swift(level);

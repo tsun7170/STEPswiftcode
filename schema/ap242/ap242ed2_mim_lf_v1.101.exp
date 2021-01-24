@@ -14501,7 +14501,7 @@ WHERE
                                                     | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_REPRESENTATION_WITH_PARAMETERS') IN
                                                        TYPEOF(pdr.used_representation)))
                                            | (NOT (SIZEOF(QUERY(it
-                                                                <* impl_rep.used_representation.items
+                                                                <* impl_rep.used_representation\SHAPE_REPRESENTATION_WITH_PARAMETERS(*TY2021/01/24*).items
                                                                 | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DESCRIPTIVE_REPRESENTATION_ITEM' IN
                                                                     TYPEOF(it)) AND
                                                                    (it.name = 'removal direction') AND
@@ -14820,7 +14820,7 @@ WHERE
                                                      | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_REPRESENTATION_WITH_PARAMETERS') IN
                                                         TYPEOF(pdr.used_representation)))
                                             | (NOT (SIZEOF(QUERY(it
-                                                                 <* impl_rep.used_representation.items
+                                                                 <* impl_rep.used_representation\SHAPE_REPRESENTATION_WITH_PARAMETERS(*TY2021/01/24*).items
                                                                  | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DESCRIPTIVE_REPRESENTATION_ITEM' IN
                                                                      TYPEOF(it)) AND
                                                                     (it.name = 'module or diametral pitch') AND
@@ -14860,7 +14860,7 @@ WHERE
                                                      | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_REPRESENTATION_WITH_PARAMETERS') IN
                                                         TYPEOF(pdr.used_representation)))
                                             | (NOT (SIZEOF(QUERY(it
-                                                                 <* impl_rep.used_representation.items
+                                                                 <* impl_rep.used_representation\SHAPE_REPRESENTATION_WITH_PARAMETERS(*TY2021/01/24*).items
                                                                  | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DESCRIPTIVE_REPRESENTATION_ITEM' IN
                                                                      TYPEOF(it)) AND
                                                                     (it.name = 'internal or external gear') AND
@@ -16382,7 +16382,7 @@ WHERE
                                                       | 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN
                                                         TYPEOF(pdr.used_representation))
                                              | NOT (SIZEOF(QUERY(it
-                                                                 <* impl_rep.used_representation.items
+                                                                 <* impl_rep.used_representation\SHAPE_REPRESENTATION_WITH_PARAMETERS(*TY2021/01/24*).items
                                                                  | (SIZEOF(['AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.MEASURE_REPRESENTATION_ITEM',
                                                                             'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.LENGTH_MEASURE_WITH_UNIT'] *
                                                                            TYPEOF(it)) =
@@ -16403,7 +16403,7 @@ WHERE
                                                       | 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN
                                                         TYPEOF(pdr.used_representation))
                                              | NOT (SIZEOF(QUERY(it
-                                                                 <* impl_rep.used_representation.items
+                                                                 <* impl_rep.used_representation\SHAPE_REPRESENTATION_WITH_PARAMETERS(*TY2021/01/24*).items
                                                                  | ('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DESCRIPTIVE_REPRESENTATION_ITEM' IN
                                                                     TYPEOF(it)) AND
                                                                    (it.name = 'module or diametral pitch') AND
@@ -16424,7 +16424,7 @@ WHERE
                                                       | 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN
                                                         TYPEOF(pdr.used_representation))
                                              | NOT (SIZEOF(QUERY(it
-                                                                 <* impl_rep.used_representation.items
+                                                                 <* impl_rep.used_representation\SHAPE_REPRESENTATION_WITH_PARAMETERS(*TY2021/01/24*).items
                                                                  | ('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DESCRIPTIVE_REPRESENTATION_ITEM' IN
                                                                     TYPEOF(it)) AND
                                                                    (it.name = 'internal or external gear') AND
@@ -16506,7 +16506,7 @@ WHERE
                                                        | 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN
                                                          TYPEOF(pdr.used_representation))
                                               | NOT (SIZEOF(QUERY(it
-                                                                  <* impl_rep.used_representation.items
+                                                                  <* impl_rep.used_representation\SHAPE_REPRESENTATION_WITH_PARAMETERS(*TY2021/01/24*).items
                                                                   | ('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DESCRIPTIVE_REPRESENTATION_ITEM' IN
                                                                      TYPEOF(it)) AND
                                                                     (it.name = 'gear tooth') AND
@@ -26504,7 +26504,7 @@ WHERE
                                                     | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_REPRESENTATION_WITH_PARAMETERS') IN
                                                        TYPEOF(pdr.used_representation)))
                                            | (NOT (SIZEOF(QUERY(it
-                                                                <* impl_rep.used_representation.items
+                                                                <* impl_rep.used_representation\SHAPE_REPRESENTATION_WITH_PARAMETERS(*TY2021/01/24*).items
                                                                 | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DESCRIPTIVE_REPRESENTATION_ITEM' IN
                                                                     TYPEOF(it)) AND
                                                                    (it.name = 'shape profile floor orientation') AND
@@ -32411,7 +32411,7 @@ WHERE
                                                    | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_REPRESENTATION_WITH_PARAMETERS') IN
                                                       TYPEOF(pdr.used_representation)))
                                           | (NOT (SIZEOF(QUERY(it
-                                                               <* impl_rep.used_representation.items
+                                                               <* impl_rep.used_representation\SHAPE_REPRESENTATION_WITH_PARAMETERS(*TY2021/01/24*).items
                                                                | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DESCRIPTIVE_REPRESENTATION_ITEM' IN
                                                                    TYPEOF(it)) AND
                                                                   (it.name = 'hand') AND
@@ -32444,7 +32444,7 @@ WHERE
                                                     | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_REPRESENTATION_WITH_PARAMETERS') IN
                                                        TYPEOF(pdr.used_representation)))
                                            | (NOT (SIZEOF(QUERY(it
-                                                                <* impl_rep.used_representation.items
+                                                                <* impl_rep.used_representation\SHAPE_REPRESENTATION_WITH_PARAMETERS(*TY2021/01/24*).items
                                                                 | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DESCRIPTIVE_REPRESENTATION_ITEM' IN
                                                                     TYPEOF(it)) AND
                                                                    (it.name = 'thread side') AND
@@ -32639,7 +32639,7 @@ WHERE
                                                    | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_REPRESENTATION_WITH_PARAMETERS') IN
                                                       TYPEOF(pdr.used_representation)))
                                           | (NOT (SIZEOF(QUERY(it
-                                                               <* impl_rep.used_representation.items
+                                                               <* impl_rep.used_representation\SHAPE_REPRESENTATION_WITH_PARAMETERS(*TY2021/01/24*).items
                                                                | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DESCRIPTIVE_REPRESENTATION_ITEM' IN
                                                                    TYPEOF(it)) AND
                                                                   (it.name = 'pitch or dimension') AND
@@ -32657,7 +32657,7 @@ WHERE
                                                    | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_REPRESENTATION_WITH_PARAMETERS') IN
                                                       TYPEOF(pdr.used_representation)))
                                           | (NOT (SIZEOF(QUERY(it
-                                                               <* impl_rep.used_representation.items
+                                                               <* impl_rep.used_representation\SHAPE_REPRESENTATION_WITH_PARAMETERS(*TY2021/01/24*).items
                                                                | (('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DESCRIPTIVE_REPRESENTATION_ITEM' IN
                                                                    TYPEOF(it)) AND
                                                                   (it.name = 'included or extra') AND

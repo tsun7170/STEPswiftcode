@@ -292,16 +292,15 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 	derivedAttributeGetterDefinitionHead(entity, attr, attrName, level);
 	raw(" {\n");
 	{	int level2 = level+nestingIndent_swift;
+		int tempvar_id = 1;
+		Linked_List tempvars;
+		Expression simplified = EXPR_decompose(VARget_initializer(attr), &tempvar_id, &tempvars);
+		EXPR_tempvars_swift(entity, tempvars, level2);
 				
-//		indent_swift(level2);
-//		raw("let value = ");
-//		EXPR_swift(entity, VARget_initializer(attr),VARget_type(attr), NO_PAREN );
-//		raw("\n");
-		
 		indent_swift(level2);
 		raw("return ");
 		if( VARis_optional(attr) ){
-			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, VARget_initializer(attr), VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
 		}
 		else {
 			if( TYPEis_logical(VARget_type(attr)) ){
@@ -310,19 +309,12 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 			else {
 				raw("SDAI.UNWRAP(");
 			}
-			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, VARget_initializer(attr), VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw(")");
 		}
 		
-//		if( !VARis_optional(attr) ){
-//			raw("SDAI.UNWRAP(");
-//		}
-//		variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
-//		raw("(value)");
-//		if( !VARis_optional(attr) ){
-//			raw(")");
-//		}
 		raw("\n");
+		EXPR_delete_tempvar_definitions(tempvars);
 	}
 	indent_swift(level);
 	raw("}\n");
@@ -343,6 +335,7 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 	if( attribute_need_observer(original_attr) ) raw(" //OBSERVED ORIGINAL");
 	raw("\n");
 	
+	//
 	derivedRedefinitionGetterDefinitionHead(entity, entity, "internal ", original_attr, attrName, level);
 	raw(" {\n");
 	{	int level2 = level+nestingIndent_swift;
@@ -369,14 +362,18 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 	indent_swift(level);
 	raw("}\n");
 	
+	//
 	derivedAttributeGetterDefinitionHead(entity, attr, attrName, level);
 	raw(" {\n");
 	{	int level2 = level+nestingIndent_swift;
+		int tempvar_id = 1;
+		Linked_List tempvars;
+		Expression simplified = EXPR_decompose(VARget_initializer(attr), &tempvar_id, &tempvars);
+		EXPR_tempvars_swift(entity, tempvars, level2);
 		
 		indent_swift(level2);
 		raw("let value = ");
-//		EXPR_swift(entity, VARget_initializer(attr), VARget_type(attr), NO_PAREN );
-		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, VARget_initializer(attr), VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
+		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
 		raw("\n");
 		
 		if( attribute_need_observer(original_attr) ) {
@@ -410,16 +407,7 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 				raw("return SDAI.UNWRAP( value )\n");
 			}
 		}
-//		raw("return ");
-//		if( !VARis_optional(attr) ){
-//			raw("SDAI.UNWRAP(");
-//		}
-//		variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
-//		raw("(value)");
-//		if( !VARis_optional(attr) ){
-//			raw(")");
-//		}
-//		raw("\n");
+		EXPR_delete_tempvar_definitions(tempvars);
 	}
 	indent_swift(level);
 	raw("}\n");
@@ -579,11 +567,19 @@ static void whereDefinitions_swift( Entity entity, int level ) {
 			EXPR_tempvars_swift(entity, tempvars, level2);
 			
 			indent_swift(level2);
-			raw("return SDAI.LOGICAL( ");
+			raw("return ");
 //			EXPR_swift(entity, where->expr, Type_Logical, NO_PAREN);			
-			EXPR_swift(entity, simplified, Type_Logical, NO_PAREN);			
-			raw(" )\n");
-			
+//			EXPR_swift(entity, simplified, Type_Logical, NO_PAREN);			
+			if( EXPRresult_is_optional(simplified, CHECK_DEEP) != no_optional ){
+				TYPE_head_swift(entity, Type_Logical, WO_COMMENT);	// wrap with explicit type cast
+				raw("(");
+				EXPR_swift(entity, simplified, Type_Logical, NO_PAREN);			
+				raw(")");
+			}
+			else {
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+			}
+			raw("\n");
 			EXPR_delete_tempvar_definitions(tempvars);
 		}
 		

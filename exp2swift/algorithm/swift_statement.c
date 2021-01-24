@@ -20,60 +20,74 @@
 //}
 
 static void CASE_swift( Scope algo, struct Case_Statement_ * case_stmt, int level ) {
+	Statement otherwise = NULL;
 	int level2 = level+nestingIndent_swift;
-	
-	raw("switch ");
-	EXPR_swift(algo, case_stmt->selector, case_stmt->selector->return_type, NO_PAREN);
-	raw(" {\n");
-	
-	bool otherwise_emitted = false;
-	
-	LISTdo( case_stmt->cases, case_item, Case_Item ) {
-		if( case_item->labels ) {
-//			// case label mark
-//			indent_swift(level);
-//			raw("//MARK:");
-//			indent_with_char(level/nestingIndent_swift-3, '.');
-//			
-			char* sep = "";
-//			LISTdo_n( case_item->labels, label, Expression, b ) {
-//				raw("%s",sep);
-//				EXPR_swift(algo, label, NULL, NO_PAREN);
-//				sep = ", ";
-//			} LISTod
-//			raw("\n");
-						
-			// case label
-			indent_swift(level);
-			raw("case ");
-			
-//			sep = "";
-			LISTdo_n( case_item->labels, label, Expression, b ) {
-				raw("%s",sep);
-				EXPR_swift(algo, label, NULL, NO_PAREN);
-				sep = ", ";
-			} LISTod
-			
-			raw(":\n");
-			STMT_swift(algo, case_item->action, level2);
-			raw("\n");
-		} 
-		else {
-			/* print OTHERWISE */
-			indent_swift(level);
-			raw("default:\n");
-			STMT_swift(algo, case_item->action, level2);
-			otherwise_emitted = true;
-		}
-	} LISTod
-	
-	if( !otherwise_emitted ){
-		indent_swift(level);
-		raw("default: break\n");
+		
+	raw("if let selector = ");
+	switch ( EXPRresult_is_optional(case_stmt->selector, CHECK_DEEP) ) {
+		case yes_optional:
+			EXPR_swift(algo, case_stmt->selector, case_stmt->selector->return_type, NO_PAREN);
+			break;
+		case no_optional:				
+		case unknown:
+			raw("SDAI.FORCE_OPTIONAL(");
+			EXPR_swift(algo, case_stmt->selector, case_stmt->selector->return_type, NO_PAREN);
+			raw(")");
+			break;
 	}
-	
+
+	raw(" {\n");
+	{	
+		int level3 = level2+nestingIndent_swift;
+		
+		indent_swift(level2);
+		raw("switch selector {\n");
+				
+		LISTdo( case_stmt->cases, case_item, Case_Item ) {
+			if( case_item->labels ) {
+				char* sep = "";
+				
+				// case label
+				indent_swift(level2);
+				raw("case ");
+				
+				LISTdo_n( case_item->labels, label, Expression, b ) {
+					raw("%s",sep);
+					EXPR_swift(algo, label, NULL, NO_PAREN);
+					sep = ", ";
+				} LISTod
+				
+				raw(":\n");
+				STMT_swift(algo, case_item->action, level3);
+				raw("\n");
+			} 
+			else {
+				/* OTHERWISE */
+				indent_swift(level2);
+				raw("default:\n");
+				otherwise = case_item->action;
+				STMT_swift(algo, otherwise, level3);
+			}
+		} LISTod
+		
+		if( otherwise == NULL ){
+			indent_swift(level2);
+			raw("default: break\n");
+		}
+		
+		indent_swift(level2);
+		raw("} //end switch\n");
+	}
 	indent_swift(level);
-	raw("} //end switch\n");
+	raw("}\n");
+
+	if( otherwise != NULL ){
+		indent_swift(level);
+		raw("else {\n");
+		STMT_swift(algo, otherwise, level2);
+		indent_swift(level);
+		raw("}\n");
+	}
 }
 
 static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int level ) {
@@ -104,7 +118,8 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int 
 			if( loop->while_expr ) {
 				indent_swift(level3);
 				wrap("if ");
-				EXPR_swift(algo, loop->while_expr, Type_Logical, YES_PAREN);
+//				EXPR_swift(algo, loop->while_expr, Type_Logical, YES_PAREN);
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, loop->while_expr, Type_Logical, YES_PAREN, OP_UNKNOWN, YES_WRAP);
 				wrap(".isnotTRUE { break }\n");
 			}
 			
@@ -113,7 +128,7 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int 
 			if( loop->until_expr ) {
 				indent_swift(level3);
 				wrap("if ");
-				EXPR_swift(algo, loop->until_expr, Type_Logical, YES_PAREN);
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, loop->until_expr, Type_Logical, YES_PAREN, OP_UNKNOWN, YES_WRAP);
 				wrap(".isTRUE { break }\n");
 			}
 		}
@@ -126,8 +141,9 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int 
 
 static void LOOPwhile_swift( Scope algo, struct Loop_ *loop, int level ) {
 	raw("while ");
-	EXPR_swift(algo, loop->while_expr, Type_Logical, YES_PAREN);
-	wrap(".isTRUE {\n");
+//	EXPR_swift(algo, loop->while_expr, Type_Logical, YES_PAREN);
+	EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, loop->while_expr, Type_Logical, YES_PAREN, OP_UNKNOWN, YES_WRAP);
+	wrap(".isnotTRUE {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		
@@ -136,7 +152,7 @@ static void LOOPwhile_swift( Scope algo, struct Loop_ *loop, int level ) {
 		if( loop->until_expr ) {
 			indent_swift(level2);
 			wrap("if ");
-			EXPR_swift(algo, loop->until_expr, Type_Logical, YES_PAREN);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, loop->until_expr, Type_Logical, YES_PAREN, OP_UNKNOWN, YES_WRAP);
 			wrap(".isTRUE { break }\n");
 		}
 	}
@@ -155,8 +171,9 @@ static void LOOPuntil_swift( Scope algo, struct Loop_ *loop, int level ) {
 	
 	indent_swift(level);
 	raw("} while ");
-	EXPR_swift(algo, loop->until_expr, Type_Logical, YES_PAREN);
-	wrap(".isnotTRUE\n");
+//	EXPR_swift(algo, loop->until_expr, Type_Logical, YES_PAREN);
+	EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, loop->until_expr, Type_Logical, YES_PAREN, OP_UNKNOWN, YES_WRAP);
+	wrap(".isTRUE\n");
 }
 
 static void LOOPwoRepeatControl_swift( Scope algo, struct Loop_ *loop, int level ) {

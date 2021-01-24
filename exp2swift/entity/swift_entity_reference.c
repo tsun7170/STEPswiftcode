@@ -486,8 +486,8 @@ static void derivedGetter_swift(Variable attr, bool is_subtype_attr, Entity enti
 	indent_swift(level);
 	raw("get {\n");
 	{	int level2 = level+nestingIndent_swift;
+		indent_swift(level2);
 		if( is_subtype_attr ){
-			indent_swift(level2);
 			raw("guard let origin");
 			raw(" = ");
 			superEntityReference_swift(entity, partial, is_subtype_attr, YES_WRAP);

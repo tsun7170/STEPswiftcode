@@ -335,8 +335,13 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 
 	DICTdo_init(all_attrs, &de);
 	while ( 0 != (attr_defs = DICTdo(&de))) {
+		char buf[BUFSIZ];
 		const char* attr_name = DICT_key;
-		if( SELECTget_attr_ambiguous_count(select_type, attr_name) > 1 ) continue;
+		if( SELECTget_attr_ambiguous_count(select_type, attr_name) > 1 ) {
+			indent_swift(level);
+			raw("//MARK: var %s: (AMBIGUOUS)\n\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));			
+			continue;
+		}
 		
 		if( mark ) {
 			indent_swift(level);
@@ -345,10 +350,13 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 		}
 		
 		Type attr_type = SELECTfind_common_type(attr_defs);
-		if( attr_type == NULL ) continue;
+		if( attr_type == NULL ) {
+			indent_swift(level);
+			raw("//MARK: var %s: (NO COMMON TYPE)\n\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));			
+			continue;
+		}
 			
 		indent_swift(level);
-		char buf[BUFSIZ];
 		raw("public var %s: ", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
 		optionalType_swift(NO_QUALIFICATION, attr_type, YES_FORCE_OPTIONAL, NOT_IN_COMMENT);
 		raw(" {\n");

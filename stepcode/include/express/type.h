@@ -260,6 +260,7 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 #define TYPEis_boolean(t)   ((t)->u.type->body->type == boolean_)
 #define TYPEis_real(t)   ((t)->u.type->body->type == real_)
 #define TYPEis_integer(t)   ((t)->u.type->body->type == integer_)
+#define TYPEis_number(t)   ((t)->u.type->body->type == number_)	//*TY2021/01/19
 #define TYPEis_string(t)    ((t)->u.type->body->type == string_)
 #define TYPEis_expression(t)    ((t)->u.type->body->type == op_)
 #define TYPEis_oneof(t)     ((t)->u.type->body->type == oneof_)
@@ -280,6 +281,7 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 #define TYPEis_optional(t)  ((t)->u.type->body->flags.optional)
 #define TYPEis_encoded(t)   ((t)->u.type->body->flags.encoded)
 #define TYPEis_generic_entity(t) (TYPEis_entity(t) && (t)->u.type->body->entity == NULL)	//*TY2020/12/2
+#define TYPEis_literal(t)	()
 
 //*TY2020/12/05
 #define TYPEcanbe_array(t)	(TYPEis_array(t) || TYPEis_AGGREGATE(t))
@@ -343,6 +345,7 @@ extern SC_EXPRESS_EXPORT Type TYPEcreate_nostab PROTO( ( struct Symbol_ *, Scope
 extern SC_EXPRESS_EXPORT TypeBody TYPEBODYcreate PROTO( ( enum type_enum ) );
 extern SC_EXPRESS_EXPORT void TYPEinitialize PROTO( ( void ) );
 extern SC_EXPRESS_EXPORT void TYPEcleanup PROTO( ( void ) );
+extern Type TYPEcreate_aggregate( enum type_enum aggr_type, Type base_type, Expression bound1, Expression bound2, bool unique, bool optional); //*TY2021/01/19
 
 extern SC_EXPRESS_EXPORT bool TYPEinherits_from PROTO( ( Type, enum type_enum ) );
 extern SC_EXPRESS_EXPORT Type TYPEget_nonaggregate_base_type PROTO( ( Type ) );

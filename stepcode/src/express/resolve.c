@@ -1537,16 +1537,19 @@ static void TYPEresolve_expressions( Type t, Scope s ) {
 }
 
 //*TY2020/11/28
-static void ALGresolve_variable(Variable var){
-	Type var_type = VARget_type(var);
+#define YES_OPTIONAL	true
+#define NO_OPTIONAL		false
+static void ALGresolve_variable(Variable var, bool default_optionality){
 	if( VARis_constant(var) )return;
 //	if( VARis_inout(var) )return;
-	if( TYPEis_logical(var_type) || TYPEis_boolean(var_type) )return;
-	var->flags.optional = true;
+	
+	Type var_type = VARget_type(var);
+	if( TYPEis_logical(var_type) /*|| TYPEis_boolean(var_type)*/ )return;
+	var->flags.optional = default_optionality;
 }
-static void ALGresolve_parameters( Linked_List parameters ){
+static void ALGresolve_parameters( Linked_List parameters, bool defaut_optionality ){
 	LISTdo(parameters, formalp, Variable){
-		ALGresolve_variable(formalp);	
+		ALGresolve_variable(formalp, defaut_optionality);	
 	}LISTod;
 }
 
@@ -1576,18 +1579,19 @@ void SCOPEresolve_expressions_statements( Scope s ) {
             case OBJ_FUNCTION:
                 ALGresolve_expressions_statements( ( Scope )x, ( ( Scope )x )->u.func->body );
 						//*TY2020/11/28
-						ALGresolve_parameters( ((Function)x)->u.func->parameters);
+						ALGresolve_parameters( ((Function)x)->u.func->parameters, YES_OPTIONAL);
                 break;
             case OBJ_PROCEDURE:
                 ALGresolve_expressions_statements( ( Scope )x, ( ( Scope )x )->u.proc->body );
 						//*TY2020/11/28
-						ALGresolve_parameters( ((Procedure)x)->u.proc->parameters);
+						ALGresolve_parameters( ((Procedure)x)->u.proc->parameters, YES_OPTIONAL);
 								 break;
             case OBJ_RULE:
                 ALGresolve_expressions_statements( ( Scope )x, ( ( Scope )x )->u.rule->body );
-
                 WHEREresolve( RULEget_where( ( Scope )x ), ( Scope )x, 0 );
-                break;
+						//*TY2021/01/21
+						ALGresolve_parameters( ((Rule)x)->u.rule->parameters, NO_OPTIONAL );
+						break;
             case OBJ_VARIABLE:
                 v = ( Variable )x;
                 TYPEresolve_expressions( v->type, s );
@@ -1595,7 +1599,7 @@ void SCOPEresolve_expressions_statements( Scope s ) {
                     EXPresolve( v->initializer, s, v->type );
                 }
 						//*TY2020/11/28
-						ALGresolve_variable(v);
+						ALGresolve_variable(v, YES_OPTIONAL);
                 break;
             case OBJ_TYPE:
                 TYPEresolve_expressions( ( Type )x, s );

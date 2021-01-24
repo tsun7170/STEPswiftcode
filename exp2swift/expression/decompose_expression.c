@@ -236,7 +236,8 @@ static Expression EXPRexpr_decompose( Expression e, int*/*inout*/ tempvar_id, Li
 static Expression EXPRopIn_decompose( Expression e, int*/*inout*/ tempvar_id, Linked_List tempvars ) {
 	if( TYPEis(e->e.op1->type)==string_ && TYPEis(e->e.op2->type)==funcall_ && e->e.op2->u.funcall.function==func_typeof ) {
 		// TYPEOF( IS:)
-		return e;
+		Expression simplified = create_temp_expression(tempvar_id, e, tempvars);
+		return simplified;
 	}
 	else {
 		// .CONTAINS()

@@ -198,6 +198,20 @@ extern void TYPEextension_swift( Schema schema, Type t, int level ) {
 //MARK: - type references
 
 void TYPE_head_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) {
+	if( t == NULL ){
+		switch (in_comment) {
+			case YES_IN_COMMENT:
+				wrap("NULLTYPE");
+				break;
+			case NOT_IN_COMMENT:
+				wrap("/*NULLTYPE*/");
+				break;
+			case WO_COMMENT:
+				break;
+		}
+		return;
+	}
+
 	if( t->symbol.name ) {
 		char buf[BUFSIZ];
 		wrap( "%s", TYPE_swiftName(t,current,buf) );

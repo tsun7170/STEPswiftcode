@@ -66,13 +66,20 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 
 		indent_swift(level2);
 		raw( "public init(fundamental: FundamentalType) {\n" );
-		{	int level3 = level2+nestingIndent_swift;
-			indent_swift(level3);
-			raw( "rep = Supertype(fundamental: fundamental)\n" );
-		}
+		indent_swift(level2+nestingIndent_swift);
+		raw( "rep = Supertype(fundamental: fundamental)\n" );
+		indent_swift(level2);
+		raw("}\n\n");
 		
 		indent_swift(level2);
+		raw("public init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
+		indent_swift(level2+nestingIndent_swift);
+		raw("guard let sup = Supertype(possiblyFrom: select) else { return nil }\n");
+		indent_swift(level2+nestingIndent_swift);
+		raw("rep = sup\n");
+		indent_swift(level2);
 		raw("}\n");
+
 	}
 
 	indent_swift(level);

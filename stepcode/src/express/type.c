@@ -277,6 +277,22 @@ TypeBody TYPEBODYcreate( enum type_enum type ) {
     return tb;
 }
 
+//*TY2021/01/19
+Type TYPEcreate_aggregate( enum type_enum aggr_type, Type base_type, Expression bound1, Expression bound2, bool unique, bool optional){
+	Type aggr = TYPEcreate(aggr_type);
+	aggr->symbol.filename = "_AGGREGATE_";
+	aggr->symbol.line = 0;
+	TypeBody tb = TYPEget_body(aggr);
+	tb->base = base_type;
+	tb->flags.unique = unique;
+	tb->flags.optional = optional;
+	tb->lower = bound1;
+	tb->upper = bound2;
+	return aggr;	
+}
+
+
+
 /**
  * return true if "type t" inherits from "enum type_enum"
  * may need to be implemented for more types
@@ -750,7 +766,7 @@ Type SELECTfind_common_type(Linked_List attr_defs) {
 	}LISTod;
 	
 	// tentative handling; not needed if TYPEget_common get smarter
-	if( common == Type_Entity ){
+	if( common == NULL || common == Type_Entity ){
 		common = NULL;
 		LISTdo(attr_defs, attr, Variable) {
 			if( VARis_redeclaring(attr) ) attr = attr->original_attribute;
@@ -762,6 +778,34 @@ Type SELECTfind_common_type(Linked_List attr_defs) {
 
 
 //*TY2021/1/6
+static Expression get_common_bound(Expression boundA, Expression boundB, bool upper_bound){
+	if( EXPs_are_equal(boundA, boundB) )return boundA;
+	if( boundA == NULL )return boundB;
+	if( boundB == NULL )return boundA;
+	
+	if( EXP_is_indeterminate(boundA) )return boundA;
+	if( EXP_is_indeterminate(boundB) )return boundB;
+
+	assert(TYPEis_integer(boundA->return_type));
+	assert(TYPEis_integer(boundB->return_type));
+	
+	if(EXP_is_literal(boundA) && EXP_is_literal(boundB)){
+		int boundAval = INT_LITget_value(boundA);
+		int boundBval = INT_LITget_value(boundB);
+		Expression resolved;
+		if( upper_bound ){
+			resolved = boundAval > boundBval ? boundA : boundB;
+		}
+		else{
+			resolved = boundAval < boundBval ? boundA : boundB;
+		}
+		return resolved;
+	}
+	
+	// bound expression is complicated; may need more analysis
+	return NULL;	
+}
+
 Type TYPEget_common(Type t, Type tref) {
 	if( tref == NULL ) return t;
 	if( t == tref ) return tref;
@@ -776,6 +820,59 @@ Type TYPEget_common(Type t, Type tref) {
 		return common_super->u.entity->type;
 	}
 	
+	if( (TYPEis(t) == TYPEis(tref)) && (!TYPEis_aggregation_data_type(t)) ){
+		if( t->symbol.name == NULL ) return t;
+		if( tref->symbol.name == NULL )return tref;
+		switch( TYPEis(t) ){
+			case indeterminate_: return( Type_Indeterminate );
+			case number_:		return( Type_Number );
+			case real_:			return( Type_Real );
+			case integer_:	return( Type_Integer );
+			case string_:		return( Type_String );
+			case binary_:		return( Type_Binary );
+			case logical_:	return( Type_Logical );
+			case boolean_:	return( Type_Boolean );
+				
+			case bag_:
+			case set_:
+			case array_:
+			case list_:
+			default:
+				break;
+		}
+	}
+	
+	if( TYPEis_integer(t) && TYPEis_real(tref) ) return Type_Real;
+	if( TYPEis_integer(tref) && TYPEis_real(t) ) return Type_Real;
+	
+	if( TYPEis_integer(t) && TYPEis_number(tref) ) return Type_Number;
+	if( TYPEis_integer(tref) && TYPEis_number(t) ) return Type_Number;
+
+	if( TYPEis_real(t) && TYPEis_number(tref) ) return Type_Number;
+	if( TYPEis_real(tref) && TYPEis_number(t) ) return Type_Number;
+	
+	if( TYPEis_boolean(t) && TYPEis_logical(tref) ) return Type_Logical;
+	if( TYPEis_boolean(tref) && TYPEis_logical(t) ) return Type_Logical;
+
+	if( TYPEis_aggregation_data_type(t) && TYPEis_aggregation_data_type(tref) ){
+		Type common_base = TYPEget_common(TYPEget_nonaggregate_base_type(t), TYPEget_nonaggregate_base_type(tref));
+		if( common_base != NULL ){
+			Type common_aggregate = NULL;
+			if( TYPEis(t) == TYPEis(tref) ) common_aggregate = tref;
+			else if( TYPEis_set(t) && TYPEis_bag(tref) ) common_aggregate = tref;
+			else if( TYPEis_set(tref) && TYPEis_bag(t) ) common_aggregate = t;
+			
+			if( common_aggregate != NULL ){
+				bool optional = TYPEget_optional(t) || TYPEget_optional(tref);
+				bool unique = TYPEget_unique(t) && TYPEget_unique(tref);
+				Expression bound1 = get_common_bound(TYPEget_body(t)->lower, TYPEget_body(tref)->lower, false);
+				Expression bound2 = get_common_bound(TYPEget_body(t)->upper, TYPEget_body(tref)->upper, true);
+				Type resolved = TYPEcreate_aggregate(TYPEis(common_aggregate), common_base, bound1, bound2, unique, optional);
+				return resolved;
+			}
+		}
+	}
+	
 //	return Type_Generic;
 	return NULL;
 }
@@ -784,6 +881,7 @@ Type TYPEget_common(Type t, Type tref) {
 //*TY2020/09/14
 bool TYPEs_are_equal(Type lhstype, Type rhstype) {
 	if( lhstype == rhstype ) return true;
+	if( (lhstype == NULL)||(rhstype == NULL) )return false;
 	TypeBody lhstb = TYPEget_body(lhstype);
 	TypeBody rhstb = TYPEget_body(rhstype);
 	

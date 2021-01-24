@@ -47,7 +47,7 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		char buf[BUFSIZ];
 		raw("func %s( ", RULE_swiftName(rule,buf));
 	}
-	wrap("allEntityInstances: SDAI.SET<SDAI.ComplexEntity> ) -> SDAI.LOGICAL {\n");
+	wrap("allComplexEntities: Set<SDAI.ComplexEntity> ) -> SDAI.LOGICAL {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		
@@ -62,8 +62,9 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 
 			char buf[BUFSIZ];
 			raw("let %s = ", variable_swiftName(entity_ref,buf));
-			wrap("allEntityInstances.QUERY{ $0.partialEntityInstance(%s.self) != nil }\n\n", partialEntity_swiftName(ent, buf) );
+			wrap("SDAI.POPULATION(OF: %s.self, FROM: allComplexEntities)\n", ENTITY_swiftName(ent, NO_QUALIFICATION, buf) );
 		}LISTod;
+		raw("\n");
 		
 		//rule body
 		ALGscope_declarations_swift(schema, rule, level2);
@@ -79,7 +80,8 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 			
 			char buf[BUFSIZ];
 			raw("let %s = ",whereRuleLabel_swiftName(where, buf));
-			EXPR_swift(schema,where->expr,Type_Logical,YES_PAREN);
+//			EXPR_swift(schema,where->expr,Type_Logical,YES_PAREN);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, schema, where->expr, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw("\n\n");
 		}LISTod;
 		

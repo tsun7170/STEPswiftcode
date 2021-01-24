@@ -25,7 +25,7 @@
 #define NO_RESOLVING_GENERIC	false
 
 typedef enum  {
-	yes_optional, no_optional, unknown
+	no_optional, yes_optional, unknown
 } type_optionality;
 
 extern type_optionality EXPRresult_is_optional(Expression e, bool deep);

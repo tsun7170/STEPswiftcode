@@ -49,18 +49,51 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 		wrap("\"%s\"\n", TYPE_swiftName(type,schema->superscope,buf));
 
 		indent_swift(level2);
-		raw( "public var rep: Supertype\n" );
+		raw( "public var rep: Supertype\n\n" );
+		
 		indent_swift(level2);
 		raw( "public init(fundamental: FundamentalType) {\n" );
-		
-		{	int level3 = level2+nestingIndent_swift;
-			indent_swift(level3);
-			raw( "rep = Supertype(fundamental: fundamental)\n" );
+		indent_swift(level2+nestingIndent_swift);
+		raw( "rep = Supertype(fundamental: fundamental)\n" );
+		indent_swift(level2);
+		raw("}\n\n");
+	
+		indent_swift(level2);
+		raw("public init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
+		indent_swift(level2+nestingIndent_swift);
+		raw("guard let repval = select?.");
+		switch( TYPEis(type) ){
+			case integer_:
+				raw("integerValue");
+				break;
+			case real_:
+				raw("realValue");
+				break;
+			case string_:
+				raw("stringValue");
+				break;
+			case binary_:
+				raw("binaryValue");
+				break;
+			case boolean_:
+				raw("booleanValue");
+				break;
+			case logical_:
+				raw("logicalValue");
+				break;
+			case number_:
+				raw("numberValue");
+				break;
+			default:
+				raw("UNKNOWNTYPE");
+				break;
 		}
-		
+		raw(" else { return nil }\n");
+		indent_swift(level2+nestingIndent_swift);
+		raw("self = repval\n");
 		indent_swift(level2);
 		raw("}\n");
-	}
+}
 
 	indent_swift(level);
 	raw("}\n");

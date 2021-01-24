@@ -251,6 +251,16 @@ Expression  createLITERAL_ONE(void) {
 	e->symbol.filename = "LITERAL_ONE";	
 	return e;
 }
+Expression EXPRcreate_integer_literal(int ival){
+	Expression e = EXPcreate_simple( Type_Integer );
+	e->u.integer = ival;
+	e->u_tag = expr_is_integer;
+	resolved_all( e );
+
+	e->symbol.filename = "_LITERAL_";
+	e->symbol.line = ival;	
+	return e;
+}
 
 //*TY 2020/08/26
 bool  isLITERAL_E(Expression e) {
@@ -1304,3 +1314,133 @@ char * opcode_print( Op_Code o ) {
             return( "no such op" );
     }
 }
+
+//*TY2021/01/18
+bool EXP_is_literal( Expression e ){
+	switch( TYPEis( e->type ) ) {
+		case indeterminate_:
+		case integer_:
+		case real_:
+		case binary_:
+		case logical_:
+		case boolean_:
+		case string_:
+			return true;
+			
+		case op_:
+			if( e->e.op_code == OP_NEGATE ) return EXP_is_literal(e->e.op1);
+			return false;
+			
+		default:
+			return false;
+	}
+}
+
+bool EXP_is_indeterminate( Expression e){
+	switch( TYPEis( e->type ) ) {
+		case indeterminate_:
+			return true;
+		case integer_:
+			return isLITERAL_INFINITY(e);
+		default:
+			return false;
+	}
+}
+
+bool EXP_is_definite_literal( Expression e){
+	return EXP_is_literal(e) && !EXP_is_indeterminate(e);
+}
+
+static bool lists_of_extpressions_are_equal(Linked_List l1, Linked_List l2){
+	if( l1 == l2 )return true;
+	if( LISTget_length(l1) != LISTget_length(l2) )return false;
+	
+	Link link2 = LISTLINKfirst(l2);
+	LISTdo_links(l1, link1){
+		if( link1 != link2 ){
+			if( !EXPs_are_equal(link1->data, link2->data) )return false;
+		}
+		link2 = LISTLINKnext(l2, link2);
+	}LISTod;
+	return true;
+}
+
+static bool queries_are_equal(struct Query_* q1, struct Query_* q2){
+	if( q1 == q2 )return true;
+	if( (q1==NULL)||(q2==NULL) )return false;
+	if( !EXPs_are_equal(q1->aggregate, q2->aggregate) )return false;
+	if( !EXPs_are_equal(q1->expression, q2->expression) )return false;
+	return true;
+}
+
+static bool funcalls_are_equal( struct Funcall* fc1, struct Funcall* fc2){
+	if( fc1 == fc2 )return true;
+	if( (fc1==NULL)||(fc2==NULL) )return false;
+	if( fc1->function != fc2->function )return false;
+	if( !lists_of_extpressions_are_equal(fc1->list, fc2->list) )return false;
+	return true;
+}
+
+bool EXPs_are_equal( Expression e1, Expression e2){
+	if( e1 == e2 )return true;
+	if( e1 == NULL || e2 == NULL )return false;
+	
+	if( e1->symbol.name != e2->symbol.name )return false;
+	if( !TYPEs_are_equal(e1->type, e2->type) )return false;
+	if( !TYPEs_are_equal(e1->return_type, e2->return_type) )return false;
+	
+	if( e1->u_tag != e2->u_tag )return false;
+	switch(e1->u_tag){
+		case expr_unset: 
+			break;
+		case expr_is_integer:
+			if( e1->u.integer != e2->u.integer )return false;
+			break;
+		case expr_is_real:
+			if( e1->u.real != e2->u.real )return false;
+			break;
+		case expr_is_attribute:
+			if( e1->u.attribute != e2->u.attribute )return false;
+			break;
+		case expr_is_binary:
+			if( strcmp(e1->u.binary, e2->u.binary) != 0 )return false;
+			break;
+		case expr_is_logical:
+			if( e1->u.logical != e2->u.logical )return false;
+			break;
+		case expr_is_boolean:
+			if( e1->u.boolean != e2->u.boolean )return false;
+			break;
+		case expr_is_query:
+			if( !queries_are_equal(e1->u.query, e2->u.query) )return false;
+			break;
+		case expr_is_funcall:
+			if( !funcalls_are_equal(&(e1->u.funcall), &(e2->u.funcall)) )return false;
+			break;
+		case expr_is_list:
+			if( !lists_of_extpressions_are_equal(e1->u.list, e2->u.list) )return false;
+			break;
+		case expr_is_expression:
+			if( !EXPs_are_equal(e1->u.expression, e2->u.expression) )return false;
+			break;
+		case expr_is_entity:
+			if( e1->u.entity != e2->u.entity )return false;
+			break;
+		case expr_is_variable:
+			if( e1->u.variable != e2->u.variable )return false;
+			break;
+		case expr_is_user_defined:
+			if( e1->u.user_defined != e2->u.user_defined )return false;
+			break;
+	}
+	
+	if( TYPEis(e1->type) == op_ ){
+		if( e1->e.op_code != e2->e.op_code )return false;
+		if( EXPs_are_equal(e1->e.op1, e2->e.op1) )return false;
+		if( EXPs_are_equal(e1->e.op2, e2->e.op2) )return false;
+		if( EXPs_are_equal(e1->e.op3, e2->e.op3) )return false;
+	}
+	
+	return true;
+}
+

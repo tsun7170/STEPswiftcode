@@ -53,17 +53,47 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 		wrap("\"%s\"\n", TYPE_swiftName(type,schema->superscope,buf));
 
 		indent_swift(level2);
-		raw( "public var rep: Supertype\n" );
+		raw( "public var rep: Supertype\n\n" );
 		
 		indent_swift(level2);
 		raw( "public init(fundamental: FundamentalType) {\n" );
-		{	int level3 = level2+nestingIndent_swift;
-			indent_swift(level3);
-			raw( "rep = Supertype(fundamental: fundamental)\n" );
+		indent_swift(level2+nestingIndent_swift);
+		raw( "rep = Supertype(fundamental: fundamental)\n" );		
+		indent_swift(level2);
+		raw("}\n\n");
+
+		indent_swift(level2);
+		raw("public init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
+		indent_swift(level2+nestingIndent_swift);
+		raw("guard let repval = select?.");
+		switch( TYPEis(type) ){
+			case array_:
+				if(TYPEis_optional(type)){
+					raw("arrayOptionalValue(elementType: ELEMENT.self)");
+				}
+				else{
+					raw("arrayValue(elementType: ELEMENT.self)");
+				}
+				break;
+			case list_:
+				raw("listValue(elementType: ELEMENT.self)");
+				break;
+			case bag_:
+				raw("bagValue(elementType: ELEMENT.self)");
+				break;
+			case set_:
+				raw("setValue(elementType: ELEMENT.self)");
+				break;
+			default:
+				raw("UNKNOWNTYPE");
+				break;
 		}
-		
+		raw(" else { return nil }\n");
+		indent_swift(level2+nestingIndent_swift);
+		raw("self = repval\n");
 		indent_swift(level2);
 		raw("}\n");
+		
 	}
 
 	indent_swift(level);

@@ -105,13 +105,6 @@ const char* uniqueRuleLabel_swiftName( int serial, Linked_List unique, char buf[
 }
 
 extern bool attribute_need_observer( Variable attr ) {
-
-//	if(  VARis_derived(attr) ) {
-//		return false;
-//	}
-//	if( VARis_inverse(attr) ) {
-//		return false;
-//	}
 	if( VARis_observed(attr) ){
 		return true;
 	}

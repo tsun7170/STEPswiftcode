@@ -219,6 +219,8 @@ extern SC_EXPRESS_EXPORT Expression  createLITERAL_INFINITY(void);
 extern SC_EXPRESS_EXPORT Expression  createLITERAL_PI(void);
 extern SC_EXPRESS_EXPORT Expression  createLITERAL_ZERO(void);
 extern SC_EXPRESS_EXPORT Expression  createLITERAL_ONE(void);
+extern SC_EXPRESS_EXPORT Expression EXPRcreate_integer_literal(int ival);
+
 //*TY 2020/08/26
 extern SC_EXPRESS_EXPORT bool  isLITERAL_E(Expression e);
 extern SC_EXPRESS_EXPORT bool  isLITERAL_INFINITY(Expression e);
@@ -303,4 +305,10 @@ extern SC_EXPRESS_EXPORT int      EXPget_integer_value PROTO( ( Expression ) );
 //*TY2020/08/23
 //extern Linked_List all_aggregate_initializers;
 //extern void check_aggregate_initializers(const char* message, bool print);
+
+//*TY2021/01/18
+extern bool EXP_is_literal( Expression e );
+extern bool EXP_is_indeterminate( Expression e);
+extern bool EXP_is_definite_literal( Expression e);
+extern bool EXPs_are_equal( Expression e1, Expression e2);
 #endif /*EXPRESSION_H*/
