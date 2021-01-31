@@ -99,7 +99,8 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 			
 			ALGvarnize_args_swift(proc->u.proc->parameters, level2);
 			ALGscope_declarations_swift(schema, proc, level2);
-			STMTlist_swift(proc, proc->u.proc->body, level2);
+			int tempvar_id = 1;
+			STMTlist_swift(proc, proc->u.proc->body, &tempvar_id, level2);
 		}
 		
 		indent_swift(level);

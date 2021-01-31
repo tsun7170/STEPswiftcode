@@ -663,19 +663,6 @@ static void entityAttributeReferences_swift( Entity entity, int level ){
 }
 
 //MARK: - initializer
-/*
- public convenience init(_ entityRef: SDAI.EntityReference) {
- 	let complex = entityRef.complexEntity
- 	self.init(complex: complex)!
- }
- 
- public required init?(complex complexEntity: SDAI.ComplexEntity?) {
- 	guard let partial = complexEntity?.partialEntityInstance(_<entity>.self) else { return nil }
-  self.partialEntity = partial
-  super.init(complex: complexEntity)
- }
- */
-
 static void entityReferenceInitializers_swift( Entity entity, int level ){
 	raw("\n");
 	indent_swift(level);
@@ -720,7 +707,6 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 		raw( "self.partialEntity = partial\n\n");
 		
 		LISTdo( ENTITYget_super_entity_list(entity), super, Entity ) {
-//		if( super == entity ) continue;
 			indent_swift(level2);
 			wrap("self.%s%s = ", 
 					 superEntity_swiftPrefix,
@@ -747,17 +733,17 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 	raw( "}\n\n");
 	
 	/*
-	 public required convenience init?<S: SDAISelectType>(possiblyFrom select: S?) {
-		 guard let entityRef = select?.entityReference else { return nil }
+	 public required convenience init?<S: SDAIGenericType>(fromGeneric generic: G?) {
+		 guard let entityRef = generic?.entityReference else { return nil }
 		 self.init(complex: entityRef.complexEntity)
 	 }
 	 */
 	indent_swift(level);
-	raw( "public required convenience init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
+	raw( "public required convenience init?<S: SDAIGenericType>(fromGeneric generic: G?) {\n");
 	{	int level2=level+nestingIndent_swift;
 		
 		indent_swift(level2);
-		raw( "guard let entityRef = select?.entityReference else { return nil }\n" );
+		raw( "guard let entityRef = generic?.entityReference else { return nil }\n" );
 		indent_swift(level2);
 		raw( "self.init(complex: entityRef.complexEntity)\n");
 	}
@@ -773,6 +759,46 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 	indent_swift(level);
 	raw( "public convenience init?(_ complex: SDAI.ComplexEntity?) { self.init(complex: complex) }\n\n");
 	
+	/*
+	 //EXPRESS IMPLICIT PARTIAL ENTITY CONSTRUCTOR
+	 public convenience init(ATTRi:ATTRTYPE, ...){
+	 	let partial = _partialentitytype(ATTRi:ATTRi, ...)
+	  let complex = SDAI.ComplexEntity(entities:[partial])
+	 	self.init(complex: complex)!
+	 }
+	 */
+	indent_swift(level);
+	raw("//EXPRESS IMPLICIT PARTIAL ENTITY CONSTRUCTOR\n");
+	
+	Linked_List params = ENTITYget_constructor_params(entity);
+	
+	indent_swift(level);
+	raw("public convenience init(");
+	ALGargs_swift(entity, NO_FORCE_OPTIONAL, params, NO_DROP_SINGLE_LABEL, level);
+	raw(") {\n");
+
+	{	int level2 = level+nestingIndent_swift;
+		char buf[BUFSIZ];
+		
+		indent_swift(level2);
+		raw("let partial = %s(", partialEntity_swiftName(entity, buf));
+		char* sep = "";
+		LISTdo(params, attr, Variable) {
+			raw(sep);
+			raw("%s: %s", variable_swiftName(attr, buf), buf);
+			sep = ", ";
+		}LISTod;
+		raw(")\n");
+		
+		indent_swift(level2);
+		raw("let complex = SDAI.ComplexEntity(entities:[partial])\n");
+
+		indent_swift(level2);
+		raw("self.init(complex: complex)!\n");
+	}
+	
+	indent_swift(level);
+	raw("}\n\n");	
 }
 
 //MARK: - entity reference defition main entry point

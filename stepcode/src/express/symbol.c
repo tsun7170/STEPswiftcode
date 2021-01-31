@@ -32,8 +32,10 @@
  * Initial revision
  */
 
+#include <string.h>	//*TY2021/01/30
 #include <sc_memmgr.h>
 #include "express/symbol.h"
+
 
 struct freelist_head SYMBOL_fl;
 
@@ -78,3 +80,13 @@ void SYMBOLset( void* o ) {
 	}
 }
 #endif
+
+bool names_are_equal( const char* name1, const char* name2){
+	bool equal_symbol = name1 == name2;
+	if( !equal_symbol ){
+		if(name1!=NULL && name2!=NULL){
+			equal_symbol = strcmp(name1, name2)==0;
+		}
+	}
+	return equal_symbol;
+}

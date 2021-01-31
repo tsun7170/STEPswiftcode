@@ -91,9 +91,9 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("}\n\n" );
 
 		indent_swift(level2);
-		raw("public init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
+		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
-		raw("guard let enumval = select?.enumValue(enumType: Self.self) else { return nil }\n");
+		raw("guard let enumval = generic?.enumValue(enumType: Self.self) else { return nil }\n");
 		indent_swift(level2+nestingIndent_swift);
 		raw("self = enumval\n");
 		indent_swift(level2);

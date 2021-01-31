@@ -22,6 +22,7 @@
 #include "swift_algorithm.h"
 #include "swift_statement.h"
 #include "swift_expression.h"
+#include "decompose_expression.h"
 
 const char* RULE_swiftName( Rule rule, char buf[BUFSIZ] ) {
 	return canonical_swiftName(rule->symbol.name,buf);
@@ -50,6 +51,7 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 	wrap("allComplexEntities: Set<SDAI.ComplexEntity> ) -> SDAI.LOGICAL {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
+		int tempvar_id = 1;
 		
 		//entity refs
 		raw("\n");
@@ -68,7 +70,7 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		
 		//rule body
 		ALGscope_declarations_swift(schema, rule, level2);
-		STMTlist_swift(rule, rule->u.rule->body, level2);
+		STMTlist_swift(rule, rule->u.rule->body, &tempvar_id, level2);
 		
 		//where rules
 		raw("\n");
@@ -77,12 +79,17 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		Linked_List where_rules = RULEget_where(rule);
 		LISTdo(where_rules, where, Where){
 			indent_swift(level2);
+
+			Linked_List tempvars;
+			Expression simplified = EXPR_decompose(where->expr, Type_Logical, &tempvar_id, &tempvars);
+			EXPR_tempvars_swift(schema, tempvars, level2);
 			
 			char buf[BUFSIZ];
 			raw("let %s = ",whereRuleLabel_swiftName(where, buf));
-//			EXPR_swift(schema,where->expr,Type_Logical,YES_PAREN);
-			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, schema, where->expr, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, schema, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw("\n\n");
+			
+			EXPR_delete_tempvar_definitions(tempvars);
 		}LISTod;
 		
 		//final result

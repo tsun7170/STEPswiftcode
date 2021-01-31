@@ -12,8 +12,8 @@
 #include "../express/expbasic.h"
 #include "../express/express.h"
 
-extern Expression EXPR_decompose( Expression original, int*/*inout*/ tempvar_id, Linked_List*/*out*/ tempvar_definitions );
+extern Expression EXPR_decompose( Expression original, Type target_type, int*/*inout*/ tempvar_id, Linked_List*/*out*/ tempvar_definitions );
 extern void EXPR_delete_tempvar_definitions( Linked_List tempvar_definitions );
-extern void EXPR_tempvars_swift( Scope s, Linked_List tempvar_definitions, int level );
+extern int EXPR_tempvars_swift( Scope s, Linked_List tempvar_definitions, int level );
 
 #endif /* decompose_expression_h */

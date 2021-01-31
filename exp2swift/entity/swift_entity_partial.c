@@ -294,7 +294,7 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 	{	int level2 = level+nestingIndent_swift;
 		int tempvar_id = 1;
 		Linked_List tempvars;
-		Expression simplified = EXPR_decompose(VARget_initializer(attr), &tempvar_id, &tempvars);
+		Expression simplified = EXPR_decompose(VARget_initializer(attr), VARget_type(attr), &tempvar_id, &tempvars);
 		EXPR_tempvars_swift(entity, tempvars, level2);
 				
 		indent_swift(level2);
@@ -368,7 +368,7 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 	{	int level2 = level+nestingIndent_swift;
 		int tempvar_id = 1;
 		Linked_List tempvars;
-		Expression simplified = EXPR_decompose(VARget_initializer(attr), &tempvar_id, &tempvars);
+		Expression simplified = EXPR_decompose(VARget_initializer(attr), VARget_type(attr), &tempvar_id, &tempvars);
 		EXPR_tempvars_swift(entity, tempvars, level2);
 		
 		indent_swift(level2);
@@ -563,7 +563,7 @@ static void whereDefinitions_swift( Entity entity, int level ) {
 		{	int level2 = level+nestingIndent_swift;
 			int tempvar_id = 1;
 			Linked_List tempvars;
-			Expression simplified = EXPR_decompose(where->expr, &tempvar_id, &tempvars);
+			Expression simplified = EXPR_decompose(where->expr, Type_Logical, &tempvar_id, &tempvars);
 			EXPR_tempvars_swift(entity, tempvars, level2);
 			
 			indent_swift(level2);

@@ -38,4 +38,6 @@ extern const char* builtinTYPE_body_swiftname( Type t );
 
 extern const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption in_comment, char buf[BUFSIZ]);
 
+extern bool TYPEis_swiftAssignable(Type lhstype, Type rhstype);
+
 #endif /* swift_type_h */

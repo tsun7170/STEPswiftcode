@@ -73,6 +73,7 @@
 #include <sc_memmgr.h>
 #include "express/expr.h"
 #include "express/resolve.h"
+#include "express/symbol.h"	//*TY2021/01/30
 
 #include <assert.h>
 #include <limits.h>
@@ -1380,12 +1381,21 @@ static bool funcalls_are_equal( struct Funcall* fc1, struct Funcall* fc2){
 	if( !lists_of_extpressions_are_equal(fc1->list, fc2->list) )return false;
 	return true;
 }
+//static bool names_are_equal( const char* name1, const char* name2){
+//	bool equal_symbol = name1 == name2;
+//	if( !equal_symbol ){
+//		if(name1!=NULL && name2!=NULL){
+//			equal_symbol = strcmp(name1, name2)==0;
+//		}
+//	}
+//	return equal_symbol;
+//}
 
 bool EXPs_are_equal( Expression e1, Expression e2){
 	if( e1 == e2 )return true;
 	if( e1 == NULL || e2 == NULL )return false;
 	
-	if( e1->symbol.name != e2->symbol.name )return false;
+	if( !names_are_equal(  e1->symbol.name, e2->symbol.name) )return false;
 	if( !TYPEs_are_equal(e1->type, e2->type) )return false;
 	if( !TYPEs_are_equal(e1->return_type, e2->return_type) )return false;
 	
@@ -1403,7 +1413,7 @@ bool EXPs_are_equal( Expression e1, Expression e2){
 			if( e1->u.attribute != e2->u.attribute )return false;
 			break;
 		case expr_is_binary:
-			if( strcmp(e1->u.binary, e2->u.binary) != 0 )return false;
+			if( !names_are_equal(e1->u.binary, e2->u.binary) )return false;
 			break;
 		case expr_is_logical:
 			if( e1->u.logical != e2->u.logical )return false;
@@ -1427,7 +1437,7 @@ bool EXPs_are_equal( Expression e1, Expression e2){
 			if( e1->u.entity != e2->u.entity )return false;
 			break;
 		case expr_is_variable:
-			if( e1->u.variable != e2->u.variable )return false;
+			if( !names_are_equal(e1->u.variable->name->symbol.name, e2->u.variable->name->symbol.name) )return false;
 			break;
 		case expr_is_user_defined:
 			if( e1->u.user_defined != e2->u.user_defined )return false;

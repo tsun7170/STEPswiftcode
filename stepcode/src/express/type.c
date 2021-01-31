@@ -125,6 +125,7 @@ This module implements the type abstraction.  It is
 #include <assert.h>
 #include <sc_memmgr.h>
 #include "express/type.h"
+#include "express/symbol.h"	//*TY2021/01/30
 
 /* Very commonly-used read-only types */
 /* non-constant versions probably aren't necessary? */
@@ -885,6 +886,15 @@ bool TYPEs_are_equal(Type lhstype, Type rhstype) {
 	TypeBody lhstb = TYPEget_body(lhstype);
 	TypeBody rhstb = TYPEget_body(rhstype);
 	
+	bool equal_symbol = names_are_equal( lhstype->symbol.name, rhstype->symbol.name );
+	
+	if( lhstb==NULL && rhstb==NULL ){
+		return equal_symbol;
+	}
+	if( lhstb==NULL || rhstb==NULL ){
+		return false;
+	}
+	
 	switch (lhstb->type) {
 		case indeterminate_:
 			break;
@@ -893,37 +903,17 @@ bool TYPEs_are_equal(Type lhstype, Type rhstype) {
 		case string_:
 		case binary_:
 		case boolean_:
-//			break;
-			return  (lhstype->symbol.name == rhstype->symbol.name) && (lhstb->type == rhstb->type);
-
 		case number_:
-			if(lhstype->symbol.name != rhstype->symbol.name) return false;
-			switch( rhstb->type) {
-//				case integer_:
-//				case real_:
-				case number_:
-					return true;
-				default:
-					return false;
-			}
-
 		case logical_:
-			if(lhstype->symbol.name != rhstype->symbol.name) return false;
-			switch( rhstb->type) {
-//				case boolean_:
-				case logical_:
-					return true;
-				default:
-					return false;
-			}
+			if(lhstb->type != rhstb->type)return false;
+			return  equal_symbol;
 			
 		case entity_:
-			if( lhstype == Type_Entity && TYPEis_entity(rhstype) ) return true;
 			return lhstb->entity == rhstb->entity;
 			
 		case generic_:
 		case aggregate_:
-			return (lhstb->type == rhstb->type) && (lhstb->tag == rhstb->tag);
+			return (lhstb->type == rhstb->type) && TYPEs_are_equal(lhstb->tag, rhstb->tag);
 
 		case array_:
 		case bag_:
@@ -932,8 +922,8 @@ bool TYPEs_are_equal(Type lhstype, Type rhstype) {
 			if( lhstb->type != rhstb->type )return false;
 			if( lhstb->flags.unique != rhstb->flags.unique )return false;
 			if( lhstb->flags.optional != rhstb->flags.optional )return false;
-			if( lhstb->upper != NULL && lhstb->upper != rhstb->upper )return false;
-			if( lhstb->lower != NULL && lhstb->lower != rhstb->lower )return false;
+			if( !EXPs_are_equal(lhstb->upper, rhstb->upper) )return false;
+			if( !EXPs_are_equal(lhstb->lower, rhstb->lower) )return false;
 			return TYPEs_are_equal(lhstb->base, rhstb->base);
 			
 		case enumeration_: 

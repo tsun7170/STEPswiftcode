@@ -377,12 +377,13 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 						--unhandled;
 						raw("case .%s(let entity): return ",selectCase_swiftName(selection_case, buf));
 						
-						if( TYPEs_are_equal(attr_type, base_attr->type) ){
+						if( TYPEis_swiftAssignable(attr_type, base_attr->type) ){
 							wrap("entity.%s\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
 						}
 						else {
 							TYPE_head_swift(NULL, attr_type, WO_COMMENT);
-							wrap("(entity.%s)\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+							raw("(");
+							wrap("entity.%s)\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
 						}
 					}
 					else if( ENTITYget_attr_ambiguous_count(case_entity, attr_name) > 1 ){
@@ -394,18 +395,22 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 				}
 
 				else if( TYPEis_select(selection_case) ) {
-					Variable base_attr = SELECTfind_attribute_effective_definition(selection_case, attr_name);
-					if(base_attr != NULL ){
+//					Variable base_attr = SELECTfind_attribute_effective_definition(selection_case, attr_name);
+					Linked_List base_attr_defs = DICTlookup(SELECTget_all_attributes(selection_case), attr_name);
+					Type base_attr_type = base_attr_defs!=NULL ? SELECTfind_common_type(base_attr_defs) : NULL;
+					
+					if(base_attr_type != NULL ){
 						indent_swift(level2);
 						--unhandled;
 						raw("case .%s(let select): return ",selectCase_swiftName(selection_case, buf));
 						
-						if( TYPEs_are_equal(attr_type, base_attr->type) ){
+						if( TYPEis_swiftAssignable(attr_type, base_attr_type) ){
 							wrap("select.%s\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
 						}
 						else {
 							TYPE_head_swift(NULL, attr_type, WO_COMMENT);
-							wrap("(select.%s)\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
+							raw("(");
+							wrap("select.%s)\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
 						}
 					}
 					else if( SELECTget_attr_ambiguous_count(selection_case, attr_name) > 1 ){
@@ -698,13 +703,13 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	
 
 	/*
-	 public init?<S: SDAISelectType>(possiblyFrom select: S?) {
-	 guard let select = select else { return nil }
+	 public init?<G: SDAIGenericType>(fromGeneric generic: G?) {
+	 guard let select = generic else { return nil }
 	 
 	 	if let fundamental = select.asFundamentalType as? Self {
 	 		self.init(fundamental: fundamental)
 	 	}
-		else if let base = <selection>(possiblyFrom: select) { 
+		else if let base = <selection>(fromGeneric: select) { 
 	 		self = .<selection>(base)
 	 }
 		...
@@ -712,10 +717,10 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	 } 
 	 	 */
 	indent_swift(level);
-	raw("public init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
+	raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
 	{	int level2=level+nestingIndent_swift;
 		indent_swift(level2);
-		raw("guard let select = select else { return nil }\n\n");
+		raw("guard let select = generic else { return nil }\n\n");
 		
 		indent_swift(level2);
 		raw("if let fundamental = select.asFundamentalType as? Self {\n");
@@ -726,7 +731,7 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 		
 		LISTdo( typeBody->list, selection, Type ) {
 			indent_swift(level2);
-			raw("else if let base = %s(possiblyFrom: select) {\n", 
+			raw("else if let base = %s(fromGeneric: select) {\n", 
 					TYPE_swiftName(selection, select_type->superscope, buf));
 			{	int level3 = level2+nestingIndent_swift;
 				indent_swift(level3);
@@ -778,8 +783,8 @@ static void selectSubtypeConstructor_swift(Schema schema, Type select_type,  int
 	 	self.init(fundamental: FundamentalType(possiblyFrom: underlyingType)) 
 	 }
 	 
-	 init?<S: SDAISelectType>(possiblyFrom select: S?) { 
-	 	self.init(fundamental: FundamentalType(possiblyFrom: select))
+	 init?<G: SDAIGenericType>(fromGeneric generic: G?) { 
+	 	self.init(fundamental: FundamentalType(fromGeneric: generic))
 	 }
 	*/
 	
@@ -799,9 +804,9 @@ static void selectSubtypeConstructor_swift(Schema schema, Type select_type,  int
 
 	
 	indent_swift(level);
-	raw("init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
+	raw("init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
 	indent_swift(level+nestingIndent_swift);
-	raw("self.init(fundamental: FundamentalType(possiblyFrom: select))\n");
+	raw("self.init(fundamental: FundamentalType(fromGeneric: generic))\n");
 	indent_swift(level);
 	raw("}\n");
 

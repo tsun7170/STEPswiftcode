@@ -72,11 +72,11 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		raw("}\n\n");
 		
 		indent_swift(level2);
-		raw("public init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
+		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
-		raw("guard let sup = Supertype(possiblyFrom: select) else { return nil }\n");
+		raw("guard let repval = Supertype(fromGeneric: generic) else { return nil }\n");
 		indent_swift(level2+nestingIndent_swift);
-		raw("rep = sup\n");
+		raw("rep = repval\n");
 		indent_swift(level2);
 		raw("}\n");
 

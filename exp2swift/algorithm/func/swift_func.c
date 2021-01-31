@@ -106,7 +106,8 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 	{	int level2 = level+nestingIndent_swift;
 		ALGvarnize_args_swift(func->u.func->parameters, level2);
 		ALGscope_declarations_swift(schema, func, level2);
-		STMTlist_swift(func, func->u.func->body, level2);
+		int tempvar_id = 1;
+		STMTlist_swift(func, func->u.func->body, &tempvar_id, level2);
 	}
 	
 	indent_swift(level);

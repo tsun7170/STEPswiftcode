@@ -159,6 +159,9 @@ void openSwiftFileForType(Schema s, Type type) {
 
 void openSwiftFileForEntity(Schema s, Entity entity) {
 	openSwiftFile(s, "entity", ENTITY_swiftNameInitial(entity), entity->symbol.name);
+//	if( strcmp(entity->symbol.name, "a3m_equivalence_criterion_of_detailed_assembly_data_content")==0 ){
+//		bool debug = true;
+//	}
 }
 
 void openSwiftFileForRule(Schema s, Rule rule) {
@@ -168,6 +171,9 @@ void openSwiftFileForRule(Schema s, Rule rule) {
 
 void openSwiftFileForFunction(Schema s, Function func) {
 	openSwiftFile(s, "func", FUNC_swiftNameInitial(func), func->symbol.name);
+//	if( strcmp(func->symbol.name, "list_to_array")==0 ){
+//		bool debug = true;
+//	}
 }
 
 void openSwiftFileForProcedure(Schema s, Procedure proc) {

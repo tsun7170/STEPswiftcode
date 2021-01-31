@@ -12,6 +12,7 @@
 
 #include <express/error.h>
 #include <sc_memmgr.h>
+#include "symbol.h"
 
 #include "exppp.h"
 #include "pp.h"
@@ -317,6 +318,7 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 				char buf[BUFSIZ];
 				wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION,buf) );
 			}
+//			wrap("SDAIGenericType");
 		}
 			break;
 			
@@ -370,11 +372,11 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 		default:
 			switch (in_comment) {
 				case YES_IN_COMMENT:
+				case WO_COMMENT:
 					wrap( "unknown type %d", tb->type );
 					break;
 					
 				case NOT_IN_COMMENT:
-				case WO_COMMENT:
 					wrap( " /* unknown type %d */", tb->type );
 					break;
 			}
@@ -404,4 +406,78 @@ const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption 
 	TYPE_head_swift(current, t, in_comment);
 	finish_buffer();
 	return ( buf );
+}
+
+bool TYPEis_swiftAssignable(Type lhstype, Type rhstype) {
+	if( lhstype == rhstype ) return true;
+	if( (lhstype == NULL)||(rhstype == NULL) )return false;
+	TypeBody lhstb = TYPEget_body(lhstype);
+	TypeBody rhstb = TYPEget_body(rhstype);
+	
+	bool equal_symbol = names_are_equal( lhstype->symbol.name, rhstype->symbol.name );
+	
+	if( lhstb==NULL && rhstb==NULL ){
+		return equal_symbol;
+	}
+	if( lhstb==NULL || rhstb==NULL ){
+		return false;
+	}
+	
+	switch (lhstb->type) {
+		case indeterminate_:
+			break;
+			
+		case integer_:
+		case real_:
+		case string_:
+		case binary_:
+		case boolean_:
+			if(lhstb->type != rhstb->type)return false;
+			return  equal_symbol;
+
+		case number_:
+			if(!equal_symbol) return false;
+			switch( rhstb->type) {
+				case number_:
+					return true;
+				default:
+					return false;
+			}
+
+		case logical_:
+			if(!equal_symbol) return false;
+			switch( rhstb->type) {
+				case logical_:
+					return true;
+				default:
+					return false;
+			}
+			
+		case entity_:
+			if( lhstype == Type_Entity && TYPEis_entity(rhstype) ) return true;
+			return lhstb->entity == rhstb->entity;
+			
+		case generic_:
+		case aggregate_:
+			return (lhstb->type == rhstb->type) && TYPEs_are_equal(lhstb->tag, rhstb->tag);
+
+		case array_:
+		case bag_:
+		case set_:
+		case list_:
+			if( lhstb->type != rhstb->type )return false;
+			if( lhstb->flags.unique != rhstb->flags.unique )return false;
+			if( lhstb->flags.optional != rhstb->flags.optional )return false;
+			if( !EXPs_are_equal(lhstb->upper, rhstb->upper) )return false;
+			if( !EXPs_are_equal(lhstb->lower, rhstb->lower) )return false;
+			return TYPEs_are_equal(lhstb->base, rhstb->base);
+			
+		case enumeration_: 
+			break;
+		case select_:
+			break;
+		default:
+			break;
+	}
+	return false;
 }

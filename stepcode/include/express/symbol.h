@@ -98,4 +98,7 @@ extern void SYMBOLset( void* obj );
 extern SC_EXPRESS_EXPORT void SYMBOLinitialize PROTO( ( void ) );
 SC_EXPRESS_EXPORT Symbol * SYMBOLcreate( char * name, int line, const char * filename );
 
+//*TY2021/01/30
+extern bool names_are_equal( const char* name1, const char* name2);
+
 #endif    /*  SYMBOL_H  */

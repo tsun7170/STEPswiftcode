@@ -63,9 +63,9 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 		raw("}\n\n");
 
 		indent_swift(level2);
-		raw("public init?<S: SDAISelectType>(possiblyFrom select: S?) {\n");
+		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
-		raw("guard let repval = select?.");
+		raw("guard let repval = generic?.");
 		switch( TYPEis(type) ){
 			case array_:
 				if(TYPEis_optional(type)){
@@ -90,7 +90,7 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 		}
 		raw(" else { return nil }\n");
 		indent_swift(level2+nestingIndent_swift);
-		raw("self = repval\n");
+		raw("rep = repval\n");
 		indent_swift(level2);
 		raw("}\n");
 		

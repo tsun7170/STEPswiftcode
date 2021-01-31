@@ -294,28 +294,6 @@ Type TYPE_retrieve_aggregate_base( Type t_root, Type t_agg_base ) {
 	}
 	
 	if( TYPEis_aggregation_data_type(t_root) ){
-//		if( t_agg_base ) {
-//			Type another_base = t_root->u.type->body->base;
-//			if( t_agg_base == another_base ) return t_agg_base;
-//			
-//			/* 2 underlying types do not have to the same base */
-//			//*TY2020/11/29 check if the fundamental types match
-//			t_agg_base = TYPEget_fundamental_type(t_agg_base);
-//			another_base = TYPEget_fundamental_type(another_base);
-//			if( t_agg_base == another_base ) return t_agg_base;
-//			
-//			//check if base types are entity types
-//			if( TYPEis_entity(t_agg_base) && TYPEis_entity(another_base) ){
-//				t_agg_base = Type_Entity;
-//				return t_agg_base;
-//			}
-//			
-//			//give up. two base types are dissimilar.
-//			return 0;
-//		} 
-//		t_agg_base = t_root->u.type->body->base;
-//		return t_agg_base;
-		
 		return TYPEget_common(t_root->u.type->body->base, t_agg_base);
 	}
 	
@@ -713,6 +691,11 @@ void TYPE_resolve( Type * typeaddr /*, Scope scope*/ ) {
 
         if( TYPEis_aggregation_data_type( type ) ) {
             TYPEresolve( &body->base );
+					//*TY2021/01/25
+					if( body->lower ) EXP_resolve(body->lower, scope, Type_Integer);
+					if( body->upper ) EXP_resolve(body->upper, scope, Type_Integer);
+					
+					
             /* only really critical failure point for future use */
             /* of this type is the base type, ignore others (above) */
             type->symbol.resolved = body->base->symbol.resolved;
