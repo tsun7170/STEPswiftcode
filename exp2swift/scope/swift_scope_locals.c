@@ -27,7 +27,7 @@
 void SCOPElocalList_swift( Scope s, int level ) {
 	Variable var;
 	DictionaryEntry de;
-	Linked_List orderedLocals = 0; /**< this list is used to order the vars the same way they were in the file */
+	Linked_List orderedLocals = NULL; /**< this list is used to order the vars the same way they were in the file */
 	int num_locals = 0;
 	
 	DICTdo_type_init( s->symbol_table, &de, OBJ_VARIABLE );
@@ -39,10 +39,12 @@ void SCOPElocalList_swift( Scope s, int level ) {
 			continue;
 		}
 		++num_locals;
+		
 		if( !orderedLocals ) {
 			orderedLocals = LISTcreate();
 			LISTadd_first( orderedLocals, (Generic) var );
-		} else {
+		} 
+		else {
 			/* sort by v->offset */
 			SCOPElocals_order( orderedLocals, var );
 		}
@@ -54,32 +56,30 @@ void SCOPElocalList_swift( Scope s, int level ) {
 	raw("//LOCAL\n");
 
 	LISTdo( orderedLocals, var, Variable ) {
+		char var_name[BUFSIZ];
 		indent_swift(level);
-		{
-			char buf[BUFSIZ];
-			raw("var %s: ", variable_swiftName(var,buf));
-		}
+		raw("var %s: ", variable_swiftName(var,var_name));
 		
-		//		bool force_optional = true;
-		//		if( TYPEis_boolean(VARget_type(var)) || TYPEis_logical(VARget_type(var)) ) {
-		//			force_optional = false;
-		//		}
 		variableType_swift(s, var, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 		
 		if( var->initializer ) {
 			raw( " = " );
 			if( TYPEis_aggregation_data_type(var->type) ){
-				force_wrap();
-			}
-			else {
+//			force_wrap();
 				aggressively_wrap();
 			}
+			else {
+				positively_wrap();
+//			aggressively_wrap();
+			}
+			
 			{	int oldwrap = captureWrapIndent();
-				//			EXPR_swift( NULL, var->initializer, NO_PAREN );
 				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, var->initializer, var->type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 				restoreWrapIndent(oldwrap);
 			}
+			raw( "; SDAI.TOUCH(var: &%s)", var_name );
 		}
+		
 		else if( TYPEhas_bounds(var->type) && !VARis_optional(var) ) {
 			char buf[BUFSIZ];
 			const char* aggr;
@@ -109,18 +109,17 @@ void SCOPElocalList_swift( Scope s, int level ) {
 			}
 			raw( " = " );
 			force_wrap();
-//			aggressively_wrap();
-//			positively_wrap();
+//		aggressively_wrap();
+//		positively_wrap();
 			{	int oldwrap = captureWrapIndent();
 				wrap("%s(bound1: ",aggr);
-				//			EXPR_swift(s,TYPEget_body(var->type)->lower,Type_Integer, NO_PAREN);
 				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, TYPEget_body(var->type)->lower, Type_Integer, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 				raw(", bound2: ");
-				//			EXPR_swift(s,TYPEget_body(var->type)->upper,Type_Integer, NO_PAREN);
 				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, TYPEget_body(var->type)->upper, Type_Integer, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 				raw(")");
 				restoreWrapIndent(oldwrap);
 			}
+//			raw( "; SDAI.TOUCH(var: &%s)", var_name );
 		}
 		raw( "\n" );
 	}LISTod;

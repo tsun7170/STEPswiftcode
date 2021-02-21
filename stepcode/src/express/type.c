@@ -206,10 +206,15 @@ Type TYPEcreate_name( Symbol * symbol ) {
     return s;
 }
 
-Symbol* SYMBOLcreate_implicit_tag( int tag_no, int line, const char * filename ) {
+Symbol* SYMBOLcreate_implicit_tag( int tag_no, bool is_aggregate, int line, const char * filename ) {
 #define TAG_NAME_SIZE 16
 	char* tag_name = (char*)sc_malloc(TAG_NAME_SIZE);
-	snprintf(tag_name, TAG_NAME_SIZE, "_T%d", tag_no);
+	if( is_aggregate ){
+		snprintf(tag_name, TAG_NAME_SIZE, "_AGG%d", tag_no);
+	}
+	else{
+		snprintf(tag_name, TAG_NAME_SIZE, "_GEN%d", tag_no);
+	}
 	Symbol* tag_sym = SYMBOLcreate(tag_name, line, filename);
 	return tag_sym;
 #undef TAG_NAME_SIZE
@@ -759,6 +764,7 @@ Dictionary SELECTget_super_entity_list( Type select_type ) {
 	return result;
 }	
 
+//*TY2021/1/5
 // find common type among list of attribute definitions
 Type SELECTfind_common_type(Linked_List attr_defs) {
 	Type common = NULL;
@@ -807,6 +813,7 @@ static Expression get_common_bound(Expression boundA, Expression boundB, bool up
 	return NULL;	
 }
 
+//*TY2021/1/5
 Type TYPEget_common(Type t, Type tref) {
 	if( tref == NULL ) return t;
 	if( t == tref ) return tref;
@@ -814,6 +821,9 @@ Type TYPEget_common(Type t, Type tref) {
 	tref = TYPEget_fundamental_type(tref);
 	t = TYPEget_fundamental_type(t);
 	if( t == tref ) return tref;
+	
+	if( TYPEis_free_generic(t) ) return t;
+	if( TYPEis_free_generic(tref) ) return tref;
 	
 	if( TYPEis_entity(tref) && TYPEis_entity(t) ) {
 		Entity common_super = ENTITYget_common_super(ENT_TYPEget_entity(tref), ENT_TYPEget_entity(t));
@@ -856,7 +866,7 @@ Type TYPEget_common(Type t, Type tref) {
 	if( TYPEis_boolean(tref) && TYPEis_logical(t) ) return Type_Logical;
 
 	if( TYPEis_aggregation_data_type(t) && TYPEis_aggregation_data_type(tref) ){
-		Type common_base = TYPEget_common(TYPEget_nonaggregate_base_type(t), TYPEget_nonaggregate_base_type(tref));
+		Type common_base = TYPEget_common(TYPEget_base_type(t), TYPEget_base_type(tref));
 		if( common_base != NULL ){
 			Type common_aggregate = NULL;
 			if( TYPEis(t) == TYPEis(tref) ) common_aggregate = tref;

@@ -91,6 +91,7 @@ const char* TYPE_swiftName( Type t, Scope current, char buf[BUFSIZ] ) {
 		}
 	}
 	
+	assert(t->symbol.name != NULL);
 	char buf2[BUFSIZ];
 	snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s%s", prefix,canonical_swiftName(t->symbol.name, buf2));
 	return buf;
@@ -364,7 +365,7 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 					
 				case NOT_IN_COMMENT:
 				case WO_COMMENT:
-					wrap( " /*runtime*/" );
+					wrap( "/*runtime*/SDAI.GENERIC" );
 					break;
 			}
 			break;

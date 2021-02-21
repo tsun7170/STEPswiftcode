@@ -411,7 +411,7 @@ aggregate_type(A) ::= TOK_AGGREGATE TOK_OF parameter_type(B).
 aggregate_type(A) ::= TOK_AGGREGATE TOK_COLON TOK_IDENTIFIER(B) TOK_OF
                parameter_type(C).
 {
-    Type t = TYPEcreate_user_defined_tag(C, CURRENT_SCOPE, B.symbol);
+    Type t = TYPEcreate_user_defined_tag(C, CURRENT_SCOPE, B.symbol);/*ty2021/2/15 need to review;C should really be A*/
 
     if (t) {
         SCOPEadd_super(t);

@@ -119,7 +119,7 @@ void TYPE_body_out( Type t, int level ) {
                 case aggregate_:
                     wrap( " AGGREGATE" );
 								//*TY2020/08/08
-                    if( TYPEhas_tag(tb) ) {
+                    if( TYPEhas_tag(t) ) {
                         wrap( ":%s", tb->tag->symbol.name );
                     }
                     wrap( " OF" );
@@ -240,8 +240,8 @@ void TYPE_body_out( Type t, int level ) {
             break;
         case generic_:
             wrap( " GENERIC" );
-            if( TYPEhas_tag(tb) ) {
-                wrap( ":%s", tb->tag->symbol.name );
+            if( TYPEhas_tag(t) ) {
+                wrap( ":%s", TYPEget_tag(t)->symbol.name );
             }
             break;
 				

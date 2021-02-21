@@ -37149,6 +37149,7 @@ LOCAL
   bval  : maths_binary;
   tval  : maths_tuple   := the_empty_maths_tuple;
   mval  : maths_value;
+  val_list : LIST OF GENERIC; --*TY2021/02/20
 END_LOCAL;
   IF (schema_prefix + 'MATHS_VALUE') IN types
   THEN
@@ -37191,8 +37192,9 @@ END_LOCAL;
   END_IF;
   IF 'LIST' IN types
   THEN
-    REPEAT i := 1 TO SIZEOF(val);
-      mval := convert_to_maths_value(val[i]);
+ 		val_list := val; --*TY2021/02/20
+    REPEAT i := 1 TO SIZEOF(val_list); --*TY2021/02/20: REPEAT i := 1 TO SIZEOF(val);
+      mval := convert_to_maths_value(val_list[i]); --*TY2021/02/20: mval := convert_to_maths_value(val[i]);
       IF NOT EXISTS(mval)
       THEN
         RETURN(?);
@@ -37526,6 +37528,7 @@ LOCAL
   previous_in_chain_plus        : LIST OF GENERIC : CGEN := [];
   result                        : BOOLEAN                := true;
   set_of_types                  : SET OF STRING          := [];
+ 	input_instance_CGEN: GENERIC:CGEN; --*TY2021/02/20
 END_LOCAL;
   IF EXISTS(set_of_input_instances)
   THEN
@@ -37543,7 +37546,8 @@ END_LOCAL;
           THEN
             IF NOT (bag_of_referring_instances[j] IN previous_in_chain)
             THEN
-              previous_in_chain_plus := previous_in_chain + set_of_input_instances[i];
+ 							input_instance_CGEN := set_of_input_instances[i]; --*TY2021/02/20
+              previous_in_chain_plus := previous_in_chain + input_instance_CGEN; --*TY2021/02/20: previous_in_chain_plus := previous_in_chain + set_of_input_instances[i];
               IF dependently_instantiated([bag_of_referring_instances[j]], set_of_input_types, previous_in_chain_plus)
               THEN
                 dependently_instantiated_flag := true;
@@ -41525,6 +41529,7 @@ END_LOCAL;
                             END_IF;
     END;
   END_CASE;
+ RETURN(?); --*TY2021/02/18 bug fix
 END_FUNCTION;
 
 FUNCTION get_descendant_occurrences(input : product_definition_occurrence) : SET [0 : ?] OF product_definition_specified_occurrence;
@@ -42872,6 +42877,7 @@ LOCAL
   sspc      : maths_space;
   smem      : SET OF maths_value;
   factors   : LIST OF maths_space;
+ 	v_LIST : LIST OF GENERIC; --*TY2021/02/20
 END_LOCAL;
   IF NOT EXISTS(s)
   THEN
@@ -43042,12 +43048,13 @@ END_LOCAL;
   THEN
     IF 'LIST' IN vtypes
     THEN
-      IF SIZEOF(v) = s\uniform_product_space.exponent
+ 			v_LIST := v; --*TY2021/02/20
+      IF SIZEOF(v_LIST) = s\uniform_product_space.exponent --*TY2021/02/20: IF SIZEOF(v) = s\uniform_product_space.exponent
       THEN
         sspc := s\uniform_product_space.base;
         cum := true;
-        REPEAT i := 1 TO SIZEOF(v);
-          cum := cum AND member_of(v[i], sspc);
+        REPEAT i := 1 TO SIZEOF(v_LIST); --*TY2021/02/20: REPEAT i := 1 TO SIZEOF(v);
+          cum := cum AND member_of(v_LIST[i], sspc); --*TY2021/02/20: cum := cum AND member_of(v[i], sspc);
           IF cum = false
           THEN
             RETURN(false);
@@ -43062,12 +43069,13 @@ END_LOCAL;
   THEN
     IF 'LIST' IN vtypes
     THEN
+ 			v_LIST := v; --*TY2021/02/20
       factors := s\listed_product_space.factors;
-      IF SIZEOF(v) = SIZEOF(factors)
+      IF SIZEOF(v_LIST) = SIZEOF(factors) --*TY2021/02/20: IF SIZEOF(v) = SIZEOF(factors)
       THEN
         cum := true;
-        REPEAT i := 1 TO SIZEOF(v);
-          cum := cum AND member_of(v[i], factors[i]);
+        REPEAT i := 1 TO SIZEOF(v_LIST); --*TY2021/02/20: REPEAT i := 1 TO SIZEOF(v);
+          cum := cum AND member_of(v_LIST[i], factors[i]); --*TY2021/02/20: cum := cum AND member_of(v[i], factors[i]);
           IF cum = false
           THEN
             RETURN(false);
@@ -43082,21 +43090,22 @@ END_LOCAL;
   THEN
     IF 'LIST' IN vtypes
     THEN
+ 			v_LIST := v; --*TY2021/02/20
       sspc := s\extended_tuple_space.base;
       tmp_int := space_dimension(sspc);
-      IF SIZEOF(v) >= tmp_int
+      IF SIZEOF(v_LIST) >= tmp_int --*TY2021/02/20: IF SIZEOF(v) >= tmp_int
       THEN
         cum := true;
         REPEAT i := 1 TO tmp_int;
-          cum := cum AND member_of(v[i], factor_space(sspc, i));
+          cum := cum AND member_of(v_LIST[i], factor_space(sspc, i)); --*TY2021/02/20: cum := cum AND member_of(v[i], factor_space(sspc, i));
           IF cum = false
           THEN
             RETURN(false);
           END_IF;
         END_REPEAT;
         sspc := s\extended_tuple_space.extender;
-        REPEAT i := tmp_int + 1 TO SIZEOF(v);
-          cum := cum AND member_of(v[i], sspc);
+        REPEAT i := tmp_int + 1 TO SIZEOF(v_LIST); --*TY2021/02/20: REPEAT i := tmp_int + 1 TO SIZEOF(v);
+          cum := cum AND member_of(v_LIST[i], sspc); --*TY2021/02/20: cum := cum AND member_of(v[i], sspc);
           IF cum = false
           THEN
             RETURN(false);
@@ -44241,6 +44250,9 @@ LOCAL
   tpl           : LIST OF maths_value;
   tp2           : LIST OF maths_value;
   mem           : SET OF maths_value                         := [];
+  v1_string : STRING; v2_string : STRING; --*TY2021/02/18
+  tpl_integer : INTEGER; tp2_integer : INTEGER; --*TY2021/02/18
+  tpl_real : REAL; tp2_real : REAL; --*TY2021/02/18
 END_LOCAL;
   REPEAT i := 1 TO SIZEOF(expr.arguments);
     v := simplify_maths_value(expr.arguments[i]);
@@ -45093,7 +45105,8 @@ END_LOCAL;
       END_IF;
       ef_like : IF ('STRING' IN TYPEOF(v1)) AND ('STRING' IN TYPEOF(v2))
       THEN
-        RETURN(ctmv(v1 LIKE v2));
+				v1_string := v1; v2_string := v2; --*TY2021/02/18
+ 				RETURN(ctmv(v1_string LIKE v2_string)); --*TY2021/02/18: RETURN(ctmv(v1 LIKE v2));
       END_IF;
       ef_subscript_b : IF ('BINARY' IN TYPEOF(v1)) AND ('INTEGER' IN TYPEOF(v2))
       THEN
@@ -45293,8 +45306,9 @@ END_LOCAL;
                                THEN
                                  RETURN(?);
                                END_IF;
-                               REPEAT l := 1 TO SIZEOF(tpl);
-                                 tpl[j] := tpl[j] + tp2[j];
+                               REPEAT j := 1 TO SIZEOF(tpl); --*TY2021/02/18 bug fix: REPEAT l := 1 TO SIZEOF(tpl);
+																 tpl_integer := tpl[j]; tp2_integer := tp2[j]; --*TY2021/02/18
+ 																 tpl[j] := tpl_integer + tp2_integer; --*TY2021/02/18: tpl[j] := tpl[j] + tp2[j];
                                END_REPEAT;
                              END_IF;
                              REMOVE(vlist, i);
@@ -45322,7 +45336,8 @@ END_LOCAL;
           RETURN(?);
         END_IF;
         REPEAT i := 1 TO SIZEOF(tpl);
-          tpl[i] := tpl[i] - tp2[i];
+ 				  tpl_integer := tpl[i]; tp2_integer := tp2[i]; --*TY2021/02/18
+ 					tpl[i] := tpl_integer - tp2_integer; --*TY2021/02/18: tpl[i] := tpl[i] - tp2[i];
         END_REPEAT;
         RETURN(ctmv(tpl));
       END_IF;
@@ -45345,7 +45360,8 @@ END_LOCAL;
           RETURN(?);
         END_IF;
         REPEAT i := 1 TO SIZEOF(tpl);
-          j := j + tpl[i] * tp2[i];
+          tpl_integer := tpl[i]; tp2_integer := tp2[i]; --*TY2021/02/18
+          j := j + tpl_integer * tp2_integer; --*TY2021/02/18: j := j + tpl[i] * tp2[i];
         END_REPEAT;
         RETURN(ctmv(j));
       END_IF;
@@ -45382,8 +45398,9 @@ END_LOCAL;
                                THEN
                                  RETURN(?);
                                END_IF;
-                               REPEAT l := 1 TO SIZEOF(tpl);
-                                 tpl[j] := tpl[j] + tp2[j];
+                               REPEAT j := 1 TO SIZEOF(tpl); --*TY2021/02/18 bug fix: REPEAT l := 1 TO SIZEOF(tpl);
+ 																 tpl_real := tpl[j]; tp2_real := tp2[j]; --*TY2021/02/18
+                                 tpl[j] := tpl_real + tp2_real; --*TY2021/02/18: tpl[j] := tpl[j] + tp2[j];
                                END_REPEAT;
                              END_IF;
                              REMOVE(vlist, i);
@@ -45411,7 +45428,8 @@ END_LOCAL;
           RETURN(?);
         END_IF;
         REPEAT i := 1 TO SIZEOF(tpl);
-          tpl[i] := tpl[i] - tp2[i];
+          tpl_real := tpl[i]; tp2_real := tp2[i]; --*TY2021/02/18
+          tpl[i] := tpl_real - tp2_real; --*TY2021/02/18: tpl[i] := tpl[i] - tp2[i];
         END_REPEAT;
         RETURN(ctmv(tpl));
       END_IF;
@@ -45434,7 +45452,8 @@ END_LOCAL;
           RETURN(?);
         END_IF;
         REPEAT i := 1 TO SIZEOF(tpl);
-          r := r + tpl[i] * tp2[i];
+ 					tpl_real := tpl[i]; tp2_real := tp2[i]; --*TY2021/02/18
+          r := r + tpl_real * tp2_real; --*TY2021/02/18: r := r + tpl[i] * tp2[i];
         END_REPEAT;
         RETURN(ctmv(r));
       END_IF;
@@ -45443,7 +45462,8 @@ END_LOCAL;
         tpl := v1;
         r := 0.0;
         REPEAT i := 1 TO SIZEOF(tpl);
-          r := r + tpl[i] * tpl[i];
+ 					tpl_real := tpl[i]; tp2_real := tp2[i]; --*TY2021/02/18
+          r := r + tpl_real * tp2_real; --*TY2021/02/18: r := r + tpl[i] * tpl[i];
         END_REPEAT;
         RETURN(ctmv(SQRT(r)));
       END_IF;
@@ -45486,7 +45506,7 @@ END_LOCAL;
                                THEN
                                  RETURN(?);
                                END_IF;
-                               REPEAT l := 1 TO SIZEOF(tpl);
+                               REPEAT j := 1 TO SIZEOF(tpl); --*TY2021/02/18 bug fix: REPEAT l := 1 TO SIZEOF(tpl);
                                  parts(tpl[j], p, q);
                                  parts(tp2[j], r, s);
                                  tpl[j] := makec(p + r, q + s);
@@ -45643,6 +45663,9 @@ LOCAL
   boo    : BOOLEAN;
   str    : STRING;
   nmb    : NUMBER;
+  v1_string : STRING; v2_string : STRING;	--*TY2021/02/18
+  v1_number : NUMBER; v2_number : NUMBER;	--*TY2021/02/18
+
 END_LOCAL;
   IF 'INT_LITERAL' IN types
   THEN
@@ -45799,7 +45822,9 @@ END_LOCAL;
               ELSE
                 IF 'LIKE_EXPRESSION' IN types
                 THEN
-                  boo := bool(v1 LIKE v2);
+ 									v1_string := v1; v2_string := v2;	--*TY2021/02/18
+                  -- boo := bool(v1 LIKE v2);	--*TY2021/02/18
+ 									boo := bool(v1_string LIKE v2_string);	--*TY2021/02/18
                 ELSE
                   RETURN(?);
                 END_IF;
@@ -45846,7 +45871,9 @@ END_LOCAL;
   END_IF;
   IF ('DIV_EXPRESSION' IN types) AND ('NUMBER' IN TYPEOF(v1)) AND ('NUMBER' IN TYPEOF(v2))
   THEN
-    RETURN(convert_to_maths_value(v1 DIV v2));
+ 		v1_number := v1; v2_number := v2; --*TY2021/02/18
+    -- RETURN(convert_to_maths_value(v1 DIV v2)); --*TY2021/02/18
+ 		RETURN(convert_to_maths_value(v1_number DIV v2_number)); --*TY2021/02/18
   END_IF;
   IF 'EQUALS_EXPRESSION' IN types
   THEN
@@ -45965,11 +45992,15 @@ END_LOCAL;
   END_IF;
   IF ('MINUS_EXPRESSION' IN types) AND ('NUMBER' IN TYPEOF(v1)) AND ('NUMBER' IN TYPEOF(v2))
   THEN
-    RETURN(convert_to_maths_value(v1 - v2));
+ 		v1_number := v1; v2_number := v2; --*TY2021/02/18
+    -- RETURN(convert_to_maths_value(v1 - v2)); --*TY2021/02/18
+ 		RETURN(convert_to_maths_value(v1_number - v2_number)); --*TY2021/02/18
   END_IF;
   IF ('MOD_EXPRESSION' IN types) AND ('NUMBER' IN TYPEOF(v1)) AND ('NUMBER' IN TYPEOF(v2))
   THEN
-    RETURN(convert_to_maths_value(v1 MOD v2));
+ 		v1_number := v1; v2_number := v2; --*TY2021/02/18
+    -- RETURN(convert_to_maths_value(v1 MOD v2)); --*TY2021/02/18
+ 		RETURN(convert_to_maths_value(v1_number MOD v2_number)); --*TY2021/02/18
   END_IF;
   IF 'MULT_EXPRESSION' IN types
   THEN
@@ -46050,7 +46081,9 @@ END_LOCAL;
   END_IF;
   IF ('POWER_EXPRESSION' IN types) AND ('NUMBER' IN TYPEOF(v1)) AND ('NUMBER' IN TYPEOF(v2))
   THEN
-    RETURN(convert_to_maths_value(v1 ** v2));
+ 		v1_number := v1; v2_number := v2; --*TY2021/02/18
+    -- RETURN(convert_to_maths_value(v1 ** v2)); --*TY2021/02/18
+    RETURN(convert_to_maths_value(v1_number ** v2_number)); --*TY2021/02/18
   END_IF;
   IF ('SIN_EXPRESSION' IN types) AND ('NUMBER' IN TYPEOF(v1))
   THEN
@@ -46058,7 +46091,9 @@ END_LOCAL;
   END_IF;
   IF ('SLASH_EXPRESSION' IN types) AND ('NUMBER' IN TYPEOF(v1)) AND ('NUMBER' IN TYPEOF(v2))
   THEN
-    RETURN(convert_to_maths_value(v1 / v2));
+ 		v1_number := v1; v2_number := v2; --*TY2021/02/18
+    -- RETURN(convert_to_maths_value(v1 / v2)); --*TY2021/02/18
+    RETURN(convert_to_maths_value(v1_number / v2_number)); --*TY2021/02/18
   END_IF;
   IF ('SQUARE_ROOT_EXPRESSION' IN types) AND ('NUMBER' IN TYPEOF(v1))
   THEN
@@ -47155,7 +47190,7 @@ END_LOCAL;
                                               'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.MAPPED_ITEM.MAPPING_SOURCE'));
     END_REPEAT;
     REPEAT j := 1 TO HIINDEX(intermediate_items);
-      results := results + bag_to_set(using_representation_with_mapping(intermediate_items[j]));
+      results := results + using_representation_with_mapping(intermediate_items[j]); --*ty2021/02/18 bug fix: results := results + bag_to_set(using_representation_with_mapping(intermediate_items[j]));
     END_REPEAT;
   END_IF;
   RETURN(results);

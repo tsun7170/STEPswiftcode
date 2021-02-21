@@ -118,6 +118,15 @@ static Expression EXPRop1_decompose( Expression e, Type op1target_type, int*/*in
 static Expression EXPRop3_decompose( Expression e, Type op1target_type, Type op2target_type, Type op3target_type, int*/*inout*/ tempvar_id, Linked_List tempvars );
 static Expression EXPRop2_decompose_subexpr( Expression e, Type op1target_type, Type op2target_type, int*/*inout*/ tempvar_id, Linked_List tempvars );
 
+typedef enum {
+	preserve_op1,
+	preserve_op2	
+}target_preservation;
+
+static Expression EXPR_lhsop_decompose( Expression e, Type target_type, int*/*inout*/ tempvar_id, Linked_List tempvars );
+static Expression EXPR_lhsop2_decompose(target_preservation preserve, Expression e, Type op1target_type, Type op2target_type, int*/*inout*/ tempvar_id, Linked_List tempvars );
+static Expression EXPR_lhsop3_decompose( Expression e, Type op1target_type, Type op2target_type, Type op3target_type, int*/*inout*/ tempvar_id, Linked_List tempvars );
+
 
 static Expression EXPRexpr_decompose( Expression e, Type target_type, int*/*inout*/ tempvar_id, Linked_List tempvars ) {
 		
@@ -229,9 +238,9 @@ static Expression EXPRexpr_decompose( Expression e, Type target_type, int*/*inou
 //			e->u.list
 			
 			Type basetype = TYPE_retrieve_aggregate_base(target_type, NULL);
-			if( TYPEis_runtime(basetype) ){
-				bool debug = true;
-			}//DEBUG
+//			if( TYPEis_runtime(basetype) ){
+//				bool debug = true;
+//			}//DEBUG
 
 			Linked_List aggrinit_list = LISTcreate();
 			LISTdo( e->u.list, elem, Expression ){
@@ -240,10 +249,144 @@ static Expression EXPRexpr_decompose( Expression e, Type target_type, int*/*inou
 			}LISTod;
 			
 			aggrinit_expr->u.list = aggrinit_list;
-			Type temptype = TYPEcreate_aggregate(aggregate_, basetype, NULL, NULL, false, false);
-			Expression simplified = create_temp_expression(tempvar_id, temptype, aggrinit_expr, tempvars);
+//			Type temptype = TYPEcreate_aggregate(aggregate_, basetype, NULL, NULL, false, false);
+			Expression simplified = create_temp_expression(tempvar_id, target_type, aggrinit_expr, tempvars);
 			return simplified;
 			
+		}
+			
+//			//MARK: oneof_
+//		case oneof_: 
+
+		default:
+			fprintf( stderr, "%s:%d: ERROR - unknown expression, type %d\n", e->symbol.filename, e->symbol.line, TYPEis( e->type ) );
+			return e;
+	}
+}
+
+Expression EXPR_decompose_lhs( Expression e, Type target_type, int*/*inout*/ tempvar_id, Linked_List tempvars ) {
+		
+	switch( TYPEis( e->type ) ) {
+			//MARK: indeterminate_
+		case indeterminate_:
+			return e;
+			
+			//MARK: integer_
+		case integer_:
+			return e;
+			
+			//MARK: real_
+		case real_:
+			return e;
+			
+			//MARK: binary_
+		case binary_:
+			return e;
+			
+			//MARK: logical_, boolean_
+		case logical_:
+		case boolean_:
+			return e;
+			
+			//MARK: string_
+		case string_:
+			return e;
+			
+			//MARK: attribute_, entity_, identifier_, enumeration_
+		case attribute_:
+		case identifier_:
+			if( e->u_tag == expr_is_variable ) {
+				Variable v = e->u.variable;
+				if( v->flags.alias ) {
+					Expression alias_source = EXPR_decompose_lhs(v->initializer, target_type, tempvar_id, tempvars);
+					return alias_source;
+				}
+			}
+			return e;
+
+		case enumeration_:			
+		case entity_:
+			return e;
+
+				
+			//MARK: query_
+		case query_:
+		{
+//			Expression query_expr = copy_expression(e);
+//			//					reuse:					
+//			//					e->u.query->local
+//			//					e->u.query->expression
+//			
+//			Expression query_aggregate_source = EXPRexpr_decompose(e->u.query->aggregate, e->u.query->aggregate->return_type, tempvar_id, tempvars);
+//			query_expr->u.query->aggregate = query_aggregate_source;
+//			Expression simplified = create_temp_expression(tempvar_id, query_expr->return_type, query_expr, tempvars);
+//			return simplified;
+			return e;
+		}
+				
+			//MARK: self_
+		case self_:
+			return e;
+			
+			//MARK: funcall_
+		case funcall_:
+		{
+//			Expression funcall_expr = copy_expression(e);
+//			//			e->u.funcall.list
+//			
+//			bool isfunc = (e->u.funcall.function->u_tag == scope_is_func);
+//			assert(isfunc || (e->u.funcall.function->u_tag == scope_is_entity));
+//			Linked_List formals;
+//			if( isfunc ) {
+//				formals = e->u.funcall.function->u.func->parameters;
+//			}
+//			else {	// entity constructor call
+//				formals = ENTITYget_constructor_params(e->u.funcall.function);
+//			}
+//
+//			Linked_List funcall_list = LISTcreate();
+//			
+//			Link formals_iter = LISTLINKfirst(formals);
+//			LISTdo( e->u.funcall.list, arg, Expression ) {
+//				assert(formals_iter != NULL);
+//				Variable formal_param = formals_iter->data;
+//
+//				Expression arg_source = EXPRexpr_decompose(arg, formal_param->type, tempvar_id, tempvars);
+//				LISTadd_last(funcall_list, arg_source);
+//				formals_iter = LISTLINKnext(formals, formals_iter);
+//			}LISTod;
+//			
+//			funcall_expr->u.funcall.list = funcall_list;
+//			Expression simplified = create_temp_expression(tempvar_id, funcall_expr->return_type, funcall_expr, tempvars);
+//			return simplified;
+			return e;
+		}
+			
+			//MARK: op_
+		case op_:
+		{
+			return EXPR_lhsop_decompose(e, target_type, tempvar_id, tempvars);
+		}
+			
+			//MARK: aggregate_
+		case aggregate_:
+		{
+//			Expression aggrinit_expr = copy_expression(e);
+////			e->u.list
+//			
+//			Type basetype = TYPE_retrieve_aggregate_base(target_type, NULL);
+//
+//			Linked_List aggrinit_list = LISTcreate();
+//			LISTdo( e->u.list, elem, Expression ){
+//				Expression elem_source = EXPRexpr_decompose(elem, basetype, tempvar_id, tempvars);
+//				LISTadd_last(aggrinit_list, elem_source);
+//			}LISTod;
+//			
+//			aggrinit_expr->u.list = aggrinit_list;
+//			Type temptype = TYPEcreate_aggregate(aggregate_, basetype, NULL, NULL, false, false);
+//			Expression simplified = create_temp_expression(tempvar_id, temptype, aggrinit_expr, tempvars);
+//			return simplified;
+			return e;
 		}
 			
 //			//MARK: oneof_
@@ -416,6 +559,166 @@ static Expression EXPRop_decompose( Expression e, Type target_type, int*/*inout*
 		}
 }
 
+static Expression EXPR_lhsop_decompose( Expression e, Type target_type, int*/*inout*/ tempvar_id, Linked_List tempvars ) {
+		switch( e->e.op_code ) {
+		//MARK: - Arithmetic Op
+			//MARK:OP_NEGATE
+			case OP_NEGATE:
+//				return EXPRop1_decompose(e, e->e.op1->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_PLUS
+			case OP_PLUS:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+				//MARK:OP_TIMES
+			case OP_TIMES:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_MINUS
+			case OP_MINUS:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_REAL_DIV
+			case OP_REAL_DIV:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_EXP
+			case OP_EXP:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+				//MARK:OP_DIV
+			case OP_DIV:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+				//MARK:OP_MOD
+			case OP_MOD:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+				
+		//MARK: - Relational Op
+			//MARK:OP_EQUAL
+			case OP_EQUAL:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_NOT_EQUAL
+			case OP_NOT_EQUAL:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_GREATER_THAN
+			case OP_GREATER_THAN:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_LESS_THAN
+			case OP_LESS_THAN:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_GREATER_EQUAL
+			case OP_GREATER_EQUAL:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_LESS_EQUAL
+			case OP_LESS_EQUAL:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_INST_EQUAL
+			case OP_INST_EQUAL:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_INST_NOT_EQUAL
+			case OP_INST_NOT_EQUAL:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_IN
+			case OP_IN:
+//				return EXPRopIn_decompose(e, target_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_LIKE
+			case OP_LIKE:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+				
+		//MARK: - Logical Op
+			//MARK:OP_NOT
+			case OP_NOT:
+//				return EXPRop1_decompose(e, e->e.op1->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_AND
+			case OP_AND:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_OR
+			case OP_OR:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+			//MARK:OP_XOR
+			case OP_XOR:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+		//MARK: - String Op
+			//MARK:OP_SUBCOMPONENT
+			case OP_SUBCOMPONENT:
+				return EXPR_lhsop3_decompose(e, e->e.op1->return_type, e->e.op2->return_type, e->e.op3->return_type, tempvar_id, tempvars);
+				
+				
+		//MARK: - Aggregate Op
+			//MARK:OP_ARRAY_ELEMENT
+			case OP_ARRAY_ELEMENT:
+				return EXPR_lhsop2_decompose(preserve_op1, e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				
+		//MARK: - Reference Op
+			//MARK:OP_DOT
+			case OP_DOT:
+				return EXPR_lhsop2_decompose(preserve_op2, e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				
+			//MARK:OP_GROUP
+			case OP_GROUP:
+				return EXPR_lhsop2_decompose(preserve_op2, e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				
+				
+		//MARK: - Complex Entity Constructor
+			//MARK:OP_CONCAT
+			case OP_CONCAT:
+//				return EXPRop2_decompose(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+				
+				
+//				//MARK:OP_ANDOR
+//        case OP_ANDOR:
+				
+				//MARK: - REPEAT
+			case OP_REPEAT:
+//				return EXPRop2_decompose_subexpr(e, e->e.op1->return_type, e->e.op2->return_type, tempvar_id, tempvars);
+				return e;
+
+				
+				default:
+				fprintf( stderr, "%s:%d: ERROR - unknown expression opcode, opcode %u\n", e->symbol.filename, e->symbol.line, e->e.op_code );
+				return e;
+		}
+}
+
 static Expression EXPRop2_decompose_subexpr( Expression e, Type op1target_type, Type op2target_type, int*/*inout*/ tempvar_id, Linked_List tempvars ) {
 	Expression op_expr = copy_expression(e);
 //	e->e.op1;
@@ -473,6 +776,51 @@ static Expression EXPRop3_decompose( Expression e, Type op1target_type, Type op2
 
 
 
+
+static Expression EXPR_lhsop2_decompose(target_preservation preserve, Expression e, Type op1target_type, Type op2target_type, int*/*inout*/ tempvar_id, Linked_List tempvars ) {
+	Expression op_expr = copy_expression(e);
+//	e->e.op1;
+//	e->e.op2;
+	
+	switch (preserve) {
+		case preserve_op1:
+		{
+			Expression op1_source = EXPR_decompose_lhs(e->e.op1, op1target_type, tempvar_id, tempvars);
+			Expression op2_source = EXPRexpr_decompose(e->e.op2, op2target_type, tempvar_id, tempvars);
+			op_expr->e.op1 = op1_source;
+			op_expr->e.op2 = op2_source;
+		}
+			break;
+			
+		case preserve_op2:
+		{
+			Expression op1_source = EXPRexpr_decompose(e->e.op1, op1target_type, tempvar_id, tempvars);
+			Expression op2_source = EXPR_decompose_lhs(e->e.op2, op2target_type, tempvar_id, tempvars);
+			op_expr->e.op1 = op1_source;
+			op_expr->e.op2 = op2_source;
+		}
+			break;
+	}
+	return op_expr;
+}
+
+static Expression EXPR_lhsop3_decompose( Expression e, Type op1target_type, Type op2target_type, Type op3target_type, int*/*inout*/ tempvar_id, Linked_List tempvars ){
+	Expression op_expr = copy_expression(e);
+//	e->e.op1;
+//	e->e.op2;
+//	e->e.op3;
+	
+	Expression op1_source = EXPR_decompose_lhs(e->e.op1, op1target_type, tempvar_id, tempvars);
+	Expression op2_source = EXPRexpr_decompose(e->e.op2, op2target_type, tempvar_id, tempvars);
+	Expression op3_source = EXPRexpr_decompose(e->e.op3, op3target_type, tempvar_id, tempvars);
+	
+	op_expr->e.op1 = op1_source;
+	op_expr->e.op2 = op2_source;
+	op_expr->e.op3 = op3_source;
+//	Expression simplified = create_temp_expression(tempvar_id, op_expr->return_type, op_expr, tempvars);
+	return op_expr;
+}
+
 Expression EXPR_decompose( Expression original, Type target_type, int*/*inout*/ tempvar_id, Linked_List*/*out*/ tempvar_definitions ){
 	Linked_List tempvars = (*tempvar_definitions) = LISTcreate();
 	
@@ -486,21 +834,23 @@ int EXPR_tempvars_swift( Scope s, Linked_List tempvar_definitions, int level ){
 	if( num_tempvars == 0 )return num_tempvars;
 	
 	raw("\n");
-	indent_swift(level);
-	raw("//DECOMPOSED EXPRESSIONS\n");
+//	indent_swift(level);
+//	raw("//DECOMPOSED EXPRESSIONS\n");
 
 	LISTdo(tempvar_definitions, expr, Expression){
 		Expression tempvar = LIST_aux;
 		
 		char buf[BUFSIZ];
 		indent_swift(level);
-		raw("let %s = ", asVariable_swiftName_n(tempvar->symbol.name, buf, BUFSIZ));
+		raw("let %s ", asVariable_swiftName_n(tempvar->symbol.name, buf, BUFSIZ));
+//		raw("/*");TYPE_head_swift(s, tempvar->return_type, YES_IN_COMMENT);raw("*/");	// DEBUG
+		raw("= ");
 		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, expr, tempvar->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 //		EXPR_swift(s, expr, expr->return_type, NO_PAREN);
 		raw("\n");
 	}LISTod;
 	
-	raw("\n");
+//	raw("\n");
 	return num_tempvars;
 }
 

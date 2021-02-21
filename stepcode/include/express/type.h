@@ -254,40 +254,6 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 #define TYPEBODY_new()      (struct TypeBody_ *)MEM_new(&TYPEBODY_fl)
 #define TYPEBODY_destroy(x) MEM_destroy(&TYPEBODY_fl,(Freelist *)(Generic)x)
 
-#define TYPEis(t)       ((t)->u.type->body->type)
-#define TYPEis_identifier(t)    ((t)->u.type->body->type == identifier_)
-#define TYPEis_logical(t)   ((t)->u.type->body->type == logical_)
-#define TYPEis_boolean(t)   ((t)->u.type->body->type == boolean_)
-#define TYPEis_real(t)   ((t)->u.type->body->type == real_)
-#define TYPEis_integer(t)   ((t)->u.type->body->type == integer_)
-#define TYPEis_number(t)   ((t)->u.type->body->type == number_)	//*TY2021/01/19
-#define TYPEis_string(t)    ((t)->u.type->body->type == string_)
-#define TYPEis_expression(t)    ((t)->u.type->body->type == op_)
-#define TYPEis_oneof(t)     ((t)->u.type->body->type == oneof_)
-#define TYPEis_entity(t)    ((t)->u.type->body->type == entity_)
-#define TYPEis_enumeration(t)   ((t)->u.type->body->type == enumeration_)
-#define TYPEis_aggregation_data_type(t) ((t)->u.type->body->base)	//*TY2020/11/19 renamed
-#define TYPEis_AGGREGATE(t) ((t)->u.type->body->type == aggregate_)	//*TY2020/11/19 renamed
-#define TYPEis_generic(t)		((t)->u.type->body->type == generic_)	//*TY2020/11/19 added
-#define TYPEis_array(t)     ((t)->u.type->body->type == array_)
-#define TYPEis_bag(t)     ((t)->u.type->body->type == bag_)	//*TY2020/12/05 added
-#define TYPEis_set(t)     ((t)->u.type->body->type == set_)	//*TY2020/12/05 added
-#define TYPEis_list(t)     ((t)->u.type->body->type == list_)	//*TY2020/12/05 added
-#define TYPEis_select(t)    ((t)->u.type->body->type == select_)
-#define TYPEis_reference(t) ((t)->u.type->body->type == reference_)
-#define TYPEis_unknown(t)   ((t)->u.type->body->type == unknown_)
-#define TYPEis_runtime(t)   ((t)->u.type->body->type == runtime_)
-#define TYPEis_shared(t)    ((t)->u.type->body->flags.shared)
-#define TYPEis_optional(t)  ((t)->u.type->body->flags.optional)
-#define TYPEis_encoded(t)   ((t)->u.type->body->flags.encoded)
-#define TYPEis_generic_entity(t) (TYPEis_entity(t) && (t)->u.type->body->entity == NULL)	//*TY2020/12/2
-#define TYPEis_literal(t)	()
-
-//*TY2020/12/05
-#define TYPEcanbe_array(t)	(TYPEis_array(t) || TYPEis_AGGREGATE(t))
-#define TYPEcanbe_bag(t)	(TYPEis_bag(t) || TYPEis_AGGREGATE(t))
-#define TYPEcanbe_set(t)	(TYPEis_set(t) || TYPEis_AGGREGATE(t))
-#define TYPEcanbe_list(t)	(TYPEis_list(t) || TYPEis_AGGREGATE(t))
 
 #define TYPEget_symbol(t)   (&(t)->symbol)
 
@@ -297,8 +263,45 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 #define TYPEget_body(t)     ((t)->u.type->body)
 #define TYPEput_body(t,h)   ((t)->u.type->body = (h))
 
-#define TYPEget_type(t)     ((t)->u.type->body->type)
-#define TYPEget_base_type(t)    ((t)->u.type->body->base)
+#define TYPEget_type(t)     (TYPEget_body(t)->type)
+#define TYPEget_base_type(t)    (TYPEget_body(t)->base)
+
+
+#define TYPEis(t)       TYPEget_type(t)
+#define TYPEis_identifier(t)    (TYPEget_type(t) == identifier_)
+#define TYPEis_logical(t)   (TYPEget_type(t) == logical_)
+#define TYPEis_boolean(t)   (TYPEget_type(t) == boolean_)
+#define TYPEis_real(t)   (TYPEget_type(t) == real_)
+#define TYPEis_integer(t)   (TYPEget_type(t) == integer_)
+#define TYPEis_number(t)   (TYPEget_type(t) == number_)	//*TY2021/01/19
+#define TYPEis_string(t)    (TYPEget_type(t) == string_)
+#define TYPEis_expression(t)    (TYPEget_type(t) == op_)
+#define TYPEis_oneof(t)     (TYPEget_type(t) == oneof_)
+#define TYPEis_entity(t)    (TYPEget_type(t) == entity_)
+#define TYPEis_enumeration(t)   (TYPEget_type(t) == enumeration_)
+#define TYPEis_aggregation_data_type(t) (TYPEget_base_type(t) != NULL)	//*TY2020/11/19 renamed
+#define TYPEis_AGGREGATE(t) (TYPEget_type(t) == aggregate_)	//*TY2020/11/19 renamed
+#define TYPEis_generic(t)		(TYPEget_type(t) == generic_)	//*TY2020/11/19 added
+#define TYPEis_free_generic(t)	(TYPEis_generic(t) && (TYPEget_tag(t)==NULL)) //*TY2021/02/06 added
+#define TYPEis_array(t)     (TYPEget_type(t) == array_)
+#define TYPEis_bag(t)     (TYPEget_type(t) == bag_)	//*TY2020/12/05 added
+#define TYPEis_set(t)     (TYPEget_type(t) == set_)	//*TY2020/12/05 added
+#define TYPEis_list(t)     (TYPEget_type(t) == list_)	//*TY2020/12/05 added
+#define TYPEis_select(t)    (TYPEget_type(t) == select_)
+#define TYPEis_reference(t) (TYPEget_type(t) == reference_)
+#define TYPEis_unknown(t)   (TYPEget_type(t) == unknown_)
+#define TYPEis_runtime(t)   (TYPEget_type(t) == runtime_)
+#define TYPEis_shared(t)    (TYPEget_body(t)->flags.shared)
+#define TYPEis_optional(t)  (TYPEget_body(t)->flags.optional)
+#define TYPEis_encoded(t)   (TYPEget_body(t)->flags.encoded)
+#define TYPEis_generic_entity(t) (TYPEis_entity(t) && TYPEget_body(t)->entity == NULL)	//*TY2020/12/2
+#define TYPEis_literal(t)	()
+
+//*TY2020/12/05
+#define TYPEcanbe_array(t)	(TYPEis_array(t) || TYPEis_AGGREGATE(t))
+#define TYPEcanbe_bag(t)	(TYPEis_bag(t) || TYPEis_AGGREGATE(t))
+#define TYPEcanbe_set(t)	(TYPEis_set(t) || TYPEis_AGGREGATE(t))
+#define TYPEcanbe_list(t)	(TYPEis_list(t) || TYPEis_AGGREGATE(t))
 
 #define TYPEput_name(type,n)    ((type)->symbol.name = (n))
 #define TYPEget_name(type)  ((type)->symbol.name)
@@ -306,22 +309,22 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 #define TYPEget_where(t)    ((t)->where)
 #define TYPEput_where(t,w)  (((t)->where) = w)
 
-#define ENT_TYPEget_entity(t)       ((t)->u.type->body->entity)
-#define ENT_TYPEput_entity(t,ent)   ((t)->u.type->body->entity = ent)
+#define ENT_TYPEget_entity(t)       (TYPEget_body(t)->entity)
+#define ENT_TYPEput_entity(t,ent)   (TYPEget_body(t)->entity = ent)
 
-#define COMP_TYPEget_items(t)       ((t)->u.type->body->list)
-#define COMP_TYPEput_items(t,lis)   ((t)->u.type->body->list = (lis))
-#define COMP_TYPEadd_items(t,lis)   LISTadd_all((t)->u.type->body->list, (lis));
+#define COMP_TYPEget_items(t)       (TYPEget_body(t)->list)
+#define COMP_TYPEput_items(t,lis)   (TYPEget_body(t)->list = (lis))
+#define COMP_TYPEadd_items(t,lis)   LISTadd_all(TYPEget_body(t)->list, (lis));
 
 #define ENUM_TYPEget_items(t)       ((t)->symbol_table)
-#define TYPEget_optional(t)     ((t)->u.type->body->flags.optional)
-#define TYPEget_unique(t)       ((t)->u.type->body->flags.unique)
+#define TYPEget_optional(t)     (TYPEget_body(t)->flags.optional)
+#define TYPEget_unique(t)       (TYPEget_body(t)->flags.unique)
 
 #define SEL_TYPEput_items(type,list)    COMP_TYPEput_items(type, list)
 #define SEL_TYPEget_items(type)     COMP_TYPEget_items(type)
 
-#define AGGR_TYPEget_upper_limit(t) ((t)->u.type->body->upper?(t)->u.type->body->upper:LITERAL_INFINITY)
-#define AGGR_TYPEget_lower_limit(t) ((t)->u.type->body->lower?(t)->u.type->body->lower:LITERAL_ZERO)
+#define AGGR_TYPEget_upper_limit(t) (TYPEget_body(t)->upper ? TYPEget_body(t)->upper : LITERAL_INFINITY)
+#define AGGR_TYPEget_lower_limit(t) (TYPEget_body(t)->lower ? TYPEget_body(t)->lower : LITERAL_ZERO)
 
 #define TYPEget_enum_tags(t)        ((t)->symbol_table)
 
@@ -329,8 +332,9 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 #define TYPEput_clientData(t,d)     ((t)->clientData = (d))
 
 //*TY2020/08/08
-#define	TYPEhas_tag(t)							( ((t)->tag!=NULL) && ((t)->tag->symbol.name[0]!='_') )
-#define TYPEhas_bounds(t)						( (t)->u.type->body->upper != NULL )
+#define TYPEget_tag(t)							( TYPEget_body(t)->tag )
+#define	TYPEhas_tag(t)							( (TYPEget_tag(t)!=NULL) && (TYPEget_tag(t)->symbol.name[0]!='_') )
+#define TYPEhas_bounds(t)						( TYPEget_body(t)->upper != NULL )
 
 /***********************/
 /* function prototypes */
@@ -354,7 +358,7 @@ extern SC_EXPRESS_EXPORT Type TYPEcreate_user_defined_type PROTO( ( Type, Scope,
 extern SC_EXPRESS_EXPORT Type TYPEcreate_user_defined_tag PROTO( ( Type, Scope, struct Symbol_ * ) );
 
 //*TY2020/08/06
-extern Symbol* SYMBOLcreate_implicit_tag( int tag_no, int line, const char * filename );
+extern Symbol* SYMBOLcreate_implicit_tag( int tag_no, bool is_aggregate, int line, const char * filename );
 
 //*TY2020/08/30
 extern Dictionary SELECTget_all_attributes ( Type select_type ); // returns dict of (linked_list of attr) keyed by attr simple name
@@ -375,6 +379,6 @@ extern bool TYPEs_are_equal(Type t1, Type t2);
 extern Type TYPEget_fundamental_type(Type t);
 extern const char* TYPEget_kind(Type t);
 
-//*TY2002/11/19
+//*TY2020/11/19
 extern bool TYPEcontains_generic(Type t);
 #endif    /*  TYPE_H  */

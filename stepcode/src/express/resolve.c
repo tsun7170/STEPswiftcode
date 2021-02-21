@@ -288,7 +288,7 @@ Type TYPE_retrieve_aggregate_base( Type t_root, Type t_agg_base ) {
 				t_agg_base = TYPE_retrieve_aggregate_base( t_select_case, t_agg_base );
 			
 			/* the underlying select case types did not resolve to a common aggregate base type */
-			if( t_agg_base == 0 )return 0;;
+			if( t_agg_base == NULL )return NULL;	//*TY2021/02/04 comment out to relax to ignore scalar cases
 		}LISTod;
 		return t_agg_base;
 	}
@@ -298,7 +298,8 @@ Type TYPE_retrieve_aggregate_base( Type t_root, Type t_agg_base ) {
 	}
 	
 	/* the underlying select case type is neither a select nor an aggregate */
-	return t_agg_base;
+//	return t_agg_base;
+	return NULL;
 }
 
 /**
@@ -896,9 +897,9 @@ void CASE_ITresolve( Case_Item item, Scope scope, Statement statement ) {
         }
     }
     LISTod;
-    if( validLabels ) {
+//    if( validLabels ) {//*TY2021/02/20 in order to handle OTHERWISE (w/o label)
         STMTresolve( item->action, scope );
-    }
+//    }
 }
 
 void STMTresolve( Statement statement, Scope scope ) {
@@ -1311,9 +1312,10 @@ void SCOPEresolve_subsupers( Scope scope ) {
 						
 						//*TY2021/1/2
 						case OBJ_TAG:
-							TYPEresolve( &(((Type)x)->u.type->head) );
+							t = (Type)x;
+							TYPEresolve( &(t->u.type->head) );
 							t = ((Type)x)->u.type->head;
-							assert( (t->u.type->head != NULL) || (t->u.type->body != NULL) );
+							assert( (t->u.type->head != NULL)||(t->u.type->body != NULL) );
 							break;					
 						
             default:

@@ -739,7 +739,7 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 	 }
 	 */
 	indent_swift(level);
-	raw( "public required convenience init?<S: SDAIGenericType>(fromGeneric generic: G?) {\n");
+	raw( "public required convenience init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
 	{	int level2=level+nestingIndent_swift;
 		
 		indent_swift(level2);

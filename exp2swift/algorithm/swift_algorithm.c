@@ -28,6 +28,7 @@ void ALGget_generics( Scope s, Linked_List generics, Linked_List aggregates ) {
 	assert(generics);
 	assert(aggregates);
 	
+//	printf("\n");
 //	DICTprint(s->symbol_table);	//*TY2020/12/31 for debug
 //	printf("\n");
 	
@@ -35,15 +36,12 @@ void ALGget_generics( Scope s, Linked_List generics, Linked_List aggregates ) {
 	Type tag;
 	
 	DICTdo_type_init( s->symbol_table, &dictEntry, OBJ_TAG );
-	while( 0 != ( tag = ( Type )DICTdo( &dictEntry ) ) ) {
+	while( NULL != (tag = DICTdo(&dictEntry)) ) {
 //		printf("KEY:<%s> \tTYPE:<%c> \t\n",DICT_key,DICT_type);
 		if( DICT_type != OBJ_TAG ) continue;
 		
 		TypeBody base = TYPEget_body(tag->u.type->head);
-		if(!base) {
-			LISTadd_last(aggregates, tag);
-			continue;
-		}
+		assert(base != NULL);
 		switch (base->type) {
 			case generic_:
 				LISTadd_last(generics, tag);
@@ -54,6 +52,7 @@ void ALGget_generics( Scope s, Linked_List generics, Linked_List aggregates ) {
 				break;
 				
 			default:
+				assert(!"unexpected case");
 				LISTadd_last(aggregates, tag);
 				break;
 		}
@@ -92,7 +91,7 @@ void ALGvarnize_args_swift( Linked_List args, int level ) {
 		indent_swift(level);
 		char buf[BUFSIZ];
 		raw("var %s = ", variable_swiftName(formalp,buf));
-		raw("%s\n",buf);
+		raw("%s; SDAI.TOUCH(var: &%s)\n",buf,buf);
 		generated = true;
 	}LISTod;
 	if( generated )raw("\n");

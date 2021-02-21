@@ -93,10 +93,10 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 		char buf[BUFSIZ];
 		char* sep = "where ";
 		LISTdo(aggregates, atag, Type) {
-			Type base = atag->u.type->head;	
+			Type aggr = atag->u.type->head;	
 			positively_wrap();
 			wrap("%s%s.ELEMENT == ",sep,TYPE_swiftName(atag,NULL,buf));
-			TYPE_head_swift(func->superscope, base, false);
+			TYPE_head_swift(func->superscope, TYPEget_base_type(aggr), false);
 			sep = ", ";
 		}LISTod;
 	}

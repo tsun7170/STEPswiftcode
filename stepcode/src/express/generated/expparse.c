@@ -40,7 +40,7 @@ YYSTYPE yylval;
 
     extern int print_objects_while_running;
 
-    int tag_count;    /**< use this to count tagged GENERIC types in the formal
+    int tag_count = -1;    /**< use this to count tagged GENERIC types in the formal
                          * argument lists.  Gross, but much easier to do it this
                          * way then with the 'help' of yacc. Set it to -1 to
                          * indicate that tags cannot be defined, only used
@@ -48,12 +48,14 @@ YYSTYPE yylval;
                          * types). Hey, as long as there's a gross hack sitting
                          * around, we might as well milk it for all it's worth!
                          *   - snc
+											 ***TY2021/02/18 note that tag_count is set to 0 under the state of local variable declaration.
                          */
 
-    int local_var_count; /**< used to keep LOCAL variables in order
+    int local_var_count = -1; /**< used to keep LOCAL variables in order
                             * used in combination with Variable.offset
+													***TY2021/02/18 set it to -1 to indicate that the state is outside of local variable declaration.
                             */
-
+int const_count;	//*TY2021/02/07 ditto for consts
     Express yyexpresult;    /* hook to everything built by parser */
 
     Symbol *interface_schema;    /* schema of interest in use/ref clauses */
@@ -2359,10 +2361,13 @@ static void yy_reduce(
         ERRORreport_with_symbol(ERROR_unlabelled_param_type, &sym,
         CURRENT_SCOPE_NAME);
     }
-	//*TY2020/08/06 to add implicit tag
-	else {
-		Symbol* tag_sym = SYMBOLcreate_implicit_tag(tag_count+1, yylineno, current_filename);
-		Type t = TYPEcreate_user_defined_tag(yymsp[0].minor.yy297, CURRENT_SCOPE, tag_sym);
+	//*TY2020/08/06 to add implicit tag when not in local variable declaration state
+	else if(local_var_count < 0) {
+		Type aggr = TYPEcreate_from_body_anonymously(yygotominor.yy477);
+		SCOPEadd_super(aggr);
+		
+		Symbol* tag_sym = SYMBOLcreate_implicit_tag(tag_count+1, true, yylineno, current_filename);
+		Type t = TYPEcreate_user_defined_tag(aggr, CURRENT_SCOPE, tag_sym);
 		if (t) {
 				SCOPEadd_super(t);
 				yygotominor.yy477->tag = t;
@@ -2376,13 +2381,17 @@ static void yy_reduce(
       case 16: /* aggregate_type ::= TOK_AGGREGATE TOK_COLON TOK_IDENTIFIER TOK_OF parameter_type */
 //#line 411 "expparse.y"
 {
-    Type t = TYPEcreate_user_defined_tag(yymsp[0].minor.yy297, CURRENT_SCOPE, yymsp[-2].minor.yy0.symbol);
+		TypeBody tb = TYPEBODYcreate(aggregate_);	//*TY2021/02/15 fixed bug
+		tb->base = yymsp[0].minor.yy297;	//*TY2021/02/15 fixed bug
+		Type aggr = TYPEcreate_from_body_anonymously(tb);	//*TY2021/02/15 fixed bug
+		SCOPEadd_super(aggr);	//*TY2021/02/15 fixed bug
+    Type t = TYPEcreate_user_defined_tag(aggr, CURRENT_SCOPE, yymsp[-2].minor.yy0.symbol);//*TY2021/02/15 fixed bug
 
     if (t) {
         SCOPEadd_super(t);
-        yygotominor.yy477 = TYPEBODYcreate(aggregate_);
+				yygotominor.yy477 = tb; //TYPEBODYcreate(aggregate_);	//*TY2021/02/15 fixed bug
         yygotominor.yy477->tag = t;
-        yygotominor.yy477->base = yymsp[0].minor.yy297;
+//        yygotominor.yy477->base = yymsp[0].minor.yy297;
     }
 }
 //#line 2370 "expparse.c"
@@ -2682,6 +2691,7 @@ static void yy_reduce(
     v = VARcreate(yymsp[-5].minor.yy401, yymsp[-3].minor.yy297);
     v->initializer = yymsp[-1].minor.yy401;
     v->flags.constant = 1;
+	v->offset = const_count++;	//*TY2021/02/07
     DICTdefine(CURRENT_SCOPE->symbol_table, yymsp[-5].minor.yy401->symbol.name, (Generic)v,
     &yymsp[-5].minor.yy401->symbol, OBJ_VARIABLE);
 }
@@ -3201,6 +3211,7 @@ static void yy_reduce(
 {
     Function f = ALGcreate(OBJ_FUNCTION);
     tag_count = 0;
+		local_var_count = -1; //*TY2021/02/18 to indicate the state is outside of local variable declaraction
     if (print_objects_while_running & OBJ_FUNCTION_BITS) {
         fprintf( stderr, "parse: %s (function)\n", yymsp[0].minor.yy0.symbol->name);
     }
@@ -3329,12 +3340,12 @@ static void yy_reduce(
         ERRORreport_with_symbol(ERROR_unlabelled_param_type, &sym,
         CURRENT_SCOPE_NAME);
     }
-		//*TY2020/08/06 to add implicit tag
-		else {
+		//*TY2020/08/06 to add implicit tag when it is not within the local variable declaration state
+		else if(local_var_count < 0) {
 			TypeBody g = TYPEBODYcreate(generic_);
 			yygotominor.yy297 = TYPEcreate_from_body_anonymously(g);
 			SCOPEadd_super(yygotominor.yy297);
-			Symbol* tag_sym = SYMBOLcreate_implicit_tag(tag_count+1, yylineno, current_filename);
+			Symbol* tag_sym = SYMBOLcreate_implicit_tag(tag_count+1, false, yylineno, current_filename);
 			g->tag = TYPEcreate_user_defined_tag(yygotominor.yy297, CURRENT_SCOPE, tag_sym);
 			if (g->tag) {
 					SCOPEadd_super(g->tag);
@@ -3719,6 +3730,7 @@ static void yy_reduce(
 {
     tag_count = 0; /* don't signal an error if we find a generic_type */
     local_var_count = 0; /* used to keep local var decl's in the same order */
+		const_count = 0;	//*TY2021/02/07
 }
 //#line 3673 "expparse.c"
         break;
@@ -3726,6 +3738,7 @@ static void yy_reduce(
 //#line 1646 "expparse.y"
 {
     tag_count = -1; /* signal an error if we find a generic_type */
+		local_var_count = -1; //*TY2021/02/18 to indicate the state is outside of local variable declaraction
 }
 //#line 3680 "expparse.c"
         break;
@@ -3860,6 +3873,7 @@ static void yy_reduce(
 {
     Procedure p = ALGcreate(OBJ_PROCEDURE);
     tag_count = 0;
+		local_var_count = -1; //*TY2021/02/18 to indicate the state is outside of local variable declaraction
 
     if (print_objects_while_running & OBJ_PROCEDURE_BITS) {
     fprintf( stderr, "parse: %s (procedure)\n", yymsp[0].minor.yy0.symbol->name);

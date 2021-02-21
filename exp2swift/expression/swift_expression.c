@@ -195,18 +195,82 @@ static void EXPRopNEGATE_swift( Scope SELF, struct Op_Subexpression * oe, Type o
 	}
 }
 
+//static void emit_TYPEOF(Scope SELF, Expression arg, bool builtin_type, bool can_wrap, struct Op_Subexpression *oe, char *typename, char* sep) {
+//	wrap_if(can_wrap, "SDAI.TYPEOF(");
+//	EXPR_swift( SELF, arg, arg->return_type, NO_PAREN );
+//	raw(", ");
+//	
+//	char buf[BUFSIZ];
+//	assert(oe->op1->symbol.name != NULL);
+//	
+//	if( !builtin_type ){
+//		Generic x = SCOPEfind(SELF, (char*)canonical_dictName(sep+1, buf), SCOPE_FIND_TYPE | SCOPE_FIND_ENTITY);
+//		if( x != NULL ){
+//			if( DICT_type == OBJ_TYPE ){
+//				wrap_if(YES_WRAP, "IS: %s.self", TYPE_swiftName((Type)x, SELF, buf) );
+//			}
+//			else {
+//				assert(DICT_type == OBJ_ENTITY);
+//				wrap_if(YES_WRAP, "IS: %s.self", ENTITY_swiftName((Entity)x, SELF, buf) );
+//			}
+//			
+//		}
+//		else {
+//			// unknown type/entity; probably error in source
+//			wrap_if(YES_WRAP, "IS: %s.self", typename);
+//		}
+//	}
+//	else {
+//		wrap_if(YES_WRAP, "IS: SDAI.%s.self", typename);
+//	}
+//	raw(")");
+//}
+
+static void emit_CONTAINS(Scope SELF, bool can_wrap, struct Op_Subexpression *oe) {
+	// op1 IN op2
+	Type op1type = oe->op1->return_type;	// lhs: should be basetype of rhs
+	Type op2type = oe->op2->return_type;	// rhs: aggregation type
+	Type op2basetype = TYPE_retrieve_aggregate_base(op2type, NULL);
+	if( op2basetype == NULL || TYPEis_runtime(op2basetype) ){
+		op2basetype = op1type;
+		op2type = TYPEcreate_aggregate(TYPEis(op2type), op2basetype, TYPEget_body(op2type)->lower, TYPEget_body(op2type)->upper, TYPEget_body(op2type)->flags.unique, TYPEget_body(op2type)->flags.optional);
+	}
+	else if( op1type == NULL || TYPEis_runtime(op1type) ){
+		op1type = op2basetype;
+	}
+	
+	wrap_if(can_wrap, "SDAI.aggregate(");
+	EXPR__swift( SELF, oe->op2, op2type, YES_PAREN, oe->op_code, YES_WRAP );
+	raw(", ");
+	wrap("contains: ");
+	EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF, oe->op1, op2basetype, NO_PAREN, oe->op_code, YES_WRAP);
+	raw(")");
+}
+
 //MARK: CONTAINS(), TYPEOF()
 static void EXPRopIn_swift( Scope SELF, struct Op_Subexpression * oe, bool can_wrap ) {
 	if( TYPEis(oe->op1->type)==string_ && TYPEis(oe->op2->type)==funcall_ && oe->op2->u.funcall.function==func_typeof ) {
 		// TYPEOF( IS:)
 		Expression arg = LISTget_first(oe->op2->u.funcall.list);
+		char typename[BUFSIZ]; canonical_swiftName(oe->op1->symbol.name, typename);
+		char* sep = NULL;
+		bool builtin_type = (sep = strchr(typename, '.')) == NULL;
+		
+		if( builtin_type ){
+			if( names_are_equal(typename, "LIST") || names_are_equal(typename, "ARRAY") || names_are_equal(typename, "BAG") || names_are_equal(typename, "SET") ){
+				emit_CONTAINS(SELF, can_wrap, oe);		
+				return;
+			}
+		}
+		
 		wrap_if(can_wrap, "SDAI.TYPEOF(");
 		EXPR_swift( SELF, arg, arg->return_type, NO_PAREN );
 		raw(", ");
+		
 		char buf[BUFSIZ];
 		assert(oe->op1->symbol.name != NULL);
-		char* sep = NULL;
-		if( (sep = strchr(oe->op1->symbol.name, '.')) != NULL ){
+		
+		if( !builtin_type ){
 			Generic x = SCOPEfind(SELF, (char*)canonical_dictName(sep+1, buf), SCOPE_FIND_TYPE | SCOPE_FIND_ENTITY);
 			if( x != NULL ){
 				if( DICT_type == OBJ_TYPE ){
@@ -220,33 +284,18 @@ static void EXPRopIn_swift( Scope SELF, struct Op_Subexpression * oe, bool can_w
 			}
 			else {
 				// unknown type/entity; probably error in source
-				wrap_if(YES_WRAP, "IS: %s.self", canonical_swiftName(oe->op1->symbol.name, buf));
+				wrap_if(YES_WRAP, "IS: %s.self", typename);
 			}
 		}
 		else {
-			wrap_if(YES_WRAP, "IS: SDAI.%s.self", canonical_swiftName(oe->op1->symbol.name, buf));
+			wrap_if(YES_WRAP, "IS: SDAI.%s.self", typename);
 		}
 		raw(")");
+		return;
 	}
-	else {
-		// .CONTAINS()
-		Type op1type = oe->op1->return_type;	// lhs: basetype of rhs
-		Type op2type = oe->op2->return_type;	// rhs: aggregation type
-		Type op2basetype = TYPE_retrieve_aggregate_base(op2type, NULL);
-		if( op2basetype == NULL || TYPEis_runtime(op2basetype) ){
-			op2type = TYPEcreate_aggregate(TYPEis(op2type), op1type, TYPEget_body(op2type)->lower, TYPEget_body(op2type)->upper, TYPEget_body(op2type)->flags.unique, TYPEget_body(op2type)->flags.optional);
-		}
-		else if( op1type == NULL || TYPEis_runtime(op1type) ){
-			op1type = op2basetype;
-		}
 
-		wrap_if(can_wrap, "SDAI.AGGREGATE(");
-		EXPR__swift( SELF, oe->op2, op2type, YES_PAREN, oe->op_code, YES_WRAP );
-		raw(", ");
-		wrap("CONTAINS: ");
-		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF, oe->op1, op1type, NO_PAREN, oe->op_code, YES_WRAP);
-		raw(")");		
-	}
+	// .CONTAINS()
+		emit_CONTAINS(SELF, can_wrap, oe);		
 }
 
 //MARK: ISLIKE()
@@ -360,13 +409,8 @@ static void EXPR_aggregate_initializer_swift(Scope SELF, bool can_wrap, Expressi
 		aggressively_wrap();
 		
 		wrap_if(YES_WRAP,"SDAI.AIE(");
-		{
-			raw("/*");	
-			TYPE_head_swift(SELF, arg->return_type, WO_COMMENT); 
-			raw("*/");	
-		}//DEBUG
-		
-			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF, arg, basetype, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+//		raw("/*");TYPE_head_swift(SELF, arg->return_type, WO_COMMENT);raw("*/"); //DEBUG
+		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF, arg, basetype, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 		
 		if( repeat != NULL ){
 			raw(", ");
@@ -378,7 +422,8 @@ static void EXPR_aggregate_initializer_swift(Scope SELF, bool can_wrap, Expressi
 	} LISTod;
 	
 	if( !TYPEis_runtime(basetype) ){
-		raw( "] as [SDAI.AggregationInitializerElement<" );
+		raw( "] " );
+		wrap( "as [SDAI.AggregationInitializerElement<" );
 		TYPE_head_swift(SELF, basetype, WO_COMMENT);
 			raw(">])");
 	}
@@ -437,6 +482,8 @@ static type_optionality operator_returns_optional(struct Op_Subexpression * oe, 
 			//MARK: - Reference Op
 		case OP_DOT:
 			if( deep ){
+				if( TYPEis_select(oe->op1->return_type) ) return yes_optional;
+				
 				switch (EXPRresult_is_optional(oe->op1, deep)) {
 					case no_optional:
 						return EXPRresult_is_optional(oe->op2, deep);
@@ -776,17 +823,44 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,  Type target_type,
 				
 			//MARK:OP_PLUS
 			case OP_PLUS:
-				EXPRop2__swift( SELF,SELF, oe, " + ", oe->op1->return_type,oe->op2->return_type, paren, previous_op, can_wrap, NEED_OPTIONAL_OPERAND );
+			{
+				Type op1_type = oe->op1->return_type;
+				Type op2_type = oe->op2->return_type;
+				if( TYPEis_aggregation_data_type(target_type) && TYPEis_aggregation_data_type(op1_type) && TYPEis_aggregation_data_type(op2_type) ){
+					op1_type = target_type;
+					op2_type = target_type;
+				}
+				
+				EXPRop2__swift( SELF,SELF, oe, " + ", op1_type,op2_type, paren, previous_op, can_wrap, NEED_OPTIONAL_OPERAND );
+			}
 				break;
 				
 				//MARK:OP_TIMES
 			case OP_TIMES:
-				EXPRop2__swift( SELF,SELF, oe, " * ", oe->op1->return_type,oe->op2->return_type, paren, previous_op, can_wrap, NEED_OPTIONAL_OPERAND );
+			{
+				Type op1_type = oe->op1->return_type;
+				Type op2_type = oe->op2->return_type;
+				if( TYPEis_aggregation_data_type(target_type) && TYPEis_aggregation_data_type(op1_type) && TYPEis_aggregation_data_type(op2_type) ){
+					op1_type = target_type;
+					op2_type = target_type;
+				}
+			
+				EXPRop2__swift( SELF,SELF, oe, " * ", op1_type,op2_type, paren, previous_op, can_wrap, NEED_OPTIONAL_OPERAND );
+			}
 				break;
 				
 			//MARK:OP_MINUS
 			case OP_MINUS:
-				EXPRop2__swift( SELF,SELF, oe, " - ", oe->op1->return_type,oe->op2->return_type, paren, OP_UNKNOWN, can_wrap, NEED_OPTIONAL_OPERAND );
+			{
+				Type op1_type = oe->op1->return_type;
+				Type op2_type = oe->op2->return_type;
+				if( TYPEis_aggregation_data_type(target_type) && TYPEis_aggregation_data_type(op1_type) && TYPEis_aggregation_data_type(op2_type) ){
+					op1_type = target_type;
+					op2_type = target_type;
+				}
+			
+				EXPRop2__swift( SELF,SELF, oe, " - ", op1_type,op2_type, paren, OP_UNKNOWN, can_wrap, NEED_OPTIONAL_OPERAND );
+			}
 				break;
 				
 			//MARK:OP_REAL_DIV
@@ -976,11 +1050,8 @@ void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * oe, cha
 	}
 	
 	//OPERAND1
-#if 0
-	raw("/*");
-	TYPE_head_swift(SELF1, oe->op1->return_type, YES_IN_COMMENT);
-	raw("*/");
-#endif
+//	raw("/*");TYPE_head_swift(SELF1, oe->op1->return_type, YES_IN_COMMENT);raw("*/");	// DEBUG
+
 	if( both_literal || TYPEis_AGGREGATE(oe->op1->type) ){
 		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF1, oe->op1, op1target_type, YES_PAREN, oe->op_code, can_wrap);
 	}
@@ -1019,11 +1090,8 @@ void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * oe, cha
 	}
 	
 	//OPERAND2
-#if 0
-	raw("/*");
-	TYPE_head_swift(SELF2, oe->op2->return_type, YES_IN_COMMENT);
-	raw("*/");
-#endif
+//	raw("/*"); TYPE_head_swift(SELF2, oe->op2->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+
 	if( both_literal || TYPEis_AGGREGATE(oe->op2->type) ){
 		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF2, oe->op2, op2target_type, YES_PAREN, oe->op_code, can_wrap2);
 	}
@@ -1091,13 +1159,51 @@ static void EXPRop1_swift( Scope SELF, struct Op_Subexpression * oe, char * opco
     }
 }
 
+static Type resolve_generic_type(Type lhs_generic, Type rhs_concrete) {
+	assert(lhs_generic != NULL);
+	if( rhs_concrete == NULL )return lhs_generic;
+	
+	Type base_type = TYPEget_base_type(lhs_generic);
+	if( base_type != NULL ){
+		enum type_enum aggr_type = TYPEis(lhs_generic);
+		if( aggr_type == aggregate_ && TYPEis_aggregation_data_type(rhs_concrete) ) aggr_type = TYPEis(rhs_concrete);
+		
+		if( TYPEcontains_generic(base_type) ) base_type = resolve_generic_type(base_type, TYPEget_base_type(rhs_concrete));
+		
+		Expression bound1 = TYPEget_body(lhs_generic)->lower;
+		if( bound1 == NULL ) bound1 = TYPEget_body(rhs_concrete)->lower; 
+		
+		Expression bound2 = TYPEget_body(lhs_generic)->upper;
+		if( bound2 == NULL ) bound2 = TYPEget_body(rhs_concrete)->upper;
+		
+		bool unique = TYPEget_unique(lhs_generic);
+		if( unique == false ) unique = TYPEget_unique(rhs_concrete);
+		
+		bool optional = TYPEget_optional(lhs_generic);
+		if( optional == false ) optional = TYPEget_optional(rhs_concrete);
+		
+		Type resolved = TYPEcreate_aggregate(aggr_type, base_type, bound1, bound2, unique, optional);
+		return resolved;
+	}
+	
+	if( TYPEis_generic(lhs_generic) ){
+		return rhs_concrete;
+	}
+	
+	return lhs_generic;
+}
+
 static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Type lhsType ) {
 	TypeBody lhs_tb = TYPEget_body( lhsType );
 
-	// lhs: AGGREGATE
-	if( TYPEis_AGGREGATE(lhsType) && lhs_tb->tag == NULL ){
-		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
-		return;
+//	// lhs: AGGREGATE
+//	if( TYPEis_AGGREGATE(lhsType) && lhs_tb->tag == NULL ){
+//		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
+//		return;
+//	}
+	
+	if( resolve_generic && TYPEcontains_generic(lhsType) ){
+		lhsType = resolve_generic_type(lhsType, rhs->return_type);
 	}
 	
 	// rhs: ?
@@ -1109,7 +1215,12 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 	}
 
 	// rhs: [AIE...]
-	if( TYPEis_AGGREGATE(rhs->return_type) ) {
+	if( TYPEis_AGGREGATE(rhs->type) ) {
+//		if( TYPEis_AGGREGATE(lhsType) && TYPEis_runtime(TYPEget_base_type(lhsType)) ){
+//			EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
+//			return;
+//		}
+		
 		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
 		raw("(");
 		if( lhs_tb->upper ){
@@ -1130,6 +1241,7 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 			}
 			aggressively_wrap();
 		}
+//		raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
 		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
 		raw(")");
 		return;
@@ -1148,6 +1260,12 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 		raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
 		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
 		raw(")");
+		return;
+	}
+	
+	// rhs <> lhs type
+	if( TYPEis_AGGREGATE(lhsType) && TYPEis_runtime(TYPEget_base_type(lhsType)) ){
+		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
 		return;
 	}
 	
@@ -1170,6 +1288,12 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 			raw(", ");
 		}
 		aggressively_wrap();
+	}
+	if( TYPEis_AGGREGATE(rhs->return_type) || TYPEis_generic(rhs->return_type) ){
+		wrap("fromGeneric: ");
+	}
+	else if( TYPEis_aggregation_data_type(rhs->return_type) && TYPEis_runtime(TYPEget_base_type(rhs->return_type)) ){
+		wrap("generic: ");
 	}
 	raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
 	
@@ -1197,6 +1321,10 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 	}
 
 	if( resolve_generic && TYPEcontains_generic(lhsType) ) {
+		if( TYPEis_aggregation_data_type(lhsType) ) {
+			aggregate_init(resolve_generic, SELF, rhs, lhsType);
+			return;
+		}
 //		raw("/*generic*/");
 		EXPR__swift(SELF, rhs, rhs->return_type, paren, previous_op, can_wrap);
 		return;
@@ -1231,7 +1359,7 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 	
 	TYPE_head_swift(SELF, lhsType, WO_COMMENT);	// wrap with explicit type cast
 	raw("(");
-	if( TYPEis_generic(rhs->return_type)){
+	if( TYPEis_generic(rhs->return_type)||TYPEis_runtime(rhs->return_type) ){
 		raw("fromGeneric: ");
 	}
 	raw("/*");TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);raw(": %s",TYPEget_kind(rhs->return_type));raw("*/"); // DEBUG	

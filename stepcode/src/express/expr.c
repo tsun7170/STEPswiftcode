@@ -1070,19 +1070,24 @@ Type EXPresolve_op_plus_like( Expression e, Scope s ) {
 
 			Type agg_basetype = Type_Runtime;
 			if( !TYPEis_aggregation_data_type(op1type) ){
+				// elem op aggr
 				assert( TYPEis_aggregation_data_type(op2type) );
 				agg_basetype = TYPE_retrieve_aggregate_base(op2type, op1type);
 			}
 			else if( !TYPEis_aggregation_data_type(op2type) ){
+				// aggr op elem
 				agg_basetype = TYPE_retrieve_aggregate_base(op1type, op2type);
 			}
 			else if( TYPEis_runtime(TYPEget_base_type(op1type)) ){
+				// aggr[runtime] op aggr[T]
 				agg_basetype = TYPEget_base_type(op2type);
 			}
 			else if( TYPEis_runtime(TYPEget_base_type(op2type)) ){
+				// aggr[T] op aggr[runtime]
 				agg_basetype = TYPEget_base_type(op1type);
 			}
 			else{
+				// aggr[T] op aggr[U]
 				agg_basetype = TYPE_retrieve_aggregate_base(op1type, TYPEget_base_type(op2type));
 				if( agg_basetype == NULL ){
 					agg_basetype = Type_Runtime;

@@ -277,6 +277,7 @@ static void listAllAttributes( Entity leaf, Entity entity, int level ) {
 	} LISTod;
 
 	LISTdo(ENTITYget_sub_entity_list(leaf), sub, Entity ) {
+		if( sub == entity )continue;
 		listLocalAttributes(leaf, sub, level, "SUB-");
 	} LISTod;
 }

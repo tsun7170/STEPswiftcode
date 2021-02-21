@@ -56,28 +56,49 @@ static void SCOPEconst_swift(Scope current, char* access, Variable v, int level 
 
 /** output all consts in this scope */
 void SCOPEconstList_swift( bool nested, Scope s, int level ) {
-	Variable v;
+	Variable var;
 	DictionaryEntry de;
+	Linked_List orderedConsts = NULL;
+	int num_consts = 0;
+	
+	DICTdo_type_init( s->symbol_table, &de, OBJ_VARIABLE );
+	while( 0 != (var = DICTdo(&de)) ) {
+		if( !VARis_constant(var) ) continue;
+		++num_consts;
+		
+		if( !orderedConsts ) {
+			orderedConsts = LISTcreate();
+			LISTadd_first( orderedConsts, var );
+		} 
+		else {
+			/* sort by v->offset */
+			SCOPElocals_order( orderedConsts, var );
+		}
+	}
+
+	if( num_consts == 0 )return;
+	
+	raw("\n");
+	indent_swift(level);
+	raw( "//CONSTANT\n" );
 	
 	char* access = (nested ? "" : "public static ");
 	
-	int iconst = 0;
-	DICTdo_type_init( s->symbol_table, &de, OBJ_VARIABLE );
-	while( 0 != ( v = ( Variable )DICTdo( &de ) ) ) {
-		if( !VARis_constant(v) ) continue;
-		
-		if(++iconst==1) {
-			raw("\n");
-			indent_swift(level);
-			raw( "//CONSTANT\n" );
-		}
-		
-		assert(v->name->type->superscope != NULL);
-		assert(v->type->superscope != NULL);
-		SCOPEconst_swift( s, access, v, level );
-	}
+	LISTdo(orderedConsts, var, Variable) {
+		assert(var->name->type->superscope != NULL);
+		assert(var->type->superscope != NULL);
+		SCOPEconst_swift( s, access, var, level );
+	}LISTod;
+//	DICTdo_type_init( s->symbol_table, &de, OBJ_VARIABLE );
+//	while( 0 != ( var = ( Variable )DICTdo( &de ) ) ) {
+//		if( !VARis_constant(var) ) continue;
+//				
+//		assert(var->name->type->superscope != NULL);
+//		assert(var->type->superscope != NULL);
+//		SCOPEconst_swift( s, access, var, level );
+//	}
 	
-	if(iconst > 1) {
+	if(num_consts > 1) {
 		indent_swift(level);
 		raw( "//END_CONSTANT\n\n" );
 	}

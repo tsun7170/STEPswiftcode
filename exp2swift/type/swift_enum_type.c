@@ -69,7 +69,37 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("return [SDAI.STRING(Self.typeName)]\n");
 		indent_swift(level2);
 		raw( "}\n\n" );
-		 
+
+		indent_swift(level2);
+		raw("public var entityReference: SDAI.EntityReference? {nil}\n");
+		indent_swift(level2);
+		raw("public var stringValue: SDAI.STRING? {nil}\n");
+		indent_swift(level2);
+		raw("public var binaryValue: SDAI.BINARY? {nil}\n");
+		indent_swift(level2);
+		raw("public var logicalValue: SDAI.LOGICAL? {nil}\n");
+		indent_swift(level2);
+		raw("public var booleanValue: SDAI.BOOLEAN? {nil}\n");
+		indent_swift(level2);
+		raw("public var numberValue: SDAI.NUMBER? {nil}\n");
+		indent_swift(level2);
+		raw("public var realValue: SDAI.REAL? {nil}\n");
+		indent_swift(level2);
+		raw("public var integerValue: SDAI.INTEGER? {nil}\n");
+		indent_swift(level2);
+		raw("public func arrayOptionalValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.ARRAY_OPTIONAL<ELEM>? {nil}\n");
+		indent_swift(level2);
+		raw("public func arrayValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.ARRAY<ELEM>? {nil}\n");
+		indent_swift(level2);
+		raw("public func listValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.LIST<ELEM>? {nil}\n");
+		indent_swift(level2);
+		raw("public func bagValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.BAG<ELEM>? {nil}\n");
+		indent_swift(level2);
+		raw("public func setValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.SET<ELEM>? {nil}\n");
+		indent_swift(level2);
+		raw("public func enumValue<ENUM:SDAIEnumerationType>(enumType:ENUM.Type) -> ENUM? { return self as? ENUM }\n");
+		raw("\n");		
+		
 		indent_swift(level2);
 		raw("// SDAIUnderlyingType\n");
 
