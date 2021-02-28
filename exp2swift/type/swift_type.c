@@ -58,14 +58,19 @@ int accumulate_qualification(Scope target, Scope current, char buf[BUFSIZ]) {
 	return qual_len;
 }
 
+const char* TYPE_canonicalName( Type t, Scope current, char buf[BUFSIZ] ) {
+	int qual_len = accumulate_qualification(t->superscope, current, buf);
+	
+	assert(t->symbol.name != NULL);
+	char buf2[BUFSIZ];
+	snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s" ,canonical_swiftName(t->symbol.name, buf2));
+	return buf;
+}
+
 const char* TYPE_swiftName( Type t, Scope current, char buf[BUFSIZ] ) {
 	int qual_len = accumulate_qualification(t->superscope, current, buf);
 	
 	const char* prefix = "";
-//	if( TYPEget_head(t) ){
-//		prefix = "r";
-//	}
-//	else 
 	if( TYPEget_body(t) == NULL ){
 		prefix = "g";
 	}

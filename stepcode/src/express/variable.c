@@ -143,3 +143,12 @@ Variable VARcreate( Expression name, Type type ) {
     v->type = type;
     return v;
 }
+
+//*TY2021/02/28
+extern Variable VARget_original_attr(Variable redeclaring){
+	Variable original = redeclaring;
+	while (VARis_redeclaring(original)) {
+		original = VARget_redeclaring_attr(original);
+	}
+	return original;
+}

@@ -299,7 +299,7 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 				
 		indent_swift(level2);
 		raw("return ");
-		if( VARis_optional(attr) ){
+		if( VARis_optional_by_large(attr) ){
 			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
 		}
 		else {
@@ -344,7 +344,7 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 
 		indent_swift(level2);
 		raw("return ");
-		if( !VARis_optional(attr) ){
+		if( !VARis_optional_by_large(attr) ){
 			if( TYPEis_logical(VARget_type(attr)) ){
 				raw("SDAI.LOGICAL( ");
 			}
@@ -352,9 +352,10 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 				raw("SDAI.UNWRAP( ");
 			}
 		}
-		variableType_swift(entity, original_attr, NO_FORCE_OPTIONAL, WO_COMMENT);
+//		variableType_swift(entity, original_attr, NO_FORCE_OPTIONAL, WO_COMMENT);
+		TYPE_head_swift(entity, original_attr->type, WO_COMMENT);
 		raw("(%s__getter(SELF: SELF))", attrName);
-		if( !VARis_optional(attr) ){
+		if( !VARis_optional_by_large(attr) ){
 			raw(" )");
 		}
 		raw("\n");
@@ -379,8 +380,9 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 		if( attribute_need_observer(original_attr) ) {
 			indent_swift(level2);
 			raw("SELF.%s%s.partialEntity.%s = ", superEntity_swiftPrefix, entityName, attrName );
-			if( VARis_optional(original_attr) ){
-				variableType_swift(entity, original_attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
+			if( VARis_optional_by_large(original_attr) ){
+//				variableType_swift(entity, original_attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
+				TYPE_head_swift(entity, original_attr->type, WO_COMMENT);
 				raw("(value)\n");
 			}
 			else{
@@ -390,13 +392,14 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 				else{
 					wrap("SDAI.UNWRAP( ");
 				}
-				variableType_swift(entity, original_attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
+//				variableType_swift(entity, original_attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
+				TYPE_head_swift(entity, original_attr->type, WO_COMMENT);
 				raw("(value) )\n");
 			}
 		}
 		
 		indent_swift(level2);
-		if( VARis_optional(attr) ){
+		if( VARis_optional_by_large(attr) ){
 			raw("return value\n");
 		}
 		else {
@@ -439,13 +442,14 @@ static void inverseAttributeDefinition_swift(Entity entity, Variable attr, int l
 	if( TYPEis_aggregation_data_type(attr->type) ){
 		indent_swift(level);
 		raw("internal private(set) var %s = ",attrName);
-		variableType_swift(entity, attr, NO_FORCE_OPTIONAL, WO_COMMENT);
+//		variableType_swift(entity, attr, NO_FORCE_OPTIONAL, WO_COMMENT);
+		TYPE_head_swift(entity, attr->type, WO_COMMENT);
 		raw("()\n");
 	}
 	else{
 		indent_swift(level);
 		raw("internal private(set) var %s: ",attrName);
-		variableType_swift(entity, attr, NO_FORCE_OPTIONAL, WO_COMMENT);
+		variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 		raw("!\n");
 	}
 	
@@ -467,7 +471,7 @@ static void inverseAttributeDefinition_swift(Entity entity, Variable attr, int l
 		}
 		else {
 			wrap("self.%s = complex.entityReference(%s.self)", attrName, attrBaseType );
-			if( !VARis_optional(attr) ) {
+			if( !VARis_optional_by_large(attr) ) {
 				raw("!");
 			}
 			raw("\n");
@@ -631,7 +635,7 @@ static void jointUniquenessRule_swift( Entity entity, Linked_List unique, int jo
 		if( ++attr_no == 0 ) continue;	// skip label
 		
 		Variable attr = unique_attribute(attr_expr);
-		if( VARis_optional(attr) ) {
+		if( VARis_optional_by_large(attr) ) {
 			indent_swift(level);
 			wrap("guard let attr%d = ", attr_no);
 			EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);

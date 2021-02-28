@@ -169,7 +169,12 @@ static void attribute_out( Entity leaf, Variable v, int level ) {
 		raw(" (DYNAMIC)");
 	}
 	if( ENTITYget_attr_ambiguous_count(leaf, ATTRget_name_string(v)) > 1 ) {
-		raw("\t(AMBIGUOUS)");
+		if( v->defined_in == leaf ){
+			raw("\t(MASKING)");
+		}
+		else{
+			raw("\t(AMBIGUOUS/MASKED)");
+		}
 	}
 	raw("\n");
 

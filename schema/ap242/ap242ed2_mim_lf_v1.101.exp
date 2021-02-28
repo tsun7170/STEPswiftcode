@@ -4,6 +4,12 @@
    Supersedes ISO TC184/SC4/WG3 N10384
 *)
 
+(*
+ 	2021/02/28: slightly modified for exp2swift translation, plus some bug fixes on original schema definition.
+ 
+ 	by Tsutomu Yoshida, Minokamo, Japan.
+*)
+ 
 -- -*- Mode: Express -*-
 
 (* ===================================================================================== *)
@@ -6025,6 +6031,7 @@ ENTITY a3m_equivalence_criterion
   measured_data_type        : a3m_measured_data_type_name;
   detected_difference_types : LIST [0 : ?] OF a3m_detected_difference_type_name;
   accuracy_types            : LIST [0 : ?] OF a3m_accuracy_type_name;
+ (**TY2021/02/28 bug fix:
 WHERE
   WR1: SIZEOF(USEDIN(SELF,
                      'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DATA_EQUIVALENCE_CRITERION_ASSESSMENT_ASSOCIATION.CRITERION')) =
@@ -6034,13 +6041,14 @@ WHERE
                                          'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.REPRESENTATION_ITEM_RELATIONSHIP.RELATED_REPRESENTATION_ITEM'))
                     | 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DATA_EQUIVALENCE_CRITERION_INSPECTION_ASSOCIATION' IN
                       TYPEOF(i1))) =
-       0;
+       0; --TY2021/02/28 NEED TO CHECK 'DATA_EQUIVALENCE_CRITERION_INSPECTION_ASSOCIATION'
   WR3: SIZEOF(QUERY(i1
                     <* bag_to_set(USEDIN(SELF,
                                          'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.REPRESENTATION_ITEM_RELATIONSHIP.RELATING_REPRESENTATION_ITEM'))
                     | 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DATA_EQUIVALENCE_CRITERION_INSPECTION_ASSOCIATION' IN
                       TYPEOF(i1))) =
-       0;
+       0; --TY2021/02/28 NEED TO CHECK 'DATA_EQUIVALENCE_CRITERION_INSPECTION_ASSOCIATION'
+ *)
 END_ENTITY;
 
 ENTITY a3m_equivalence_criterion_for_assembly
@@ -16615,6 +16623,8 @@ ENTITY general_datum_reference
   SUBTYPE OF (shape_aspect);
   base      : datum_or_common_datum;
   modifiers : OPTIONAL SET [1 : ?] OF datum_reference_modifier;
+ DERIVE	--*TY2021/02/22
+ 	base_common_datum_list :common_datum_list := base; --*TY2021/02/22
 WHERE
   WR1: SELF\shape_aspect.name = '';
   WR2: NOT EXISTS(SELF\shape_aspect.description);
@@ -16623,7 +16633,7 @@ WHERE
   WR5: NOT ('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.DATUM' IN TYPEOF(base)) OR
            (SELF\shape_aspect.of_shape = base\shape_aspect.of_shape);
   WR6: NOT ('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.COMMON_DATUM_LIST' IN TYPEOF(base)) OR
-           (SELF\shape_aspect.of_shape = base[1]\shape_aspect.of_shape);
+           (SELF\shape_aspect.of_shape = base_common_datum_list[1]\shape_aspect.of_shape); --*TY2021/02/22: (SELF\shape_aspect.of_shape = base[1]\shape_aspect.of_shape);
 END_ENTITY;
 
 ENTITY general_feature
@@ -33923,7 +33933,7 @@ LOCAL
   retval   : SET OF a3ma_accuracy_type_name := [];
 END_LOCAL;
   REPEAT i := 1 TO SIZEOF(ei);
-    type_out := a3ma_get_value_limit_type(ei[i].specific_accuracy.range);
+    type_out := a3ma_get_value_limit_type(ei[i].specific_accuracy.range); --*TY2021/02/28 NEED TO REVIEW; questionable func call; result not used
     retval := retval + [atna_others];
   END_REPEAT;
   RETURN(retval);
@@ -34866,10 +34876,11 @@ END_FUNCTION;
 FUNCTION acyclic_composite_text(start_composite : composite_text;
                                 child_text : SET [1 : ?] OF text_or_character) : LOGICAL;
 LOCAL
-  i                     : INTEGER;
+  -- i                     : INTEGER; *TY2021/02/28 eliminated unused var
   local_composite_text  : SET [0 : ?] OF composite_text;
   local_annotation_text : SET [0 : ?] OF annotation_text;
   local_children        : SET [0 : ?] OF text_or_character;
+  set__text_or_character : SET [0 : ?] OF text_or_character; --*TY2021/02/25
 END_LOCAL;
   local_composite_text := QUERY(child
                                 <* child_text
@@ -34897,13 +34908,19 @@ END_LOCAL;
   IF (SIZEOF(local_annotation_text) > 0)
   THEN
     REPEAT i := 1 TO HIINDEX(local_annotation_text);
-      local_children := local_children +
+ 			set__text_or_character := QUERY(item
+															 <* local_annotation_text[i]\mapped_item.mapping_source.mapped_representation.items
+															 | SIZEOF(['AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.ANNOTATION_TEXT',
+																				 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.COMPOSITE_TEXT'] *
+																				TYPEOF(item)) >
+																 0); --*TY2021/02/25
+      local_children := local_children + set__text_or_character; (**TY2021/02/25
                         QUERY(item
                               <* local_annotation_text[i]\mapped_item.mapping_source.mapped_representation.items
                               | SIZEOF(['AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.ANNOTATION_TEXT',
                                         'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.COMPOSITE_TEXT'] *
                                        TYPEOF(item)) >
-                                0);
+                                0); *)
     END_REPEAT;
   END_IF;
   IF (local_children :<>: child_text)
@@ -35039,16 +35056,16 @@ END_LOCAL;
       IF SIZEOF(rms) > 0
       THEN
         REPEAT j := 1 TO HIINDEX(rms);
-          mis := bag_to_set(USEDIN(rms[i],
+          mis := bag_to_set(USEDIN(rms[j(**TY2021/02/28 bug fix: i *)],
                                    'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.MAPPED_ITEM.MAPPING_SOURCE'));
           IF SIZEOF(mis) > 0
           THEN
-            REPEAT j := 1 TO HIINDEX(mis);
-              IF mis[i] :=: mi
+            REPEAT k(**TY2021/02/28 bug fix: j *) := 1 TO HIINDEX(mis);
+              IF mis[k(**TY2021/02/28 bug fix: i *)] :=: mi
               THEN
                 RETURN(false);
               END_IF;
-              rs2 := rs2 + using_representations(mis[i]);
+              rs2 := rs2 + using_representations(mis[k(**TY2021/02/28 bug fix: i*)]);
             END_REPEAT;
           END_IF;
         END_REPEAT;
@@ -35146,6 +35163,7 @@ FUNCTION acyclic_representation_relationship(relation : representation_relations
                                              specific_relation : STRING) : BOOLEAN;
 LOCAL
   x : SET OF representation_relationship;
+  set__representation : SET OF representation; --*TY2021/02/25
 END_LOCAL;
   IF relation.rep_1 IN relatives
   THEN
@@ -35156,7 +35174,8 @@ END_LOCAL;
                                   'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.REPRESENTATION_RELATIONSHIP.REP_2'))
              | specific_relation IN TYPEOF(r));
   REPEAT i := 1 TO HIINDEX(x);
-    IF NOT acyclic_representation_relationship(x[i], relatives + relation.rep_1, specific_relation)
+ 		set__representation := relation.rep_1; --*TY2021/02/25
+    IF NOT acyclic_representation_relationship(x[i], relatives + set__representation(**TY2021/02/25: relation.rep_1 *), specific_relation)
     THEN
       RETURN(false);
     END_IF;
@@ -35803,7 +35822,7 @@ END_FUNCTION;
 
 FUNCTION check_continuous_edges(edges : LIST OF UNIQUE edge_curve) : BOOLEAN;
 LOCAL
-  i           : INTEGER;
+  -- i           : INTEGER; **TY2021/02/28 eliminated unused var
   next_vertex : vertex;
 END_LOCAL;
   IF (SIZEOF(edges) = 1)
@@ -35844,8 +35863,8 @@ END_FUNCTION;
 FUNCTION check_curve_planarity(checked_curve : curve) : BOOLEAN;
 LOCAL
   crv    : curve   := checked_curve;
-  i      : INTEGER;
-  j      : INTEGER;
+  -- i      : INTEGER;	**TY2021/02/28 eliminated unused var
+  -- j      : INTEGER;	**TY2021/02/28 eliminated unused var
   result : BOOLEAN := false;
 END_LOCAL;
   IF (SIZEOF(['AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.CONIC',
@@ -36664,7 +36683,7 @@ END_FUNCTION;
 
 FUNCTION compute_total_depth(swsrh : solid_with_stepped_round_hole) : positive_length_measure;
 LOCAL
-  i  : positive_integer;
+  -- i  : positive_integer; **TY2021/02/28 eliminated unused var
   n  : positive_integer        := swsrh.segments;
   td : positive_length_measure := swsrh.segment_depths[1];
 END_LOCAL;
@@ -37441,7 +37460,7 @@ FUNCTION definite_integral_expr_check(operands : LIST [2 : ?] OF generic_express
 LOCAL
   nops : INTEGER             := 2;
   vspc : maths_space;
-  dim  : nonnegative_integer;
+  -- dim  : nonnegative_integer;	**TY2021/02/28 eliminated unused var
   k    : positive_integer;
   bspc : maths_space;
 END_LOCAL;
@@ -40092,7 +40111,7 @@ LOCAL
   factors2  : LIST OF maths_space;
   fs1       : function_space;
   fs2       : function_space;
-  cum2      : LOGICAL;
+  -- cum2      : LOGICAL; **TY2021/02/28 eliminated unused var
 END_LOCAL;
   IF spc1 = spc2
   THEN
@@ -40661,6 +40680,7 @@ LOCAL
   root            : SET OF product_definition;
   i               : INTEGER                         := 0;
   j               : INTEGER                         := 0;
+  pd : product_definition; --*TY2021/02/25 
 END_LOCAL;
   IF ((SIZEOF(constituent) = 1) AND assembly_root(constituent[1]))
   THEN
@@ -40692,7 +40712,8 @@ END_LOCAL;
           REPEAT j := 1 TO HIINDEX(constituent);
             IF (local_relation[i].relating_product_definition <> constituent[j])
             THEN
-              local_parent := local_parent + local_relation[i].relating_product_definition;
+ 							pd := local_relation[i].relating_product_definition; --*TY2021/02/25
+              local_parent := local_parent + pd; --*TY2021/02/25: local_relation[i].relating_product_definition;
             END_IF;
           END_REPEAT;
         END_REPEAT;
@@ -40761,7 +40782,7 @@ LOCAL
   local_s_d_r  : SET OF shape_definition_representation := [];
   local_s_d_r2 : BAG OF shape_definition_representation := [];
   local_s_r    : SET OF shape_representation            := [];
-  i            : INTEGER;
+  -- i            : INTEGER; **TY2021/02/28 eliminated unused var
 END_LOCAL;
   local_p_d_s2 := local_p_d_s2 +
                   QUERY(pd
@@ -40794,7 +40815,7 @@ LOCAL
   local_s_d_r  : SET OF shape_definition_representation := [];
   local_s_d_r2 : BAG OF shape_definition_representation := [];
   local_s_r    : SET OF shape_representation            := [];
-  i            : INTEGER;
+  -- i            : INTEGER; **TY2021/02/28 eliminated unused var
 END_LOCAL;
   local_p_d := bag_to_set(USEDIN(item,
                                  'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.PROPERTY_DEFINITION.DEFINITION'));
@@ -41340,7 +41361,7 @@ LOCAL
   adrs_raw      : SET OF applied_document_reference   := bag_to_set(USEDIN(pdc,
                                                                            'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.APPLIED_DOCUMENT_REFERENCE.ITEMS'));
   adrs_filtered : SET OF applied_document_reference   := [];
-  ras           : SET OF role_association;
+  -- ras           : SET OF role_association; **TY2021/02/28 eliminated unused var
   dpas          : SET OF document_product_association;
 END_LOCAL;
   REPEAT i := 1 TO HIINDEX(adrs_raw);
@@ -41978,7 +41999,7 @@ LOCAL
   reps : SET [1 : ?] OF representation                  := using_representations(item);
   svri : SET [1 : ?] OF variational_representation_item;
   iar  : instance_attribute_reference;
-  i    : INTEGER;
+  -- i    : INTEGER; **TY2021/02/28 eliminated unused var
   n    : INTEGER                                        := HIINDEX(reps);
 END_LOCAL;
   IF ('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.BOUND_VARIATIONAL_PARAMETER' IN TYPEOF(item))
@@ -42327,10 +42348,12 @@ END_FUNCTION;
 FUNCTION list_of_topology_reversed(a_list : list_of_reversible_topology_item) : list_of_reversible_topology_item;
 LOCAL
   the_reverse : list_of_reversible_topology_item;
+  aggr_or_elem : GENERIC; --*TY2021/02/25
 END_LOCAL;
   the_reverse := [];
   REPEAT i := 1 TO SIZEOF(a_list);
-    the_reverse := topology_reversed(a_list[i]) + the_reverse;
+ 		aggr_or_elem := topology_reversed(a_list[i]); --*TY2021/02/25
+    the_reverse := aggr_or_elem (**TY2021/02/25: topology_reversed(a_list[i]) *) + the_reverse;
   END_REPEAT;
   RETURN(the_reverse);
 END_FUNCTION;
@@ -42542,7 +42565,7 @@ FUNCTION make_numeric_set(start : maths_number;
                           delta : maths_number;
                           incs : positive_integer) : SET [2 : ?] OF maths_number;
 LOCAL
-  i           : INTEGER;
+  -- i           : INTEGER; **TY2021/02/28 eliminated unused var
   numeric_set : SET [2 : ?] OF maths_number := [start,(start + delta)];
 END_LOCAL;
   IF incs > 1
@@ -42802,6 +42825,7 @@ END_LOCAL;
     END_IF;
     OTHERWISE: RETURN(false);
   END_CASE;
+  RETURN(false); --*TY2021/02/28 bug fix
 END_FUNCTION;
 
 FUNCTION md_valid_content_in_geometric_set_for_placeholder(input : geometric_set) : BOOLEAN;
@@ -42811,8 +42835,28 @@ LOCAL
   texts      : BAG OF annotation_text := [];
   placements : BAG OF placement       := [];
   points     : BAG OF point           := [];
+  p_bx : planar_box; --*TY2021/02/26
+  a_tx : annotation_text; --*TY2021/02/26
+  pl : placement; --*TY2021/02/26
+  pt : point; --*TY2021/02/26
 END_LOCAL;
-  REPEAT i := LOINDEX(input\geometric_set.elements) TO HIINDEX(input\geometric_set.elements);
+  REPEAT i := LOINDEX(input\geometric_set.elements) TO HIINDEX(input\geometric_set.elements); 
+ 
+    IF ('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.POINT' IN TYPEOF(input\geometric_set.elements[i])) 
+    THEN
+      IF NOT (SIZEOF(['AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.CARTESIAN_POINT',
+								 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.POINT_ON_CURVE',
+								 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.POINT_ON_SURFACE'] *
+								TYPEOF(input\geometric_set.elements[i])) =
+				 1)
+      THEN
+	      pass := false;
+      ELSE
+   			pt := input\geometric_set.elements[i]; --*TY2021/02/26
+	      points := points + pt; --*TY2021/02/26: input\geometric_set.elements[i];
+      END_IF;
+    END_IF;
+(**TY2021/02/26 bug fix
     IF ('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.POINT' IN TYPEOF(input\geometric_set.elements[i])) AND
        NOT (SIZEOF(['AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.CARTESIAN_POINT',
                     'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.POINT_ON_CURVE',
@@ -42824,17 +42868,21 @@ END_LOCAL;
     ELSE
       points := points + input\geometric_set.elements[i];
     END_IF;
+ *)
     IF 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.PLANAR_BOX' IN TYPEOF(input\geometric_set.elements[i])
     THEN
-      boxes := boxes + input\geometric_set.elements[i];
+      p_bx := input\geometric_set.elements[i]; --*TY2021/02/26
+      boxes := boxes + p_bx; --*TY2021/02/26: input\geometric_set.elements[i];
     END_IF;
     IF 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.ANNOTATION_TEXT' IN TYPEOF(input\geometric_set.elements[i])
     THEN
-      texts := texts + input\geometric_set.elements[i];
+ 			a_tx := input\geometric_set.elements[i]; --*TY2021/02/26
+      texts := texts + a_tx; --*TY2021/02/26: input\geometric_set.elements[i];
     END_IF;
     IF 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.PLACEMENT' IN TYPEOF(input\geometric_set.elements[i])
     THEN
-      placements := placements + input\geometric_set.elements[i];
+			pl := input\geometric_set.elements[i]; --*TY2021/02/26
+      placements := placements + pl; --*TY2021/02/26: input\geometric_set.elements[i];
     END_IF;
   END_REPEAT;
   IF SIZEOF(boxes) > 1
@@ -42871,8 +42919,8 @@ LOCAL
   tmp_int   : INTEGER;
   tmp_real  : REAL;
   tmp_cmplx : complex_number_literal;
-  lgcl      : LOGICAL;
-  cum       : LOGICAL;
+  -- lgcl      : LOGICAL; **TY2021/02/28 eliminated unused var
+  cum       : LOGICAL := UNKNOWN; --*TY2021/02/28 to protect against indeterminate function inputs
   vspc      : maths_space;
   sspc      : maths_space;
   smem      : SET OF maths_value;
@@ -44138,10 +44186,12 @@ END_FUNCTION;
 FUNCTION set_of_topology_reversed(a_set : set_of_reversible_topology_item) : set_of_reversible_topology_item;
 LOCAL
   the_reverse : set_of_reversible_topology_item;
+ reversed: reversible_topology_item; --*TY2021/02/24
 END_LOCAL;
   the_reverse := [];
   REPEAT i := 1 TO SIZEOF(a_set);
-    the_reverse := the_reverse + topology_reversed(a_set[i]);
+ 		reversed := topology_reversed(a_set[i]); --*TY2021/02/24
+    the_reverse := the_reverse + reversed; --*TY2021/02/24: the_reverse := the_reverse + topology_reversed(a_set[i]);
   END_REPEAT;
   RETURN(the_reverse);
 END_FUNCTION;
@@ -46396,7 +46446,7 @@ LOCAL
   spc2   : maths_space                  := simplify_maths_space(space2);
   types1 : SET OF STRING                := stripped_typeof(spc1);
   types2 : SET OF STRING                := stripped_typeof(spc2);
-  lgcl   : LOGICAL;
+  -- lgcl   : LOGICAL;	**TY2021/02/28 eliminated unused var
   cum    : LOGICAL;
   es_val : elementary_space_enumerators;
   bnd1   : REAL;
@@ -47024,8 +47074,8 @@ FUNCTION unique_in_product_definition(item : representative_shape_representation
 LOCAL
   local_p_d : SET OF product_definition   := [];
   local_s_r : SET OF shape_representation := [];
-  i         : INTEGER;
-  j         : INTEGER;
+  -- i         : INTEGER;	**TY2021/02/28 eliminated unused var
+  -- j         : INTEGER;	**TY2021/02/28 eliminated unused var
 END_LOCAL;
   local_p_d := using_product_definition_of_shape_representation(item);
   IF (SIZEOF(local_p_d) <> 1)
@@ -47051,8 +47101,8 @@ FUNCTION unique_in_shape_aspect(item : representative_shape_representation) : BO
 LOCAL
   local_s_a : SET OF shape_aspect         := [];
   local_s_r : SET OF shape_representation := [];
-  i         : INTEGER;
-  j         : INTEGER;
+  -- i         : INTEGER;	**TY2021/02/28 eliminated unused var
+  -- j         : INTEGER;	**TY2021/02/28 eliminated unused var
 END_LOCAL;
   local_s_a := using_shape_aspect_of_shape_representation(item);
   IF (SIZEOF(local_s_a) <> 1)
@@ -47139,7 +47189,8 @@ FUNCTION using_product_definition_of_shape_representation(item : shape_represent
 LOCAL
   local_s_d_r : SET OF shape_definition_representation := [];
   local_p_d   : SET OF product_definition              := [];
-  i           : INTEGER;
+  -- i           : INTEGER;	**TY2021/02/28 eliminated unused var
+  p_d : product_definition; --*TY2021/02/24
 END_LOCAL;
   local_s_d_r := QUERY(i1
                        <* bag_to_set(USEDIN(item,
@@ -47153,8 +47204,9 @@ END_LOCAL;
       IF ('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.PRODUCT_DEFINITION' IN
           TYPEOF(local_s_d_r[i]\property_definition_representation.definition\property_definition.definition))
       THEN
+ 				p_d := local_s_d_r[i]\property_definition_representation.definition\property_definition.definition; --*TY2021/02/24
         local_p_d := local_p_d +
-                     local_s_d_r[i]\property_definition_representation.definition\property_definition.definition;
+                     p_d; --*TY2024/02/24: local_s_d_r[i]\property_definition_representation.definition\property_definition.definition;
       END_IF;
     END_IF;
   END_REPEAT;
@@ -47167,8 +47219,8 @@ LOCAL
   local_results            : SET OF representation      := [];
   local_representation_map : SET OF representation_map  := [];
   intermediate_items       : SET OF representation_item := [];
-  i                        : INTEGER;
-  j                        : INTEGER;
+  -- i                        : INTEGER;	**TY2021/02/28 eliminated unused var
+  -- j                        : INTEGER;	**TY2021/02/28 eliminated unused var
 END_LOCAL;
   local_results := QUERY(z
                          <* using_representations(item)
@@ -47232,7 +47284,8 @@ LOCAL
   local_s_d_r  : SET OF shape_definition_representation := [];
   local_s_d_r2 : BAG OF shape_definition_representation := [];
   local_s_a    : SET OF shape_aspect                    := [];
-  i            : INTEGER;
+  -- i            : INTEGER;	**TY2021/02/28 eliminated unused var
+  s_a : shape_aspect;--*TY2021/02/24
 END_LOCAL;
   local_s_d_r2 := local_s_d_r2 +
                   QUERY(pdr
@@ -47245,8 +47298,9 @@ END_LOCAL;
     IF ('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.SHAPE_ASPECT' IN
         TYPEOF(local_s_d_r[i]\property_definition_representation.definition\property_definition.definition))
     THEN
+			s_a := local_s_d_r[i]\property_definition_representation.definition\property_definition.definition; --*TY2021/02/24
       local_s_a := local_s_a +
-                   local_s_d_r[i]\property_definition_representation.definition\property_definition.definition;
+                   s_a; --*TY2021/02/24: local_s_d_r[i]\property_definition_representation.definition\property_definition.definition;
     END_IF;
   END_REPEAT;
   RETURN(local_s_a);
@@ -48001,7 +48055,7 @@ END_CONSTANT;
 LOCAL
   id_length : INTEGER := LENGTH(attid);
   id_valid  : BOOLEAN := true;
-  i         : INTEGER;
+  -- i         : INTEGER;	**TY2021/02/28 eliminated unused var
 END_LOCAL;
   IF NOT (attid[1] IN letters)
   THEN
@@ -48019,7 +48073,7 @@ END_FUNCTION;
 
 FUNCTION validate_countersink_radii(cskhole : solid_with_stepped_round_hole_and_conical_transitions) : BOOLEAN;
 LOCAL
-  i       : INTEGER;
+  -- i       : INTEGER;	**TY2021/02/28 eliminated unused var
   j       : INTEGER;
   n       : INTEGER                 := 1 + cskhole\solid_with_stepped_round_hole.segments;
   smaller : positive_length_measure;
@@ -48889,6 +48943,7 @@ LOCAL
   pdpdca : SET OF product_definition                     := [];
   pdadr  : SET OF product_definition                     := [];
   pass   : BOOLEAN                                       := true;
+  pd : product_definition; --*TY2021/02/24
 END_LOCAL;
   REPEAT i := 1 TO HIINDEX(pdca);
     pdpdca := pdpdca + pdca[i]\product_definition_context_association.definition;
@@ -48904,7 +48959,8 @@ END_LOCAL;
       IF 'AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.PRODUCT_DEFINITION' IN
          TYPEOF(adr[i]\applied_document_reference.items[j])
       THEN
-        pdadr := pdadr + adr[i]\applied_document_reference.items[j];
+ 				pd := adr[i]\applied_document_reference.items[j]; --*TY2021/02/24
+        pdadr := pdadr + pd; --*TY2021/02/24: adr[i]\applied_document_reference.items[j];
       END_IF;
     END_REPEAT;
   END_REPEAT;
@@ -49034,9 +49090,9 @@ RULE ply_reference FOR (ply_laminate_sequence_definition,
                         next_assembly_usage_occurrence,
                         product_related_product_category);
 LOCAL
-  i     : INTEGER;
-  j     : INTEGER;
-  k     : INTEGER;
+  -- i     : INTEGER;	**TY2021/02/28 eliminated unused var
+  -- j     : INTEGER;	**TY2021/02/28 eliminated unused var
+  -- k     : INTEGER;	**TY2021/02/28 eliminated unused var
   dkuhr : LOGICAL := true;
   nnauo : INTEGER;
   nprpc : INTEGER := 0;
@@ -49081,10 +49137,10 @@ END_RULE;
 
 RULE ply_stock_material_select FOR (product_related_product_category, make_from_usage_option);
 LOCAL
-  i     : INTEGER;
-  j     : INTEGER;
-  k     : INTEGER;
-  kp    : INTEGER;
+  -- i     : INTEGER;	**TY2021/02/28 eliminated unused var
+  -- j     : INTEGER;	**TY2021/02/28 eliminated unused var
+  -- k     : INTEGER;	**TY2021/02/28 eliminated unused var
+  -- kp    : INTEGER;	**TY2021/02/28 eliminated unused var
   dkuhr : LOGICAL;
   nmfuo : INTEGER;
   nprpc : INTEGER := 0;

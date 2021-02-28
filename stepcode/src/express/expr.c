@@ -1045,13 +1045,25 @@ Type EXPresolve_op_plus_like( Expression e, Scope s ) {
 					break;
 					
 				case OP_PLUS:
-					if( TYPEcanbe_bag(op1type) || (TYPEcanbe_bag(op2type)&&(!TYPEis_aggregation_data_type(op1type))) ){
+					if( TYPEis_bag(op1type) ){
 						agg_type = bag_;
-					}else if( TYPEcanbe_set(op1type) || (TYPEcanbe_set(op2type)&&(!TYPEis_aggregation_data_type(op1type))) ){
+					}
+					else if( TYPEis_set(op1type) ){
 						agg_type = set_;
 					}
-					else if( TYPEcanbe_list(op1type) || (TYPEcanbe_list(op2type)&&(!TYPEis_aggregation_data_type(op1type))) ){
+					else if( TYPEis_list(op1type) ){
 						agg_type = list_;
+					}
+					else if( !TYPEis_aggregation_data_type(op1type) ){
+						agg_type = TYPEis(op2type);
+					}
+					else if( TYPEis_AGGREGATE(op1type) ){
+						if( TYPEis_aggregation_data_type(op2type) ){
+							agg_type = TYPEis(op2type);
+						}
+						else {
+							agg_type = aggregate_;
+						}
 					}
 					break;
 					
@@ -1068,14 +1080,24 @@ Type EXPresolve_op_plus_like( Expression e, Scope s ) {
 					break;
 			}
 
-			Type agg_basetype = Type_Runtime;
-			if( !TYPEis_aggregation_data_type(op1type) ){
-				// elem op aggr
+			Type agg_basetype = NULL;
+			if( TYPEis_select(op1type) ){
+				// SELECT op aggr
+				agg_basetype = TYPE_retrieve_aggregate_base(op1type,TYPEget_base_type(op2type));
+				if( agg_basetype == NULL )agg_basetype = TYPEget_base_type(op2type);
+			}
+			else if( TYPEis_select(op2type) ){
+				// aggr op SELECT
+				agg_basetype = TYPE_retrieve_aggregate_base(op2type,TYPEget_base_type(op1type));
+				if( agg_basetype == NULL )agg_basetype = TYPEget_base_type(op1type);
+			}
+			else if( !TYPEis_aggregation_data_type(op1type) ){
+				// non-select-elem op aggr
 				assert( TYPEis_aggregation_data_type(op2type) );
 				agg_basetype = TYPE_retrieve_aggregate_base(op2type, op1type);
 			}
 			else if( !TYPEis_aggregation_data_type(op2type) ){
-				// aggr op elem
+				// aggr op non-select-elem
 				agg_basetype = TYPE_retrieve_aggregate_base(op1type, op2type);
 			}
 			else if( TYPEis_runtime(TYPEget_base_type(op1type)) ){
@@ -1086,13 +1108,19 @@ Type EXPresolve_op_plus_like( Expression e, Scope s ) {
 				// aggr[T] op aggr[runtime]
 				agg_basetype = TYPEget_base_type(op1type);
 			}
+			else if( TYPEis_select(TYPEget_base_type(op1type)) && !TYPEis_select(TYPEget_base_type(op2type)) ){
+				// aggr[SELECT] op aggr[non-select]
+				agg_basetype = TYPEget_base_type(op2type);
+			}
+			else if( TYPEis_select(TYPEget_base_type(op2type)) && !TYPEis_select(TYPEget_base_type(op1type)) ){
+				// aggr[non-select] op aggr[SELECT]
+				agg_basetype = TYPEget_base_type(op1type);
+			}
 			else{
 				// aggr[T] op aggr[U]
 				agg_basetype = TYPE_retrieve_aggregate_base(op1type, TYPEget_base_type(op2type));
-				if( agg_basetype == NULL ){
-					agg_basetype = Type_Runtime;
-				}
 			}
+			
 			if( agg_basetype == NULL ){
 				agg_basetype = Type_Runtime;
 			}

@@ -409,17 +409,25 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
             resolved_all( expr );
             break;
         case aggregate_:
-            LISTdo( expr->u.list, elt, Expression )
-            EXPresolve( elt, scope, Type_Dont_Care );
-            if( is_resolve_failed( elt ) ) {
-                resolve_failed( expr );
-                break;
-            }
-            LISTod;
-
-            /* may have to do more work here! */
-            expr->return_type = expr->type;
-            resolved_all( expr );
+			{
+				Type common_base = NULL;	//*TY2021/02/26
+				LISTdo( expr->u.list, elt, Expression )
+				EXPresolve( elt, scope, Type_Dont_Care );
+				if( is_resolve_failed( elt ) ) {
+					resolve_failed( expr );
+					break;
+				}
+				common_base = TYPEget_common(elt->return_type, common_base);	//*TY2021/02/26
+				LISTod;
+				
+//				/* may have to do more work here! */
+//				expr->return_type = expr->type;
+				//*TY2021/02/26 here is more work
+				if( common_base == NULL )common_base = Type_Runtime;
+				expr->return_type = TYPEcreate_aggregate(aggregate_, common_base, NULL, NULL, false, false);
+				
+				resolved_all( expr );
+			}
             break;
         case identifier_:
 
@@ -966,6 +974,14 @@ void STMTresolve( Statement statement, Scope scope ) {
                 EXPresolve( statement->u.loop->scope->u.incr->increment, scope, Type_Dont_Care );
                 /* resolve others with new scope! */
                 scope = statement->u.loop->scope;
+							//*TY2021/02/27
+							DictionaryEntry de;
+							DICTdo_init( scope->symbol_table, &de );
+							Variable v = ( Variable )DICTdo( &de );
+							Type v_type = statement->u.loop->scope->u.incr->init->return_type;
+							v_type = TYPEget_common(statement->u.loop->scope->u.incr->end->return_type, v_type);
+							v_type = TYPEget_common(statement->u.loop->scope->u.incr->increment->return_type, v_type);
+							if( v_type != NULL ) v->type = v_type;
             }
             if( statement->u.loop->while_expr ) {
                 EXPresolve( statement->u.loop->while_expr, scope, Type_Dont_Care );
@@ -1235,13 +1251,13 @@ void SCOPEresolve_types( Scope s ) {
             case OBJ_VARIABLE:  /* really constants */
                 var = ( Variable )x;
                 /* before OBJ_BITS hack, we looked in s->superscope */
-						assert(var->type->superscope != NULL);
+//						assert(var->type->superscope != NULL);
                 TYPEresolve( &var->type );
                 if( is_resolve_failed( var->type ) ) {
                     resolve_failed( var->name );
                     resolve_failed( s );
                 }
-						assert(var->type->superscope != NULL);
+//						assert(var->type->superscope != NULL);
                 break;
             case OBJ_ENTITY:
                 ENTITYcheck_missing_supertypes( ( Entity )x );
@@ -1522,9 +1538,10 @@ static void TYPEresolve_expressions( Type t, Scope s ) {
 }
 
 //*TY2020/11/28
-#define YES_OPTIONAL	true
-#define NO_OPTIONAL		false
-static void ALGresolve_variable(Variable var, bool default_optionality){
+#define YES_OPTIONAL_IMPLICITLY	2
+#define YES_OPTIONAL_EXPLICITLY	1
+#define NO_OPTIONAL		0
+static void ALGresolve_variable(Variable var, unsigned int default_optionality){
 	if( VARis_constant(var) )return;
 //	if( VARis_inout(var) )return;
 	
@@ -1564,12 +1581,12 @@ void SCOPEresolve_expressions_statements( Scope s ) {
             case OBJ_FUNCTION:
                 ALGresolve_expressions_statements( ( Scope )x, ( ( Scope )x )->u.func->body );
 						//*TY2020/11/28
-						ALGresolve_parameters( ((Function)x)->u.func->parameters, YES_OPTIONAL);
+						ALGresolve_parameters( ((Function)x)->u.func->parameters, YES_OPTIONAL_IMPLICITLY);
                 break;
             case OBJ_PROCEDURE:
                 ALGresolve_expressions_statements( ( Scope )x, ( ( Scope )x )->u.proc->body );
 						//*TY2020/11/28
-						ALGresolve_parameters( ((Procedure)x)->u.proc->parameters, YES_OPTIONAL);
+						ALGresolve_parameters( ((Procedure)x)->u.proc->parameters, YES_OPTIONAL_IMPLICITLY);
 								 break;
             case OBJ_RULE:
                 ALGresolve_expressions_statements( ( Scope )x, ( ( Scope )x )->u.rule->body );
@@ -1584,7 +1601,7 @@ void SCOPEresolve_expressions_statements( Scope s ) {
                     EXPresolve( v->initializer, s, v->type );
                 }
 						//*TY2020/11/28
-						ALGresolve_variable(v, YES_OPTIONAL);
+						ALGresolve_variable(v, YES_OPTIONAL_IMPLICITLY);
                 break;
             case OBJ_TYPE:
                 TYPEresolve_expressions( ( Type )x, s );

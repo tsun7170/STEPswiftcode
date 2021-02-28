@@ -83,7 +83,7 @@ struct Variable_ {
     int         idx;         /**< used in exp2cxx to simplify calculation of attrDescriptor names in generated code */
 
     struct {
-        unsigned int optional    : 1; /**< OPTIONAL keyword */
+        unsigned int optional    : 2; /**< OPTIONAL keyword */ //*TY2021/02/25 optional==2: implicitly optional
         unsigned int var         : 1; /**< VAR keyword */
         unsigned int constant    : 1; /**< from CONSTANT...END_CONSTANT */
         unsigned int unique      : 1; /**< appears in UNIQUE list */
@@ -123,7 +123,8 @@ extern SC_EXPRESS_EXPORT struct freelist_head VAR_fl;
 
 #define VARget_initializer(v)       ((v)->initializer)
 #define VARget_type(v)          ((v)->type)
-#define VARis_optional(v)      ((v)->flags.optional)
+#define VARis_optional(v)      ((v)->flags.optional==1)	//*TY2021/02/25
+#define VARis_optional_by_large(v)      ((v)->flags.optional!=0)	//*TY2021/02/25
 #define VARis_unique(v)        ((v)->flags.unique)
 
 #define VARis_derived(v)        ((v)->initializer != 0)
@@ -161,5 +162,8 @@ extern SC_EXPRESS_EXPORT struct freelist_head VAR_fl;
 extern SC_EXPRESS_EXPORT Variable VARcreate PROTO( ( Expression, Type ) );
 extern SC_EXPRESS_EXPORT void VARinitialize PROTO( ( void ) );
 extern SC_EXPRESS_EXPORT char * VARget_simple_name PROTO( ( Variable ) );
+
+//*TY2021/02/28
+extern Variable VARget_original_attr(Variable redeclaring);
 
 #endif    /*  VARIABLE_H  */

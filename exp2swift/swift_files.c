@@ -171,9 +171,9 @@ void openSwiftFileForRule(Schema s, Rule rule) {
 
 void openSwiftFileForFunction(Schema s, Function func) {
 	openSwiftFile(s, "func", FUNC_swiftNameInitial(func), func->symbol.name);
-	if( strcmp(func->symbol.name, "member_of")==0 ){
-		bool debug = true;
-	}
+//	if( strcmp(func->symbol.name, "member_of")==0 ){
+//		bool debug = true;
+//	}
 }
 
 void openSwiftFileForProcedure(Schema s, Procedure proc) {

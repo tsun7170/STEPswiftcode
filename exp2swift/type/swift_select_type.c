@@ -147,6 +147,8 @@ static void selectTypeGroupReference_swift(Type select_type, int level) {
 	
 	char* mark = "//MARK: - NON-ENTITY TYPE GROUP REFERENCES\n";
 	
+	int num_selections = LISTget_length(typeBody->list);
+	
 	LISTdo( typeBody->list, selection, Type ) {
 		if( TYPEis_entity(selection) ) continue;
 		
@@ -167,8 +169,11 @@ static void selectTypeGroupReference_swift(Type select_type, int level) {
 			
 			indent_swift(level2);
 			raw("case .%s(let selectValue): return selectValue\n",selectCase_swiftName(selection, buf));
-			indent_swift(level2);
-			raw("default: return nil\n");
+
+			if( num_selections > 1 ){
+				indent_swift(level2);
+				raw("default: return nil\n");
+			}
 			
 			indent_swift(level2);				
 			raw("}\n");
@@ -992,44 +997,55 @@ static void selectEnumValueConversion_swift(Type select_type, int level) {
 	raw( "}\n" );
 }
 
-////MARK: - entity reference
-//static void selectEntityReference_swift(Type select_type,  int level) {
-//	TypeBody typeBody = TYPEget_body(select_type);
-//	char buf[BUFSIZ];
-//	
-//	indent_swift(level);
-//	raw("// SDAISelectType\n");
-//	indent_swift(level);
-//	raw("public var entityReference: SDAI.EntityReference? {\n");
-//	{	int level2 = level+nestingIndent_swift;
-//
-//		indent_swift(level2);
-//		raw("switch self {\n");
-//		
-//		LISTdo( typeBody->list, selection, Type ) {
-//			indent_swift(level2);
-//			raw("case .%s", selectCase_swiftName(selection, buf));
-//
-//			if( TYPEis_entity(selection)){
-//				raw("(let selection): return selection\n");
-//			}
-//			else if( TYPEis_select(selection)){
-//				raw("(let selection): return selection.entityReference\n");
-//			}
-//			else {
-//				raw(": return nil\n");
-//			}
-//		} LISTod;		
-//		
-//		indent_swift(level2);
-//		raw("}\n");
-//	}
-//	indent_swift(level);
-//	raw( "}\n" );
-//}
-
+////MARK: - SDAIObservableAggregateElement
+static void selectObservableAggregateElementConformance_swift(Type select_type,  int level) {
+	TypeBody typeBody = TYPEget_body(select_type);
+	char buf[BUFSIZ];
 	
-static void selectUnderlyingTypeConformance_swift(int level, Schema schema, const char *typename) {
+	indent_swift(level);
+	raw("// SDAIObservableAggregateElement\n");
+	indent_swift(level);
+	raw("public var entityReferences: AnySequence<SDAI.EntityReference> {\n");
+	{	int level2 = level+nestingIndent_swift;
+
+		indent_swift(level2);
+		raw("switch self {\n");
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			indent_swift(level2);
+			raw("case .%s", selectCase_swiftName(selection, buf));
+
+			if( TYPEis_entity(selection)){
+				raw("(let entity): return entity.entityReferences\n");
+			}
+			else if( TYPEis_select(selection)){
+				raw("(let select): return select.entityReferences\n");
+			}
+			else if( TYPEis_aggregation_data_type(selection)){
+				raw("(let aggregate): \n");
+				{	int level3 = level2+nestingIndent_swift;
+					indent_swift(level3);
+					raw("if let observable = aggregate as? SDAIObservableAggregateElement { return observable.entityReferences }\n");
+					indent_swift(level3);
+					raw("else { return AnySequence<SDAI.EntityReference>(EmptyCollection<SDAI.EntityReference>()) }\n");
+				}
+				indent_swift(level2);
+				raw("\n");
+			}
+			else {
+				raw(": return AnySequence<SDAI.EntityReference>(EmptyCollection<SDAI.EntityReference>())\n");
+			}
+		} LISTod;		
+		
+		indent_swift(level2);
+		raw("}\n");
+	}
+	indent_swift(level);
+	raw( "}\n" );
+}
+
+//MARK: - SDAIUnderlyingType
+static void selectUnderlyingTypeConformance_swift(int level, Schema schema, Type select_type) {
 	char buf[BUFSIZ];
 	
 	indent_swift(level);
@@ -1040,17 +1056,10 @@ static void selectUnderlyingTypeConformance_swift(int level, Schema schema, cons
 	
 	indent_swift(level);
 	raw("public static var typeName: String = ");
-	wrap("\"%s.%s\"\n", SCHEMA_swiftName(schema, buf), typename);
+	wrap("\"%s\"\n", TYPE_canonicalName(select_type,schema->superscope,buf));
 	
 	indent_swift(level);
 	raw("public var asFundamentalType: FundamentalType { return self }\n");
-	
-//	indent_swift(level);
-//	raw("public init(_ fundamental: FundamentalType) {\n");
-//	indent_swift(level+nestingIndent_swift);
-//	raw("self = fundamental\n");
-//	indent_swift(level);
-//	raw( "}\n" );
 }
 
 //MARK: - aggregation type conformance
@@ -1321,7 +1330,10 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 			selectEnumValueConversion_swift(select_type, level2);
 			raw("\n");
 			
-			selectUnderlyingTypeConformance_swift(level2, schema, typename);
+			selectUnderlyingTypeConformance_swift(level2, schema, select_type);
+			raw("\n");
+			
+			selectObservableAggregateElementConformance_swift(select_type, level2);
 			raw("\n");
 			
 			selectAggregationBehaviorConformance_swift(select_type, level2);

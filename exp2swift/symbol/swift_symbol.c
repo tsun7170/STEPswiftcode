@@ -98,7 +98,7 @@ const char * asVariable_swiftName_n(const char* symbol_name, char* buf, int maxl
 }
 
 void variableType_swift(Scope current, Variable v, bool force_optional, SwiftOutCommentOption in_comment) {
-	bool optional = force_optional || VARis_optional(v);
+	bool optional = force_optional || VARis_optional_by_large(v);
 	optionalType_swift(current, v->type, optional, in_comment);
 }
 

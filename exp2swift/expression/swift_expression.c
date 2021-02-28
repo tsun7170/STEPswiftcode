@@ -543,14 +543,14 @@ type_optionality EXPRresult_is_optional(Expression e, bool deep) {
 			return no_optional;
 			
 		case attribute_:
-			return VARis_optional(e->u.variable)? yes_optional : no_optional;
+			return VARis_optional_by_large(e->u.variable)? yes_optional : no_optional;
 			
 		case entity_:
 			return no_optional;
 			
 		case identifier_:
 			if( e->u_tag == expr_is_variable ){
-				return VARis_optional(e->u.variable)? yes_optional : no_optional;
+				return VARis_optional_by_large(e->u.variable)? yes_optional : no_optional;
 			}
 			else if( e->u_tag == expr_is_user_defined ){
 				// expr is _TEMPVAR_
@@ -768,7 +768,7 @@ void EXPR__swift( Scope SELF, Expression e, Type target_type, bool paren, unsign
 						raw("&");
 						EXPR_swift( SELF, arg, arg->return_type, NO_PAREN );
 					}
-					else if( !VARis_optional(formal_param) ) {
+					else if( !VARis_optional_by_large(formal_param) ) {
 						if( TYPEis_logical(VARget_type(formal_param)) ){
 							raw("SDAI.LOGICAL(");
 						}
@@ -827,8 +827,10 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,  Type target_type,
 				Type op1_type = oe->op1->return_type;
 				Type op2_type = oe->op2->return_type;
 				if( TYPEis_aggregation_data_type(target_type) && TYPEis_aggregation_data_type(op1_type) && TYPEis_aggregation_data_type(op2_type) ){
-					op1_type = target_type;
-					op2_type = target_type;
+					if( !TYPEis_runtime(TYPEget_base_type(target_type)) ){
+						op1_type = TYPEis_AGGREGATE(op1_type) ? op1_type : target_type;
+						op2_type = TYPEis_AGGREGATE(op2_type) ? op2_type : target_type;
+					}
 				}
 				
 				EXPRop2__swift( SELF,SELF, oe, " + ", op1_type,op2_type, paren, previous_op, can_wrap, NEED_OPTIONAL_OPERAND );
@@ -841,8 +843,10 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,  Type target_type,
 				Type op1_type = oe->op1->return_type;
 				Type op2_type = oe->op2->return_type;
 				if( TYPEis_aggregation_data_type(target_type) && TYPEis_aggregation_data_type(op1_type) && TYPEis_aggregation_data_type(op2_type) ){
-					op1_type = target_type;
-					op2_type = target_type;
+					if( !TYPEis_runtime(TYPEget_base_type(target_type)) ){
+						op1_type = TYPEis_AGGREGATE(op1_type) ? op1_type : target_type;
+						op2_type = TYPEis_AGGREGATE(op2_type) ? op2_type : target_type;
+					}
 				}
 			
 				EXPRop2__swift( SELF,SELF, oe, " * ", op1_type,op2_type, paren, previous_op, can_wrap, NEED_OPTIONAL_OPERAND );
@@ -855,8 +859,10 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,  Type target_type,
 				Type op1_type = oe->op1->return_type;
 				Type op2_type = oe->op2->return_type;
 				if( TYPEis_aggregation_data_type(target_type) && TYPEis_aggregation_data_type(op1_type) && TYPEis_aggregation_data_type(op2_type) ){
-					op1_type = target_type;
-					op2_type = target_type;
+					if( !TYPEis_runtime(TYPEget_base_type(target_type)) ){
+						op1_type = TYPEis_AGGREGATE(op1_type) ? op1_type : target_type;
+						op2_type = TYPEis_AGGREGATE(op2_type) ? op2_type : target_type;
+					}
 				}
 			
 				EXPRop2__swift( SELF,SELF, oe, " - ", op1_type,op2_type, paren, OP_UNKNOWN, can_wrap, NEED_OPTIONAL_OPERAND );
@@ -1289,10 +1295,14 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 		}
 		aggressively_wrap();
 	}
-	if( TYPEis_AGGREGATE(rhs->return_type) || TYPEis_generic(rhs->return_type) ){
+	if( TYPEis_generic(rhs->return_type) ){
 		wrap("fromGeneric: ");
 	}
-	else if( TYPEis_aggregation_data_type(rhs->return_type) && TYPEis_runtime(TYPEget_base_type(rhs->return_type)) ){
+	else if( TYPEis_AGGREGATE(rhs->return_type) && TYPEget_body(rhs->return_type)->tag != NULL ){
+		wrap("fromGeneric: ");		
+	}
+	else if( TYPEis_aggregation_data_type(rhs->return_type) && 
+					(TYPEis_runtime(TYPEget_base_type(rhs->return_type))||TYPEis_generic(TYPEget_base_type(rhs->return_type))) ){
 		wrap("generic: ");
 	}
 	raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG

@@ -66,7 +66,8 @@ void SCOPElocalList_swift( Scope s, int level ) {
 			raw( " = " );
 			if( TYPEis_aggregation_data_type(var->type) ){
 //			force_wrap();
-				aggressively_wrap();
+//				aggressively_wrap();
+				positively_wrap();
 			}
 			else {
 				positively_wrap();
@@ -80,39 +81,40 @@ void SCOPElocalList_swift( Scope s, int level ) {
 			raw( "; SDAI.TOUCH(var: &%s)", var_name );
 		}
 		
-		else if( TYPEhas_bounds(var->type) && !VARis_optional(var) ) {
-			char buf[BUFSIZ];
-			const char* aggr;
-			switch (TYPEget_type(var->type)) {
-				case aggregate_:
-					aggr = TYPE_swiftName(TYPEget_body(var->type)->tag,NO_QUALIFICATION,buf);
-					break;
-				case array_:
-					aggr = "SDAI.ARRAY";
-					break;
-					
-				case bag_:
-					aggr = "SDAI.BAG" ;
-					break;
-					
-				case set_:
-					aggr = "SDAI.SET" ;
-					break;
-					
-				case list_:
-					aggr = "SDAI.LIST" ;
-					break;
-					
-				default:
-					aggr = "#UNKNOWN_TYPE#";
-					break;
-			}
+		else if( TYPEhas_bounds(var->type) && !VARis_optional_by_large(var) ) {
+//			char buf[BUFSIZ];
+//			const char* aggr;
+//			switch (TYPEget_type(var->type)) {
+//				case aggregate_:
+//					aggr = TYPE_swiftName(TYPEget_body(var->type)->tag,NO_QUALIFICATION,buf);
+//					break;
+//				case array_:
+//					aggr = "SDAI.ARRAY";
+//					break;
+//					
+//				case bag_:
+//					aggr = "SDAI.BAG" ;
+//					break;
+//					
+//				case set_:
+//					aggr = "SDAI.SET" ;
+//					break;
+//					
+//				case list_:
+//					aggr = "SDAI.LIST" ;
+//					break;
+//					
+//				default:
+//					aggr = "#UNKNOWN_TYPE#";
+//					break;
+//			}
 			raw( " = " );
 			force_wrap();
 //		aggressively_wrap();
 //		positively_wrap();
 			{	int oldwrap = captureWrapIndent();
-				wrap("%s(bound1: ",aggr);
+				TYPE_head_swift(s, var->type, WO_COMMENT);
+				wrap("(bound1: ");
 				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, TYPEget_body(var->type)->lower, Type_Integer, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 				raw(", bound2: ");
 				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, TYPEget_body(var->type)->upper, Type_Integer, NO_PAREN,OP_UNKNOWN,YES_WRAP);

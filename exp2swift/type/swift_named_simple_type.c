@@ -46,7 +46,7 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 
 		indent_swift(level2);
 		raw("public static var typeName: String = ");
-		wrap("\"%s\"\n", TYPE_swiftName(type,schema->superscope,buf));
+		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope,buf));
 
 		indent_swift(level2);
 		raw( "public var rep: Supertype\n\n" );

@@ -101,16 +101,25 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int*
 	DICTdo_init( loop->scope->symbol_table, &de );
 	Variable v = ( Variable )DICTdo( &de );
 
-	wrap("if let incrementControl = SDAI.FROM(");
+	wrap("if let incrementControl");
+	raw("/*");TYPE_head_swift(loop->scope, VARget_type(v), YES_IN_COMMENT); raw("*/"); // DEBUG
+	
+	wrap(" = SDAI.FROM(");
+	raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->init->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
 	EXPR_swift(algo, loop->scope->u.incr->init,VARget_type(v), NO_PAREN); raw(", ");
+
 	wrap("TO:");
+	raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->end->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
 	EXPR_swift(algo, loop->scope->u.incr->end,VARget_type(v), NO_PAREN);
+
 	if( loop->scope->u.incr->increment && 
 		 !( TYPEis_integer(loop->scope->u.incr->increment->type) && (loop->scope->u.incr->increment->u.integer == 1)) ) {
 		raw(", ");
 		wrap("BY:");
+		raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->increment->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
 		EXPR_swift(algo, loop->scope->u.incr->increment,VARget_type(v), NO_PAREN);		
 	}
+
 	raw(") {\n");
 	{	int level2 = level+nestingIndent_swift;
 
