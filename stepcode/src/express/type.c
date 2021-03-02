@@ -898,8 +898,10 @@ bool TYPEs_are_equal(Type lhstype, Type rhstype) {
 	
 	bool equal_symbol = names_are_equal( lhstype->symbol.name, rhstype->symbol.name );
 	
+	if( !equal_symbol ) return false;
+
 	if( lhstb==NULL && rhstb==NULL ){
-		return equal_symbol;
+		return true;
 	}
 	if( lhstb==NULL || rhstb==NULL ){
 		return false;

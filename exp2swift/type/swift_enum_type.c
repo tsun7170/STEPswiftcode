@@ -14,6 +14,7 @@
 
 //#include "exppp.h"
 #include "pp.h"
+#include "pretty_where.h"
 
 #include "swift_enum_type.h"
 #include "swift_type.h"
@@ -129,6 +130,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw("}\n");
 
+		TYPEwhereDefinitions_swift(type, level2);
 	}
 	
 	indent_swift(level);

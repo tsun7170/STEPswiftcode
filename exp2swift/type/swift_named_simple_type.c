@@ -14,7 +14,7 @@
 
 #include "exppp.h"
 #include "pp.h"
-//#include "pretty_where.h"
+#include "pretty_where.h"
 //#include "pretty_expr.h"
 //#include "pretty_type.h"
 
@@ -93,7 +93,9 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 		raw("rep = repval\n");
 		indent_swift(level2);
 		raw("}\n");
-}
+		
+		TYPEwhereDefinitions_swift(type, level2);
+	}
 
 	indent_swift(level);
 	raw("}\n");

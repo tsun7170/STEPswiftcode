@@ -145,6 +145,9 @@ extern SC_EXPRESS_EXPORT int ENTITY_MARK;
 #define ENTITYget_clientData(e)     ((e)->clientData)
 #define ENTITYput_clientData(e,d)       ((e)->clientData = (d))
 
+//*TY2021/03/01
+#define ENTITYget_type(e)		((e)->u.entity->type)
+
 /***********************/
 /* function prototypes */
 /***********************/

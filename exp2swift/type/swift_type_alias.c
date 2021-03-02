@@ -15,7 +15,7 @@
 #include "exppp.h"
 #include "pp.h"
 #include "resolve.h"
-//#include "pretty_where.h"
+#include "pretty_where.h"
 //#include "pretty_expr.h"
 //#include "pretty_type.h"
 
@@ -80,6 +80,7 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		indent_swift(level2);
 		raw("}\n");
 
+		TYPEwhereDefinitions_swift(type, level2);
 	}
 
 	indent_swift(level);

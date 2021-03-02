@@ -548,50 +548,6 @@ static void localAttributeDefinitions_swift( Entity entity, int level, Linked_Li
 	 }
 }
 
-//MARK: - where rule
-static void whereDefinitions_swift( Entity entity, int level ) {
-	Linked_List where_rules = TYPEget_where(entity);
-	if( LISTis_empty(where_rules) ) return;
-	
-	indent_swift(level);
-	raw("//WHERE RULES\n");
-
-	char whereLabel[BUFSIZ];
-	char buf[BUFSIZ];
-	LISTdo( where_rules, where, Where ){
-		indent_swift(level);
-		wrap("public func %s(SELF: %s) -> SDAI.LOGICAL {\n", 
-				 whereRuleLabel_swiftName(where, whereLabel), 
-				 ENTITY_swiftName(entity, NO_QUALIFICATION, buf) );
-		
-		{	int level2 = level+nestingIndent_swift;
-			int tempvar_id = 1;
-			Linked_List tempvars;
-			Expression simplified = EXPR_decompose(where->expr, Type_Logical, &tempvar_id, &tempvars);
-			EXPR_tempvars_swift(entity, tempvars, level2);
-			
-			indent_swift(level2);
-			raw("return ");
-//			EXPR_swift(entity, where->expr, Type_Logical, NO_PAREN);			
-//			EXPR_swift(entity, simplified, Type_Logical, NO_PAREN);			
-			if( EXPRresult_is_optional(simplified, CHECK_DEEP) != no_optional ){
-				TYPE_head_swift(entity, Type_Logical, WO_COMMENT);	// wrap with explicit type cast
-				raw("(");
-				EXPR_swift(entity, simplified, Type_Logical, NO_PAREN);			
-				raw(")");
-			}
-			else {
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
-			}
-			raw("\n");
-			EXPR_delete_tempvar_definitions(tempvars);
-		}
-		
-		indent_swift(level);
-		raw("}\n");
-	}LISTod;
-	raw("\n");
-}
 
 //MARK: - unique rule
 static Variable unique_attribute( Expression expr ) {
@@ -690,6 +646,7 @@ static void uniqueDefinitions_swift( Entity entity, int level ) {
 	Linked_List unique_rules = ENTITYget_uniqueness_list(entity);
 	if( LISTis_empty(unique_rules) ) return;
 	
+	raw("\n");
 	indent_swift(level);
 	raw("//UNIQUE RULES\n");
 	
@@ -698,12 +655,13 @@ static void uniqueDefinitions_swift( Entity entity, int level ) {
 		uniqueRule_swift(entity, ++serial, unique, level);
 	}LISTod;
 	
-	raw("\n");
+//	raw("\n");
 }
 
 //MARK: - constructor
 static void expressConstructor( Entity entity, int level ) {
 	
+	raw("\n");
 	indent_swift(level);
 	raw("//EXPRESS IMPLICIT PARTIAL ENTITY CONSTRUCTOR\n");
 	
@@ -726,7 +684,7 @@ static void expressConstructor( Entity entity, int level ) {
 	}
 	
 	indent_swift(level);
-	raw("}\n\n");
+	raw("}\n");
 }
 
 //MARK: - partial entity swift definition
@@ -745,7 +703,7 @@ void partialEntityDefinition_swift
 	 {	int level2 = level+nestingIndent_swift;
 		 
 		 localAttributeDefinitions_swift(entity, level2, attr_overrides, dynamic_attrs);
-		 whereDefinitions_swift(entity, level2);
+		 TYPEwhereDefinitions_swift( ENTITYget_type(entity), level2);
 		 uniqueDefinitions_swift(entity, level2);
 		 expressConstructor(entity, level2);
 	 }

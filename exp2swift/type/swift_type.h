@@ -41,4 +41,6 @@ extern const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutComment
 
 extern bool TYPEis_swiftAssignable(Type lhstype, Type rhstype);
 
+extern void TYPEwhereDefinitions_swift( Type type, int level );
+
 #endif /* swift_type_h */

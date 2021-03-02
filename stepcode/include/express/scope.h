@@ -143,6 +143,10 @@ struct Scope_ {
 
 #define SCOPEod         }}
 
+//*TY2021/03/01
+#define TYPEis_valid(t)			((t)->u_tag == scope_is_type)
+#define ENTITYis_valid(e)		((e)->u_tag == scope_is_entity)
+
 /***********************/
 /* function prototypes */
 /***********************/

@@ -30,6 +30,7 @@
 #include "swift_type_alias.h"
 #include "swift_named_simple_type.h"
 #include "swift_named_aggregate_type.h"
+#include "decompose_expression.h"
 
 // returns length of qualification string
 int accumulate_qualification(Scope target, Scope current, char buf[BUFSIZ]) {
@@ -68,6 +69,7 @@ const char* TYPE_canonicalName( Type t, Scope current, char buf[BUFSIZ] ) {
 }
 
 const char* TYPE_swiftName( Type t, Scope current, char buf[BUFSIZ] ) {
+	assert(TYPEis_valid(t));
 	int qual_len = accumulate_qualification(t->superscope, current, buf);
 	
 	const char* prefix = "";
@@ -165,11 +167,11 @@ void TYPEdefinition_swift(Schema schema, Type t, int level ) {
 		}
 	}
 	
-	if( t->where && !LISTis_empty(t->where) ) {
-		raw("/*");
-		WHERE_out( t->where, level );
-		raw("*/\n");
-	}
+//	if( t->where && !LISTis_empty(t->where) ) {
+//		raw("/*");
+//		WHERE_out( t->where, level );
+//		raw("*/\n");
+//	}
 }
 
 extern void TYPEextension_swift( Schema schema, Type t, int level ) {
@@ -417,13 +419,17 @@ const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption 
 bool TYPEis_swiftAssignable(Type lhstype, Type rhstype) {
 	if( lhstype == rhstype ) return true;
 	if( (lhstype == NULL)||(rhstype == NULL) )return false;
+	if( lhstype == Type_Entity && TYPEis_entity(rhstype) ) return true;
+
 	TypeBody lhstb = TYPEget_body(lhstype);
 	TypeBody rhstb = TYPEget_body(rhstype);
 	
 	bool equal_symbol = names_are_equal( lhstype->symbol.name, rhstype->symbol.name );
 	
+	if( !equal_symbol ) return false;
+	
 	if( lhstb==NULL && rhstb==NULL ){
-		return equal_symbol;
+		return true;
 	}
 	if( lhstb==NULL || rhstb==NULL ){
 		return false;
@@ -460,7 +466,6 @@ bool TYPEis_swiftAssignable(Type lhstype, Type rhstype) {
 			}
 			
 		case entity_:
-			if( lhstype == Type_Entity && TYPEis_entity(rhstype) ) return true;
 			return lhstb->entity == rhstb->entity;
 			
 		case generic_:
@@ -486,4 +491,51 @@ bool TYPEis_swiftAssignable(Type lhstype, Type rhstype) {
 			break;
 	}
 	return false;
+}
+
+//MARK: - where rule
+void TYPEwhereDefinitions_swift( Type type, int level ) {
+	Linked_List where_rules = TYPEget_where(type);
+	if( LISTis_empty(where_rules) ) return;
+	
+	raw("\n");
+	indent_swift(level);
+	raw("//WHERE RULES\n");
+
+	char whereLabel[BUFSIZ];
+	char buf[BUFSIZ];
+	LISTdo( where_rules, where, Where ){
+		indent_swift(level);
+		wrap("public func %s(SELF: %s) -> SDAI.LOGICAL {\n", 
+				 whereRuleLabel_swiftName(where, whereLabel), 
+//				 ENTITY_swiftName(type, NO_QUALIFICATION, buf) );
+				 TYPE_swiftName(type, NO_QUALIFICATION, buf) );
+		
+		{	int level2 = level+nestingIndent_swift;
+			int tempvar_id = 1;
+			Linked_List tempvars;
+			Expression simplified = EXPR_decompose(where->expr, Type_Logical, &tempvar_id, &tempvars);
+			EXPR_tempvars_swift(type, tempvars, level2);
+			
+			indent_swift(level2);
+			raw("return ");
+//			EXPR_swift(entity, where->expr, Type_Logical, NO_PAREN);			
+//			EXPR_swift(entity, simplified, Type_Logical, NO_PAREN);			
+			if( EXPRresult_is_optional(simplified, CHECK_DEEP) != no_optional ){
+				TYPE_head_swift(type, Type_Logical, WO_COMMENT);	// wrap with explicit type cast
+				raw("(");
+				EXPR_swift(type, simplified, Type_Logical, NO_PAREN);			
+				raw(")");
+			}
+			else {
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, type, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+			}
+			raw("\n");
+			EXPR_delete_tempvar_definitions(tempvars);
+		}
+		
+		indent_swift(level);
+		raw("}\n");
+	}LISTod;
+//	raw("\n");
 }

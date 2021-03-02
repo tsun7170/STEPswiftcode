@@ -1265,7 +1265,6 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 	Type common_aggregate_base = TYPE_retrieve_aggregate_base(select_type, NULL);
 
 	// swift enum definition
-	{
 		char buf[BUFSIZ];
 				
 		char typebuf[BUFSIZ];
@@ -1342,12 +1341,12 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 				raw("\n");
 				selectAggregateTypeConformance_swift(select_type, common_aggregate_base, level2);				
 			}
+			
+			TYPEwhereDefinitions_swift(select_type, level2);
 		}
-	}
 	
 	indent_swift(level);
 	raw( "}\n\n" );
-	
 }
 
 void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {

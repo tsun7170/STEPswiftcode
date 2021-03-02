@@ -235,9 +235,9 @@ static void emit_CONTAINS(Scope SELF, bool can_wrap, struct Op_Subexpression *oe
 		op2basetype = op1type;
 		op2type = TYPEcreate_aggregate(TYPEis(op2type), op2basetype, TYPEget_body(op2type)->lower, TYPEget_body(op2type)->upper, TYPEget_body(op2type)->flags.unique, TYPEget_body(op2type)->flags.optional);
 	}
-	else if( op1type == NULL || TYPEis_runtime(op1type) ){
-		op1type = op2basetype;
-	}
+//	else if( op1type == NULL || TYPEis_runtime(op1type) ){
+//		op1type = op2basetype;
+//	}
 	
 	wrap_if(can_wrap, "SDAI.aggregate(");
 	EXPR__swift( SELF, oe->op2, op2type, YES_PAREN, oe->op_code, YES_WRAP );
