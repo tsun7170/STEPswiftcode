@@ -34,7 +34,12 @@
 
 
 const char* SCHEMA_swiftName( Schema schema, char buf[BUFSIZ]) {
-	return canonical_swiftName(schema->symbol.name, buf);
+//	return canonical_swiftName(schema->symbol.name, buf);
+	return as_schemaSwiftName_n(schema->symbol.name, buf, BUFSIZ);
+}
+
+const char* as_schemaSwiftName_n( const char* symbol_name, char* buf, int bufsize ){
+	return canonical_swiftName_n(symbol_name, buf, bufsize);
 }
 
 const char* schema_nickname(Schema schema, char buf[BUFSIZ] ) {

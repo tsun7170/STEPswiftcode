@@ -14,6 +14,8 @@
 void SCHEMA_swift( Schema s );
 
 const char* SCHEMA_swiftName( Schema schema, char buf[BUFSIZ]);
+extern const char* as_schemaSwiftName_n( const char* symbol_name, char* buf, int bufsize );
+
 const char* schema_nickname(Schema schema, char buf[BUFSIZ] );
 
 #endif /* swift_schema_h */

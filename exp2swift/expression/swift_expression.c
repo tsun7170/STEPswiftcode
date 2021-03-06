@@ -24,6 +24,7 @@
 #include "swift_type.h"
 #include "swift_files.h"
 #include "decompose_expression.h"
+#include "swift_schema.h"
 
 //#define YES_PAD	true
 //#define NO_PAD	false
@@ -155,32 +156,49 @@ static void emit_usedin_call( Scope SELF, Expression e, bool can_wrap ){
 	wrap("T: ");
 	EXPRassignment_rhs_swift(YES_RESOLVING_GENERIC, SELF, arg1, Type_Generic, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 
-	if( (arg2 != NULL) && (strlen(arg2->symbol.name) > 0) ){
-		raw(", ");
-		
-		assert( TYPEis_string(arg2->type) );
-		char* attrsep = strrchr(arg2->symbol.name, '.');
-		assert( attrsep != NULL );
-		int symlen = (int)(attrsep - arg2->symbol.name);
-		assert( symlen < BUFSIZ );
-		
-		char buf[BUFSIZ];
-		canonical_dictName_n(arg2->symbol.name, buf, symlen);
-		char* entsep = strrchr(buf, '.');
-		assert(entsep != NULL);
-		Entity ent = SCOPEfind(SELF, entsep+1, SCOPE_FIND_ENTITY);
-		if( ent != NULL ){
-			wrap("ENTITY: %s.self, ", ENTITY_swiftName(ent, SELF, buf));
+	if( TYPEis_string(arg2->type) ){
+		if( (arg2 != NULL) && (strlen(arg2->symbol.name) > 0) ){
+			raw(", ");
+			
+			char* attrsep = strrchr(arg2->symbol.name, '.');
+			assert( attrsep != NULL );
+			int symlen = (int)(attrsep - arg2->symbol.name);
+			assert( symlen < BUFSIZ );
+			char* attr_name = attrsep+1;
+			
+			char buf[BUFSIZ];
+			canonical_dictName_n(arg2->symbol.name, buf, symlen);
+			char* entsep = strrchr(buf, '.');
+			assert(entsep != NULL);
+			char* entity_name = entsep+1;
+
+			*entsep = 0;
+			char* schema_name = buf;
+
+			char buf2[BUFSIZ];
+			wrap("ROLE: \\%s", as_schemaSwiftName_n(schema_name, buf2, BUFSIZ));
+			wrap(".%s", as_entitySwiftName_n(entity_name, buf2, BUFSIZ));
+			wrap(".%s", as_attributeSwiftName_n(attr_name, buf2, BUFSIZ));
+			
+//			
+//			Entity ent = SCOPEfind(SELF, entsep+1, SCOPE_FIND_ENTITY);
+//			if( ent != NULL ){
+//				wrap("ENTITY: %s.self, ", ENTITY_swiftName(ent, SELF, buf));
+//			}
+//			else {
+//				// entity not found; probably error in source
+//				wrap("ENTITY: %s.self, ", canonical_swiftName_n(arg2->symbol.name, buf, symlen));
+//			}
+//			
+//			wrap("ATTR: ");
+//			simpleStringLiteral_swift(attrsep+1);
 		}
-		else {
-			// entity not found; probably error in source
-			wrap("ENTITY: %s.self, ", canonical_swiftName_n(arg2->symbol.name, buf, symlen));
-		}
-		
-		wrap("ATTR: ");
-		simpleStringLiteral_swift(attrsep+1);
 	}
-	
+	else {
+		raw(", ");
+		wrap("R: ");
+		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF, arg2, Type_String, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+	}
 	raw(")");
 }
 
