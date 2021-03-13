@@ -1255,6 +1255,32 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 	indent_swift(level);
 	raw("}\n");
 
+	
+	raw("\n");
+	indent_swift(level);
+	raw("// SDAIAggregationSequence\n");
+	indent_swift(level);
+	raw("public var asAggregationSequence: AnySequence<ELEMENT> {\n");
+	{	int level2 = level+nestingIndent_swift;
+		
+		indent_swift(level2);
+		raw("switch self {\n");
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			indent_swift(level2);
+			raw("case .%s(let selection): \n", selectCase_swiftName(selection, buf));
+			{	int level3 = level2+nestingIndent_swift;
+				indent_swift(level3);
+				raw("return selection.asAggregationSequence\n");
+			}
+		} LISTod;		
+		
+		indent_swift(level2);
+		raw("}\n");
+	}
+	indent_swift(level);
+	raw("}\n");
+
 }
 
 //MARK: - main entry points	
