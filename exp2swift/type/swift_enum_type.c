@@ -88,6 +88,8 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw("public var integerValue: SDAI.INTEGER? {nil}\n");
 		indent_swift(level2);
+		raw("public var genericEnumValue: SDAI.GenericEnumValue? { SDAI.GenericEnumValue(self) }\n");
+		indent_swift(level2);
 		raw("public func arrayOptionalValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.ARRAY_OPTIONAL<ELEM>? {nil}\n");
 		indent_swift(level2);
 		raw("public func arrayValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.ARRAY<ELEM>? {nil}\n");

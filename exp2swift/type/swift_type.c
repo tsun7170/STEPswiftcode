@@ -166,12 +166,6 @@ void TYPEdefinition_swift(Schema schema, Type t, int level ) {
 				break;
 		}
 	}
-	
-//	if( t->where && !LISTis_empty(t->where) ) {
-//		raw("/*");
-//		WHERE_out( t->where, level );
-//		raw("*/\n");
-//	}
 }
 
 extern void TYPEextension_swift( Schema schema, Type t, int level ) {

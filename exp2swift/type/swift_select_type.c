@@ -1345,6 +1345,7 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 			selectSimpleValueConversion_swift(select_type, "numberValue", "SDAI.NUMBER", level2);
 			selectSimpleValueConversion_swift(select_type, "realValue", "SDAI.REAL", level2);
 			selectSimpleValueConversion_swift(select_type, "integerValue", "SDAI.INTEGER", level2);
+			selectSimpleValueConversion_swift(select_type, "genericEnumValue", "SDAI.GenericEnumValue", level2);
 			
 			selectAggregateValueConversion_swift(select_type, "arrayOptionalValue", "SDAI.ARRAY_OPTIONAL", level2);
 			selectAggregateValueConversion_swift(select_type, "arrayValue", "SDAI.ARRAY", level2);
