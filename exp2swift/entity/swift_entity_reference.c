@@ -59,6 +59,7 @@ static void supertypeReferenceDefinition_swift(Entity entity, int level ) {
 	Linked_List subtypes = ENTITYget_sub_entity_list(entity);
 	
 	LISTdo( subtypes, sub, Entity ) {
+		if( sub == entity )continue;
 		indent_swift(level);
 		wrap("public let %s%s: %s? \t// [%d]\n", 
 				 subEntity_swiftPrefix,
@@ -725,6 +726,7 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 		raw("\n");
 		
 		LISTdo( ENTITYget_sub_entity_list(entity), sub, Entity ) {
+			if( sub == entity )continue;
 			indent_swift(level2);
 			wrap("self.%s%s = ", 
 					 subEntity_swiftPrefix,
@@ -767,46 +769,75 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 	indent_swift(level);
 	raw( "public convenience init?(_ complex: SDAI.ComplexEntity?) { self.init(complex: complex) }\n\n");
 	
+	if( LISTget_length(ENTITYget_super_entity_list(entity)) == 1 ) {
 	/*
-	 //EXPRESS IMPLICIT PARTIAL ENTITY CONSTRUCTOR
-	 public convenience init(ATTRi:ATTRTYPE, ...){
-	 	let partial = _partialentitytype(ATTRi:ATTRi, ...)
-	  let complex = SDAI.ComplexEntity(entities:[partial])
-	 	self.init(complex: complex)!
+	 // ENTITY REFERENCE constructor from PARTIAL ENTITY for simple entity type
+	 public convenience init?(_ partial:_partialentitytype) {
+		 let complex = SDAI.ComplexEntity(entities:[partial])
+		 self.init(complex: complex)
 	 }
 	 */
-	indent_swift(level);
-	raw("//EXPRESS IMPLICIT PARTIAL ENTITY CONSTRUCTOR\n");
-	
-	Linked_List params = ENTITYget_constructor_params(entity);
-	
-	indent_swift(level);
-	raw("public convenience init(");
-	ALGargs_swift(entity, NO_FORCE_OPTIONAL, params, NO_DROP_SINGLE_LABEL, level);
-	raw(") {\n");
-
-	{	int level2 = level+nestingIndent_swift;
+		indent_swift(level);
+		raw("//SIMPLE ENTITY REFERENCE\n");
+		
 		char buf[BUFSIZ];
-		
-		indent_swift(level2);
-		raw("let partial = %s(", partialEntity_swiftName(entity, buf));
-		char* sep = "";
-		LISTdo(params, attr, Variable) {
-			raw(sep);
-			raw("%s: %s", variable_swiftName(attr, buf), buf);
-			sep = ", ";
-		}LISTod;
-		raw(")\n");
-		
-		indent_swift(level2);
-		raw("let complex = SDAI.ComplexEntity(entities:[partial])\n");
+		indent_swift(level);
+		raw("public convenience init?(_ partial:%s) {\n", partialEntity_swiftName(entity, buf));
 
-		indent_swift(level2);
-		raw("self.init(complex: complex)!\n");
+		{	int level2 = level+nestingIndent_swift;
+			indent_swift(level2);
+			raw("let complex = SDAI.ComplexEntity(entities:[partial])\n");
+
+			indent_swift(level2);
+			raw("self.init(complex: complex)\n");
+		}
+		
+		indent_swift(level);
+		raw("}\n\n");	
 	}
+
 	
-	indent_swift(level);
-	raw("}\n\n");	
+	
+//	/*
+//	 //EXPRESS IMPLICIT PARTIAL ENTITY CONSTRUCTOR
+//	 public convenience init(ATTRi:ATTRTYPE, ...){
+//	 	let partial = _partialentitytype(ATTRi:ATTRi, ...)
+//	  let complex = SDAI.ComplexEntity(entities:[partial])
+//	 	self.init(complex: complex)!
+//	 }
+//	 */
+//	indent_swift(level);
+//	raw("//EXPRESS IMPLICIT PARTIAL ENTITY CONSTRUCTOR\n");
+//	
+//	Linked_List params = ENTITYget_constructor_params(entity);
+//	
+//	indent_swift(level);
+//	raw("public convenience init(");
+//	ALGargs_swift(entity, NO_FORCE_OPTIONAL, params, NO_DROP_SINGLE_LABEL, level);
+//	raw(") {\n");
+//
+//	{	int level2 = level+nestingIndent_swift;
+//		char buf[BUFSIZ];
+//		
+//		indent_swift(level2);
+//		raw("let partial = %s(", partialEntity_swiftName(entity, buf));
+//		char* sep = "";
+//		LISTdo(params, attr, Variable) {
+//			raw(sep);
+//			raw("%s: %s", variable_swiftName(attr, buf), buf);
+//			sep = ", ";
+//		}LISTod;
+//		raw(")\n");
+//		
+//		indent_swift(level2);
+//		raw("let complex = SDAI.ComplexEntity(entities:[partial])\n");
+//
+//		indent_swift(level2);
+//		raw("self.init(complex: complex)!\n");
+//	}
+//	
+//	indent_swift(level);
+//	raw("}\n\n");	
 }
 
 //MARK: - entity reference defition main entry point

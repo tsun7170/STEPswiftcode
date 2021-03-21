@@ -297,6 +297,22 @@ Type TYPEcreate_aggregate( enum type_enum aggr_type, Type base_type, Expression 
 	return aggr;	
 }
 
+//*TY2021/03/21
+Type TYPEcopy( Type t ) {
+	TypeBody tb = TYPEget_body(t);
+	Type copied = TYPEcreate(tb->type);
+	TypeHead copiedTH = copied->u.type;
+	TypeBody copiedTB = TYPEget_body(copied);
+	
+	*copied = *t;
+	copied->u.type = copiedTH;
+	
+	*copiedTB = *tb;
+	copiedTB->head = copiedTH;
+	
+	return copied;
+}
+
 
 
 /**

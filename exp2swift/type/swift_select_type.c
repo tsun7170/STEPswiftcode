@@ -880,6 +880,7 @@ static void selectTypeValueComparison_swift(Type select_type,  int level) {
 	indent_swift(level);
 	raw("//MARK: - SDAIValue\n");
 
+	/////////
 	indent_swift(level);
 	raw("public func isValueEqual<T: SDAIValue>(to rhs: T) -> Bool {\n");
 	{	int level2 = level+nestingIndent_swift;
@@ -896,7 +897,87 @@ static void selectTypeValueComparison_swift(Type select_type,  int level) {
 	}
 		
 	indent_swift(level);
-	raw("}\n");
+	raw("}\n\n");
+
+
+	/////////
+	indent_swift(level);
+	raw("public func isValueEqualOptionally<T: SDAIValue>(to rhs: T?) -> Bool? {\n");
+	{	int level2 = level+nestingIndent_swift;
+		indent_swift(level2);
+		raw("switch self {\n");
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			indent_swift(level2);
+			raw("case .%s(let selection): return selection.value.isValueEqualOptionally(to: rhs)\n", selectCase_swiftName(selection, buf));
+		} LISTod;		
+		
+		indent_swift(level2);
+		raw("}\n");
+	}
+		
+	indent_swift(level);
+	raw("}\n\n");
+
+	
+	/////////
+	indent_swift(level);
+	raw("public func hashAsValue(into hasher: inout Hasher, visited complexEntities: inout Set<SDAI.ComplexEntity>) {\n");
+	{	int level2 = level+nestingIndent_swift;
+		indent_swift(level2);
+		raw("switch self {\n");
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			indent_swift(level2);
+			raw("case .%s(let selection): selection.value.hashAsValue(into: &hasher, visited: &complexEntities)\n", selectCase_swiftName(selection, buf));
+		} LISTod;		
+		
+		indent_swift(level2);
+		raw("}\n");
+	}
+		
+	indent_swift(level);
+	raw("}\n\n");
+	
+	/////////
+	indent_swift(level);
+	raw("public func isValueEqual<T: SDAIValue>(to rhs: T, visited comppairs: inout Set<SDAI.ComplexPair>) -> Bool {\n");
+	{	int level2 = level+nestingIndent_swift;
+		indent_swift(level2);
+		raw("switch self {\n");
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			indent_swift(level2);
+			raw("case .%s(let selection): return selection.value.isValueEqual(to: rhs, visited: &comppairs)\n", selectCase_swiftName(selection, buf));
+		} LISTod;		
+		
+		indent_swift(level2);
+		raw("}\n");
+	}
+		
+	indent_swift(level);
+	raw("}\n\n");
+	
+	/////////
+	indent_swift(level);
+	raw("public func isValueEqualOptionally<T: SDAIValue>(to rhs: T?, visited comppairs: inout Set<SDAI.ComplexPair>) -> Bool? {\n");
+	{	int level2 = level+nestingIndent_swift;
+		indent_swift(level2);
+		raw("switch self {\n");
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			indent_swift(level2);
+			raw("case .%s(let selection): return selection.value.isValueEqualOptionally(to: rhs, visited: &comppairs)\n", selectCase_swiftName(selection, buf));
+		} LISTod;		
+		
+		indent_swift(level2);
+		raw("}\n");
+	}
+		
+	indent_swift(level);
+	raw("}\n\n");
+
+	
 }
 
 //MARK: - type members

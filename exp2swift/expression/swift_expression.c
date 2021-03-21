@@ -377,6 +377,42 @@ static void EXPRquery_swift(Scope SELF, bool can_wrap, Expression e) {
 	EXPR_delete_tempvar_definitions(tempvars);
 }
 
+//MARK: OP_CONCAT (complex entity instance construction operator)
+void EXPRopCONCAT__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * oe, char * opcode, 
+										Type op1target_type, Type op2target_type,
+										bool paren, unsigned int previous_op, bool can_wrap, bool need_optional_operand ) {
+	
+	bool can_wrap2 = YES_WRAP;
+	
+	if( paren && ( oe->op_code != previous_op ) ) {
+		wrap_if(can_wrap, "( " );
+		can_wrap = YES_WRAP;
+	}
+	
+	//OPERAND1
+//	raw("/*");TYPE_head_swift(SELF1, oe->op1->return_type, YES_IN_COMMENT);raw("*/");	// DEBUG
+
+		EXPR__swift(SELF1, oe->op1, op1target_type, YES_PAREN, oe->op_code, can_wrap);
+
+	
+	//OP CODE
+	assert(opcode != NULL);
+	wrap_if(can_wrap, "%s", opcode);
+	positively_wrap();	
+
+	
+	//OPERAND2
+//	raw("/*"); TYPE_head_swift(SELF2, oe->op2->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+
+		EXPR__swift(SELF2, oe->op2, op2target_type, YES_PAREN, oe->op_code, can_wrap2);
+
+	if( paren && ( oe->op_code != previous_op ) ) {
+		raw( " )" );
+	}
+}
+
+
+
 
 //MARK: - aggregate initializer
 
@@ -523,7 +559,7 @@ static type_optionality operator_returns_optional(struct Op_Subexpression * oe, 
 			
 			//MARK: - Complex Entity Constructor
 		case OP_CONCAT:
-			return yes_optional;
+			return no_optional;
 			
 		case OP_REPEAT:
 			switch (EXPRresult_is_optional(oe->op1, deep)) {
@@ -755,7 +791,7 @@ void EXPR__swift( Scope SELF, Expression e, Type target_type, bool paren, unsign
 					formals = e->u.funcall.function->u.func->parameters;
 				}
 				else {	// entity constructor call
-					func = ENTITY_swiftName(e->u.funcall.function, NO_QUALIFICATION, buf);
+					func = partialEntity_swiftName(e->u.funcall.function, buf);
 					formals = ENTITYget_constructor_params(e->u.funcall.function);
 				}
 				
@@ -1043,7 +1079,7 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,  Type target_type,
 		//MARK: - Complex Entity Constructor
 			//MARK:OP_CONCAT
 			case OP_CONCAT:
-				EXPRop2__swift( SELF,SELF, oe, " .||. ", oe->op1->return_type,oe->op2->return_type, paren, previous_op, can_wrap, NEED_OPTIONAL_OPERAND );
+				EXPRopCONCAT__swift( SELF,SELF, oe, " .||. ", oe->op1->return_type,oe->op2->return_type, paren, previous_op, can_wrap, NO_NEED_OPTIONAL_OPERAND );
 				break;
 				
 				
@@ -1353,7 +1389,7 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 			aggregate_init(resolve_generic, SELF, rhs, lhsType);
 			return;
 		}
-//		raw("/*generic*/");
+//	raw("/*generic*/");
 		EXPR__swift(SELF, rhs, rhs->return_type, paren, previous_op, can_wrap);
 		return;
 	}
@@ -1364,7 +1400,7 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 	
 //	raw("/*");TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);raw("*/"); // DEBUG	
 	
-	EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
+		EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
 		raw(")");
 		return;
 	}
@@ -1390,7 +1426,12 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 	if( TYPEis_generic(rhs->return_type)||TYPEis_runtime(rhs->return_type) ){
 		raw("fromGeneric: ");
 	}
-	raw("/*");TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);raw(": %s",TYPEget_kind(rhs->return_type));raw("*/"); // DEBUG	
+	if( TYPEis_partial_entity(rhs->return_type) ){
+		raw("/*partial entity*/");
+	}
+	else {
+		raw("/*");TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);raw("*/"); // DEBUG	
+	}
 	
 	EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
 		raw(")");

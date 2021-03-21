@@ -171,6 +171,7 @@ struct TypeBody_ {
                                    */
         unsigned var        : 1; /** denotes variable marked 'VAR' - i.e. one where changes are propagated back to the caller */
         unsigned encoded    : 1; /**< encoded string */
+			unsigned partial : 1; //*TY2021/03/21 to distinguish partial entity from fully established entity
     } flags;
     Type base;      /**< underlying base type if any can also contain true type if this type is a type reference */
     Type tag;       /**< optional tag */
@@ -278,6 +279,7 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 #define TYPEis_expression(t)    (TYPEget_type(t) == op_)
 #define TYPEis_oneof(t)     (TYPEget_type(t) == oneof_)
 #define TYPEis_entity(t)    (TYPEget_type(t) == entity_)
+#define TYPEis_partial_entity(t)	(TYPEis_entity(t) && TYPEget_body(t)->flags.partial)
 #define TYPEis_enumeration(t)   (TYPEget_type(t) == enumeration_)
 #define TYPEis_aggregation_data_type(t) (TYPEget_base_type(t) != NULL)	//*TY2020/11/19 renamed
 #define TYPEis_AGGREGATE(t) (TYPEget_type(t) == aggregate_)	//*TY2020/11/19 renamed
@@ -350,6 +352,7 @@ extern SC_EXPRESS_EXPORT TypeBody TYPEBODYcreate PROTO( ( enum type_enum ) );
 extern SC_EXPRESS_EXPORT void TYPEinitialize PROTO( ( void ) );
 extern SC_EXPRESS_EXPORT void TYPEcleanup PROTO( ( void ) );
 extern Type TYPEcreate_aggregate( enum type_enum aggr_type, Type base_type, Expression bound1, Expression bound2, bool unique, bool optional); //*TY2021/01/19
+extern Type TYPEcopy( Type t ); //*TY2021/03/21
 
 extern SC_EXPRESS_EXPORT bool TYPEinherits_from PROTO( ( Type, enum type_enum ) );
 extern SC_EXPRESS_EXPORT Type TYPEget_nonaggregate_base_type PROTO( ( Type ) );

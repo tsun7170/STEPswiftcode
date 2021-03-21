@@ -351,7 +351,12 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
                 self = entity->u.entity->type;
                 /* skip parameter resolution for now */
                 /*          ARGresolve();*/
-                expr->return_type = entity->u.entity->type;
+							
+								//*TY2021/03/21 to distinguish entity and partial entity
+							//expr->return_type = entity->u.entity->type;
+								expr->return_type = TYPEcopy( entity->u.entity->type );
+								TYPEget_body(expr->return_type)->flags.partial = true;
+							
                 self = self_old;    /* restore old SELF */
             } else {
                 func = ( Function )x;

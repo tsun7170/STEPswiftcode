@@ -548,6 +548,163 @@ static void localAttributeDefinitions_swift( Entity entity, int level, Linked_Li
 	 }
 }
 
+//MARK: - value comparison supports
+static void hashAsValue_swift( Entity entity, int level ) {
+	/*
+	 open override func hashAsValue(into hasher: inout Hasher, visited complexEntities: inout Set<ComplexEntity>) {
+	 		super.hashAsValue(into: &hasher, visited: &complexEntities)
+	 
+	 		self.attr?.value.hashAsValue(into: &hasher, visited: &complexEntities)
+			...	 
+	 }
+	 */
+	
+	indent_swift(level);
+	raw("open override func hashAsValue(into hasher: inout Hasher, visited complexEntities: inout Set<SDAI.ComplexEntity>) {\n");
+	{	int level2 = level+nestingIndent_swift;
+		char buf[BUFSIZ];
+		
+		indent_swift(level2);
+		raw("super.hashAsValue(into: &hasher, visited: &complexEntities)\n");
+		
+		Linked_List local_attributes = entity->u.entity->attributes;
+		LISTdo( local_attributes, attr, Variable ){
+			if( VARis_redeclaring(attr) ) continue;
+			if( VARis_derived(attr) ) continue;
+			if( VARis_inverse(attr) ) continue;
+			
+			indent_swift(level2);
+			raw("self.%s%s.value.hashAsValue(into: &hasher, visited: &complexEntities)\n",
+					partialEntityAttribute_swiftName(attr, buf),
+					VARis_optional_by_large(attr)? "?" : "" );
+		}LISTod;
+	}
+	indent_swift(level);
+	raw("}\n\n");
+}
+
+static void isValueEqual_swift( Entity entity, int level ) {
+	/*
+	 open override func isValueEqual(to rhs: PartialEntity, visited comppairs: inout Set<ComplexPair>) -> Bool {
+	 		guard let rhs = rhs as? Self else { return false }
+	 		if !super.isValueEqual(to: rhs, visited: &comppairs) { return false }
+	 
+	 		if let comp = self.attr?.value.isValueEqualOptionally(to: rhs.attr?.value, visited: &comppairs)	{
+	 			if !comp { return false }
+	 		}
+	 		else { return false }
+	 		...
+	 
+	 		return true
+	 }
+	 */
+	
+	indent_swift(level);
+	raw("open override func isValueEqual(to rhs: SDAI.PartialEntity, visited comppairs: inout Set<SDAI.ComplexPair>) -> Bool {\n");
+	{	int level2 = level+nestingIndent_swift;
+		
+		indent_swift(level2);
+		raw("guard let rhs = rhs as? Self else { return false }\n");
+		indent_swift(level2);
+		raw("if !super.isValueEqual(to: rhs, visited: &comppairs) { return false }\n");
+		
+		Linked_List local_attributes = entity->u.entity->attributes;
+		LISTdo( local_attributes, attr, Variable ){
+			if( VARis_redeclaring(attr) ) continue;
+			if( VARis_derived(attr) ) continue;
+			if( VARis_inverse(attr) ) continue;
+			
+			char buf[BUFSIZ];partialEntityAttribute_swiftName(attr, buf);
+			char* optional = VARis_optional_by_large(attr)? "?" : "";
+			
+			indent_swift(level2);
+			raw("if let comp = self.%s%s.value.isValueEqualOptionally(to: rhs.%s%s.value, visited: &comppairs)	{\n",
+					buf,optional, buf,optional );
+			indent_swift(level2+nestingIndent_swift);
+			raw("if !comp { return false }\n");
+			indent_swift(level2);
+			raw("}\n");
+			indent_swift(level2);
+			raw("else { return false }\n");
+		}LISTod;
+		indent_swift(level2);
+		raw("return true\n");
+	}
+	indent_swift(level);
+	raw("}\n\n");
+}
+
+static void isValueEqualOptionally_swift( Entity entity, int level ) {
+	/*
+	 open override func isValueEqualOptionally(to rhs: PartialEntity, visited comppairs: inout Set<ComplexPair>) -> Bool? {
+	 		guard let rhs = rhs as? Self else { return false }
+	    var result: Bool? = true
+			if let comp = super.isValueEqualOptionally(to: rhs, visited: &comppairs) { 
+	 			if !comp { return false }
+	 		}
+	 		else { result = nil }
+	 
+	 		if let comp = self.attr?.value.isValueEqualOptionally(to: rhs.attr?.value, visited: &comppairs) {
+			 	if !comp { return false }
+	 		}
+	 		else { result = nil }
+	 		...
+	 
+	 		return result
+	 }
+	 */
+	
+	indent_swift(level);
+	raw("open override func isValueEqualOptionally(to rhs: SDAI.PartialEntity, visited comppairs: inout Set<SDAI.ComplexPair>) -> Bool? {\n");
+	{	int level2 = level+nestingIndent_swift;
+
+		indent_swift(level2);
+		raw("guard let rhs = rhs as? Self else { return false }\n");
+		indent_swift(level2);
+		raw("var result: Bool? = true\n");
+		indent_swift(level2);
+		raw("if let comp = super.isValueEqualOptionally(to: rhs, visited: &comppairs) {\n");
+		indent_swift(level2+nestingIndent_swift);
+		raw("if !comp { return false }\n");
+		indent_swift(level2);
+		raw("}\n");
+		indent_swift(level2);
+		raw("else { result = nil }\n");
+		
+		Linked_List local_attributes = entity->u.entity->attributes;
+		LISTdo( local_attributes, attr, Variable ){
+			if( VARis_redeclaring(attr) ) continue;
+			if( VARis_derived(attr) ) continue;
+			if( VARis_inverse(attr) ) continue;
+			
+			char buf[BUFSIZ];partialEntityAttribute_swiftName(attr, buf);
+			char* optional = VARis_optional_by_large(attr)? "?" : "";
+
+			indent_swift(level2);
+			raw("if let comp = self.%s%s.value.isValueEqualOptionally(to: rhs.%s%s.value, visited: &comppairs) {\n",
+					buf,optional, buf,optional );
+			indent_swift(level2+nestingIndent_swift);
+			raw("if !comp { return false }\n");
+			indent_swift(level2);
+			raw("}\n");
+			indent_swift(level2);
+			raw("else { result = nil }\n");
+		}LISTod;
+		indent_swift(level2);
+		raw("return result\n");
+	}
+	indent_swift(level);
+	raw("}\n\n");
+}
+
+static void valueComparisonSupports_swift( Entity entity, int level ) {
+	indent_swift(level);
+	raw("//VALUE COMPARISON SUPPORT\n");
+	hashAsValue_swift(entity, level);
+	isValueEqual_swift(entity, level);
+	isValueEqualOptionally_swift(entity, level);
+}
+
 
 //MARK: - unique rule
 static Variable unique_attribute( Expression expr ) {
@@ -703,6 +860,7 @@ void partialEntityDefinition_swift
 	 {	int level2 = level+nestingIndent_swift;
 		 
 		 localAttributeDefinitions_swift(entity, level2, attr_overrides, dynamic_attrs);
+		 valueComparisonSupports_swift(entity, level2);
 		 TYPEwhereDefinitions_swift( ENTITYget_type(entity), level2);
 		 uniqueDefinitions_swift(entity, level2);
 		 expressConstructor(entity, level2);

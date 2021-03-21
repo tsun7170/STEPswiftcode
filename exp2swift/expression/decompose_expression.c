@@ -47,6 +47,10 @@ static void assign_tempvar_symbol(Expression e, int*/*inout*/ tempvar_id){
 }
 
 static Expression create_temp_expression(int*/*inout*/ tempvar_id, Type target_type, Expression definition, Linked_List tempvars){
+//	if( TYPEis_partial_entity(target_type) ){
+//		target_type = TYPEcopy(target_type);
+//		TYPEget_body(target_type)->flags.partial = false;
+//	}
 	Expression simplified = EXP_new();
 	assign_tempvar_symbol(simplified, tempvar_id);
 	simplified->type = Type_Identifier;
@@ -196,6 +200,7 @@ static Expression EXPRexpr_decompose( Expression e, Type target_type, int*/*inou
 		case funcall_:
 		{
 			Expression funcall_expr = copy_expression(e);
+			Type target_type = funcall_expr->return_type;
 			//			e->u.funcall.list
 			
 			bool isfunc = (e->u.funcall.function->u_tag == scope_is_func);
@@ -206,6 +211,8 @@ static Expression EXPRexpr_decompose( Expression e, Type target_type, int*/*inou
 			}
 			else {	// entity constructor call
 				formals = ENTITYget_constructor_params(e->u.funcall.function);
+				funcall_expr->return_type = TYPEcopy(target_type);
+				TYPEget_body(funcall_expr->return_type)->flags.partial = false;
 			}
 
 			Linked_List funcall_list = LISTcreate();
@@ -221,7 +228,7 @@ static Expression EXPRexpr_decompose( Expression e, Type target_type, int*/*inou
 			}LISTod;
 			
 			funcall_expr->u.funcall.list = funcall_list;
-			Expression simplified = create_temp_expression(tempvar_id, funcall_expr->return_type, funcall_expr, tempvars);
+			Expression simplified = create_temp_expression(tempvar_id, target_type, funcall_expr, tempvars);
 			return simplified;
 		}
 			

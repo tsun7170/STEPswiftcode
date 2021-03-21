@@ -411,7 +411,7 @@ const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption 
 }
 
 bool TYPEis_swiftAssignable(Type lhstype, Type rhstype) {
-	if( lhstype == rhstype ) return true;
+	if( lhstype == rhstype ) return (!TYPEis_partial_entity(rhstype));
 	if( (lhstype == NULL)||(rhstype == NULL) )return false;
 	if( lhstype == Type_Entity && TYPEis_entity(rhstype) ) return true;
 
@@ -460,7 +460,7 @@ bool TYPEis_swiftAssignable(Type lhstype, Type rhstype) {
 			}
 			
 		case entity_:
-			return lhstb->entity == rhstb->entity;
+			return (lhstb->entity == rhstb->entity) && (rhstb->flags.partial == false);
 			
 		case generic_:
 		case aggregate_:
