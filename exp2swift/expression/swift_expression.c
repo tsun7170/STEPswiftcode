@@ -1366,12 +1366,14 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 }
 
 void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, Type lhsType, bool paren, unsigned int previous_op, bool can_wrap) {
-	if( lhsType == NULL ) {
+	bool rhs_is_partial = TYPEis_partial_entity(rhs->return_type);
+	
+	if( (!rhs_is_partial) && (lhsType == NULL) ) {
 		raw("/*null*/");
 		EXPR__swift(SELF, rhs, rhs->return_type, paren, previous_op, can_wrap);
 		return;
 	}
-	if( TYPEis_runtime(lhsType) ){
+	if( (!rhs_is_partial) && TYPEis_runtime(lhsType) ){
 		raw("/*runtime*/");
 		EXPR__swift(SELF, rhs, rhs->return_type, paren, previous_op, can_wrap);
 		return;
@@ -1389,9 +1391,19 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 			aggregate_init(resolve_generic, SELF, rhs, lhsType);
 			return;
 		}
-//	raw("/*generic*/");
-		EXPR__swift(SELF, rhs, rhs->return_type, paren, previous_op, can_wrap);
-		return;
+		
+		if( !rhs_is_partial ){
+			//	raw("/*generic*/");
+			EXPR__swift(SELF, rhs, rhs->return_type, paren, previous_op, can_wrap);
+			return;
+		}
+		
+		TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);	// wrap with explicit type cast to entity reference
+		raw("(");
+		raw("/*partial entity*/");
+		EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
+			raw(")");
+			return;
 	}
 	
 	if( EXP_is_literal(rhs) ){
@@ -1416,7 +1428,7 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 		return;
 	}
 	
-	if( lhsType == Type_Entity ) {
+	if( (!rhs_is_partial) && (lhsType == Type_Entity) ) {
 		EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
 		return;
 	}
@@ -1426,7 +1438,7 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 	if( TYPEis_generic(rhs->return_type)||TYPEis_runtime(rhs->return_type) ){
 		raw("fromGeneric: ");
 	}
-	if( TYPEis_partial_entity(rhs->return_type) ){
+	if( rhs_is_partial ){
 		raw("/*partial entity*/");
 	}
 	else {
