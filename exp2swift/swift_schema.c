@@ -31,6 +31,8 @@
 #include "swift_scope_entities.h"
 #include "swift_scope_algs.h"
 #include "swift_symbol.h"
+#include "swift_entity.h"
+#include "swift_rule.h"
 
 
 const char* SCHEMA_swiftName( Schema schema, char buf[BUFSIZ]) {
@@ -55,6 +57,51 @@ const char* schema_nickname(Schema schema, char buf[BUFSIZ] ) {
 	return buf;
 }
 
+//MARK: - SDAI Dictionary Schema Support
+static void create_schema_definition(Schema schema, int level) {
+
+	indent_swift(level);
+	raw("private static func createSchemaDefinition() -> SDAIDictionarySchema.SchemaDefinition {\n");
+	
+	{	int level2 = level+nestingIndent_swift;
+		
+		char buf[BUFSIZ];
+		indent_swift(level2);
+		raw("let schemaDef = SDAIDictionarySchema.SchemaDefinition(name: \"%s\")\n\n",
+				canonical_swiftName(schema->symbol.name, buf));
+		
+		DictionaryEntry dictEntry;
+		
+		indent_swift(level2);
+		raw("//MARK: ENTITY DICT\n");
+		Entity entity;
+		DICTdo_type_init( schema->symbol_table, &dictEntry, OBJ_ENTITY );
+		while( 0 != (entity = DICTdo(&dictEntry)) ) {
+			indent_swift(level2);
+			raw("schemaDef.addEntity(entityDef: %s.entityDefinition)\n",
+					ENTITY_swiftName(entity, NO_QUALIFICATION, buf));
+		}	
+
+		raw("\n");
+		indent_swift(level2);
+		raw("//MARK: GLOBAL RULE DICT\n");		
+		Rule rule;
+		DICTdo_type_init( schema->symbol_table, &dictEntry, OBJ_RULE );
+		while( 0 != (rule = DICTdo(&dictEntry)) ) {
+			indent_swift(level2);
+			raw("schemaDef.addGlobalRule(name:\"%s\", rule:%s)\n", RULE_swiftName(rule, buf), buf);
+		}
+
+		raw("\n");
+		indent_swift(level2);
+		raw("return schemaDef\n");
+	}
+	
+	indent_swift(level);
+	raw("}\n");
+}
+
+//MARK: - main entry point
 void SCHEMA_swift( Schema schema ) {
 	
 	openSwiftFileForSchema(schema);
@@ -63,6 +110,7 @@ void SCHEMA_swift( Schema schema ) {
 			"import SwiftSDAIcore\n");
 
 	int level = 0;
+	int level2 = level+nestingIndent_swift;
 	
 	first_line = false;
 	beginExpress_swift("SCHEMA DEFINITION");
@@ -76,21 +124,23 @@ void SCHEMA_swift( Schema schema ) {
 	REFout( schema->u.schema->usedict, schema->u.schema->use_schemas, "USE", level + exppp_nesting_indent );
 	REFout( schema->u.schema->refdict, schema->u.schema->ref_schemas, "REFERENCE", level + exppp_nesting_indent );
 	SCOPEconsts_out( schema, level + exppp_nesting_indent );
-	
 	raw(	"\n"
 			"END_SCHEMA;"	);
 	tail_comment( schema->symbol );
 	endExpress_swift();
 	
 	// swift code generation
-	raw("/* SCHEMA */\n");
+	raw("//MARK: - SCHEMA\n");
 	{	char buf[BUFSIZ];
-		raw("public enum %s {\n", SCHEMA_swiftName(schema, buf));
+		raw("public enum %s: SDAISchema {\n", SCHEMA_swiftName(schema, buf));
+		
+		indent_swift(level2);
+		raw("public static let schemaDefinition = createSchemaDefinition()\n");
 	}
 	
-	{	int level2 = level+nestingIndent_swift;
-		SCOPEconstList_swift( false, schema, level2 );
-	}
+	SCOPEconstList_swift( false, schema, level2 );
+	
+	create_schema_definition(schema, level2);
 
 	raw("}\n");
 	raw("/* END_SCHEMA */\n");

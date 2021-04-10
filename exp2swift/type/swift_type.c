@@ -488,41 +488,59 @@ bool TYPEis_swiftAssignable(Type lhstype, Type rhstype) {
 }
 
 //MARK: - where rule
-void TYPEwhereDefinitions_swift( Type type, int level ) {
-	Linked_List where_rules = TYPEget_where(type);
+const char* whereRuleLabel_swiftName( Where w, char buf[BUFSIZ] ) {
+	if( w-> label ) {
+		snprintf(buf, BUFSIZ, "WHERE_%s", w->label->name );
+	}
+	else {
+		snprintf(buf, BUFSIZ, "WHERE_%d", w->serial );
+	}
+	return buf;
+}
+
+void TYPEwhereDefinitions_swift( Scope scope, int level ) {
+	Linked_List where_rules = TYPEget_where(scope);
 	if( LISTis_empty(where_rules) ) return;
+	bool is_entity = scope->u_tag == scope_is_entity;
 	
 	raw("\n");
 	indent_swift(level);
-	raw("//WHERE RULES\n");
+	if( is_entity ){
+		raw("//WHERE RULES (ENTITY)\n");
+	}
+	else {
+		raw("//WHERE RULES (DEFINED TYPE)\n");
+	}
 
 	char whereLabel[BUFSIZ];
 	char buf[BUFSIZ];
 	LISTdo( where_rules, where, Where ){
 		indent_swift(level);
-		wrap("public func %s(SELF: %s) -> SDAI.LOGICAL {\n", 
+		wrap("public static func %s(SELF: %s?) -> SDAI.LOGICAL {\n", 
 				 whereRuleLabel_swiftName(where, whereLabel), 
-//				 ENTITY_swiftName(type, NO_QUALIFICATION, buf) );
-				 TYPE_swiftName(type, NO_QUALIFICATION, buf) );
+				 is_entity ? 	ENTITY_swiftName(scope, NO_QUALIFICATION, buf) : 
+				 							TYPE_swiftName(scope, NO_QUALIFICATION, buf) );
 		
 		{	int level2 = level+nestingIndent_swift;
+			
+			indent_swift(level2);
+			raw("guard let SELF = SELF else { return SDAI.UNKNOWN }\n");
+			
 			int tempvar_id = 1;
 			Linked_List tempvars;
 			Expression simplified = EXPR_decompose(where->expr, Type_Logical, &tempvar_id, &tempvars);
-			EXPR_tempvars_swift(type, tempvars, level2);
+			EXPR_tempvars_swift(scope, tempvars, level2);
 			
 			indent_swift(level2);
 			raw("return ");
-//			EXPR_swift(entity, where->expr, Type_Logical, NO_PAREN);			
-//			EXPR_swift(entity, simplified, Type_Logical, NO_PAREN);			
 			if( EXPRresult_is_optional(simplified, CHECK_DEEP) != no_optional ){
-				TYPE_head_swift(type, Type_Logical, WO_COMMENT);	// wrap with explicit type cast
+				TYPE_head_swift(scope, Type_Logical, WO_COMMENT);	// wrap with explicit type cast
 				raw("(");
-				EXPR_swift(type, simplified, Type_Logical, NO_PAREN);			
+				EXPR_swift(scope, simplified, Type_Logical, NO_PAREN);			
 				raw(")");
 			}
 			else {
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, type, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, scope, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			}
 			raw("\n");
 			EXPR_delete_tempvar_definitions(tempvars);
@@ -532,4 +550,40 @@ void TYPEwhereDefinitions_swift( Type type, int level ) {
 		raw("}\n");
 	}LISTod;
 //	raw("\n");
+}
+
+void TYPEwhereRuleValidation_swift( Type type, int level ) {
+	Linked_List where_rules = TYPEget_where(type);
+	if( LISTis_empty(where_rules) ) return;
+
+	raw("\n");
+	indent_swift(level);
+	raw("//WHERE RULE VALIDATION (DEFINED TYPE)\n");
+
+	indent_swift(level);
+	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel, excludingEntity: Bool) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
+	
+	{	int level2 = level+nestingIndent_swift;
+		
+		char typename[BUFSIZ];TYPE_swiftName(type, NO_QUALIFICATION, typename);
+		indent_swift(level2);
+		raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
+		
+		indent_swift(level2);
+		raw("var result = Supertype.validateWhereRules(instance:instance?.rep, prefix:prefix2, excludingEntity: false)\n\n");
+		
+		LISTdo( where_rules, where, Where ){
+			char whereLabel[BUFSIZ];
+			indent_swift(level2);
+			raw("result[prefix2 + \".%s\"] = %s.%s(SELF: instance)\n", 
+					whereRuleLabel_swiftName(where, whereLabel), typename, whereLabel);
+		}LISTod;
+
+		indent_swift(level2);
+		raw("return result\n");		
+	}
+	
+	indent_swift(level);
+	raw("}\n\n");
+	
 }

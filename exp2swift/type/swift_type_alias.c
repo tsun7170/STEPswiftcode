@@ -81,6 +81,7 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		raw("}\n");
 
 		TYPEwhereDefinitions_swift(type, level2);
+		TYPEwhereRuleValidation_swift(type, level2);
 	}
 
 	indent_swift(level);

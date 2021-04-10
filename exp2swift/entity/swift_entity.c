@@ -83,15 +83,15 @@ const char* dynamicAttribute_swiftProtocolName( Variable original, char buf[BUFS
 	return buf;
 }
 
-const char* whereRuleLabel_swiftName( Where w, char buf[BUFSIZ] ) {
-	if( w-> label ) {
-		snprintf(buf, BUFSIZ, "WHERE_%s", w->label->name );
-	}
-	else {
-		snprintf(buf, BUFSIZ, "WHERE_%d", w->serial );
-	}
-	return buf;
-}
+//const char* whereRuleLabel_swiftName( Where w, char buf[BUFSIZ] ) {
+//	if( w-> label ) {
+//		snprintf(buf, BUFSIZ, "WHERE_%s", w->label->name );
+//	}
+//	else {
+//		snprintf(buf, BUFSIZ, "WHERE_%d", w->serial );
+//	}
+//	return buf;
+//}
 
 const char* uniqueRuleLabel_swiftName( int serial, Linked_List unique, char buf[BUFSIZ] ) {
 	Symbol* label = LISTget_first(unique);

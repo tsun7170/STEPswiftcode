@@ -95,6 +95,7 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 		raw("}\n");
 		
 		TYPEwhereDefinitions_swift(type, level2);
+		TYPEwhereRuleValidation_swift(type, level2);
 	}
 
 	indent_swift(level);

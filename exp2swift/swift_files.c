@@ -17,7 +17,7 @@
 #include <exppp/exppp.h>
 #include "pp.h"
 
-
+#include "swift_express.h"
 #include "swift_files.h"
 #include "swift_schema.h"
 #include "swift_type.h"
@@ -73,6 +73,9 @@ void closeSwiftFile(void) {
 	exppp_fp = NULL;
 }
 
+static void printOutTimeStamp(const char* filename) {
+	raw("/* file: %s.swift \t generated: %s */\n\n", filename, timestamp);
+}
 
 static void printOutHeaderComment() {
 	char ** hp;
@@ -110,6 +113,7 @@ void openSwiftFileForSchema(Schema schema) {
 		abort();
 	}
 	
+	printOutTimeStamp(buf);
 	printOutHeaderComment();
 }
 
@@ -149,6 +153,7 @@ static void openSwiftFile(Schema s, const char* category, char initial, const ch
 		abort();
 	}
 	
+	printOutTimeStamp(filename);
 	printOutHeaderComment();
 }
 

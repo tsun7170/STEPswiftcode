@@ -21,6 +21,47 @@
 #include "swift_files.h"
 #include "swift_schema.h"
 
+//MARK: WHERE rule validation
+static void enumWhereRuleValidation_swift( Type type, int level ) {
+	Linked_List where_rules = TYPEget_where(type);
+
+	raw("\n");
+	indent_swift(level);
+	raw("//WHERE RULE VALIDATION (ENUMERATION TYPE)\n");
+
+	indent_swift(level);
+	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel, excludingEntity: Bool) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
+	
+	{	int level2 = level+nestingIndent_swift;
+		
+		if( LISTis_empty(where_rules) ) {
+			indent_swift(level2);
+			raw("return [:]\n");		
+		} 
+		else {
+			char typename[BUFSIZ];TYPE_swiftName(type, NO_QUALIFICATION, typename);
+			indent_swift(level2);
+			raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
+			
+			indent_swift(level2);
+			raw("var result: [SDAI.WhereLabel:SDAI.LOGICAL] = [:]\n");
+			
+			LISTdo( where_rules, where, Where ){
+				char whereLabel[BUFSIZ];
+				indent_swift(level2);
+				raw("result[prefix2 + \".%s\"] = %s.%s(SELF: instance)\n", 
+						whereRuleLabel_swiftName(where, whereLabel), typename, whereLabel);
+			}LISTod;
+			
+			indent_swift(level2);
+			raw("return result\n");		
+		}
+	}
+	
+	indent_swift(level);
+	raw("}\n\n");
+	
+}
 
 //MARK: - enum type
 
@@ -133,6 +174,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("}\n");
 
 		TYPEwhereDefinitions_swift(type, level2);
+		enumWhereRuleValidation_swift(type, level2);
 	}
 	
 	indent_swift(level);
@@ -181,14 +223,6 @@ void enumTypeExtension_swift(Schema schema, Type type, int level) {
 	wrap("%s__%s__type, SDAIDefinedType\n", schemaname, typename );
 	indent_swift(level);
 	wrap("where Supertype: %s__%s__type\n", schemaname, typename);
-//	force_wrap();
-//	indent_swift(level);
-//	raw("where ");
-////	int oldindent = captureWrapIndent();
-//	raw("Supertype == %s.%s\n", schemaname, typename);
-//	force_wrap();
-//	wrap( "Supertype.FundamentalType == %s.%s\n", schemaname, typename);
-//	restoreWrapIndent(oldindent);
 	indent_swift(level);
 	raw( "{}\n\n");
 }

@@ -1364,6 +1364,58 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 
 }
 
+//MARK: - WHERE rule validation
+static void SELECTwhereRuleValidation_swift( Type select_type, int level ) {
+	char typename[BUFSIZ]; TYPE_swiftName(select_type, select_type->superscope, typename);
+
+	raw("\n");
+	indent_swift(level);
+	raw("//WHERE RULE VALIDATION (SELECT TYPE)\n");
+
+	indent_swift(level);
+	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel, excludingEntity: Bool) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
+	
+	{	int level2 = level+nestingIndent_swift;
+		char buf[BUFSIZ];
+		
+		indent_swift(level2);
+		raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
+		
+		indent_swift(level2);
+		raw("var result: [SDAI.WhereLabel:SDAI.LOGICAL] = [:]\n");
+
+		// underlying case type validation
+		indent_swift(level2);
+		raw("switch instance {\n");
+		LISTdo( TYPEget_body(select_type)->list, selection, Type ) {
+			indent_swift(level2);
+			raw("case .%s(let selectValue): ",selectCase_swiftName(selection, buf));
+			wrap("result = %s.validateWhereRules(instance:selectValue, prefix:prefix2, excludingEntity: excludingEntity)\n", TYPE_swiftName(selection, select_type->superscope, buf));
+		} LISTod;				
+		
+		indent_swift(level2);
+		raw("case nil: break\n");
+		indent_swift(level2);
+		raw("}\n\n");
+
+		// selftype where validations
+		Linked_List where_rules = TYPEget_where(select_type);
+		LISTdo( where_rules, where, Where ){
+			char whereLabel[BUFSIZ];
+			indent_swift(level2);
+			raw("result[prefix2 + \".%s\"] = %s.%s(SELF: instance)\n", 
+					whereRuleLabel_swiftName(where, whereLabel), typename, whereLabel);
+		}LISTod;
+
+		indent_swift(level2);
+		raw("return result\n");		
+	}
+	
+	indent_swift(level);
+	raw("}\n\n");
+	
+}
+
 //MARK: - main entry points	
 void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 	
@@ -1451,6 +1503,7 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 			}
 			
 			TYPEwhereDefinitions_swift(select_type, level2);
+			SELECTwhereRuleValidation_swift(select_type, level2);
 		}
 	
 	indent_swift(level);

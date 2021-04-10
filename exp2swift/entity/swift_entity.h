@@ -28,7 +28,7 @@ extern const char* partialEntityAttribute_swiftName( Variable attr, char buf[BUF
 extern const char* dynamicAttribute_swiftProtocolName( Variable original, char buf[BUFSIZ] );
 extern bool attribute_need_observer( Variable attr ); 
 
-extern const char* whereRuleLabel_swiftName( Where w, char buf[BUFSIZ] );
+//extern const char* whereRuleLabel_swiftName( Where w, char buf[BUFSIZ] );
 extern const char* uniqueRuleLabel_swiftName( int serial, Linked_List unique, char buf[BUFSIZ] );
 
 

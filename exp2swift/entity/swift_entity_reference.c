@@ -34,7 +34,7 @@ static void supertypeReferenceDefinition_swift(Entity entity, int level ) {
 	 */	
 	raw("\n");
 	indent_swift(level);
-	raw("//SUPERTYPES\n");
+	raw("//MARK: SUPERTYPES\n");
 	
 	Linked_List supertypes = ENTITYget_super_entity_list(entity);
 	
@@ -54,7 +54,7 @@ static void supertypeReferenceDefinition_swift(Entity entity, int level ) {
 	 */	
 	raw("\n");
 	indent_swift(level);
-	raw("//SUBTYPES\n");
+	raw("//MARK: SUBTYPES\n");
 	
 	Linked_List subtypes = ENTITYget_sub_entity_list(entity);
 	
@@ -76,7 +76,7 @@ static void partialEntityReferenceDefinition_swift( Entity entity, int level ) {
 	
 	raw("\n");
 	indent_swift(level);
-	raw("//PARTIAL ENTITY\n");
+	raw("//MARK: PARTIAL ENTITY\n");
 	
 	char buf[BUFSIZ];
 	indent_swift(level);
@@ -617,15 +617,15 @@ static void inverseAttributeReference_swift(Entity entity, Variable attr, bool i
 }
 
 //MARK: - attribute access main entry point
-static void entityAttributeReferences_swift( Entity entity, int level ){
+static void entityAttributeReferences_swift( Entity entity, Linked_List effective_attrs, int level ){
 	raw("\n");
 	indent_swift(level);
-	raw("//ATTRIBUTES\n");
+	raw("//MARK: ATTRIBUTES\n");
 	
 	Dictionary all_attrs = ENTITYget_all_attributes(entity);
 	DictionaryEntry de;
 	Linked_List attr_defs;
-	Linked_List effective_attrs = LISTcreate();
+//	Linked_List effective_attrs = LISTcreate();
 	
 	DICTdo_init( all_attrs, &de );
 	while( 0 != ( attr_defs = ( Linked_List )DICTdo( &de ) ) ) {
@@ -675,7 +675,7 @@ static void entityAttributeReferences_swift( Entity entity, int level ){
 static void entityReferenceInitializers_swift( Entity entity, int level ){
 	raw("\n");
 	indent_swift(level);
-	raw("//INITIALIZERS\n");
+	raw("//MARK: INITIALIZERS\n");
 	
 	/*
 	 public convenience init?(_ entityRef: SDAI.EntityReference?) {
@@ -840,6 +840,100 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 //	raw("}\n\n");	
 }
 
+//MARK: - SDAI Dictionary Schema support
+static void dictEntityDefinition_swift( Entity entity, Linked_List effective_attrs, int level ) {
+	raw("\n");
+	indent_swift(level);
+	raw("//MARK: DICTIONARY DEFINITION\n");
+
+	indent_swift(level);
+	raw("public override class func createEntityDefinition() -> SDAIDictionarySchema.EntityDefinition {\n");
+	
+	{	int level2 = level+nestingIndent_swift;
+		char buf[BUFSIZ];
+		indent_swift(level2);
+		raw("let entityDef = SDAIDictionarySchema.EntityDefinition(name: \"%s\", type: self)\n", 
+				ENTITY_canonicalName(entity, buf));
+
+		if( !LISTis_empty(effective_attrs) ) {
+			raw("\n");
+			indent_swift(level2);
+			raw("//MARK: ATTRIBUTE REGISTRATIONS\n");		
+			LISTdo(effective_attrs, attr, Variable) {
+				//			bool is_subtype_attr = LIST_aux;
+				//			bool is_redeclaring = VARis_redeclaring(attr);
+				//			bool is_derived = VARis_derived(attr);
+				//			bool is_inverse = VARis_inverse(attr);
+				
+				indent_swift(level2);
+				raw("entityDef.addAttribute(name: \"%s\", ", canonical_swiftName(ATTRget_name_string(attr), buf) );
+				raw("keyPath: \\%s", ENTITY_swiftName(entity, NO_QUALIFICATION, buf) );
+				raw(".%s)\n", attribute_swiftName(attr, buf) );
+			}LISTod;
+		}
+		
+		Linked_List unique_rules = ENTITYget_uniqueness_list(entity);
+		if( !LISTis_empty(unique_rules)) {
+			raw("\n");
+			indent_swift(level2);
+			raw("//MARK: UNIQUENESS RULE REGISTRATIONS\n");
+			int serial = 0;
+			char partial_name[BUFSIZ];partialEntity_swiftName(entity, partial_name);
+			LISTdo(unique_rules, unique, Linked_List) {
+				++serial;
+				indent_swift(level2);
+				raw("entityDef.addUniqunessRule(label:\"%s\", rule: %s.%s)\n", 
+						uniqueRuleLabel_swiftName(serial, unique, buf),  partial_name, buf );
+			}LISTod;
+		}
+		
+		raw("\n");
+		indent_swift(level2);
+		raw("return entityDef\n");
+	}
+	
+	indent_swift(level);
+	raw("}\n\n");
+} 
+
+//MARK: - where rule validation support
+static void entityWhereRuleValidation_swift( Entity entity, int level ) {
+	Linked_List where_rules = TYPEget_where(entity);
+	if( LISTis_empty(where_rules) ) return;
+
+	raw("\n");
+	indent_swift(level);
+	raw("//MARK: WHERE RULE VALIDATION (ENTITY)\n");
+
+	indent_swift(level);
+	raw("public override class func validateWhereRules(instance:SDAI.EntityReference?, prefix:SDAI.WhereLabel, excludingEntity: Bool) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
+	
+	{	int level2 = level+nestingIndent_swift;
+
+		indent_swift(level2);
+		raw("guard !excludingEntity, let instance = instance as? Self? else { return [:] }\n\n");
+		
+		indent_swift(level2);
+		raw("var result = super.validateWhereRules(instance:instance, prefix:prefix, excludingEntity: false)\n\n");
+		
+		char partial[BUFSIZ];partialEntity_swiftName(entity, partial);
+		LISTdo( where_rules, where, Where ){
+			char whereLabel[BUFSIZ];
+			indent_swift(level2);
+			raw("result[prefix + \".%s\"] = %s.%s(SELF: instance)\n", 
+					
+					whereRuleLabel_swiftName(where, whereLabel), partial, whereLabel);
+		}LISTod;
+
+		indent_swift(level2);
+		raw("return result\n");		
+	}
+	
+	indent_swift(level);
+	raw("}\n\n");
+}
+
+
 //MARK: - entity reference defition main entry point
 void entityReferenceDefinition_swift( Entity entity, int level ) {
 	raw("\n\n");
@@ -854,8 +948,13 @@ void entityReferenceDefinition_swift( Entity entity, int level ) {
 	{	int level2 = level+nestingIndent_swift;
 		partialEntityReferenceDefinition_swift(entity, level2);
 		supertypeReferenceDefinition_swift(entity, level2);
-		entityAttributeReferences_swift(entity, level2);
+		
+		Linked_List effective_attrs = LISTcreate();
+		entityAttributeReferences_swift(entity, effective_attrs, level2);
 		entityReferenceInitializers_swift(entity, level2);
+		entityWhereRuleValidation_swift(entity, level2);
+		dictEntityDefinition_swift(entity, effective_attrs, level2);
+		LISTfree(effective_attrs);
 	}
 	
 	indent_swift(level);

@@ -48,7 +48,7 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		char buf[BUFSIZ];
 		raw("func %s( ", RULE_swiftName(rule,buf));
 	}
-	wrap("allComplexEntities: Set<SDAI.ComplexEntity> ) -> SDAI.LOGICAL {\n");
+	wrap("allComplexEntities: AnySequence<SDAI.ComplexEntity> ) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		int tempvar_id = 1;
@@ -76,18 +76,23 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		raw("\n");
 		indent_swift(level2);
 		raw("//WHERE\n");
+		indent_swift(level2);
+		raw("var _conformance: [SDAI.WhereLabel:SDAI.LOGICAL] = [:]\n");
+		
 		Linked_List where_rules = RULEget_where(rule);
 		LISTdo(where_rules, where, Where){
-			indent_swift(level2);
 
 			Linked_List tempvars;
 			Expression simplified = EXPR_decompose(where->expr, Type_Logical, &tempvar_id, &tempvars);
 			EXPR_tempvars_swift(schema, tempvars, level2);
 			
 			char buf[BUFSIZ];
+			indent_swift(level2);
 			raw("let %s = ",whereRuleLabel_swiftName(where, buf));
 			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, schema, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
-			raw("\n\n");
+			raw("\n");
+			indent_swift(level2);
+			raw("_conformance[\"%s\"] = %s\n\n", buf, buf);
 			
 			EXPR_delete_tempvar_definitions(tempvars);
 		}LISTod;
@@ -95,16 +100,16 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		//final result
 		raw("\n");
 		indent_swift(level2);
-		raw("return");
-		char* sep = " ";
-		LISTdo(where_rules, where, Where){
-			raw("%s",sep);
-			
-			char buf[BUFSIZ];
-			wrap("%s",whereRuleLabel_swiftName(where, buf));
-			sep = " && ";
-		}LISTod;
-		raw("\n");
+		raw("return _conformance\n");
+//		char* sep = " ";
+//		LISTdo(where_rules, where, Where){
+//			raw("%s",sep);
+//			
+//			char buf[BUFSIZ];
+//			wrap("%s",whereRuleLabel_swiftName(where, buf));
+//			sep = " && ";
+//		}LISTod;
+//		raw("\n");
 	}
 	
 	indent_swift(level);

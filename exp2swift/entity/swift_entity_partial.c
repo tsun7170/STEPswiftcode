@@ -705,6 +705,50 @@ static void valueComparisonSupports_swift( Entity entity, int level ) {
 	isValueEqualOptionally_swift(entity, level);
 }
 
+//MARK: - where rule
+//static void whereDefinitions_swift( Entity entity, int level ) {
+//	Linked_List where_rules = TYPEget_where(entity);
+//	if( LISTis_empty(where_rules) ) return;
+//	
+//	indent_swift(level);
+//	raw("//WHERE RULES\n");
+//
+//	char whereLabel[BUFSIZ];
+//	char buf[BUFSIZ];
+//	LISTdo( where_rules, where, Where ){
+//		indent_swift(level);
+//		wrap("public func %s(SELF: %s) -> SDAI.LOGICAL {\n", 
+//				 whereRuleLabel_swiftName(where, whereLabel), 
+//				 ENTITY_swiftName(entity, NO_QUALIFICATION, buf) );
+//		
+//		{	int level2 = level+nestingIndent_swift;
+//			int tempvar_id = 1;
+//			Linked_List tempvars;
+//			Expression simplified = EXPR_decompose(where->expr, &tempvar_id, &tempvars);
+//			EXPR_tempvars_swift(entity, tempvars, level2);
+//			
+//			indent_swift(level2);
+//			raw("return ");
+////			EXPR_swift(entity, where->expr, Type_Logical, NO_PAREN);			
+////			EXPR_swift(entity, simplified, Type_Logical, NO_PAREN);			
+//			if( EXPRresult_is_optional(simplified, CHECK_DEEP) != no_optional ){
+//				TYPE_head_swift(entity, Type_Logical, WO_COMMENT);	// wrap with explicit type cast
+//				raw("(");
+//				EXPR_swift(entity, simplified, Type_Logical, NO_PAREN);			
+//				raw(")");
+//			}
+//			else {
+//				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+//			}
+//			raw("\n");
+//			EXPR_delete_tempvar_definitions(tempvars);
+//		}
+//		
+//		indent_swift(level);
+//		raw("}\n");
+//	}LISTod;
+//	raw("\n");
+//}
 
 //MARK: - unique rule
 static Variable unique_attribute( Expression expr ) {
@@ -713,33 +757,32 @@ static Variable unique_attribute( Expression expr ) {
 }
 
 static void simpleUniquenessRule_swift( Entity entity, Linked_List unique, int level) {
-	Expression attr_expr = LISTget_second(unique);
-	
 	indent_swift(level);
-	raw("return AnyHashable( ");
-//#if DEBUG
-//	{
-//		Expression e = attr_expr;
-//		Scope SELF = entity;
-//		if( e->u_tag == expr_is_variable ) {
-//			Variable v = e->u.variable;
-//			if(VARis_redeclaring(v)){
-//				v = v->original_attribute;
-//			}
-//			Entity ent = v->defined_in;
-//			if( ENTITYis_a(SELF, ent) ) {
-//			}
-//			else {
-//				ENTITYis_a(SELF, ent); // for debug
-//			}
-//		}
-//	}
-//#endif
-	EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
-	raw(" )\n");
+	raw("//SIMPLE UNIQUE RULE\n\n");
+	
+	Expression attr_expr = LISTget_second(unique);
+	Variable attr = unique_attribute(attr_expr);
+	if( VARis_optional_by_large(attr) ) {
+		indent_swift(level);
+		raw("guard let attr = ");
+		EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
+		wrap(" else { return nil }\n");
+	}
+	else {
+		indent_swift(level);
+		raw("let attr = ");
+		EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
+		raw("\n");
+	}
+
+	indent_swift(level);
+	raw("return AnyHashable( attr )\n");
 }
 
 static void jointUniquenessRule_swift( Entity entity, Linked_List unique, int joint_count, int level) {
+	indent_swift(level);
+	raw("//JOINT UNIQUE RULE\n\n");
+	
 	indent_swift(level);
 	wrap("var attributes: Array<AnyHashable> = []\n\n");
 	
@@ -771,20 +814,22 @@ static void jointUniquenessRule_swift( Entity entity, Linked_List unique, int jo
 }
 
 static void uniqueRule_swift( Entity entity, int serial, Linked_List unique, int level ) {
-	char buf[BUFSIZ];
 	int joint_count = LISTget_length(unique) - 1;
 	
-	indent_swift(level);
-	wrap("public func %s(complex: SDAI.ComplexEntity) -> AnyHashable? {\n", 
-			 uniqueRuleLabel_swiftName(serial, unique, buf) );
+	{
+		char buf[BUFSIZ];
+		indent_swift(level);
+		raw("public static func %s(SELF: SDAI.EntityReference) -> AnyHashable? {\n", 
+				uniqueRuleLabel_swiftName(serial, unique, buf) );
+	}
 
 	{	int level2 = level+nestingIndent_swift;
-		
-		indent_swift(level2);
-		wrap("guard let SELF = complex.entityReference( %s.self ) ", 
-				 ENTITY_swiftName(entity, NO_QUALIFICATION, buf));
-		wrap("else { return nil }\n\n");
-
+		{
+			char buf[BUFSIZ];
+			indent_swift(level2);
+			raw("guard let SELF = SELF as? %s else { return nil }\n",
+					ENTITY_swiftName(entity, NO_QUALIFICATION, buf) );
+		}
 		if( joint_count == 1 ) {
 			simpleUniquenessRule_swift(entity, unique, level2);
 		}
@@ -793,7 +838,6 @@ static void uniqueRule_swift( Entity entity, int serial, Linked_List unique, int
 		}
 	}
 
-	raw("\n");
 	indent_swift(level);
 	raw("}\n");	
 	
@@ -805,14 +849,12 @@ static void uniqueDefinitions_swift( Entity entity, int level ) {
 	
 	raw("\n");
 	indent_swift(level);
-	raw("//UNIQUE RULES\n");
+	raw("//UNIQUENESS RULES\n");
 	
 	int serial = 0;
 	LISTdo(unique_rules, unique, Linked_List) {
 		uniqueRule_swift(entity, ++serial, unique, level);
 	}LISTod;
-	
-//	raw("\n");
 }
 
 //MARK: - constructor
@@ -859,9 +901,18 @@ void partialEntityDefinition_swift
 	 
 	 {	int level2 = level+nestingIndent_swift;
 		 
+		 indent_swift(level2);
+		 raw("public override class var entityReferenceType: SDAI.EntityReference.Type {\n");
+		 {	char buf[BUFSIZ];
+			 indent_swift(level2+nestingIndent_swift);
+			 raw("%s.self\n", ENTITY_swiftName(entity, NO_QUALIFICATION, buf));
+		 }
+		 indent_swift(level2);
+		 raw("}\n");
+		 
 		 localAttributeDefinitions_swift(entity, level2, attr_overrides, dynamic_attrs);
 		 valueComparisonSupports_swift(entity, level2);
-		 TYPEwhereDefinitions_swift( ENTITYget_type(entity), level2);
+		 TYPEwhereDefinitions_swift( entity, level2);
 		 uniqueDefinitions_swift(entity, level2);
 		 expressConstructor(entity, level2);
 	 }
