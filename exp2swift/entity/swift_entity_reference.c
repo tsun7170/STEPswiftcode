@@ -77,11 +77,20 @@ static void partialEntityReferenceDefinition_swift( Entity entity, int level ) {
 	raw("\n");
 	indent_swift(level);
 	raw("//MARK: PARTIAL ENTITY\n");
-	
-	char buf[BUFSIZ];
-	indent_swift(level);
-	wrap("public let partialEntity: %s\n", partialEntity_swiftName(entity, buf));
 
+	char partial[BUFSIZ]; partialEntity_swiftName(entity, partial);
+	
+	indent_swift(level); 
+	raw("public override class var partialEntityType: SDAI.PartialEntity.Type {\n");
+	{	
+		indent_swift(level+nestingIndent_swift);
+		raw("%s.self\n", partial);
+	}
+	indent_swift(level);
+	raw("}\n");
+	
+	indent_swift(level);
+	raw("public let partialEntity: %s\n", partial);
 }
 
 
@@ -360,7 +369,7 @@ static void explicitDynamicGetterSetter_swift(Variable attr, bool is_subtype_att
 		while( 0 != ( overrider = DICTdo( &de ) ) ) {
 			if( !VARis_derived(overrider) ) continue;
 			raw("%s",sep);
-			wrap("\"%s\"",  ENTITY_canonicalName(overrider->defined_in, buf));
+			wrap("%s.typeIdentity",  partialEntity_swiftName(overrider->defined_in, buf));
 			sep = ", ";
 		}
 		wrap("])");

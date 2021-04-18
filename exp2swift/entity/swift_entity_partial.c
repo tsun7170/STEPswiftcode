@@ -751,28 +751,38 @@ static void valueComparisonSupports_swift( Entity entity, int level ) {
 //}
 
 //MARK: - unique rule
-static Variable unique_attribute( Expression expr ) {
-	assert(expr->u_tag == expr_is_variable);
-	return expr->u.variable;
-}
+//static Variable unique_attribute( Expression expr ) {
+//	assert(expr->u_tag == expr_is_variable);
+//	return expr->u.variable;
+//}
 
 static void simpleUniquenessRule_swift( Entity entity, Linked_List unique, int level) {
 	indent_swift(level);
 	raw("//SIMPLE UNIQUE RULE\n\n");
 	
 	Expression attr_expr = LISTget_second(unique);
-	Variable attr = unique_attribute(attr_expr);
-	if( VARis_optional_by_large(attr) ) {
-		indent_swift(level);
-		raw("guard let attr = ");
-		EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
-		wrap(" else { return nil }\n");
-	}
-	else {
-		indent_swift(level);
-		raw("let attr = ");
-		EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
-		raw("\n");
+	
+	switch (EXPRresult_is_optional(attr_expr, CHECK_DEEP)) {
+		case no_optional:
+			indent_swift(level);
+			raw("let attr = ");
+			EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
+			raw("\n");
+			break;
+			
+		case yes_optional:
+			indent_swift(level);
+			raw("guard let attr = ");
+			EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
+			wrap(" else { return nil }\n");
+			break;
+			
+		case unknown:
+			indent_swift(level);
+			raw("guard let attr = SDAI.FORCE_OPTIONAL( ");
+			EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
+			wrap( ") else { return nil }\n");
+			break;
 	}
 
 	indent_swift(level);
@@ -789,19 +799,28 @@ static void jointUniquenessRule_swift( Entity entity, Linked_List unique, int jo
 	int attr_no = -1;
 	LISTdo(unique, attr_expr, Expression) {
 		if( ++attr_no == 0 ) continue;	// skip label
-		
-		Variable attr = unique_attribute(attr_expr);
-		if( VARis_optional_by_large(attr) ) {
-			indent_swift(level);
-			wrap("guard let attr%d = ", attr_no);
-			EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
-			wrap(" else { return nil }\n");
-		}
-		else {
-			indent_swift(level);
-			wrap("let attr%d = ", attr_no);
-			EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
-			raw("\n");
+				
+		switch (EXPRresult_is_optional(attr_expr, CHECK_DEEP)) {
+			case no_optional:
+				indent_swift(level);
+				wrap("let attr%d = ", attr_no);
+				EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
+				raw("\n");
+				break;
+				
+			case yes_optional:
+				indent_swift(level);
+				wrap("guard let attr%d = ", attr_no);
+				EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
+				wrap(" else { return nil }\n");
+				break;
+				
+			case unknown:
+				indent_swift(level);
+				wrap("guard let attr%d = SDAI.FORCE_OPTIONAL( ", attr_no);
+				EXPR_swift(entity, attr_expr,attr_expr->return_type, NO_PAREN);
+				wrap(") else { return nil }\n");
+				break;
 		}
 		
 		indent_swift(level);
