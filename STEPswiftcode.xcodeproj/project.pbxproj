@@ -136,6 +136,7 @@
 		F40EE5E3254546D800F293C3 /* swift_named_aggregate_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_named_aggregate_type.c; sourceTree = "<group>"; };
 		F40EE5E8254546F200F293C3 /* swift_named_simple_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_named_simple_type.h; sourceTree = "<group>"; };
 		F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_named_simple_type.c; sourceTree = "<group>"; };
+		F413BEB1262C598700217744 /* TestCases */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TestCases; sourceTree = "<group>"; };
 		F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_partial.c; sourceTree = "<group>"; };
 		F43B6BF024CD3E20007493AB /* swift_entity_reference.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_reference.c; sourceTree = "<group>"; };
 		F43B6BF524CEC040007493AB /* swift_rule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_rule.h; sourceTree = "<group>"; };
@@ -1025,6 +1026,7 @@
 			isa = PBXGroup;
 			children = (
 				F4E7D605250819D2000B5362 /* main.swift */,
+				F413BEB1262C598700217744 /* TestCases */,
 			);
 			path = swiftP21read;
 			sourceTree = "<group>";
