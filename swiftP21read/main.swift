@@ -25,6 +25,12 @@ var charstream = stepsource.makeIterator()
 
 let parser = P21Decode.ExchangeStructureParser(charStream: charstream)
 
-parser.parseExchangeStructure()
+let result = parser.parseExchangeStructure()
 
+if !result {
+	print("parser error = ",parser.error ?? "unknown error")
+}
+else {
+	print("normal end of execution")
+}
 
