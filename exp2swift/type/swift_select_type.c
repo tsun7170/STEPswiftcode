@@ -784,6 +784,148 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	indent_swift(level);
 	raw("}\n\n");
 	
+	
+	indent_swift(level);
+	raw("// InitializableByP21Parameter\n");
+	
+	indent_swift(level);
+	raw("public static var bareTypeName: String = ");
+	wrap("\"%s\"\n\n", TYPE_canonicalName(select_type,NO_QUALIFICATION,buf));
+
+	/*
+	public init?(p21typedParam: P21Decode.ExchangeStructure.TypedParameter, from exchangeStructure: P21Decode.ExchangeStructure) {
+		guard let keyword = p21typedParam.keyword.asStandardKeyword else { exchangeStructure.error = "unexpected p21parameter(\(p21typedParam)) while resolving \(Self.bareTypeName) select value"; return nil }
+		
+		switch(keyword) {
+			case <selection>.bareTypeName:
+				guard let base = <selection>(p21typedParam: p21typedParam, from: exchangeStructure) else { exchangeStructure.add(errorContext: "while resolving \(Self.bareTypeName) select value"); return nil }
+				self = .<selection>(base)
+				
+				...
+			default:
+				exchangeStructure.error = "unexpected p21parameter(\(p21typedParam)) while resolving \(Self.bareTypeName) select value"
+				return nil
+		}		
+	}
+	*/
+	indent_swift(level);
+	raw("public init?(p21typedParam: P21Decode.ExchangeStructure.TypedParameter, from exchangeStructure: P21Decode.ExchangeStructure) {\n");
+	{	int level2 = level + nestingIndent_swift; int level3 = level2 + nestingIndent_swift;
+		
+		indent_swift(level2);
+		raw("guard let keyword = p21typedParam.keyword.asStandardKeyword else { exchangeStructure.error = \"unexpected p21parameter(\\(p21typedParam)) while resolving \\(Self.bareTypeName) select value\"; return nil }\n\n");
+		
+		indent_swift(level2);
+		raw("switch(keyword) {\n");
+		
+		LISTdo( typeBody->list, selection, Type ) {
+			if( TYPEis_entity(selection) )continue;
+
+			indent_swift(level2);
+			raw("case %s.bareTypeName:\n",TYPE_swiftName(selection, select_type->superscope, buf));
+			indent_swift(level3);
+			raw("guard let base = %s(p21typedParam: p21typedParam, from: exchangeStructure) else { exchangeStructure.add(errorContext: \"while resolving \\(Self.bareTypeName) select value\"); return nil }\n", buf);
+			indent_swift(level3);
+			raw("self = .%s(base)\n\n",selectCase_swiftName(selection, buf));
+		}LISTod;
+
+		indent_swift(level2);
+		raw("default:\n");
+		indent_swift(level3);
+		raw("exchangeStructure.error = \"unexpected p21parameter(\\(p21typedParam)) while resolving \\(Self.bareTypeName) select value\"\n");
+		indent_swift(level3);
+		raw("return nil\n");
+		
+		indent_swift(level2);
+		raw("}\n");		
+	}
+	indent_swift(level);
+	raw("}\n\n");
+	
+	/*
+	public init?(p21untypedParam: P21Decode.ExchangeStructure.UntypedParameter, from exchangeStructure: P21Decode.ExchangeStructure) {
+		switch p21untypedParam {
+		case .rhsOccurenceName(let rhsname):
+			switch rhsname {
+			case .constantEntityName(let name):
+				guard let entity = exchangeStructure.resolve(constantEntityName: name) else {exchangeStructure.add(errorContext: "while resolving \(Self.bareTypeName) instance"); return nil }
+				self.init(possiblyFrom: entity.complexEntity)
+				
+			case .entityInstanceName(let name):
+				guard let complex = exchangeStructure.resolve(entityInstanceName: name) else {exchangeStructure.add(errorContext: "while resolving \(Self.bareTypeName) instance"); return nil }
+				self.init(possiblyFrom: complex)
+			
+			default:
+				exchangeStructure.error = "unexpected p21parameter(\(p21untypedParam)) while resolving \(Self.bareTypeName) select instance"
+				return nil
+			}
+						
+		default:
+			exchangeStructure.error = "unexpected p21parameter(\(p21untypedParam)) while resolving \(Self.bareTypeName) select instance"
+			return nil
+		}
+	}
+	*/
+	indent_swift(level);
+	raw("public init?(p21untypedParam: P21Decode.ExchangeStructure.UntypedParameter, from exchangeStructure: P21Decode.ExchangeStructure) {\n");
+	{	int level2 = level + nestingIndent_swift; int level3 = level2 + nestingIndent_swift; int level4 = level3 + nestingIndent_swift;
+		
+		indent_swift(level2);
+		raw("switch p21untypedParam {\n");
+		indent_swift(level2);
+		raw("case .rhsOccurenceName(let rhsname):\n");
+		indent_swift(level3);
+		raw("switch rhsname {\n");
+		indent_swift(level3);
+		raw("case .constantEntityName(let name):\n");
+		indent_swift(level4);
+		raw("guard let entity = exchangeStructure.resolve(constantEntityName: name) else {exchangeStructure.add(errorContext: \"while resolving \\(Self.bareTypeName) instance\"); return nil }\n");
+		indent_swift(level4);
+		raw("self.init(possiblyFrom: entity.complexEntity)\n\n");
+		
+		indent_swift(level3);
+		raw("case .entityInstanceName(let name):\n");
+		indent_swift(level4);
+		raw("guard let complex = exchangeStructure.resolve(entityInstanceName: name) else {exchangeStructure.add(errorContext: \"while resolving \\(Self.bareTypeName) instance\"); return nil }\n");
+		indent_swift(level4);
+		raw("self.init(possiblyFrom: complex)\n\n");
+		
+		indent_swift(level3);
+		raw("default:\n");
+		indent_swift(level4);
+		raw("exchangeStructure.error = \"unexpected p21parameter(\\(p21untypedParam)) while resolving \\(Self.bareTypeName) select instance\"\n");
+		indent_swift(level4);
+		raw("return nil\n");
+		indent_swift(level3);
+		raw("}\n\n");
+		
+		indent_swift(level2);
+		raw("default:\n");
+		indent_swift(level3);
+		raw("exchangeStructure.error = \"unexpected p21parameter(\\(p21untypedParam)) while resolving \\(Self.bareTypeName) select instance\"\n");
+		indent_swift(level3);
+		raw("return nil\n");
+		indent_swift(level2);
+		raw("}\n");
+	}
+	indent_swift(level);
+	raw("}\n\n");
+
+	/*
+	public init?(p21omittedParamfrom exchangeStructure: P21Decode.ExchangeStructure) {
+		return nil
+	}
+	*/
+	indent_swift(level);
+	raw("public init?(p21omittedParamfrom exchangeStructure: P21Decode.ExchangeStructure) {\n");
+	{	int level2 = level + nestingIndent_swift;
+
+		indent_swift(level2);
+		raw("return nil\n");
+	}
+	indent_swift(level);
+	raw("}\n\n");
+
 }
 
 static void selectTypeConstructor_swiftProtocol(Schema schema, Type select_type,  int level) {
@@ -1078,7 +1220,7 @@ static void selectEnumValueConversion_swift(Type select_type, int level) {
 	raw( "}\n" );
 }
 
-////MARK: - SDAIObservableAggregateElement
+//MARK: - SDAIObservableAggregateElement
 static void selectObservableAggregateElementConformance_swift(Type select_type,  int level) {
 	TypeBody typeBody = TYPEget_body(select_type);
 	char buf[BUFSIZ];

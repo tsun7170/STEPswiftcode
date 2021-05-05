@@ -58,7 +58,7 @@ const char* schema_nickname(Schema schema, char buf[BUFSIZ] ) {
 }
 
 //MARK: - SDAI Dictionary Schema Support
-static void create_schema_definition(Schema schema, int level) {
+static void create_schema_definition(Schema schema, Linked_List constList, int level) {
 
 	indent_swift(level);
 	raw("private static func createSchemaDefinition() -> SDAIDictionarySchema.SchemaDefinition {\n");
@@ -89,8 +89,16 @@ static void create_schema_definition(Schema schema, int level) {
 		DICTdo_type_init( schema->symbol_table, &dictEntry, OBJ_RULE );
 		while( 0 != (rule = DICTdo(&dictEntry)) ) {
 			indent_swift(level2);
-			raw("schemaDef.addGlobalRule(name:\"%s\", rule:%s)\n", RULE_swiftName(rule, buf), buf);
+			raw("schemaDef.addGlobalRule(name: \"%s\", rule: %s)\n", RULE_swiftName(rule, buf), buf);
 		}
+
+		raw("\n");
+		indent_swift(level2);
+		raw("//MARK: GLOBAL CONSTANT DICT\n");		
+		LISTdo(constList, var, Variable) {
+			indent_swift(level2);
+			raw("schemaDef.addConstant(name: \"%s\", value: %s)\n", variable_swiftName(var, buf), buf);
+		}LISTod;
 
 		raw("\n");
 		indent_swift(level2);
@@ -138,10 +146,12 @@ void SCHEMA_swift( Schema schema ) {
 		raw("public static let schemaDefinition = createSchemaDefinition()\n");
 	}
 	
-	SCOPEconstList_swift( false, schema, level2 );
+	Linked_List constList = LISTcreate();
+	SCOPEconstList_swift( false, schema, constList, level2 );
 	
-	create_schema_definition(schema, level2);
-
+	create_schema_definition(schema, constList, level2);
+	LISTfree(constList);
+	
 	raw("}\n");
 	raw("/* END_SCHEMA */\n");
 

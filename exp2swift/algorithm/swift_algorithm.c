@@ -77,7 +77,7 @@ void ALGargs_swift( Scope current, bool force_optional, Linked_List args, bool d
 		if( VARis_inout(formalp) ) {
 			wrap("inout ");
 		}
-		variableType_swift(current, formalp, force_optional, NOT_IN_COMMENT);
+		variableType_swift(current, formalp, (VARis_dynamic(formalp) ? YES_FORCE_OPTIONAL : force_optional), NOT_IN_COMMENT);
 		sep = ", ";
 	}LISTod;
 	
@@ -101,6 +101,10 @@ void ALGscope_declarations_swift(Schema schema, Scope s, int level ) {
 	SCOPEtypeList_swift(schema, s, level);
 	SCOPEentityList_swift(s, level);
 	SCOPEalgList_swift(schema, s, level);
-	SCOPEconstList_swift(true, s, level);
+
+	Linked_List consts = LISTcreate();
+	SCOPEconstList_swift(true, s, consts, level);
+	LISTfree(consts);
+
 	SCOPElocalList_swift(s, level);
 }

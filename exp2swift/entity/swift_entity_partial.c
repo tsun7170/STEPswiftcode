@@ -26,13 +26,15 @@
 #include "swift_schema.h"
 #include "decompose_expression.h"
 
+#define YES_DYNAMIC	true
+#define NO_DYNAMIC	false
 
 static void attributeHead_swift
- (Entity entity, char* access, Variable attr, int level, SwiftOutCommentOption in_comment, char buf[BUFSIZ]) {
+ (Entity entity, char* access, Variable attr, bool isDynamic, int level, SwiftOutCommentOption in_comment, char buf[BUFSIZ]) {
 	indent_swift(level);
 	raw("%s var %s: ",access,partialEntityAttribute_swiftName(attr, buf));
 	
-	variableType_swift(entity, attr, NO_FORCE_OPTIONAL, in_comment);
+	 variableType_swift(entity, attr, (isDynamic ? YES_FORCE_OPTIONAL : NO_FORCE_OPTIONAL), in_comment);
 }
 
 //MARK: - attribute observers
@@ -197,7 +199,7 @@ static void aggregateAttributeObservers_swift(Entity entity, Variable attr, int 
 static void explicitStaticAttributeDefinition_swift(Entity entity, Variable attr, int level) {
 	char buf[BUFSIZ];
 	
-	attributeHead_swift(entity, "internal", attr, level, NOT_IN_COMMENT, buf);
+	attributeHead_swift(entity, "internal", attr, NO_DYNAMIC, level, NOT_IN_COMMENT, buf);
 	if( VARis_observed(attr) ) raw(" //OBSERVED");
 	raw("\n");
 	
@@ -214,7 +216,7 @@ static void explicitStaticAttributeDefinition_swift(Entity entity, Variable attr
 static void explicitAttributeRedefinition_swift(Entity entity, Variable attr, int level) {
 	char buf[BUFSIZ];
 	
-	attributeHead_swift(entity, "/* override", attr, level, YES_IN_COMMENT, buf);
+	attributeHead_swift(entity, "/* override", attr, NO_DYNAMIC, level, YES_IN_COMMENT, buf);
 	raw("\t//EXPLICIT REDEFINITION(%s)", 
 			ENTITY_swiftName(attr->original_attribute->defined_in, NO_QUALIFICATION, buf));
 	if( VARis_observed(attr) ) raw(" //OBSERVED");
@@ -224,7 +226,7 @@ static void explicitAttributeRedefinition_swift(Entity entity, Variable attr, in
 static void explicitDynamicAttributeDefinition_swift(Entity entity, Variable attr, int level) {
 	char buf[BUFSIZ];
 	
-	attributeHead_swift(entity, "internal", attr, level, NOT_IN_COMMENT, buf);
+	attributeHead_swift(entity, "internal", attr, YES_DYNAMIC, level, NOT_IN_COMMENT, buf);
 	raw(" //DYNAMIC");
 	if( VARis_observed(attr) ) raw(" //OBSERVED");
 	raw(" \n");
@@ -576,7 +578,7 @@ static void hashAsValue_swift( Entity entity, int level ) {
 			indent_swift(level2);
 			raw("self.%s%s.value.hashAsValue(into: &hasher, visited: &complexEntities)\n",
 					partialEntityAttribute_swiftName(attr, buf),
-					VARis_optional_by_large(attr)? "?" : "" );
+					(VARis_optional_by_large(attr)||(VARis_dynamic(attr) && !TYPEis_logical(attr->type))) ? "?" : "" );
 		}LISTod;
 	}
 	indent_swift(level);
@@ -615,7 +617,7 @@ static void isValueEqual_swift( Entity entity, int level ) {
 			if( VARis_inverse(attr) ) continue;
 			
 			char buf[BUFSIZ];partialEntityAttribute_swiftName(attr, buf);
-			char* optional = VARis_optional_by_large(attr)? "?" : "";
+			char* optional = (VARis_optional_by_large(attr)||(VARis_dynamic(attr) && !TYPEis_logical(attr->type)))? "?" : "";
 			
 			indent_swift(level2);
 			raw("if let comp = self.%s%s.value.isValueEqualOptionally(to: rhs.%s%s.value, visited: &comppairs)	{\n",
@@ -678,7 +680,7 @@ static void isValueEqualOptionally_swift( Entity entity, int level ) {
 			if( VARis_inverse(attr) ) continue;
 			
 			char buf[BUFSIZ];partialEntityAttribute_swiftName(attr, buf);
-			char* optional = VARis_optional_by_large(attr)? "?" : "";
+			char* optional = (VARis_optional_by_large(attr)||(VARis_dynamic(attr) && !TYPEis_logical(attr->type)))? "?" : "";
 
 			indent_swift(level2);
 			raw("if let comp = self.%s%s.value.isValueEqualOptionally(to: rhs.%s%s.value, visited: &comppairs) {\n",

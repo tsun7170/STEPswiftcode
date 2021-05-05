@@ -173,6 +173,105 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw("}\n");
 
+		
+		
+		indent_swift(level2);
+		raw("// InitializableByP21Parameter\n");
+	
+		indent_swift(level2);
+		raw("public static var bareTypeName: String = ");
+		wrap("\"%s\"\n\n", TYPE_canonicalName(type,NO_QUALIFICATION,buf));
+
+		indent_swift(level2);
+		raw("public	init?(p21untypedParam: P21Decode.ExchangeStructure.UntypedParameter, from exchangeStructure: P21Decode.ExchangeStructure) {\n");
+		{	int level3 = level2 + nestingIndent_swift;
+
+			indent_swift(level3);
+			raw("switch p21untypedParam {\n");
+
+			indent_swift(level3);
+			raw("case .enumeration(let enumcase):\n");
+			{	int level4 = level3 + nestingIndent_swift;
+				
+				indent_swift(level4);
+				raw("switch enumcase {\n");
+				
+				for( int i=0; i<count; ++i ) {
+					indent_swift(level4);
+					raw( "case \"%s\": self = .%s\n", enumCase_swiftName( enumCases[i]->data, buf ), buf );
+				}			
+				
+				indent_swift(level4);
+				raw("default:\n");
+				indent_swift(level4+nestingIndent_swift);
+				raw("exchangeStructure.error = \"unexpected p21parameter enum case(\\(enumcase)) while resolving \\(Self.bareTypeName) value\"\n");
+				indent_swift(level4+nestingIndent_swift);
+				raw("return nil\n");
+				
+				indent_swift(level4);
+				raw("}\n\n");
+			}
+			
+			indent_swift(level3);
+			raw("case .rhsOccurenceName(let rhsname):\n");
+			{	int level4 = level3 + nestingIndent_swift; int level5 = level4 + nestingIndent_swift;
+				
+				indent_swift(level4);
+				raw("switch rhsname {\n");
+				indent_swift(level4);
+				raw("case .constantValueName(let name):\n");
+				indent_swift(level5);
+				raw("guard let generic = exchangeStructure.resolve(constantValueName: name) else {exchangeStructure.add(errorContext: \"while resolving \\(Self.bareTypeName) value\"); return nil }\n");
+				indent_swift(level5);
+				raw("guard let enumValue = generic.enumValue(enumType:Self.self) else { exchangeStructure.error = \"constant value(\\(name): \\(generic)) is not compatible with \\(Self.bareTypeName)\"; return nil }\n");
+				indent_swift(level5);
+				raw("self = enumValue\n\n");
+				
+				indent_swift(level4);
+				raw("case .valueInstanceName(let name):\n");
+				indent_swift(level5);
+				raw("guard let param = exchangeStructure.resolve(valueInstanceName: name) else {exchangeStructure.add(errorContext: \"while resolving \\(Self.bareTypeName) value from \\(rhsname)\"); return nil }\n");
+				indent_swift(level5);
+				raw("self.init(p21param: param, from: exchangeStructure)\n\n");
+					
+				indent_swift(level4);
+				raw("default:\n");
+				indent_swift(level5);
+				raw("exchangeStructure.error = \"unexpected p21parameter(\\(p21untypedParam)) while resolving \\(Self.bareTypeName) value\"\n");
+				indent_swift(level5);
+				raw("return nil\n");
+
+				indent_swift(level4);
+				raw("}\n\n");
+			}			
+			
+			indent_swift(level3);
+			raw("case .nullValue:\n");
+			indent_swift(level3+nestingIndent_swift);
+			raw("return nil\n\n");
+			
+			indent_swift(level3);
+			raw("default:\n");
+			indent_swift(level3+nestingIndent_swift);
+			raw("exchangeStructure.error = \"unexpected p21parameter(\\(p21untypedParam)) while resolving \\(Self.bareTypeName) value\"\n");
+			indent_swift(level3+nestingIndent_swift);
+			raw("return nil\n");
+			
+			indent_swift(level3);
+			raw("}\n");
+		}		
+		indent_swift(level2);
+		raw("}\n\n");
+
+		indent_swift(level2);
+		raw("public init(p21omittedParamfrom exchangeStructure: P21Decode.ExchangeStructure) {\n");
+		indent_swift(level2+nestingIndent_swift);
+		assert(count > 0);
+		raw("self = .%s\n",enumCase_swiftName( enumCases[0]->data, buf ));
+		indent_swift(level2);
+		raw("}\n");
+
+		
 		TYPEwhereDefinitions_swift(type, level2);
 		enumWhereRuleValidation_swift(type, level2);
 	}

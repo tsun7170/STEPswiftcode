@@ -414,8 +414,15 @@ static void explicitDynamicGetterSetter_swift(Variable attr, bool is_subtype_att
 			indent_swift(level3);
 			raw("return ");
 			if( attr == original ){
-				partialEntityReference_swift(entity, original->defined_in, is_subtype_attr, YES_WRAP);
-				wrap(".%s\n", partialAttr );
+				if( !is_subtype_attr && !VARis_optional_by_large(attr) ){
+					wrap("SDAI.UNWRAP( ");
+					partialEntityReference_swift(entity, original->defined_in, is_subtype_attr, YES_WRAP);
+					wrap(".%s )\n", partialAttr );
+				}
+				else {
+					partialEntityReference_swift(entity, original->defined_in, is_subtype_attr, YES_WRAP);
+					wrap(".%s\n", partialAttr );
+				}
 			}
 			else {
 				if( !is_subtype_attr && !VARis_optional_by_large(attr) ){

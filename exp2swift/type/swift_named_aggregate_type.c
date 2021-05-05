@@ -53,6 +53,10 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope,buf));
 
 		indent_swift(level2);
+		raw("public static var bareTypeName: String = ");
+		wrap("\"%s\"\n", TYPE_canonicalName(type,NO_QUALIFICATION,buf));
+
+		indent_swift(level2);
 		raw( "public var rep: Supertype\n\n" );
 		
 		indent_swift(level2);

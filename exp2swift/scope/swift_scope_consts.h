@@ -14,7 +14,7 @@
 
 //#include "pp.h"
 
-void SCOPEconstList_swift( bool nested, Scope s, int level );
+void SCOPEconstList_swift( bool nested, Scope s, Linked_List consts, int level );
 
 
 #endif /* swift_scope_const_h */

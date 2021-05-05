@@ -27,7 +27,7 @@ let parser = P21Decode.ExchangeStructureParser(charStream: charstream)
 
 let result = parser.parseExchangeStructure()
 
-if !result {
+if result == nil {
 	print("parser error = ",parser.error ?? "unknown error")
 }
 else {
