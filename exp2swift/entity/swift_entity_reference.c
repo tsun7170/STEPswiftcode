@@ -857,6 +857,18 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 }
 
 //MARK: - SDAI Dictionary Schema support
+static int partialEntityExplicitAttributeCount( Entity entity) {
+	Linked_List local_attributes = entity->u.entity->attributes;
+	int count = 0;
+	LISTdo( local_attributes, attr, Variable ){
+		if( VARis_redeclaring(attr) ) continue;
+		if( VARis_derived(attr) ) continue;
+		if( VARis_inverse(attr) ) continue;
+		++count;
+	}LISTod;
+	return count;
+}
+
 static void dictEntityDefinition_swift( Entity entity, Linked_List effective_attrs, int level ) {
 	raw("\n");
 	indent_swift(level);
@@ -868,9 +880,20 @@ static void dictEntityDefinition_swift( Entity entity, Linked_List effective_att
 	{	int level2 = level+nestingIndent_swift;
 		char buf[BUFSIZ];
 		indent_swift(level2);
-		raw("let entityDef = SDAIDictionarySchema.EntityDefinition(name: \"%s\", type: self)\n", 
-				ENTITY_canonicalName(entity, buf));
+		raw("let entityDef = SDAIDictionarySchema.EntityDefinition(name: \"%s\", type: self, explicitAttributeCount: %d)\n", 
+				ENTITY_canonicalName(entity, buf), partialEntityExplicitAttributeCount(entity));
 
+		
+		raw("\n");
+		indent_swift(level2);
+		raw("//MARK: SUPERTYPE REGISTRATIONS\n");		
+		LISTdo(ENTITYget_super_entity_list(entity), supertype, Entity) {
+			indent_swift(level2);
+			raw("entityDef.add(supertype: %s.self)\n", 
+					ENTITY_swiftName(supertype, NO_QUALIFICATION, buf) );
+		}LISTod;
+		
+		
 		if( !LISTis_empty(effective_attrs) ) {
 			raw("\n");
 			indent_swift(level2);
@@ -887,6 +910,7 @@ static void dictEntityDefinition_swift( Entity entity, Linked_List effective_att
 				raw(".%s)\n", attribute_swiftName(attr, buf) );
 			}LISTod;
 		}
+
 		
 		Linked_List unique_rules = ENTITYget_uniqueness_list(entity);
 		if( !LISTis_empty(unique_rules)) {
