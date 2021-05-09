@@ -907,6 +907,94 @@ static void expressConstructor( Entity entity, int level ) {
 	raw("}\n");
 }
 
+static void p21Constructor( Entity entity, int level ) {
+	
+	raw("\n");
+	indent_swift(level);
+	raw("//p21 PARTIAL ENTITY CONSTRUCTOR\n");
+	
+	/*
+	public required convenience init?(parameters: [P21Decode.ExchangeStructure.Parameter], exchangeStructure: P21Decode.ExchangeStructure) {
+		let numParams = <num explicit attrs>
+		guard parameters.count == numParams 
+	  else { exchangeStructure.error = "number of p21 parameters(\(parameters.count)) are different from expected(\(numParams)) for entity(\(Self.entityName))"; return nil }
+		
+		guard case .success(let p0) = exchangeStructure.recoverRequiredParameter(as: <attrtype>.self, from: parameters[0])
+		else { exchangeStructure.add(errorContext: "while recovering parameter #0 for entity(\(Self.entityName))"); return nil }
+		...
+		
+		self.init(attr0: p0, attr1: p1, ...)
+	}
+	*/
+	
+	
+	Linked_List params = ENTITYget_constructor_params(entity);
+	
+	indent_swift(level);
+	raw("public required convenience init?(parameters: [P21Decode.ExchangeStructure.Parameter], exchangeStructure: P21Decode.ExchangeStructure) {\n");
+	{	int level2 = level+nestingIndent_swift;
+		char buf[BUFSIZ];
+		
+		indent_swift(level2);
+		raw("let numParams = %d\n", LISTget_length(params));
+		indent_swift(level2);
+		raw("guard parameters.count == numParams\n"); 
+		indent_swift(level2);
+		raw("else { exchangeStructure.error = \"number of p21 parameters(\\(parameters.count)) are different from expected(\\(numParams)) for entity(\\(Self.entityName)) constructor\"; return nil }\n\n");
+		
+		int paramNo = 0;				
+		LISTdo(params, attr, Variable) {
+			bool omittable = VARis_dynamic(attr);
+			bool optional = VARis_optional_by_large(attr);
+			
+			char* recoverFunc = "internalError";
+			if( !optional && !omittable ) {
+				recoverFunc = "recoverRequiredParameter";
+			}
+			else if( !optional && omittable ) {
+				recoverFunc = "recoverOmittableParameter";
+			}
+			else if( optional && !omittable ) {
+				recoverFunc = "recoverOptionalParameter";
+			}
+			else if( optional && omittable ) {
+				recoverFunc = "recoverOmittableOptionalParameter";
+			}
+			
+			indent_swift(level2);
+			raw("guard case .success(let p%d) = exchangeStructure.%s(as: ",paramNo, recoverFunc );
+			TYPE_head_swift(entity, attr->type, WO_COMMENT);
+			raw(".self, from: parameters[%d])\n",paramNo );
+			indent_swift(level2);
+			raw("else { exchangeStructure.add(errorContext: \"while recovering parameter #%d for entity(\\(Self.entityName)) constructor\"); return nil }\n\n", paramNo);
+			++paramNo;			
+		}LISTod;
+				
+		indent_swift(level2);
+		raw("self.init(");
+		
+		paramNo = 0;				
+		char* sep = "";
+		LISTdo(params, attr, Variable) {
+			if( TYPEis_logical(attr->type) ) {
+				raw("%s %s: SDAI.LOGICAL(p%d)", sep, variable_swiftName(attr, buf), paramNo);
+			}
+			else {
+				raw("%s %s: p%d", sep, variable_swiftName(attr, buf), paramNo);
+			}
+			sep = ",";
+			++paramNo;			
+		}LISTod;
+		
+		raw(" )\n");
+	}
+	
+	indent_swift(level);
+	raw("}\n");
+}
+
+
+
 //MARK: - partial entity swift definition
 
 void partialEntityDefinition_swift
@@ -936,6 +1024,7 @@ void partialEntityDefinition_swift
 		 TYPEwhereDefinitions_swift( entity, level2);
 		 uniqueDefinitions_swift(entity, level2);
 		 expressConstructor(entity, level2);
+		 p21Constructor(entity, level2);
 	 }
 	 
 	 indent_swift(level);
