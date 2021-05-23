@@ -28,6 +28,7 @@
 
 static void supertypeReferenceDefinition_swift(Entity entity, int level ) {
 	int entity_index = 0;
+	int level2 = level+nestingIndent_swift;
 
 	/*
 	 public let super_<SUPERENTITY>: <SUPERENTITY> 	// [n]	 
@@ -41,12 +42,23 @@ static void supertypeReferenceDefinition_swift(Entity entity, int level ) {
 	char buf1[BUFSIZ];
 	char buf2[BUFSIZ];
 	LISTdo( supertypes, super, Entity ) {
-		indent_swift(level);
-		wrap("public let %s%s: %s \t// [%d]\n", 
-				 superEntity_swiftPrefix,
-				 ENTITY_swiftName(super, NO_QUALIFICATION, buf1), 
-				 ENTITY_swiftName(super, entity, buf2), 
-				 ++entity_index);
+		++entity_index;
+		if( super == entity ){
+			indent_swift(level);
+			wrap("public var %s%s: %s { return self } \t// [%d]\n", 
+					 superEntity_swiftPrefix,
+					 ENTITY_swiftName(super, NO_QUALIFICATION, buf1), 
+					 ENTITY_swiftName(super, entity, buf2), 
+					 entity_index);
+		}
+		else {
+			indent_swift(level);
+			wrap("public unowned let %s%s: %s \t// [%d]\n", 
+					 superEntity_swiftPrefix,
+					 ENTITY_swiftName(super, NO_QUALIFICATION, buf1), 
+					 ENTITY_swiftName(super, entity, buf2), 
+					 entity_index);
+		}
 	}LISTod;
 
 	/*
@@ -60,12 +72,20 @@ static void supertypeReferenceDefinition_swift(Entity entity, int level ) {
 	
 	LISTdo( subtypes, sub, Entity ) {
 		if( sub == entity )continue;
+		++entity_index;
 		indent_swift(level);
-		wrap("public let %s%s: %s? \t// [%d]\n", 
+		wrap("public var %s%s: %s? {\t// [%d]\n", 
 				 subEntity_swiftPrefix,
 				 ENTITY_swiftName(sub, NO_QUALIFICATION, buf1), 
 				 ENTITY_swiftName(sub, entity, buf2), 
-				 ++entity_index);
+				 entity_index);
+
+		indent_swift(level2);
+		wrap("return self.complexEntity.entityReference(%s.self)\n", 
+				 buf2 );
+		
+		indent_swift(level);
+		raw("}\n\n");
 	}LISTod;
 }
 
@@ -731,26 +751,34 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 		indent_swift(level2);
 		raw( "self.partialEntity = partial\n\n");
 		
+		// supertype references
+		int entity_index = 0;
 		LISTdo( ENTITYget_super_entity_list(entity), super, Entity ) {
+			if( super == entity )continue;
+			++entity_index;
 			indent_swift(level2);
-			wrap("self.%s%s = ", 
+			wrap("guard let super%d = complexEntity?.entityReference(%s.self) else { return nil }\n", 
+					 entity_index, ENTITY_swiftName(super, entity, buf) );
+			
+			indent_swift(level2);
+			wrap("self.%s%s = super%d\n\n", 
 					 superEntity_swiftPrefix,
-					 ENTITY_swiftName(super, NO_QUALIFICATION, buf) );
-			wrap("( complexEntity?.entityReference(%s.self) )!\n", 
-					 ENTITY_swiftName(super, entity, buf) );
+					 ENTITY_swiftName(super, NO_QUALIFICATION, buf),
+					 entity_index);
 		}LISTod;
-		raw("\n");
+//		raw("\n");
 		
-		LISTdo( ENTITYget_sub_entity_list(entity), sub, Entity ) {
-			if( sub == entity )continue;
-			indent_swift(level2);
-			wrap("self.%s%s = ", 
-					 subEntity_swiftPrefix,
-					 ENTITY_swiftName(sub, NO_QUALIFICATION, buf) );
-			wrap("complexEntity?.entityReference(%s.self)\n", 
-					 ENTITY_swiftName(sub, entity, buf) );
-		}LISTod;
-		raw("\n");
+//		// subtype references
+//		LISTdo( ENTITYget_sub_entity_list(entity), sub, Entity ) {
+//			if( sub == entity )continue;
+//			indent_swift(level2);
+//			wrap("self.%s%s = ", 
+//					 subEntity_swiftPrefix,
+//					 ENTITY_swiftName(sub, NO_QUALIFICATION, buf) );
+//			wrap("complexEntity?.entityReference(%s.self)\n", 
+//					 ENTITY_swiftName(sub, entity, buf) );
+//		}LISTod;
+//		raw("\n");
 		
 		indent_swift(level2);
 		raw( "super.init(complex: complexEntity)\n");
@@ -875,7 +903,13 @@ static void dictEntityDefinition_swift( Entity entity, Linked_List effective_att
 	raw("//MARK: DICTIONARY DEFINITION\n");
 
 	indent_swift(level);
-	raw("public override class func createEntityDefinition() -> SDAIDictionarySchema.EntityDefinition {\n");
+	raw("public class override var entityDefinition: SDAIDictionarySchema.EntityDefinition { _entityDefinition }\n");
+
+	indent_swift(level);
+	raw("private static let _entityDefinition: SDAIDictionarySchema.EntityDefinition = createEntityDefinition()\n\n");
+
+	indent_swift(level);
+	raw("private static func createEntityDefinition() -> SDAIDictionarySchema.EntityDefinition {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		char buf[BUFSIZ];

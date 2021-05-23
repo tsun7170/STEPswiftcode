@@ -67,8 +67,8 @@ static void create_schema_definition(Schema schema, Linked_List constList, int l
 		
 		char buf[BUFSIZ];
 		indent_swift(level2);
-		raw("let schemaDef = SDAIDictionarySchema.SchemaDefinition(name: \"%s\")\n\n",
-				canonical_swiftName(schema->symbol.name, buf));
+		raw("let schemaDef = SDAIDictionarySchema.SchemaDefinition(name: \"%s\", schema: %s.self)\n\n",
+				canonical_swiftName(schema->symbol.name, buf), SCHEMA_swiftName(schema, buf));
 		
 		DictionaryEntry dictEntry;
 		
