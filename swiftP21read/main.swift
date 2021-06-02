@@ -48,21 +48,58 @@ else {
 	print("decoder initialization error")
 	exit(1)
 }
+
 let output = decoder.decode(input: charstream)
 if output == nil {
 	print("decoder error: \(String(describing: decoder.error))")
+	exit(2)
 }
-else {
-	let exchange = decoder.exchangeStructrure!
-	let toplevel = exchange.topLevelEntities
-	let numToplevel = toplevel.count
-	let numTotal = exchange.entityInstanceRegistory.count
-	print("decoded \(numTotal) entities")
-	print("top level entities (\(numToplevel)): \(toplevel)")
-	print("normal end of execution")
+
+let exchange = decoder.exchangeStructrure!
+let toplevel = exchange.topLevelEntities
+let numToplevel = toplevel.count
+let numTotal = exchange.entityInstanceRegistory.count
+print("decoded \(numTotal) entities")
+print("top level entities (\(numToplevel)): \(toplevel)\n")
+
+for (name,instances) in toplevel {
+	if let some = instances.first, let instance = exchange.entityInstanceRegistory[some], let complex = instance.resolved {
+		print("\(name) #\(some): \(complex)")
+		print("")
+	}
+}
+
+guard let schema = exchange.shcemaRegistory.values.first else { exit(3) }
+let schemaInstance = SDAIPopulationSchema.SchemaInstance(repository: repository, 
+																												 name: "examle", 
+																												 schema: schema.schemaDefinition)
+for model in repository.contents.models.values {
+	schemaInstance.add(model:model)
+}
+
+let validationPassed = schemaInstance.validateAllConstraints()
+print("validationPassed:", validationPassed)
+print("glovalRuleValidationRecord: \(String(describing: schemaInstance.globalRuleValidationRecord))"  )
+print("uniquenessRuleValidationRecord: \(String(describing: schemaInstance.uniquenessRuleValidationRecord))")
+print("whereRuleValidationRecord: \(String(describing: schemaInstance.whereRuleValidationRecord))" )
+
+var entityType = AP242.eSHAPE_REPRESENTATION.self
+let instances = schemaInstance.entityExtent(type: entityType)
+print(entityType, instances)
+
+var name = 1
+while name != 0 {
+	if let instance = exchange.entityInstanceRegistory[name], let complex = instance.resolved {
+		print("#\(name): source = \(instance.source)\n\(complex)")
+	}
+	name = 0
+	print("")
 }
 
 
+print("normal end of execution")
+
+//MARK: - activity monitor
 class MyActivityMonitor: P21Decode.ActivityMonitor {
 	override func tokenStreamDidSet(error p21Error: P21Decode.P21Error) {
 		print("error detected on token stream: \(p21Error)")

@@ -246,7 +246,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 			}			
 			
 			indent_swift(level3);
-			raw("case .nullValue:\n");
+			raw("case .noValue:\n");
 			indent_swift(level3+nestingIndent_swift);
 			raw("return nil\n\n");
 			

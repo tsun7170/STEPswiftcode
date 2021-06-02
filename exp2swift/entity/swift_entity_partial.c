@@ -199,7 +199,7 @@ static void aggregateAttributeObservers_swift(Entity entity, Variable attr, int 
 static void explicitStaticAttributeDefinition_swift(Entity entity, Variable attr, int level) {
 	char buf[BUFSIZ];
 	
-	attributeHead_swift(entity, "internal", attr, NO_DYNAMIC, level, NOT_IN_COMMENT, buf);
+	attributeHead_swift(entity, "public internal(set)", attr, NO_DYNAMIC, level, NOT_IN_COMMENT, buf);
 	if( VARis_observed(attr) ) raw(" //OBSERVED");
 	raw("\n");
 	
@@ -226,7 +226,7 @@ static void explicitAttributeRedefinition_swift(Entity entity, Variable attr, in
 static void explicitDynamicAttributeDefinition_swift(Entity entity, Variable attr, int level) {
 	char buf[BUFSIZ];
 	
-	attributeHead_swift(entity, "internal", attr, YES_DYNAMIC, level, NOT_IN_COMMENT, buf);
+	attributeHead_swift(entity, "public internal(set)", attr, YES_DYNAMIC, level, NOT_IN_COMMENT, buf);
 	raw(" //DYNAMIC");
 	if( VARis_observed(attr) ) raw(" //OBSERVED");
 	raw(" \n");
@@ -452,7 +452,7 @@ static void inverseAttributeDefinition_swift(Entity entity, Variable attr, int l
 		indent_swift(level);
 		raw("internal private(set) var %s: ",attrName);
 		variableType_swift(entity, attr, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
-		raw("!\n");
+		raw("\n");
 	}
 	
 	char attrBaseType[BUFSIZ];

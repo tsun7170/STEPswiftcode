@@ -865,6 +865,21 @@ void VAR_resolve_types( Variable v ) {
 		int rc = DICTdefine(super_attr->overriders, ENTITYget_name(v->defined_in), ( Generic )v, &v->name->symbol, attr_type);
 		assert(rc == DICTsuccess);
 	}
+	//*TY2021/05/30 added
+	else {
+		bool need_optional = false;
+		if( VARis_derived(v) ) {
+			need_optional = true;
+		}
+		else if( VARis_inverse(v) ) {
+			if( !TYPEis_aggregation_data_type(v->type) ) {
+				need_optional = true;
+			}
+		}
+		if( need_optional ) {
+			if( v->flags.optional != 1 ) v->flags.optional = 2;
+		}
+	}
 
 	
     if( failed ) {
