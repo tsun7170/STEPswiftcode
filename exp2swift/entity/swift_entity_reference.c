@@ -53,7 +53,7 @@ static void supertypeReferenceDefinition_swift(Entity entity, int level ) {
 		}
 		else {
 			indent_swift(level);
-			wrap("public unowned let %s%s: %s \t// [%d]\n", 
+			wrap("public let %s%s: %s \t// [%d]\n", 
 					 superEntity_swiftPrefix,
 					 ENTITY_swiftName(super, NO_QUALIFICATION, buf1), 
 					 ENTITY_swiftName(super, entity, buf2), 
@@ -516,9 +516,13 @@ static void explicitAttributeReference_swift(Entity entity, Variable attr, bool 
 static void derivedGetter_swift(Variable attr, bool is_subtype_attr, Entity entity, int level, Entity partial) {
 	/*
 	 get {
-		 return self.partialEntity._<attr>__getter(SELF: self)
+	 if let cached = derivedAttributeCache["<attr>"] as? <attr_type> {
+	  return cached
 	 }
-	 
+		 let value = self.partialEntity._<attr>__getter(SELF: self)
+	   updateCache(derivedAttributeName:"<attr>", value:value)
+		 return value
+	 }
 	 */
 	
 	char partialAttr[BUFSIZ];
@@ -527,6 +531,22 @@ static void derivedGetter_swift(Variable attr, bool is_subtype_attr, Entity enti
 	indent_swift(level);
 	raw("get {\n");
 	{	int level2 = level+nestingIndent_swift;
+		int level3 = level2+nestingIndent_swift;
+		
+		char attrname[BUFSIZ];
+		canonical_swiftName(ATTRget_name_string(attr), attrname);
+		
+		// check cashed value
+		indent_swift(level2);
+		raw("if let cached = derivedAttributeCache[\"%s\"] as? ",attrname);
+		variableType_swift(entity, attr, (is_subtype_attr ? YES_FORCE_OPTIONAL : NO_FORCE_OPTIONAL), NOT_IN_COMMENT);
+		raw(" {\n");
+		indent_swift(level3);
+		raw("return cached\n");
+		indent_swift(level2);
+		raw("}\n");
+		
+		// get derived value
 		indent_swift(level2);
 		if( is_subtype_attr ){
 			raw("guard let origin");
@@ -542,7 +562,7 @@ static void derivedGetter_swift(Variable attr, bool is_subtype_attr, Entity enti
 
 		}
 		indent_swift(level2);
-		raw("return ");
+		raw("let value = ");
 		if( !is_subtype_attr && !VARis_optional_by_large(attr) ){
 			raw("SDAI.UNWRAP( ");
 		}
@@ -571,6 +591,13 @@ static void derivedGetter_swift(Variable attr, bool is_subtype_attr, Entity enti
 			raw(" )");
 		}
 		raw("\n");
+		
+		// save as cached value
+		indent_swift(level2);
+		raw("updateCache(derivedAttributeName:\"%s\", value:value)\n",attrname);
+		
+		indent_swift(level2);
+		raw("return value\n");
 	}
 	indent_swift(level);
 	raw("}\n");
@@ -933,15 +960,55 @@ static void dictEntityDefinition_swift( Entity entity, Linked_List effective_att
 			indent_swift(level2);
 			raw("//MARK: ATTRIBUTE REGISTRATIONS\n");		
 			LISTdo(effective_attrs, attr, Variable) {
-				//			bool is_subtype_attr = LIST_aux;
-				//			bool is_redeclaring = VARis_redeclaring(attr);
-				//			bool is_derived = VARis_derived(attr);
-				//			bool is_inverse = VARis_inverse(attr);
+				bool is_thistype_attr = attr->defined_in == entity;
+				bool is_subtype_attr = LIST_aux;
+				bool is_redeclaring = VARis_redeclaring(attr);
+				bool is_derived = VARis_derived(attr);
+				bool is_inverse = VARis_inverse(attr);
+				bool is_optional = VARis_optional(attr);
+				bool may_yield_entity_ref = TYPE_may_yield_entity_reference(VARget_type(attr));
 				
 				indent_swift(level2);
 				raw("entityDef.addAttribute(name: \"%s\", ", canonical_swiftName(ATTRget_name_string(attr), buf) );
 				raw("keyPath: \\%s", ENTITY_swiftName(entity, NO_QUALIFICATION, buf) );
-				raw(".%s)\n", attribute_swiftName(attr, buf) );
+				raw(".%s, ", attribute_swiftName(attr, buf) );
+				
+				aggressively_wrap();
+				wrap("kind: .");
+				if( is_inverse ){
+					raw("inverse");
+				}
+				else if( is_derived ){
+					raw("derived");
+					if( is_redeclaring ) raw("Redeclaring");
+				}
+				else{
+					raw("explicit");
+					if( is_optional ) raw("Optional");
+					if( is_redeclaring ) raw("Redeclaring");
+				}
+				raw(", ");
+				
+				wrap("source: .");
+				if( is_thistype_attr ){
+					raw("thisEntity");
+				}
+				else if( is_subtype_attr ){
+					raw("subEntity");
+				}
+				else {
+					raw("superEntity");
+				}
+				raw(", ");
+
+				wrap("mayYieldEntityReference: ");
+				if( may_yield_entity_ref ){
+					raw("true");
+				}
+				else {
+					raw("false");
+				}
+				raw(")\n");
 			}LISTod;
 		}
 
@@ -980,15 +1047,15 @@ static void entityWhereRuleValidation_swift( Entity entity, int level ) {
 	raw("//MARK: WHERE RULE VALIDATION (ENTITY)\n");
 
 	indent_swift(level);
-	raw("public override class func validateWhereRules(instance:SDAI.EntityReference?, prefix:SDAI.WhereLabel, excludingEntity: Bool) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
+	raw("public override class func validateWhereRules(instance:SDAI.EntityReference?, prefix:SDAI.WhereLabel, round: SDAI.ValidationRound) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 
 		indent_swift(level2);
-		raw("guard !excludingEntity, let instance = instance as? Self? else { return [:] }\n\n");
+		raw("guard let instance = instance as? Self, instance.validated != round else { return [:] }\n\n");
 		
 		indent_swift(level2);
-		raw("var result = super.validateWhereRules(instance:instance, prefix:prefix, excludingEntity: false)\n\n");
+		raw("var result = super.validateWhereRules(instance:instance, prefix:prefix, round: round)\n\n");
 		
 		char partial[BUFSIZ];partialEntity_swiftName(entity, partial);
 		LISTdo( where_rules, where, Where ){

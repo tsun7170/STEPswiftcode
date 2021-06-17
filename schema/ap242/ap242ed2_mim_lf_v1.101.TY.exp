@@ -5,6 +5,7 @@
 *)
 
 (*
+  2021/06/10: modified FUNCTION using_items() to prevent duplicated search.
  	2021/02/28: slightly modified for exp2swift translation, plus some bug fixes on original schema definition.
  
  	by Tsutomu Yoshida, Minokamo, Japan.
@@ -47157,6 +47158,7 @@ LOCAL
   new_check_items : SET OF founded_item_select;
   result_items    : SET OF founded_item_select;
   next_items      : SET OF founded_item_select;
+  found_descendants: SET OF founded_item_select; --*TY2021/06/10 to prevent duplicated search
 END_LOCAL;
   result_items := [];
   new_check_items := checked_items + item;
@@ -47169,7 +47171,11 @@ END_LOCAL;
     REPEAT i := 1 TO HIINDEX(next_items);
       IF NOT (next_items[i] IN new_check_items)
       THEN
-        result_items := result_items + next_items[i] + using_items(next_items[i], new_check_items);
+				--*TY2021/06/10: result_items := result_items + next_items[i] + using_items(next_items[i], new_check_items);
+ 				found_descendants := next_items[i] + using_items(next_items[i], new_check_items);
+        new_check_items := new_check_items + found_descendants;
+ 				result_items := result_items + found_descendants;
+ 				--*TY2021/06/10 end modification
       END_IF;
     END_REPEAT;
   END_IF;

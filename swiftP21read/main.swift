@@ -41,6 +41,7 @@ let schemaList: P21Decode.SchemaList = [
 	"AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF { 1 0 10303 442 3 1 4 }": AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.self,
 ]
 
+//MARK: decode p21
 let monitor = MyActivityMonitor()
 
 guard let decoder = P21Decode.Decoder(output: repository, schemaList: schemaList, monitor: monitor)
@@ -55,6 +56,7 @@ if output == nil {
 	exit(2)
 }
 
+//MARK: find top level entities
 let exchange = decoder.exchangeStructrure!
 let toplevel = exchange.topLevelEntities
 let numToplevel = toplevel.count
@@ -69,6 +71,7 @@ for (name,instances) in toplevel {
 	}
 }
 
+//MARK: validation
 guard let schema = exchange.shcemaRegistory.values.first else { exit(3) }
 let schemaInstance = SDAIPopulationSchema.SchemaInstance(repository: repository, 
 																												 name: "examle", 
@@ -76,6 +79,7 @@ let schemaInstance = SDAIPopulationSchema.SchemaInstance(repository: repository,
 for model in repository.contents.models.values {
 	schemaInstance.add(model:model)
 }
+schemaInstance.mode = .readOnly
 
 let validationPassed = schemaInstance.validateAllConstraints()
 print("validationPassed:", validationPassed)
@@ -83,6 +87,7 @@ print("glovalRuleValidationRecord: \(String(describing: schemaInstance.globalRul
 print("uniquenessRuleValidationRecord: \(String(describing: schemaInstance.uniquenessRuleValidationRecord))")
 print("whereRuleValidationRecord: \(String(describing: schemaInstance.whereRuleValidationRecord))" )
 
+//MARK: entity look up
 var entityType = AP242.eSHAPE_REPRESENTATION.self
 let instances = schemaInstance.entityExtent(type: entityType)
 print(entityType, instances)

@@ -888,7 +888,7 @@ static void expressConstructor( Entity entity, int level ) {
 	Linked_List params = ENTITYget_constructor_params(entity);
 	
 	indent_swift(level);
-	raw("public%s init(", LISTis_empty(params) ? " override" : "");
+	raw("public init(");
 	ALGargs_swift(entity, NO_FORCE_OPTIONAL, params, NO_DROP_SINGLE_LABEL, level);
 	raw(") {\n");
 
@@ -900,7 +900,7 @@ static void expressConstructor( Entity entity, int level ) {
 			raw("%s\n", variable_swiftName(attr,buf));
 		}LISTod;
 		indent_swift(level2);
-		raw("super.init()\n");
+		raw("super.init(asAbstructSuperclass:())\n");
 	}
 	
 	indent_swift(level);

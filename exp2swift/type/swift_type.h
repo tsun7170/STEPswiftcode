@@ -40,6 +40,7 @@ extern const char* builtinTYPE_body_swiftname( Type t );
 extern const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption in_comment, char buf[BUFSIZ]);
 
 extern bool TYPEis_swiftAssignable(Type lhstype, Type rhstype);
+extern bool TYPEis_observable_aggregate(Type t);
 
 extern const char* whereRuleLabel_swiftName( Where w, char buf[BUFSIZ] );
 extern void TYPEwhereDefinitions_swift( Scope scope, int level );

@@ -104,6 +104,16 @@ enum type_enum {
 		indeterminate_	//*ty2020/12/31 added
 };
 
+//*TY2021/06/05 added
+typedef enum {
+	select_attribute_unknown = 0,
+	resolving_select_attribute,
+	yes_yield_entity_reference,
+	no_yield_entity_reference,
+	infinite_looping_select_attribute
+} Select_type_attribute;
+
+
 /*****************/
 /* packages used */
 /*****************/
@@ -184,6 +194,8 @@ struct TypeBody_ {
 	//*TY2020/08/30
 	Dictionary all_select_attributes;	// dict of (linked_list of attr for selection list entries, with aux pointing to the originating selection) keyed by attr simple name.
 	Dictionary all_supertypes; // dict of (linked_list of originating selection) keyed by super-entity name
+	//*TY2021/06/05
+	Select_type_attribute select_type_attribute;
 };
 
 /********************/
@@ -384,4 +396,8 @@ extern const char* TYPEget_kind(Type t);
 
 //*TY2020/11/19
 extern bool TYPEcontains_generic(Type t);
+
+//*TY2021/06/02
+extern bool TYPE_may_yield_entity_reference(Type t);
+
 #endif    /*  TYPE_H  */

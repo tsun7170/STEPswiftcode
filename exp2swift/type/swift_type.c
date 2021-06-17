@@ -487,6 +487,20 @@ bool TYPEis_swiftAssignable(Type lhstype, Type rhstype) {
 	return false;
 }
 
+bool TYPEis_observable_aggregate(Type t) {
+	if( !TYPEis_aggregation_data_type(t) ) return false;
+	Type elementType = TYPEget_nonaggregate_base_type(t);
+	switch (TYPEis(elementType)) {
+		case entity_:
+		case select_:
+			return true;
+			
+		default:
+			return false;
+	}
+}
+
+
 //MARK: - where rule
 const char* whereRuleLabel_swiftName( Where w, char buf[BUFSIZ] ) {
 	if( w-> label ) {
@@ -561,7 +575,7 @@ void TYPEwhereRuleValidation_swift( Type type, int level ) {
 	raw("//WHERE RULE VALIDATION (DEFINED TYPE)\n");
 
 	indent_swift(level);
-	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel, excludingEntity: Bool) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
+	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel, round: SDAI.ValidationRound) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		
@@ -570,7 +584,7 @@ void TYPEwhereRuleValidation_swift( Type type, int level ) {
 		raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
 		
 		indent_swift(level2);
-		raw("var result = Supertype.validateWhereRules(instance:instance?.rep, prefix:prefix2, excludingEntity: false)\n\n");
+		raw("var result = Supertype.validateWhereRules(instance:instance?.rep, prefix:prefix2, round: round)\n\n");
 		
 		LISTdo( where_rules, where, Where ){
 			char whereLabel[BUFSIZ];
