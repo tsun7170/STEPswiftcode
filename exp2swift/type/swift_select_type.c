@@ -1244,16 +1244,18 @@ static void selectObservableAggregateElementConformance_swift(Type select_type, 
 			else if( TYPEis_select(selection)){
 				raw("(let select): return select.entityReferences\n");
 			}
-			else if( TYPEis_aggregation_data_type(selection)){
-				raw("(let aggregate): \n");
-				{	int level3 = level2+nestingIndent_swift;
-					indent_swift(level3);
-					raw("if let observable = aggregate as? SDAIObservableAggregateElement { return observable.entityReferences }\n");
-					indent_swift(level3);
-					raw("else { return AnySequence<SDAI.EntityReference>(EmptyCollection<SDAI.EntityReference>()) }\n");
-				}
-				indent_swift(level2);
-				raw("\n");
+			else if( TYPEis_observable_aggregate(selection)){
+				raw("(let observable): return observable.entityReferences\n");
+//			else if( TYPEis_aggregation_data_type(selection)){
+//				raw("(let aggregate): \n");
+//				{	int level3 = level2+nestingIndent_swift;
+//					indent_swift(level3);
+//					raw("if let observable = aggregate as? SDAIObservableAggregateElement { return observable.entityReferences }\n");
+//					indent_swift(level3);
+//					raw("else { return AnySequence<SDAI.EntityReference>(EmptyCollection<SDAI.EntityReference>()) }\n");
+//				}
+//				indent_swift(level2);
+//				raw("\n");
 			}
 			else {
 				raw(": return AnySequence<SDAI.EntityReference>(EmptyCollection<SDAI.EntityReference>())\n");

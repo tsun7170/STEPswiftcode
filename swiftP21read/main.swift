@@ -42,9 +42,9 @@ let schemaList: P21Decode.SchemaList = [
 ]
 
 //MARK: decode p21
-let monitor = MyActivityMonitor()
+let p21monitor = MyActivityMonitor()
 
-guard let decoder = P21Decode.Decoder(output: repository, schemaList: schemaList, monitor: monitor)
+guard let decoder = P21Decode.Decoder(output: repository, schemaList: schemaList, monitor: p21monitor)
 else {
 	print("decoder initialization error")
 	exit(1)
@@ -81,11 +81,27 @@ for model in repository.contents.models.values {
 }
 schemaInstance.mode = .readOnly
 
-let validationPassed = schemaInstance.validateAllConstraints()
-print("validationPassed:", validationPassed)
-print("glovalRuleValidationRecord: \(String(describing: schemaInstance.globalRuleValidationRecord))"  )
-print("uniquenessRuleValidationRecord: \(String(describing: schemaInstance.uniquenessRuleValidationRecord))")
-print("whereRuleValidationRecord: \(String(describing: schemaInstance.whereRuleValidationRecord))" )
+let validationMonitor = MyValidationMonitor()
+
+let globalResult = schemaInstance.validateGlobalRules(monitor:validationMonitor)
+print("\n entity attribute cache hit rate: \(String(describing: SDAI.EntityReference.cacheHitRate))")
+print("glovalRuleValidationRecord:\n\(globalResult)"  )
+
+let uniquenessResult = schemaInstance.validateUniquenessRules(monitor:validationMonitor)
+print("\n entity attribute cache hit rate: \(String(describing: SDAI.EntityReference.cacheHitRate))")
+print("uniquenessRuleValidationRecord:\n\(uniquenessResult)")
+
+let whereResult = schemaInstance.validateWhereRules(monitor:validationMonitor)
+print("\n entity attribute cache hit rate: \(String(describing: SDAI.EntityReference.cacheHitRate))")
+print("whereRuleValidationRecord:\n\(whereResult)" )
+
+
+//let validationPassed = schemaInstance.validateAllConstraints(monitor: MyValidationMonitor())
+//print("entity attribute cache hit rate: \(String(describing: SDAI.EntityReference.cacheHitRate))")
+//print("validationPassed:", validationPassed)
+//print("glovalRuleValidationRecord: \(String(describing: schemaInstance.globalRuleValidationRecord))"  )
+//print("uniquenessRuleValidationRecord: \(String(describing: schemaInstance.uniquenessRuleValidationRecord))")
+//print("whereRuleValidationRecord: \(String(describing: schemaInstance.whereRuleValidationRecord))" )
 
 //MARK: entity look up
 var entityType = AP242.eSHAPE_REPRESENTATION.self
@@ -163,4 +179,87 @@ class MyActivityMonitor: P21Decode.ActivityMonitor {
 	override func completedResolving() {
 		print("\n completed resolving.")
 	}
+}
+
+//MARK: - validation monitor
+class MyValidationMonitor: SDAIPopulationSchema.ValidationMonitor {
+	var globalCount: Int = 0
+	var uniquenessCount: Int = 0
+	var complexCount: Int = 0
+	
+	var globalValidated: Int = 0
+	var uniquenessValidated: Int = 0
+	var complexValidated: Int = 0
+	
+	override func willValidate(globalRules: AnySequence<SDAIDictionarySchema.GlobalRule>) {
+		globalCount = globalRules.reduce(0, { (count,_) in count + 1 })
+		print("\n validating \(globalCount) global rules: ", terminator: "")
+	}
+	
+	override func willValidate(uniquenessRules: AnySequence<SDAIDictionarySchema.UniquenessRule>) {
+		uniquenessCount =  uniquenessRules.reduce(0, { (count,_) in count + 1 })
+		print("\n validating \(uniquenessCount) uniqueness rules: ", terminator: "")
+	}
+	
+	override func willValidateWhereRules(for complexEntites: AnySequence<SDAI.ComplexEntity>) {
+		complexCount = complexEntites.reduce(0, { (count,_) in count + 1 })
+		print("\n validating where rules for \(complexCount) complex entities: ", terminator: "")
+	}
+	
+	private func progressMarker(completed: Int, total: Int) -> String? {
+		if total == 0 { return nil }
+		if total <= 100 { return completed % 10 == 0 ? "+" : "." }
+		
+		if (completed * 10) % total < 10 {
+			return "\((completed * 10) / total)"
+		}
+		if (completed * 50) % total < 50 {
+			return "+"
+		}
+		if ( completed * 100) % total < 100 {
+			return "."
+		}
+		return nil
+	}
+	
+	override func didValidateGlobalRule(for schemaInstance: SDAIPopulationSchema.SchemaInstance, result: SDAI.GlobalRuleValidationResult) {
+		globalValidated += 1
+		if let marker = progressMarker(completed: globalValidated, total: globalCount) { print(marker, terminator: "") }
+		
+		if result.result == SDAI.FALSE {
+			print("X", terminator: "")
+			let _ = schemaInstance.validate(globalRule: result.globalRule)
+		}
+	}
+	
+	override func didValidateUniquenessRule(for schemaInstance: SDAIPopulationSchema.SchemaInstance, result: SDAI.UniquenessRuleValidationResult) {
+		uniquenessValidated += 1
+		if let marker = progressMarker(completed: uniquenessValidated, total: uniquenessCount) { print(marker, terminator: "") }
+
+		if result.result == SDAI.FALSE {
+			print("X", terminator: "")
+			let _ = schemaInstance.validate(uniquenessRule: result.uniquenessRule)
+		}
+	}
+	
+	override func didValidateWhereRule(for complexEntity: SDAI.ComplexEntity, result: [SDAI.EntityReference : [SDAI.WhereLabel : SDAI.LOGICAL]]) {
+		complexValidated += 1
+		if let marker = progressMarker(completed: complexValidated, total: complexCount) { print(marker, terminator: "") }
+
+		var failed = false
+		for (entity,entityResult) in result {
+			for (label,whereResult) in entityResult {
+				if whereResult == SDAI.FALSE {
+					failed = true
+					let _ = type(of: entity).validateWhereRules(instance: entity, prefix: "again", round: SDAI.notValidatedYet)
+				}
+			}
+		}
+		if failed { 
+			print("X", terminator: "") 
+			
+		}
+		
+	}
+	
 }

@@ -553,7 +553,7 @@ static void localAttributeDefinitions_swift( Entity entity, int level, Linked_Li
 //MARK: - value comparison supports
 static void hashAsValue_swift( Entity entity, int level ) {
 	/*
-	 open override func hashAsValue(into hasher: inout Hasher, visited complexEntities: inout Set<ComplexEntity>) {
+	 public override func hashAsValue(into hasher: inout Hasher, visited complexEntities: inout Set<ComplexEntity>) {
 	 		super.hashAsValue(into: &hasher, visited: &complexEntities)
 	 
 	 		self.attr?.value.hashAsValue(into: &hasher, visited: &complexEntities)
@@ -562,7 +562,7 @@ static void hashAsValue_swift( Entity entity, int level ) {
 	 */
 	
 	indent_swift(level);
-	raw("open override func hashAsValue(into hasher: inout Hasher, visited complexEntities: inout Set<SDAI.ComplexEntity>) {\n");
+	raw("public override func hashAsValue(into hasher: inout Hasher, visited complexEntities: inout Set<SDAI.ComplexEntity>) {\n");
 	{	int level2 = level+nestingIndent_swift;
 		char buf[BUFSIZ];
 		
@@ -587,7 +587,7 @@ static void hashAsValue_swift( Entity entity, int level ) {
 
 static void isValueEqual_swift( Entity entity, int level ) {
 	/*
-	 open override func isValueEqual(to rhs: PartialEntity, visited comppairs: inout Set<ComplexPair>) -> Bool {
+	 public override func isValueEqual(to rhs: PartialEntity, visited comppairs: inout Set<ComplexPair>) -> Bool {
 	 		guard let rhs = rhs as? Self else { return false }
 	 		if !super.isValueEqual(to: rhs, visited: &comppairs) { return false }
 	 
@@ -602,7 +602,7 @@ static void isValueEqual_swift( Entity entity, int level ) {
 	 */
 	
 	indent_swift(level);
-	raw("open override func isValueEqual(to rhs: SDAI.PartialEntity, visited comppairs: inout Set<SDAI.ComplexPair>) -> Bool {\n");
+	raw("public override func isValueEqual(to rhs: SDAI.PartialEntity, visited comppairs: inout Set<SDAI.ComplexPair>) -> Bool {\n");
 	{	int level2 = level+nestingIndent_swift;
 		
 		indent_swift(level2);
@@ -638,7 +638,7 @@ static void isValueEqual_swift( Entity entity, int level ) {
 
 static void isValueEqualOptionally_swift( Entity entity, int level ) {
 	/*
-	 open override func isValueEqualOptionally(to rhs: PartialEntity, visited comppairs: inout Set<ComplexPair>) -> Bool? {
+	 public override func isValueEqualOptionally(to rhs: PartialEntity, visited comppairs: inout Set<ComplexPair>) -> Bool? {
 	 		guard let rhs = rhs as? Self else { return false }
 	    var result: Bool? = true
 			if let comp = super.isValueEqualOptionally(to: rhs, visited: &comppairs) { 
@@ -657,7 +657,7 @@ static void isValueEqualOptionally_swift( Entity entity, int level ) {
 	 */
 	
 	indent_swift(level);
-	raw("open override func isValueEqualOptionally(to rhs: SDAI.PartialEntity, visited comppairs: inout Set<SDAI.ComplexPair>) -> Bool? {\n");
+	raw("public override func isValueEqualOptionally(to rhs: SDAI.PartialEntity, visited comppairs: inout Set<SDAI.ComplexPair>) -> Bool? {\n");
 	{	int level2 = level+nestingIndent_swift;
 
 		indent_swift(level2);
@@ -1005,7 +1005,7 @@ void partialEntityDefinition_swift
 	 {	char buf[BUFSIZ];
 		 
 		 indent_swift(level);
-		 wrap("public class %s : SDAI.PartialEntity {\n", partialEntity_swiftName(entity, buf));
+		 wrap("public final class %s : SDAI.PartialEntity {\n", partialEntity_swiftName(entity, buf));
 	 }
 	 
 	 {	int level2 = level+nestingIndent_swift;

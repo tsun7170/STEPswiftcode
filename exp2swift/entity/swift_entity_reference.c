@@ -516,8 +516,8 @@ static void explicitAttributeReference_swift(Entity entity, Variable attr, bool 
 static void derivedGetter_swift(Variable attr, bool is_subtype_attr, Entity entity, int level, Entity partial) {
 	/*
 	 get {
-	 if let cached = derivedAttributeCache["<attr>"] as? <attr_type> {
-	  return cached
+	 if let cached = cachedValue(derivedAttributeName:"<attr>") {
+	  return cached.value as! <attr_type>
 	 }
 		 let value = self.partialEntity._<attr>__getter(SELF: self)
 	   updateCache(derivedAttributeName:"<attr>", value:value)
@@ -538,11 +538,11 @@ static void derivedGetter_swift(Variable attr, bool is_subtype_attr, Entity enti
 		
 		// check cashed value
 		indent_swift(level2);
-		raw("if let cached = derivedAttributeCache[\"%s\"] as? ",attrname);
-		variableType_swift(entity, attr, (is_subtype_attr ? YES_FORCE_OPTIONAL : NO_FORCE_OPTIONAL), NOT_IN_COMMENT);
-		raw(" {\n");
+		raw("if let cached = cachedValue(derivedAttributeName:\"%s\") {\n",attrname);
 		indent_swift(level3);
-		raw("return cached\n");
+		raw("return cached.value as! ");
+		variableType_swift(entity, attr, (is_subtype_attr ? YES_FORCE_OPTIONAL : NO_FORCE_OPTIONAL), NOT_IN_COMMENT);
+		raw("\n");
 		indent_swift(level2);
 		raw("}\n");
 		
@@ -1082,7 +1082,7 @@ void entityReferenceDefinition_swift( Entity entity, int level ) {
 	indent_swift(level);
 	{
 		char buf[BUFSIZ];
-		wrap("public class %s : SDAI.EntityReference {\n", 
+		wrap("public final class %s : SDAI.EntityReference {\n", 
 				 ENTITY_swiftName(entity, NO_QUALIFICATION, buf));
 	}
 	

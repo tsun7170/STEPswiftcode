@@ -122,7 +122,7 @@ void namedAggregateTypeExtension_swift( Schema schema, Type type, int level) {
 	raw( "public protocol %s__%s__type: ", schemaname, typename);
 	positively_wrap();
 	if( TYPEis_observable_aggregate(type) ){
-		wrap("SDAIObservableAggregate, SDAIObservableAggregateElement, ");		
+		wrap("SDAIObservableAggregate, ");		
 	}
 	wrap("SDAI__%s__subtype {}\n\n", builtinTYPE_body_swiftname(type) );
 	 
