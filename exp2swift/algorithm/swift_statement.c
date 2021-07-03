@@ -330,6 +330,9 @@ void STMT_swift( Scope algo, Statement stmt, int* tempvar_id, int level ) {
 			char* sep = " ";
 			Linked_List formals = stmt->u.proc->procedure->u.proc->parameters;
 			Link formals_iter = LISTLINKfirst(formals);
+			
+			assert(LISTget_length(formals) == LISTget_length(stmt->u.proc->parameters));
+			
 			LISTdo(stmt->u.proc->parameters, actual_param, Expression) {
 				raw("%s",sep);
 				positively_wrap();

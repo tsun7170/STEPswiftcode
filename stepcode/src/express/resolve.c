@@ -179,7 +179,7 @@ void RESOLVEinitialize( void ) {
                                   "No such procedure as %s.", SEVERITY_ERROR );
 
     ERROR_wrong_arg_count = ERRORcreate(
-                                "Call to %s uses %d arguments, but expected %d.", SEVERITY_WARNING );
+                                "Call to %s uses %d arguments, but expected %d.", SEVERITY_ERROR ); //*TY2021/06/24 this should be severe enough to be treated as ERROR
 
     ERROR_query_requires_aggregate = ERRORcreate(
                                          "Query expression source must be an aggregate.", SEVERITY_ERROR );
@@ -985,6 +985,10 @@ void STMTresolve( Statement statement, Scope scope ) {
             LISTdo( statement->u.proc->parameters, e, Expression )
             EXPresolve( e, scope, Type_Dont_Care );
             LISTod;
+				//*TY2021/06/24 added check
+				if(LISTget_length(statement->u.proc->parameters) != statement->u.proc->procedure->u.proc->pcount) {
+					ERRORreport_with_symbol( ERROR_wrong_arg_count, &statement->symbol, proc_name, LISTget_length(statement->u.proc->parameters), statement->u.proc->procedure->u.proc->pcount);
+				}
             break;
         case STMT_LOOP:
             if( statement->u.loop->scope ) {

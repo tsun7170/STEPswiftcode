@@ -1567,6 +1567,11 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 	TypeBody typeBody = TYPEget_body(select_type);
 	Type common_aggregate_base = TYPE_retrieve_aggregate_base(select_type, NULL);
 
+	// markdown
+	raw("\n/** ```express\n");
+	xxxxx
+	raw("\n**/\n");
+	
 	// swift enum definition
 		char buf[BUFSIZ];
 				

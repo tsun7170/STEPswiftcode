@@ -215,6 +215,8 @@ static Expression EXPRexpr_decompose( Expression e, Type target_type, int*/*inou
 				TYPEget_body(funcall_expr->return_type)->flags.partial = false;
 			}
 
+			assert(LISTget_length(formals) == LISTget_length(e->u.funcall.list));
+			
 			Linked_List funcall_list = LISTcreate();
 			
 			Link formals_iter = LISTLINKfirst(formals);

@@ -12,33 +12,22 @@ import SwiftSDAIap242
 
 print("swiftP21read")
 
-let url = URL(fileURLWithPath: "./TestCases/NIST_CTC_STEP_PMI/nist_ctc_02_asme1_ap242-e2.stp")
+let testDataFolder = ProcessInfo.processInfo.environment["TEST_DATA_FOLDER"]!
+let url = URL(fileURLWithPath: testDataFolder + "NIST_CTC_STEP_PMI/nist_ctc_02_asme1_ap242-e2.stp")
 
 let stepsource = try String(contentsOf: url) 
 
 var charstream = stepsource.makeIterator()
 
-//var p21stream = P21Decode.P21CharacterStream(charStream: charstream)
-//
-//while p21stream.lineNumber < 10 {
-//	print(p21stream.next() ?? "<nil>", terminator:"")
-//}
-
-//let parser = P21Decode.ExchangeStructureParser(charStream: charstream)
-//
-//let result = parser.parseExchangeStructure()
-//
-//if result == nil {
-//	print("parser error = ",parser.error ?? "unknown error")
-//}
-//else {
-//	print("normal end of execution")
-//}
-
 let repository = SDAISessionSchema.SdaiRepository(name: "examle", description: "example repository")
 
 let schemaList: P21Decode.SchemaList = [
 	"AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF { 1 0 10303 442 3 1 4 }": AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.self,
+	"AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF { 1 0 10303 442 1 1 4 }": AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.self,
+	"AP203_CONFIGURATION_CONTROLLED_3D_DESIGN_OF_MECHANICAL_PARTS_AND_ASSEMBLIES_MIM_LF  { 1 0 10303 403 3 1 4}": AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.self,
+	"AP203_CONFIGURATION_CONTROLLED_3D_DESIGN_OF_MECHANICAL_PARTS_AND_ASSEMBLIES_MIM_LF { 1 0 10303 403 2 1 2}": AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.self,
+	"CONFIG_CONTROL_DESIGN": AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.self,
+	"AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }": AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.self,
 ]
 
 //MARK: decode p21
@@ -84,20 +73,16 @@ schemaInstance.mode = .readOnly
 let validationMonitor = MyValidationMonitor()
 
 let globalResult = schemaInstance.validateGlobalRules(monitor:validationMonitor)
-print("\n entity attribute cache hit rate: \(String(describing: SDAI.EntityReference.cacheHitRate))")
-print("glovalRuleValidationRecord:\n\(globalResult)"  )
+print("\n glovalRuleValidationRecord:\n\(globalResult)"  )
 
 let uniquenessResult = schemaInstance.validateUniquenessRules(monitor:validationMonitor)
-print("\n entity attribute cache hit rate: \(String(describing: SDAI.EntityReference.cacheHitRate))")
-print("uniquenessRuleValidationRecord:\n\(uniquenessResult)")
+print("\n uniquenessRuleValidationRecord:\n\(uniquenessResult)")
 
 let whereResult = schemaInstance.validateWhereRules(monitor:validationMonitor)
-print("\n entity attribute cache hit rate: \(String(describing: SDAI.EntityReference.cacheHitRate))")
-print("whereRuleValidationRecord:\n\(whereResult)" )
+print("\n whereRuleValidationRecord:\n\(whereResult)" )
 
 
 //let validationPassed = schemaInstance.validateAllConstraints(monitor: MyValidationMonitor())
-//print("entity attribute cache hit rate: \(String(describing: SDAI.EntityReference.cacheHitRate))")
 //print("validationPassed:", validationPassed)
 //print("glovalRuleValidationRecord: \(String(describing: schemaInstance.globalRuleValidationRecord))"  )
 //print("uniquenessRuleValidationRecord: \(String(describing: schemaInstance.uniquenessRuleValidationRecord))")
@@ -191,6 +176,8 @@ class MyValidationMonitor: SDAIPopulationSchema.ValidationMonitor {
 	var uniquenessValidated: Int = 0
 	var complexValidated: Int = 0
 	
+	var confirmFailedCase = false
+	
 	override func willValidate(globalRules: AnySequence<SDAIDictionarySchema.GlobalRule>) {
 		globalCount = globalRules.reduce(0, { (count,_) in count + 1 })
 		print("\n validating \(globalCount) global rules: ", terminator: "")
@@ -213,7 +200,7 @@ class MyValidationMonitor: SDAIPopulationSchema.ValidationMonitor {
 		if (completed * 10) % total < 10 {
 			return "\((completed * 10) / total)"
 		}
-		if (completed * 50) % total < 50 {
+		if (completed * 20) % total < 20 {
 			return "+"
 		}
 		if ( completed * 100) % total < 100 {
@@ -227,8 +214,10 @@ class MyValidationMonitor: SDAIPopulationSchema.ValidationMonitor {
 		if let marker = progressMarker(completed: globalValidated, total: globalCount) { print(marker, terminator: "") }
 		
 		if result.result == SDAI.FALSE {
-			print("X", terminator: "")
-			let _ = schemaInstance.validate(globalRule: result.globalRule)
+			print("/", terminator: "")
+			if confirmFailedCase {
+				let _ = schemaInstance.validate(globalRule: result.globalRule)
+			}
 		}
 	}
 	
@@ -237,8 +226,10 @@ class MyValidationMonitor: SDAIPopulationSchema.ValidationMonitor {
 		if let marker = progressMarker(completed: uniquenessValidated, total: uniquenessCount) { print(marker, terminator: "") }
 
 		if result.result == SDAI.FALSE {
-			print("X", terminator: "")
-			let _ = schemaInstance.validate(uniquenessRule: result.uniquenessRule)
+			print("/", terminator: "")
+			if confirmFailedCase {
+				let _ = schemaInstance.validate(uniquenessRule: result.uniquenessRule)
+			}
 		}
 	}
 	
@@ -251,12 +242,15 @@ class MyValidationMonitor: SDAIPopulationSchema.ValidationMonitor {
 			for (label,whereResult) in entityResult {
 				if whereResult == SDAI.FALSE {
 					failed = true
-					let _ = type(of: entity).validateWhereRules(instance: entity, prefix: "again", round: SDAI.notValidatedYet)
+					if confirmFailedCase {
+						print("\nFAILED: \(label)")
+						let _ = type(of: entity).validateWhereRules(instance: entity, prefix: "again", round: SDAI.notValidatedYet)
+					}
 				}
 			}
 		}
 		if failed { 
-			print("X", terminator: "") 
+			print("/", terminator: "") 
 			
 		}
 		

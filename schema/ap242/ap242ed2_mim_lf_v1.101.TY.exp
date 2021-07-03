@@ -37540,6 +37540,78 @@ FUNCTION dependently_instantiated(set_of_input_instances : SET OF GENERIC : IGEN
    references during recursive calls to this function. The parameter
    lists already tested instances in a chain of references.
     *)
+ 
+ --*TY2021/06/23: proposed implementation
+ 
+ (*NESTED*) FUNCTION is_referenced_by_outer_world(subject  : GENERIC : CGEN;
+ 																								 in_chain : LIST OF GENERIC : CGEN) : BOOLEAN;
+   	LOCAL
+ 			set_of_referring_instances    : SET OF GENERIC : CGEN;
+ 			number_of_referring_instances : INTEGER;
+ 			child                         : GENERIC : CGEN;
+			set_of_types                  : SET OF STRING;
+ 		END_LOCAL;
+ 
+ 		IF subject IN succeededs THEN
+ 			RETURN(true);
+ 		END_IF;
+ 
+ 		IF subject IN dead_ends THEN
+ 			RETURN(false);
+ 		END_IF;
+ 
+		set_of_referring_instances := bag_to_set(USEDIN(subject, ''));
+ 		IF NOT EXISTS(set_of_referring_instances) THEN
+ 			dead_ends := dead_ends + subject;
+ 			RETURN(false);	-- origin of dead_end(1)
+ 		END_IF;
+ 
+ 		set_of_referring_instances := set_of_referring_instances - dead_ends - in_chain;
+
+ 		number_of_referring_instances := SIZEOF(set_of_referring_instances);
+ 		REPEAT j := 1 TO number_of_referring_instances;
+ 			child := set_of_referring_instances[j];
+ 			set_of_types := TYPEOF(child);
+ 
+ 			IF NOT (set_of_types <= set_of_input_types) THEN
+ 				succeededs := succeededs + in_chain + subject + child;
+ 				RETURN(true);	-- origin of succeeded(1)
+			END_IF;
+ 
+ 			IF is_referenced_by_outer_world(child, in_chain + subject) THEN
+ 				RETURN(true);
+ 			END_IF;
+ 		END_REPEAT;
+ 
+ 		dead_ends := dead_ends + subject;
+ 		RETURN(false);	-- origin of dead_end(2)
+ END_FUNCTION (*NESTED*);
+ 
+ LOCAL
+ 	 succeededs : SET OF GENERIC : CGEN := [];
+   dead_ends : SET OF GENERIC: CGEN := [];
+   number_of_input_instances     : INTEGER;
+   input_instance_CGEN: GENERIC:CGEN;
+ END_LOCAL;
+ 
+ IF NOT EXISTS(set_of_input_instances) THEN
+ 	 RETURN(false);
+ END_IF;
+ 
+ number_of_input_instances := SIZEOF(set_of_input_instances);
+ set_of_input_types := set_of_input_types + 'GENERIC';
+ 
+ REPEAT i := 1 TO number_of_input_instances;
+  input_instance_CGEN := set_of_input_instances[i];
+  IF NOT is_referenced_by_outer_world(input_instance_CGEN, previous_in_chain) THEN
+ 		RETURN(false);
+  END_IF;
+ END_REPEAT;
+ 
+ RETURN(true);
+ 
+ 
+ (* --*TY2021/06/23: original implementation
 LOCAL
   number_of_input_instances     : INTEGER;
   number_of_referring_instances : INTEGER;
@@ -37593,8 +37665,10 @@ END_LOCAL;
     RETURN(false);
   END_IF;
   RETURN(true);
+ --*TY2021/06/23: end of original implementation *)
 END_FUNCTION;
 
+ 
 FUNCTION derive_angle(placement_1 : axis2_placement_3d;
                       placement_2 : axis2_placement_3d) : plane_angle_measure;
 LOCAL
@@ -47154,6 +47228,44 @@ END_FUNCTION;
 
 FUNCTION using_items(item : founded_item_select;
                      checked_items : SET OF founded_item_select) : SET OF founded_item_select;
+
+ --*TY2021/06/27 alternative implementation proposal
+LOCAL
+	result_items    			: SET OF founded_item_select;
+	next_items      			: SET OF founded_item_select;
+ 	number_of_next_items 	: INTEGER;
+ 	next_item							: founded_item_select;
+ 	new_check_items 			: SET OF founded_item_select;
+	descendants     			: SET OF founded_item_select;
+END_LOCAL;
+  IF item IN checked_items THEN
+		RETURN([]);
+	END_IF;
+  checked_items := checked_items + item;
+
+  result_items := QUERY(z
+										 <* bag_to_set(USEDIN(item, ''))
+										 | ('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.REPRESENTATION_ITEM' IN TYPEOF(z)) OR
+											 ('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.FOUNDED_ITEM' IN TYPEOF(z)));
+	next_items := result_items - checked_items; 
+ 
+ 	number_of_next_items := SIZEOF(next_items);
+  IF number_of_next_items = 0 THEN
+ 		RETURN(result_items);
+ 	END_IF;
+
+ 	REPEAT i := 1 TO number_of_next_items;
+ 		next_item := next_items[i];
+ 		new_check_items := checked_items + (next_items - next_item);
+ 		descendants := using_items(next_item, new_check_items);
+		result_items := result_items + descendants;
+ 		checked_items := checked_items + next_item + descendants;
+ 	END_REPEAT;
+ 
+ 	RETURN(result_items);
+ 
+ 
+ (* --*TY2021/06/27 original implementation
 LOCAL
   new_check_items : SET OF founded_item_select;
   result_items    : SET OF founded_item_select;
@@ -47180,6 +47292,8 @@ END_LOCAL;
     END_REPEAT;
   END_IF;
   RETURN(result_items);
+ --*TY2021/06/27 end of original implementation*)
+ 
 END_FUNCTION;
 
 FUNCTION using_product_definition_of_shape_aspect(item : shape_aspect) : product_definition;

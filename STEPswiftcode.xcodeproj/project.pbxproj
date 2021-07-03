@@ -11,6 +11,7 @@
 		F40EE5E4254546D800F293C3 /* swift_named_aggregate_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F40EE5E3254546D800F293C3 /* swift_named_aggregate_type.c */; };
 		F40EE5EA254546F200F293C3 /* swift_named_simple_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */; };
 		F40EE5F225457CE300F293C3 /* SwiftSDAIap242 in Frameworks */ = {isa = PBXBuildFile; productRef = F40EE5F125457CE300F293C3 /* SwiftSDAIap242 */; };
+		F41BE8BA268BB694005990D1 /* swiftP21readTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41BE8B9268BB694005990D1 /* swiftP21readTest.swift */; };
 		F43B6BEF24CD3D6C007493AB /* swift_entity_partial.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */; };
 		F43B6BF124CD3E20007493AB /* swift_entity_reference.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF024CD3E20007493AB /* swift_entity_reference.c */; };
 		F43B6BF724CEC040007493AB /* swift_rule.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF624CEC040007493AB /* swift_rule.c */; };
@@ -137,6 +138,9 @@
 		F40EE5E8254546F200F293C3 /* swift_named_simple_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_named_simple_type.h; sourceTree = "<group>"; };
 		F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_named_simple_type.c; sourceTree = "<group>"; };
 		F413BEB1262C598700217744 /* TestCases */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TestCases; sourceTree = "<group>"; };
+		F41BE8B7268BB693005990D1 /* swiftP21readTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = swiftP21readTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F41BE8B9268BB694005990D1 /* swiftP21readTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = swiftP21readTest.swift; sourceTree = "<group>"; };
+		F41BE8BB268BB694005990D1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_partial.c; sourceTree = "<group>"; };
 		F43B6BF024CD3E20007493AB /* swift_entity_reference.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_reference.c; sourceTree = "<group>"; };
 		F43B6BF524CEC040007493AB /* swift_rule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_rule.h; sourceTree = "<group>"; };
@@ -386,6 +390,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		F41BE8B4268BB693005990D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F44D024F24BE402700E77B2A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -420,6 +431,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F41BE8B8268BB693005990D1 /* swiftP21readTest */ = {
+			isa = PBXGroup;
+			children = (
+				F41BE8B9268BB694005990D1 /* swiftP21readTest.swift */,
+				F41BE8BB268BB694005990D1 /* Info.plist */,
+			);
+			path = swiftP21readTest;
+			sourceTree = "<group>";
+		};
 		F43B6BF224CEBFA3007493AB /* rule */ = {
 			isa = PBXGroup;
 			children = (
@@ -470,6 +490,7 @@
 				F48BF92824C0E0C5005B5B0A /* yacc&lex */,
 				F4E7D604250819D2000B5362 /* swiftP21read */,
 				F47CCCDD257D801500FB0438 /* SDAISwiftCore */,
+				F41BE8B8268BB693005990D1 /* swiftP21readTest */,
 				F44D024524BE3FDA00E77B2A /* Products */,
 				F45A7F8F24E3B24700669F95 /* Frameworks */,
 			);
@@ -482,6 +503,7 @@
 				F48BF92724C0E0C5005B5B0A /* yacc&lex */,
 				F4E7D603250819D2000B5362 /* swiftP21read */,
 				F47CCCDC257D801500FB0438 /* SDAISwiftCore */,
+				F41BE8B7268BB693005990D1 /* swiftP21readTest.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1034,6 +1056,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		F41BE8B6268BB693005990D1 /* swiftP21readTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F41BE8BE268BB694005990D1 /* Build configuration list for PBXNativeTarget "swiftP21readTest" */;
+			buildPhases = (
+				F41BE8B3268BB693005990D1 /* Sources */,
+				F41BE8B4268BB693005990D1 /* Frameworks */,
+				F41BE8B5268BB693005990D1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = swiftP21readTest;
+			productName = swiftP21readTest;
+			productReference = F41BE8B7268BB693005990D1 /* swiftP21readTest.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		F44D025124BE402700E77B2A /* exp2swift */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F44D025624BE402700E77B2A /* Build configuration list for PBXNativeTarget "exp2swift" */;
@@ -1117,10 +1156,13 @@
 		F44D023C24BE3FDA00E77B2A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1220;
+				LastSwiftUpdateCheck = 1240;
 				LastUpgradeCheck = 1220;
 				ORGANIZATIONNAME = "Minokamo, Japan";
 				TargetAttributes = {
+					F41BE8B6268BB693005990D1 = {
+						CreatedOnToolsVersion = 12.4;
+					};
 					F44D025124BE402700E77B2A = {
 						CreatedOnToolsVersion = 11.5;
 					};
@@ -1152,11 +1194,30 @@
 				F48BF92624C0E0C5005B5B0A /* yacc&lex */,
 				F4E7D602250819D2000B5362 /* swiftP21read */,
 				F47CCCDB257D801500FB0438 /* SDAISwiftCore */,
+				F41BE8B6268BB693005990D1 /* swiftP21readTest */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		F41BE8B5268BB693005990D1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		F41BE8B3268BB693005990D1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F41BE8BA268BB694005990D1 /* swiftP21readTest.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F44D024E24BE402700E77B2A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1266,6 +1327,45 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		F41BE8BC268BB694005990D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = ZX793TWQF2;
+				INFOPLIST_FILE = swiftP21readTest/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.minokamo.swiftP21readTest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F41BE8BD268BB694005990D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = ZX793TWQF2;
+				INFOPLIST_FILE = swiftP21readTest/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.minokamo.swiftP21readTest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		F44D024924BE3FDA00E77B2A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1494,6 +1594,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		F41BE8BE268BB694005990D1 /* Build configuration list for PBXNativeTarget "swiftP21readTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F41BE8BC268BB694005990D1 /* Debug */,
+				F41BE8BD268BB694005990D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		F44D023F24BE3FDA00E77B2A /* Build configuration list for PBXProject "STEPswiftcode" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

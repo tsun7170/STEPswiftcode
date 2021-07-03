@@ -40,6 +40,11 @@ void ALGget_generics( Scope s, Linked_List generics, Linked_List aggregates ) {
 //		printf("KEY:<%s> \tTYPE:<%c> \t\n",DICT_key,DICT_type);
 		if( DICT_type != OBJ_TAG ) continue;
 		
+		Type upstream_tag = SCOPEfind(s->superscope, tag->symbol.name, SCOPE_FIND_TYPE);
+		if( upstream_tag != NULL ){
+			continue;
+		}
+		
 		TypeBody base = TYPEget_body(tag->u.type->head);
 		assert(base != NULL);
 		switch (base->type) {

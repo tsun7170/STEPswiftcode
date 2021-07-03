@@ -807,6 +807,8 @@ void EXPR__swift( Scope SELF, Expression e, Type target_type, bool paren, unsign
 				char* sep = "";
 				bool noLabel = ( isfunc && (LISTget_second(formals) == NULL) );
 				
+				assert(LISTget_length(formals) == LISTget_length(e->u.funcall.list));
+
 				Link formals_iter = LISTLINKfirst(formals);
 				LISTdo( e->u.funcall.list, arg, Expression ) {
 					raw("%s",sep);
