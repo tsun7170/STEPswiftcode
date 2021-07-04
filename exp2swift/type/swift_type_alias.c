@@ -17,7 +17,7 @@
 #include "resolve.h"
 #include "pretty_where.h"
 //#include "pretty_expr.h"
-//#include "pretty_type.h"
+#include "pretty_type.h"
 
 #include "swift_type_alias.h"
 #include "swift_type.h"
@@ -30,6 +30,15 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 	char buf[BUFSIZ];
 	
 	raw("//MARK: - Defined data type (type alias)\n");
+	
+	// markdown
+	raw("\n/** Defined data type (type alias)\n");
+	raw("- EXPRESS:\n");
+	raw("```express\n");
+	TYPE_out(type, level);
+	raw("\n```\n");
+	raw("*/\n");
+	
 	indent_swift(level);
 	raw( "public struct %s: ", TYPE_swiftName(type,type->superscope,buf));
 	wrap("%s__", SCHEMA_swiftName(schema, buf));
@@ -78,7 +87,7 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		indent_swift(level2);
 		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
-		raw("guard let repval = Supertype(fromGeneric: generic) else { return nil }\n");
+		raw("guard let repval = Supertype.convert(fromGeneric: generic) else { return nil }\n");
 		indent_swift(level2+nestingIndent_swift);
 		raw("rep = repval\n");
 		indent_swift(level2);

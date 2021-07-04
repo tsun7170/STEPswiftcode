@@ -16,7 +16,7 @@
 #include "pp.h"
 #include "pretty_where.h"
 //#include "pretty_expr.h"
-//#include "pretty_type.h"
+#include "pretty_type.h"
 
 #include "swift_named_simple_type.h"
 #include "swift_type.h"
@@ -27,6 +27,15 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 	char buf[BUFSIZ];
 	
 	raw("//MARK: - Defined data type (named simple type)\n");
+	
+	// markdown
+	raw("\n/** Defined data type (named simple type)\n");
+	raw("- EXPRESS:\n");
+	raw("```express\n");
+	TYPE_out(type, level);
+	raw("\n```\n");
+	raw("*/\n");
+	
 	indent_swift(level);
 	raw( "public struct %s: ", TYPE_swiftName(type,type->superscope,buf));
 	wrap("%s__", SCHEMA_swiftName(schema, buf));

@@ -134,13 +134,19 @@ static void partialEntityReference_swift(Entity entity, Entity partial, bool is_
 
 static void attributeRefHead_swift(Entity entity, char* access, Variable attr, bool is_subtype_attr, int level, char* label) {	
 	 
-	 indent_swift(level);
-	 {
-		 char buf[BUFSIZ];
-		 raw("//in ENTITY: %s(%s)\t//%s\n", 
+	 { char buf[BUFSIZ];
+		 
+		 //markdown
+		 indent_swift(level);
+		 raw("/// __%s__ attribute of ``%s``\n", 
+				 label,
+				 ENTITY_swiftName(entity, NO_QUALIFICATION, buf) 
+				 );
+		 indent_swift(level);
+		 raw("/// - origin: %s( ``%s`` )\n", 
 				 (entity==attr->defined_in ? "SELF" : (is_subtype_attr ? "SUB" : "SUPER")), 
-				 ENTITY_swiftName(attr->defined_in, NO_QUALIFICATION, buf), 
-				 label);
+				 ENTITY_swiftName(attr->defined_in, NO_QUALIFICATION, buf)
+				 );
 		 
 		 indent_swift(level);
 		 raw("%s var %s: ", access, attribute_swiftName(attr,buf) );
@@ -1079,6 +1085,15 @@ static void entityWhereRuleValidation_swift( Entity entity, int level ) {
 void entityReferenceDefinition_swift( Entity entity, int level ) {
 	raw("\n\n");
 	raw("//MARK: - Entity Reference\n");
+	
+	// markdown
+	raw("\n/** ENTITY reference\n");
+	raw("- EXPRESS:\n");
+	raw("```express\n");
+	ENTITY_out(entity, level);
+	raw("\n```\n");
+	raw("*/\n");
+	
 	indent_swift(level);
 	{
 		char buf[BUFSIZ];

@@ -425,7 +425,7 @@ static void selectTypeAttributeReference_swift(Type select_type, int level) {
 						}
 						else if( TYPEis_free_generic(base_attr_type) ){
 							TYPE_head_swift(NULL, attr_type, WO_COMMENT);
-							raw("(fromGeneric: ");
+							raw(".convert(fromGeneric: ");
 							wrap("select.%s)\n", as_attributeSwiftName_n(attr_name, buf, BUFSIZ));
 						}
 						else {
@@ -747,7 +747,7 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	 	if let fundamental = select as? Self {
 	 		self.init(fundamental: fundamental)
 	 	}
-		else if let base = <selection>(fromGeneric: select) { 
+		else if let base = <selection>.convert(fromGeneric: select) { 
 	 		self = .<selection>(base)
 	 }
 		...
@@ -769,7 +769,7 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 		
 		LISTdo( typeBody->list, selection, Type ) {
 			indent_swift(level2);
-			raw("else if let base = %s(fromGeneric: select) {\n", 
+			raw("else if let base = %s.convert(fromGeneric: select) {\n", 
 					TYPE_swiftName(selection, select_type->superscope, buf));
 			{	int level3 = level2+nestingIndent_swift;
 				indent_swift(level3);
@@ -964,7 +964,7 @@ static void selectSubtypeConstructor_swift(Schema schema, Type select_type,  int
 	 }
 	 
 	 init?<G: SDAIGenericType>(fromGeneric generic: G?) { 
-	 	self.init(fundamental: FundamentalType(fromGeneric: generic))
+	 	self.init(fundamental: FundamentalType.convert(fromGeneric: generic))
 	 }
 	*/
 	
@@ -986,7 +986,7 @@ static void selectSubtypeConstructor_swift(Schema schema, Type select_type,  int
 	indent_swift(level);
 	raw("init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
 	indent_swift(level+nestingIndent_swift);
-	raw("self.init(fundamental: FundamentalType(fromGeneric: generic))\n");
+	raw("self.init(fundamental: FundamentalType.convert(fromGeneric: generic))\n");
 	indent_swift(level);
 	raw("}\n");
 
@@ -1568,15 +1568,19 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 	Type common_aggregate_base = TYPE_retrieve_aggregate_base(select_type, NULL);
 
 	// markdown
-	raw("\n/** ```express\n");
-	xxxxx
-	raw("\n**/\n");
+	raw("\n/** SELECT type\n");
+	raw("- EXPRESS:\n");
+	raw("```express\n");
+	TYPE_out(select_type, level);
+	raw("\n```\n");
+	raw("*/\n");
 	
 	// swift enum definition
 		char buf[BUFSIZ];
 				
-		char typebuf[BUFSIZ];
-		const char* typename = TYPE_swiftName(select_type,select_type->superscope,typebuf);
+		char typename[BUFSIZ];
+		TYPE_swiftName(select_type,select_type->superscope,typename);
+	
 		indent_swift(level);
 		wrap( "public enum %s : SDAIValue, ", typename );
 		positively_wrap();
@@ -1586,21 +1590,33 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 		{	int level2 = level+nestingIndent_swift;
 			
 			LISTdo( typeBody->list, selection, Type ) {
-				indent_swift(level2);
-				raw( "case %s(", selectCase_swiftName(selection, buf) );
-				wrap( "%s)", TYPE_swiftName(selection, select_type->superscope, buf) );
+				const char* case_kind;
 				if( TYPEis_entity(selection) ) {
-					raw( "\t// %s\n", "(ENTITY)" );
+					case_kind = "ENTITY";
 				}
 				else if( TYPEis_select(selection) ) {
-					raw( "\t// %s\n", "(SELECT)" );
+					case_kind = "SELECT";
 				}
 				else if( TYPEis_enumeration(selection) ) {
-					raw( "\t// %s\n", "(ENUM)" );
+					case_kind = "ENUM";
 				}
 				else {
-					raw( "\t// %s\n", "(TYPE)" );
+					case_kind = "TYPE";
 				}
+				
+				
+				// markdown
+				indent_swift(level2);
+				raw("/// SELECT case ``%s`` (%s) in ``%s``\n",
+						TYPE_swiftName(selection, select_type->superscope, buf),
+						case_kind,
+						typename );
+				
+				indent_swift(level2);
+				raw( "case %s(", selectCase_swiftName(selection, buf) );
+				wrap( "%s)\t// (%s)\n", 
+						 TYPE_swiftName(selection, select_type->superscope, buf),
+						 case_kind );
 			} LISTod;		
 			raw("\n");
 			

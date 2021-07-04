@@ -15,6 +15,7 @@
 //#include "exppp.h"
 #include "pp.h"
 #include "pretty_where.h"
+#include "pretty_type.h"
 
 #include "swift_enum_type.h"
 #include "swift_type.h"
@@ -70,8 +71,16 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 	int count = DICTcount_type(type->symbol_table, OBJ_EXPRESSION);
 	Element* enumCases = NULL;
 	
-	char typebuf[BUFSIZ];
-	const char* typename = TYPE_swiftName(type,type->superscope,typebuf);
+	// markdown
+	raw("\n/** ENUMERATION type\n");
+	raw("- EXPRESS:\n");
+	raw("```express\n");
+	TYPE_out(type, level);
+	raw("\n```\n");
+	raw("*/\n");
+	
+	char typename[BUFSIZ];
+	TYPE_swiftName(type,type->superscope,typename);
 	indent_swift(level);
 	wrap( "public enum %s : SDAI.ENUMERATION, SDAIValue, ", typename );
 	wrap( "%s__%s__type {\n", SCHEMA_swiftName(schema, buf),typename );
@@ -95,6 +104,11 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 			
 			for( int i=0; i<count; ++i ) {
 				assert(enumCases[i] != NULL);
+				
+				//markdown
+				indent_swift(level2);
+				raw("/// ENUMERATION case in ``%s``\n", typename);
+				
 				indent_swift(level2);
 				raw( "case %s\n", enumCase_swiftName( enumCases[i]->data, buf ) );
 			}
@@ -280,19 +294,26 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 	raw( "}\n\n" );
 	
 	
+	indent_swift(level);
 	raw("//MARK: -enum case symbol promotions\n");
 	for( int i=0; i<count; ++i ) {
 		assert(enumCases!=NULL && enumCases[i] != NULL);
 		const char* enumname = enumCase_swiftName( enumCases[i]->data, buf );
-		indent_swift(level);
 		
 		Generic x = DICTlookup(type->superscope->enum_table, ((Expression)(enumCases[i]->data))->symbol.name);
 		assert(x);
 		if( DICT_type == OBJ_AMBIG_ENUM ){
+			indent_swift(level);
 			raw( "// ambiguous:     %s\n", enumname );
 		} 
 		else {
 			assert(DICT_type == OBJ_ENUM);
+			
+			//markdown
+			indent_swift(level);
+			raw("/// promoted ENUMERATION case in ``%s``\n", typename);
+
+			indent_swift(level);
 			raw( "public static let %s = ", enumname );
 			wrap("%s", typename);
 			wrap(".%s\n", enumname);
