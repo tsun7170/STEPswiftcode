@@ -3,7 +3,7 @@
 //  swiftP21read
 //
 //  Created by Yoshida on 2020/09/09.
-//  Copyright © 2020 Minokamo, Japan. All rights reserved.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 import Foundation
@@ -53,10 +53,13 @@ let numTotal = exchange.entityInstanceRegistory.count
 print("decoded \(numTotal) entities")
 print("top level entities (\(numToplevel)): \(toplevel)\n")
 
-for (name,instances) in toplevel {
-	if let some = instances.first, let instance = exchange.entityInstanceRegistory[some], let complex = instance.resolved {
-		print("\(name) #\(some): \(complex)")
-		print("")
+var printTopLevels = false
+if printTopLevels {
+	for (name,instances) in toplevel {
+		if let some = instances.first, let instance = exchange.entityInstanceRegistory[some], let complex = instance.resolved {
+			print("\(name) #\(some): \(complex)")
+			print("")
+		}
 	}
 }
 
@@ -72,31 +75,37 @@ schemaInstance.mode = .readOnly
 
 let validationMonitor = MyValidationMonitor()
 
-let globalResult = schemaInstance.validateGlobalRules(monitor:validationMonitor)
-print("\n glovalRuleValidationRecord:\n\(globalResult)"  )
+var doValidations = true
+if doValidations {
+	let globalResult = schemaInstance.validateGlobalRules(monitor:validationMonitor)
+	print("\n glovalRuleValidationRecord(\(globalResult.count)):\n\(globalResult)"  )
+	
+	let uniquenessResult = schemaInstance.validateUniquenessRules(monitor:validationMonitor)
+	print("\n uniquenessRuleValidationRecord(\(uniquenessResult.count)):\n\(uniquenessResult)")
+	
+	let whereResult = schemaInstance.validateWhereRules(monitor:validationMonitor)
+	print("\n whereRuleValidationRecord:\n\(whereResult)" )
+}
 
-let uniquenessResult = schemaInstance.validateUniquenessRules(monitor:validationMonitor)
-print("\n uniquenessRuleValidationRecord:\n\(uniquenessResult)")
-
-let whereResult = schemaInstance.validateWhereRules(monitor:validationMonitor)
-print("\n whereRuleValidationRecord:\n\(whereResult)" )
-
-
-//let validationPassed = schemaInstance.validateAllConstraints(monitor: MyValidationMonitor())
-//print("validationPassed:", validationPassed)
-//print("glovalRuleValidationRecord: \(String(describing: schemaInstance.globalRuleValidationRecord))"  )
-//print("uniquenessRuleValidationRecord: \(String(describing: schemaInstance.uniquenessRuleValidationRecord))")
-//print("whereRuleValidationRecord: \(String(describing: schemaInstance.whereRuleValidationRecord))" )
+var doAllValidaton = false
+if doAllValidaton {
+	let validationPassed = schemaInstance.validateAllConstraints(monitor: MyValidationMonitor())
+	print("validationPassed:", validationPassed)
+	print("glovalRuleValidationRecord: \(String(describing: schemaInstance.globalRuleValidationRecord))"  )
+	print("uniquenessRuleValidationRecord: \(String(describing: schemaInstance.uniquenessRuleValidationRecord))")
+	print("whereRuleValidationRecord: \(String(describing: schemaInstance.whereRuleValidationRecord))" )
+}
 
 //MARK: entity look up
-var entityType = AP242.eSHAPE_REPRESENTATION.self
+var entityType = ap242.eSHAPE_REPRESENTATION.self
 let instances = schemaInstance.entityExtent(type: entityType)
-print(entityType, instances)
+print("\(entityType): \(instances)")
 
 var name = 1
 while name != 0 {
 	if let instance = exchange.entityInstanceRegistory[name], let complex = instance.resolved {
 		print("#\(name): source = \(instance.source)\n\(complex)")
+		print("")
 	}
 	name = 0
 	print("")
@@ -105,155 +114,4 @@ while name != 0 {
 
 print("normal end of execution")
 
-//MARK: - activity monitor
-class MyActivityMonitor: P21Decode.ActivityMonitor {
-	override func tokenStreamDidSet(error p21Error: P21Decode.P21Error) {
-		print("error detected on token stream: \(p21Error)")
-	}
-	
-	override func parserDidSet(error p21Error: P21Decode.P21Error) {
-		print("error detected on parser: \(p21Error)")
-	}
-	
-	override func exchangeStructureDidSet(error exError: String) {
-		print("error detected on exchange structure: \(exError)")
-	}
-	
-	override func decoderDidSet(error decoderError: P21Decode.Decoder.Error) {
-		print("error detected on decoder: \(decoderError)")
-	}
-	
-	override func scannerDidDetectNewLine(lineNumber: Int) {
-		if lineNumber % 1000 == 0 			{ print("+", terminator: "") }
-		else if lineNumber % 100 == 0 	{ print(".", terminator: "") }
-	}
-	
-	var entityCount = 0
-	override func decoderResolved(entiyInstanceName: P21Decode.ExchangeStructure.EntityInstanceName) {
-		entityCount += 1
-		if entityCount % 1000 == 0 			{ print("*", terminator: "") }
-		else if entityCount % 100 == 0 	{ print(".", terminator: "") }		
-	}
-	
-	override func startedParsingHeaderSection() {
-		print("\n parsing header section: ", terminator: "")
-	}
-	
-	override func startedParsingAnchorSection() {
-		print("\n parsing anchor section: ", terminator: "")
-	}
-	
-	override func startedParsingReferenceSection() {
-		print("\n parsing reference section: ", terminator: "")
-	}
-	
-	override func startedParsingDataSection() {
-		print("\n parsing data section: ", terminator: "")
 
-	}
-	
-	override func completedParsing() {
-		print("\n completed parsing.")
-	}
-	
-	override func startedResolvingEntityInstances() {
-		print(" resolving entity instances: ", terminator: "")
-
-	}
-	
-	override func completedResolving() {
-		print("\n completed resolving.")
-	}
-}
-
-//MARK: - validation monitor
-class MyValidationMonitor: SDAIPopulationSchema.ValidationMonitor {
-	var globalCount: Int = 0
-	var uniquenessCount: Int = 0
-	var complexCount: Int = 0
-	
-	var globalValidated: Int = 0
-	var uniquenessValidated: Int = 0
-	var complexValidated: Int = 0
-	
-	var confirmFailedCase = false
-	
-	override func willValidate(globalRules: AnySequence<SDAIDictionarySchema.GlobalRule>) {
-		globalCount = globalRules.reduce(0, { (count,_) in count + 1 })
-		print("\n validating \(globalCount) global rules: ", terminator: "")
-	}
-	
-	override func willValidate(uniquenessRules: AnySequence<SDAIDictionarySchema.UniquenessRule>) {
-		uniquenessCount =  uniquenessRules.reduce(0, { (count,_) in count + 1 })
-		print("\n validating \(uniquenessCount) uniqueness rules: ", terminator: "")
-	}
-	
-	override func willValidateWhereRules(for complexEntites: AnySequence<SDAI.ComplexEntity>) {
-		complexCount = complexEntites.reduce(0, { (count,_) in count + 1 })
-		print("\n validating where rules for \(complexCount) complex entities: ", terminator: "")
-	}
-	
-	private func progressMarker(completed: Int, total: Int) -> String? {
-		if total == 0 { return nil }
-		if total <= 100 { return completed % 10 == 0 ? "+" : "." }
-		
-		if (completed * 10) % total < 10 {
-			return "\((completed * 10) / total)"
-		}
-		if (completed * 20) % total < 20 {
-			return "+"
-		}
-		if ( completed * 100) % total < 100 {
-			return "."
-		}
-		return nil
-	}
-	
-	override func didValidateGlobalRule(for schemaInstance: SDAIPopulationSchema.SchemaInstance, result: SDAI.GlobalRuleValidationResult) {
-		globalValidated += 1
-		if let marker = progressMarker(completed: globalValidated, total: globalCount) { print(marker, terminator: "") }
-		
-		if result.result == SDAI.FALSE {
-			print("/", terminator: "")
-			if confirmFailedCase {
-				let _ = schemaInstance.validate(globalRule: result.globalRule)
-			}
-		}
-	}
-	
-	override func didValidateUniquenessRule(for schemaInstance: SDAIPopulationSchema.SchemaInstance, result: SDAI.UniquenessRuleValidationResult) {
-		uniquenessValidated += 1
-		if let marker = progressMarker(completed: uniquenessValidated, total: uniquenessCount) { print(marker, terminator: "") }
-
-		if result.result == SDAI.FALSE {
-			print("/", terminator: "")
-			if confirmFailedCase {
-				let _ = schemaInstance.validate(uniquenessRule: result.uniquenessRule)
-			}
-		}
-	}
-	
-	override func didValidateWhereRule(for complexEntity: SDAI.ComplexEntity, result: [SDAI.EntityReference : [SDAI.WhereLabel : SDAI.LOGICAL]]) {
-		complexValidated += 1
-		if let marker = progressMarker(completed: complexValidated, total: complexCount) { print(marker, terminator: "") }
-
-		var failed = false
-		for (entity,entityResult) in result {
-			for (label,whereResult) in entityResult {
-				if whereResult == SDAI.FALSE {
-					failed = true
-					if confirmFailedCase {
-						print("\nFAILED: \(label)")
-						let _ = type(of: entity).validateWhereRules(instance: entity, prefix: "again", round: SDAI.notValidatedYet)
-					}
-				}
-			}
-		}
-		if failed { 
-			print("/", terminator: "") 
-			
-		}
-		
-	}
-	
-}

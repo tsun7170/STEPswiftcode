@@ -3,7 +3,7 @@
 //  exp2swift
 //
 //  Created by Yoshida on 2020/06/14.
-//  Copyright © 2020 Minokamo, Japan. All rights reserved.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 #ifndef swift_symbol_h
@@ -24,7 +24,21 @@ extern const char* canonical_dictName(const char* name, char buf[BUFSIZ]);
 
 extern const char * variable_swiftName(Variable v, char buf[BUFSIZ]);
 extern const char * asVariable_swiftName_n(const char* symbol_name, char* buf, int maxlen);
-extern void variableType_swift(Scope current, Variable v, bool force_optional, SwiftOutCommentOption in_comment);
-extern void optionalType_swift(Scope current, Type type, bool optional, SwiftOutCommentOption in_comment);
+
+/// <#Description#>
+/// @param current <#current description#>
+/// @param v <#v description#>
+/// @param force_optional <#force_optional description#>
+/// @param in_comment <#in_comment description#>
+/// @return optionality of variable type
+extern bool variableType_swift(Scope current, Variable v, bool force_optional, SwiftOutCommentOption in_comment);
+
+/// <#Description#>
+/// @param current <#current description#>
+/// @param type <#type description#>
+/// @param optional <#optional description#>
+/// @param in_comment <#in_comment description#>
+/// @return optionality of variable type
+extern bool optionalType_swift(Scope current, Type type, bool optional, SwiftOutCommentOption in_comment);
 
 #endif /* swift_symbol_h */

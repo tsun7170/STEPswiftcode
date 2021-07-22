@@ -3,7 +3,7 @@
 //  exp2swift
 //
 //  Created by Yoshida on 2020/07/28.
-//  Copyright © 2020 Minokamo, Japan. All rights reserved.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 #include <exppp/exppp.h>
@@ -102,21 +102,21 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int*
 	Variable v = ( Variable )DICTdo( &de );
 
 	wrap("if let incrementControl");
-	raw("/*");TYPE_head_swift(loop->scope, VARget_type(v), YES_IN_COMMENT); raw("*/"); // DEBUG
+	raw("/*");TYPE_head_swift(loop->scope, VARget_type(v), YES_IN_COMMENT, LEAF_OWNED); raw("*/"); // DEBUG
 	
 	wrap(" = SDAI.FROM(");
-	raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->init->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+	raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->init->return_type, YES_IN_COMMENT, LEAF_OWNED); raw("*/"); // DEBUG
 	EXPR_swift(algo, loop->scope->u.incr->init,VARget_type(v), NO_PAREN); raw(", ");
 
 	wrap("TO:");
-	raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->end->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+	raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->end->return_type, YES_IN_COMMENT, LEAF_OWNED); raw("*/"); // DEBUG
 	EXPR_swift(algo, loop->scope->u.incr->end,VARget_type(v), NO_PAREN);
 
 	if( loop->scope->u.incr->increment && 
 		 !( TYPEis_integer(loop->scope->u.incr->increment->type) && (loop->scope->u.incr->increment->u.integer == 1)) ) {
 		raw(", ");
 		wrap("BY:");
-		raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->increment->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+		raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->increment->return_type, YES_IN_COMMENT, LEAF_OWNED); raw("*/"); // DEBUG
 		EXPR_swift(algo, loop->scope->u.incr->increment,VARget_type(v), NO_PAREN);		
 	}
 

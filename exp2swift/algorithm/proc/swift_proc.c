@@ -3,7 +3,7 @@
 //  exp2swift
 //
 //  Created by Yoshida on 2020/07/27.
-//  Copyright © 2020 Minokamo, Japan. All rights reserved.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 #include <assert.h>
@@ -88,7 +88,7 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 				Type base = atag->u.type->head;	//hack!
 				positively_wrap();
 				wrap("%s%s.Element == ",sep,TYPE_swiftName(atag,NULL,buf));
-				TYPE_head_swift(proc->superscope, base, NOT_IN_COMMENT);
+				TYPE_head_swift(proc->superscope, base, NOT_IN_COMMENT, LEAF_OWNED);
 				sep = ", ";
 			}LISTod;
 		}

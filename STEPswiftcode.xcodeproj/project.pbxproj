@@ -18,6 +18,8 @@
 		F43B6BFA24CEC053007493AB /* swift_func.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF924CEC053007493AB /* swift_func.c */; };
 		F43B6BFD24CEC064007493AB /* swift_proc.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BFC24CEC064007493AB /* swift_proc.c */; };
 		F43B6C0124D0064D007493AB /* swift_algorithm.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6C0024D0064D007493AB /* swift_algorithm.c */; };
+		F447F935269992FA00F31B35 /* MyActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F447F934269992FA00F31B35 /* MyActivityMonitor.swift */; };
+		F447F93C2699937200F31B35 /* MyValidationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F447F93B2699937200F31B35 /* MyValidationMonitor.swift */; };
 		F44D02DE24BE427C00E77B2A /* sc_trace_fprintf.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D02B824BE427C00E77B2A /* sc_trace_fprintf.c */; };
 		F44D02DF24BE427C00E77B2A /* sc_memmgr.cc in Sources */ = {isa = PBXBuildFile; fileRef = F44D02B924BE427C00E77B2A /* sc_memmgr.cc */; };
 		F44D02E024BE427C00E77B2A /* sc_mkdir.c in Sources */ = {isa = PBXBuildFile; fileRef = F44D02BC24BE427C00E77B2A /* sc_mkdir.c */; };
@@ -151,6 +153,9 @@
 		F43B6BFC24CEC064007493AB /* swift_proc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_proc.c; sourceTree = "<group>"; };
 		F43B6BFF24D0064D007493AB /* swift_algorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_algorithm.h; sourceTree = "<group>"; };
 		F43B6C0024D0064D007493AB /* swift_algorithm.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_algorithm.c; sourceTree = "<group>"; };
+		F447F92D269797A900F31B35 /* IDETemplateMacros.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = IDETemplateMacros.plist; path = ../../../../Library/Developer/Xcode/UserData/IDETemplateMacros.plist; sourceTree = "<group>"; };
+		F447F934269992FA00F31B35 /* MyActivityMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyActivityMonitor.swift; sourceTree = "<group>"; };
+		F447F93B2699937200F31B35 /* MyValidationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyValidationMonitor.swift; sourceTree = "<group>"; };
 		F44D025224BE402700E77B2A /* exp2swift */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = exp2swift; sourceTree = BUILT_PRODUCTS_DIR; };
 		F44D025C24BE421400E77B2A /* IFC4.exp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.exports; path = IFC4.exp; sourceTree = "<group>"; };
 		F44D025D24BE421400E77B2A /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
@@ -484,6 +489,7 @@
 		F44D023B24BE3FDA00E77B2A = {
 			isa = PBXGroup;
 			children = (
+				F447F92D269797A900F31B35 /* IDETemplateMacros.plist */,
 				F44D025324BE402700E77B2A /* exp2swift */,
 				F455D4F324EC73F7004C5320 /* schema */,
 				F44D025924BE40B600E77B2A /* stepcode */,
@@ -1048,6 +1054,8 @@
 			isa = PBXGroup;
 			children = (
 				F4E7D605250819D2000B5362 /* main.swift */,
+				F447F934269992FA00F31B35 /* MyActivityMonitor.swift */,
+				F447F93B2699937200F31B35 /* MyValidationMonitor.swift */,
 				F413BEB1262C598700217744 /* TestCases */,
 			);
 			path = swiftP21read;
@@ -1320,7 +1328,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F447F93C2699937200F31B35 /* MyValidationMonitor.swift in Sources */,
 				F4E7D606250819D2000B5362 /* main.swift in Sources */,
+				F447F935269992FA00F31B35 /* MyActivityMonitor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

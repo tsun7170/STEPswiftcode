@@ -3,7 +3,7 @@
 //  exp2swift
 //
 //  Created by Yoshida on 2020/10/25.
-//  Copyright © 2020 Minokamo, Japan. All rights reserved.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 #include <stdlib.h>
@@ -44,7 +44,7 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 	{	int level2 = level+nestingIndent_swift;
 		indent_swift(level2);
 		raw( "public typealias Supertype = " );
-		TYPE_body_swift(type->superscope, type, NOT_IN_COMMENT);
+		TYPE_body_swift(type->superscope, type, NOT_IN_COMMENT, LEAF_OWNED);
 		raw("\n");
 		indent_swift(level2);
 		raw("public typealias FundamentalType = Supertype.FundamentalType\n");

@@ -3,7 +3,7 @@
 //  exp2swift
 //
 //  Created by Yoshida on 2020/07/27.
-//  Copyright © 2020 Minokamo, Japan. All rights reserved.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 #include <assert.h>
@@ -96,7 +96,7 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 			Type aggr = atag->u.type->head;	
 			positively_wrap();
 			wrap("%s%s.ELEMENT == ",sep,TYPE_swiftName(atag,NULL,buf));
-			TYPE_head_swift(func->superscope, TYPEget_base_type(aggr), false);
+			TYPE_head_swift(func->superscope, TYPEget_base_type(aggr), WO_COMMENT, LEAF_OWNED);
 			sep = ", ";
 		}LISTod;
 	}

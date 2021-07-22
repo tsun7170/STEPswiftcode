@@ -1,3 +1,11 @@
+//
+//  exp2swift_main.c
+//  exp2swift
+//
+//  Created by Yoshida on 2020/04/12.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
+//
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "../express/express.h"

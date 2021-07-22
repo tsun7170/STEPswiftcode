@@ -3,7 +3,7 @@
 //  exp2swift
 //
 //  Created by Yoshida on 2020/06/14.
-//  Copyright © 2020 Minokamo, Japan. All rights reserved.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 #include <stdio.h>
@@ -478,7 +478,7 @@ static void EXPR_aggregate_initializer_swift(Scope SELF, bool can_wrap, Expressi
 	if( !TYPEis_runtime(basetype) ){
 		raw( "] " );
 		wrap( "as [SDAI.AggregationInitializerElement<" );
-		TYPE_head_swift(SELF, basetype, WO_COMMENT);
+		TYPE_head_swift(SELF, basetype, WO_COMMENT, LEAF_OWNED);
 			raw(">])");
 	}
 	else{
@@ -1271,7 +1271,7 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 	// rhs: ?
 	if( isLITERAL_INFINITY(rhs) ) {
 		raw("(nil as ");
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+		TYPE_head_swift(SELF, lhsType, WO_COMMENT, LEAF_OWNED);
 		raw("?)");
 		return;
 	}
@@ -1283,7 +1283,7 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 //			return;
 //		}
 		
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+		TYPE_head_swift(SELF, lhsType, WO_COMMENT, LEAF_OWNED);
 		raw("(");
 		if( lhs_tb->upper ){
 			positively_wrap();
@@ -1317,9 +1317,9 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 	
 	// rhs: select type
 	if( TYPEis_select(rhs->return_type) ){
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+		TYPE_head_swift(SELF, lhsType, WO_COMMENT, LEAF_OWNED);
 		raw("(");
-		raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+		raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT, LEAF_OWNED); raw("*/"); // DEBUG
 		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
 		raw(")");
 		return;
@@ -1331,7 +1331,7 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 		return;
 	}
 	
-	TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+	TYPE_head_swift(SELF, lhsType, WO_COMMENT, LEAF_OWNED);
 	raw("(");
 	if( lhs_tb->upper ){
 		positively_wrap();
@@ -1361,7 +1361,7 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 					(TYPEis_runtime(TYPEget_base_type(rhs->return_type))||TYPEis_generic(TYPEget_base_type(rhs->return_type))) ){
 		wrap("generic: ");
 	}
-	raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+	raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT, LEAF_OWNED); raw("*/"); // DEBUG
 	
 	EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
 	raw(")");
@@ -1383,7 +1383,7 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 	
 	if( isLITERAL_INFINITY(rhs) ) {
 		raw("(nil as ");
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+		TYPE_head_swift(SELF, lhsType, WO_COMMENT, LEAF_OWNED);
 		raw("?)");
 		return;
 	}
@@ -1400,7 +1400,7 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 			return;
 		}
 		
-		TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);	// wrap with explicit type cast to entity reference
+		TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT, LEAF_OWNED);	// wrap with explicit type cast to entity reference
 		raw("(");
 		raw("/*partial entity*/");
 		EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
@@ -1409,7 +1409,7 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 	}
 	
 	if( EXP_is_literal(rhs) ){
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT);	// wrap with explicit type cast
+		TYPE_head_swift(SELF, lhsType, WO_COMMENT, LEAF_OWNED);	// wrap with explicit type cast
 		raw("(");
 	
 //	raw("/*");TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);raw("*/"); // DEBUG	
@@ -1435,7 +1435,7 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 		return;
 	}
 	
-	TYPE_head_swift(SELF, lhsType, WO_COMMENT);	// wrap with explicit type cast
+	TYPE_head_swift(SELF, lhsType, WO_COMMENT, LEAF_OWNED);	// wrap with explicit type cast
 	raw("(");
 	if( TYPEis_generic(rhs->return_type)||TYPEis_runtime(rhs->return_type) ){
 		raw("fromGeneric: ");
@@ -1444,7 +1444,7 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 		raw("/*partial entity*/");
 	}
 	else {
-		raw("/*");TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);raw("*/"); // DEBUG	
+		raw("/*");TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT, LEAF_OWNED);raw("*/"); // DEBUG	
 	}
 	
 	EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);

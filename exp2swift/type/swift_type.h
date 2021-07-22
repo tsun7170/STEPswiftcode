@@ -3,7 +3,7 @@
 //  exp2swift
 //
 //  Created by Yoshida on 2020/06/14.
-//  Copyright © 2020 Minokamo, Japan. All rights reserved.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 #ifndef swift_type_h
@@ -21,6 +21,8 @@ typedef enum {
 //#define NOT_IN_COMMENT	false
 
 #define NO_QUALIFICATION	NULL
+#define LEAF_OWNED	false
+#define LEAF_UNOWNED	true
 
 extern int accumulate_qualification(Scope target, Scope current, char buf[BUFSIZ]);
 
@@ -33,11 +35,11 @@ extern const char* selectCase_swiftName( Type selection, char buf[BUFSIZ] );
 extern void TYPEdefinition_swift(Schema schema, Type t, int level );
 extern void TYPEextension_swift( Schema schema, Type t, int level );
 
-extern void TYPE_head_swift( Scope current, Type t, SwiftOutCommentOption in_comment );
-extern void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment );
+extern void TYPE_head_swift( Scope current, Type t, SwiftOutCommentOption in_comment, bool leaf_unowned );
+extern void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment, bool leaf_unowned );
 extern const char* builtinTYPE_body_swiftname( Type t );
 
-extern const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption in_comment, char buf[BUFSIZ]);
+extern const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption in_comment, bool leaf_unowned, char buf[BUFSIZ]);
 
 extern bool TYPEis_swiftAssignable(Type lhstype, Type rhstype);
 extern bool TYPEis_observable_aggregate(Type t);

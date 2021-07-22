@@ -3,7 +3,7 @@
 //  exp2swift
 //
 //  Created by Yoshida on 2020/06/14.
-//  Copyright © 2020 Minokamo, Japan. All rights reserved.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 
@@ -200,7 +200,7 @@ extern void TYPEextension_swift( Schema schema, Type t, int level ) {
 
 //MARK: - type references
 
-void TYPE_head_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) {
+void TYPE_head_swift( Scope current, Type t, SwiftOutCommentOption in_comment, bool leaf_unowned ) {
 	if( t == NULL ){
 		switch (in_comment) {
 			case YES_IN_COMMENT:
@@ -217,28 +217,16 @@ void TYPE_head_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 
 	if( t->symbol.name ) {
 		char buf[BUFSIZ];
-		wrap( "%s", TYPE_swiftName(t,current,buf) );
+		if( leaf_unowned ){
+			wrap( "SDAI.UnownedWrap<%s>", TYPE_swiftName(t,current,buf) );
+		}
+		else {
+			wrap( "%s", TYPE_swiftName(t,current,buf) );
+		}
 	} else {
-		TYPE_body_swift( current, t, in_comment );
+		TYPE_body_swift( current, t, in_comment, leaf_unowned );
 	}
 }
-
-//static void TYPEunique_swift( TypeBody tb, bool in_comment ) {
-//    if( tb->flags.unique ) {
-//			if( in_comment ) {
-//				wrap( "UNIQUE" );
-//			}
-//			else {
-//				wrap( "/*UNIQUE*/" );
-//			}
-//    }
-//}
-
-//static void TYPEoptional_swift( TypeBody tb ) {
-//    if( tb->flags.optional ) {
-//        wrap( "? " );
-//    }
-//}
 
 const char* builtinTYPE_body_swiftname( Type t ) {
 	TypeBody tb = TYPEget_body( t );
@@ -272,7 +260,7 @@ const char* builtinTYPE_body_swiftname( Type t ) {
 	return( "<NON_BUILTIN_TYPE>" );
 }
 
-void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) {
+void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment, bool leaf_unowned ) {
 //	bool first_time = true;
 	
 //	Expression expr;
@@ -300,6 +288,7 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 	//MARK:entity_
 		case entity_:
 		{
+			if( leaf_unowned ) wrap("SDAI.UnownedWrap<");
 			if( t == Type_Entity ){
 				wrap( "SDAI.GENERIC_ENTITY" );
 			}
@@ -307,6 +296,7 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 				char buf[BUFSIZ];
 				wrap( "%s", ENTITY_swiftName(tb->entity, current, buf) );
 			}
+			if( leaf_unowned ) wrap(">");
 		}
 			break;
 			
@@ -331,7 +321,7 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 				wrap("SDAI.AGGREGATE");
 				if( tb->base != NULL ){
 					raw( "<" );
-					TYPE_head_swift( current, tb->base, in_comment );
+					TYPE_head_swift( current, tb->base, in_comment, leaf_unowned );
 					raw(">");
 				}
 				else {
@@ -353,7 +343,7 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 			wrap("SDAI.");
 			raw( builtinTYPE_body_swiftname(t) );			
 			raw( "<" );
-			TYPE_head_swift( current, tb->base, in_comment );
+			TYPE_head_swift( current, tb->base, in_comment, leaf_unowned );
 			raw(">");
 			EXPRbounds_swift( NULL, tb, in_comment );
 			break;
@@ -401,11 +391,11 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment ) 
 	}
 }
 
-const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption in_comment, char buf[BUFSIZ]) {
+const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption in_comment, bool leaf_unowned, char buf[BUFSIZ]) {
 	if( prep_buffer(buf, BUFSIZ) ) {
 		abort();
 	}
-	TYPE_head_swift(current, t, in_comment);
+	TYPE_head_swift(current, t, in_comment, leaf_unowned);
 	finish_buffer();
 	return ( buf );
 }
@@ -520,10 +510,10 @@ void TYPEwhereDefinitions_swift( Scope scope, int level ) {
 	raw("\n");
 	indent_swift(level);
 	if( is_entity ){
-		raw("//WHERE RULES (ENTITY)\n");
+		raw("//MARK: WHERE RULES (ENTITY)\n");
 	}
 	else {
-		raw("//WHERE RULES (DEFINED TYPE)\n");
+		raw("//MARK: WHERE RULES (DEFINED TYPE)\n");
 	}
 
 	char whereLabel[BUFSIZ];
@@ -548,7 +538,7 @@ void TYPEwhereDefinitions_swift( Scope scope, int level ) {
 			indent_swift(level2);
 			raw("return ");
 			if( EXPRresult_is_optional(simplified, CHECK_DEEP) != no_optional ){
-				TYPE_head_swift(scope, Type_Logical, WO_COMMENT);	// wrap with explicit type cast
+				TYPE_head_swift(scope, Type_Logical, WO_COMMENT, LEAF_OWNED);	// wrap with explicit type cast
 				raw("(");
 				EXPR_swift(scope, simplified, Type_Logical, NO_PAREN);			
 				raw(")");

@@ -3,7 +3,7 @@
 //  yacc&lex
 //
 //  Created by Yoshida on 2020/07/17.
-//  Copyright © 2020 Minokamo, Japan. All rights reserved.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 #include <stdio.h>

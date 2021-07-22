@@ -3,7 +3,7 @@
 //  swiftP21readTest
 //
 //  Created by Yoshida on 2021/06/30.
-//  Copyright © 2021 Minokamo, Japan. All rights reserved.
+//  Copyright © 2021 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 import XCTest

@@ -3,7 +3,7 @@
 //  exp2swift
 //
 //  Created by Yoshida on 2020/06/14.
-//  Copyright © 2020 Minokamo, Japan. All rights reserved.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 #include "pp.h"
@@ -113,7 +113,7 @@ void SCOPElocalList_swift( Scope s, int level ) {
 //		aggressively_wrap();
 //		positively_wrap();
 			{	int oldwrap = captureWrapIndent();
-				TYPE_head_swift(s, var->type, WO_COMMENT);
+				TYPE_head_swift(s, var->type, WO_COMMENT, LEAF_OWNED);
 				wrap("(bound1: ");
 				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, TYPEget_body(var->type)->lower, Type_Integer, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 				raw(", bound2: ");

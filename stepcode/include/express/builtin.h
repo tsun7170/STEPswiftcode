@@ -3,7 +3,7 @@
 //  STEPswiftcode
 //
 //  Created by Yoshida on 2020/09/21.
-//  Copyright © 2020 Minokamo, Japan. All rights reserved.
+//  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
 
 #ifndef builtin_h

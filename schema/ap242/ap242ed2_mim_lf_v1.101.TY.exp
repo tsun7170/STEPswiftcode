@@ -8,7 +8,7 @@
   2021/06/10: modified FUNCTION using_items() to prevent duplicated search.
  	2021/02/28: slightly modified for exp2swift translation, plus some bug fixes on original schema definition.
  
- 	by Tsutomu Yoshida, Minokamo, Japan.
+ 	by Tsutomu Yoshida, Tsutomu Yoshida, Minokamo, Japan.
 *)
  
 -- -*- Mode: Express -*-
