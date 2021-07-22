@@ -111,21 +111,43 @@ void EXPRbounds_swift(Scope SELF, TypeBody tb, SwiftOutCommentOption in_comment 
 
 //MARK: - special operators
 static void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * oe, bool can_wrap ) {
-	{
 		char buf[BUFSIZ];
 		Entity ent = SCOPEfind(SELF, (char*)canonical_dictName(oe->op2->symbol.name, buf), SCOPE_FIND_ENTITY);
+		type_optionality optional = EXPRresult_is_optional(oe->op1, CHECK_SHALLOW);
+		
+		switch (optional) {
+			case no_optional:
+				break;
+				case yes_optional:
+				break;
+			case unknown:
+				wrap_if(can_wrap, "SDAI.FORCE_OPTIONAL(");
+				break;
+		}
+		EXPR__swift( SELF, oe->op1, oe->op1->return_type, YES_PAREN, oe->op_code, YES_WRAP );
+		switch (optional) {
+			case no_optional:
+				break;
+				case yes_optional:
+				raw("?");
+				break;
+			case unknown:
+				raw(")?");
+				break;
+		}
+
+		wrap_if(can_wrap, ".GROUP_REF(");
+
 		if( ent != NULL ){
 			wrap_if(can_wrap, ENTITY_swiftName(ent, SELF, buf));
 		}
 		else {
 			// symbol not found; probably error in source
+			raw("/*UNRESOLVED*/");
 			EXPR__swift( SELF, oe->op2, oe->op2->return_type, NO_PAREN, oe->op_code, NO_WRAP );	// should be an entity reference
 		}
-	}
-	
-	raw("(");
-	EXPR__swift( SELF, oe->op1, oe->op1->return_type, NO_PAREN, oe->op_code, YES_WRAP );
-	raw(")");
+		
+	raw(".self)");
 }
 
 static void EXPRopDot_swift( Scope SELF, struct Op_Subexpression * oe, bool can_wrap ) {
