@@ -1609,7 +1609,7 @@ static void SELECTwhereRuleValidation_swift( Type select_type, int level ) {
 	raw("//MARK: WHERE RULE VALIDATION (SELECT TYPE)\n");
 
 	indent_swift(level);
-	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel, round: SDAI.ValidationRound) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
+	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		char buf[BUFSIZ];
@@ -1626,7 +1626,7 @@ static void SELECTwhereRuleValidation_swift( Type select_type, int level ) {
 			wrap("result = %s.validateWhereRules(instance:selectValue, ", 
 					 TYPE_swiftName(selection, select_type->superscope, buf)
 					 );
-			wrap("prefix:prefix + \"\\\\%s\", round: round)\n", 
+			wrap("prefix:prefix + \"\\\\%s\")\n", 
 					 TYPE_canonicalName(selection,select_type->superscope,buf)
 					 );
 		} LISTod;				

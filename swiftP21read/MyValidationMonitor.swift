@@ -86,7 +86,7 @@ class MyValidationMonitor: SDAIPopulationSchema.ValidationMonitor {
 				failed = true
 				if confirmFailedCase {
 					print("\nFAILED: \(label)")
-					let _ = complexEntity.validateEntityWhereRules(prefix: "again", round: SDAI.notValidatedYet, recording: .recordFailureOnly)
+					let _ = complexEntity.validateEntityWhereRules(prefix: "again", recording: .recordFailureOnly)
 				}
 			}
 		}

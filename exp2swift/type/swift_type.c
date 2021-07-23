@@ -565,7 +565,7 @@ void TYPEwhereRuleValidation_swift( Type type, int level ) {
 	raw("//WHERE RULE VALIDATION (DEFINED TYPE)\n");
 
 	indent_swift(level);
-	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel, round: SDAI.ValidationRound) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
+	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		
@@ -574,7 +574,7 @@ void TYPEwhereRuleValidation_swift( Type type, int level ) {
 		raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
 		
 		indent_swift(level2);
-		raw("var result = Supertype.validateWhereRules(instance:instance?.rep, prefix:prefix2, round: round)\n\n");
+		raw("var result = Supertype.validateWhereRules(instance:instance?.rep, prefix:prefix2)\n\n");
 		
 		LISTdo( where_rules, where, Where ){
 			char whereLabel[BUFSIZ];

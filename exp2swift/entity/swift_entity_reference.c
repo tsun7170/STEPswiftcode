@@ -1135,15 +1135,15 @@ static void entityWhereRuleValidation_swift( Entity entity, int level ) {
 	raw("//MARK: WHERE RULE VALIDATION (ENTITY)\n");
 
 	indent_swift(level);
-	raw("public override class func validateWhereRules(instance:SDAI.EntityReference?, prefix:SDAI.WhereLabel, round: SDAI.ValidationRound) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
+	raw("public override class func validateWhereRules(instance:SDAI.EntityReference?, prefix:SDAI.WhereLabel) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 
 		indent_swift(level2);
-		raw("guard let instance = instance as? Self, instance.validated != round else { return [:] }\n\n");
+		raw("guard let instance = instance as? Self else { return [:] }\n\n");
 		
 		indent_swift(level2);
-		raw("var result = super.validateWhereRules(instance:instance, prefix:prefix, round: round)\n");
+		raw("var result = super.validateWhereRules(instance:instance, prefix:prefix)\n");
 		
 		indent_swift(level2);
 		raw("let prefix2 = prefix + \"(\" + instance.persistentLabel + \")\"\n\n");
