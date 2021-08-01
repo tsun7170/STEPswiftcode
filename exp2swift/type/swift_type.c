@@ -591,3 +591,32 @@ void TYPEwhereRuleValidation_swift( Type type, int level ) {
 	raw("}\n\n");
 	
 }
+
+void insert_select_type_member_tree( Scope scope, Type select_type, const char* referencing, int level ){
+	if( SCOPE_search_visited(select_type) )return;
+	
+	char select_type_name[BUFSIZ];
+	TYPEhead_string_swift(scope, select_type, WO_COMMENT, LEAF_OWNED, select_type_name);
+	
+	indent_swift(level);
+	raw("members.insert(SDAI.STRING(%s.typeName)) // -> %s\n", select_type_name, referencing);
+
+	TypeBody typebody = TYPEget_body(select_type);
+	if( typebody->referenced_by_select == NULL )return;
+	LISTdo(typebody->referenced_by_select, refby, Type){
+		insert_select_type_member_tree(scope, refby, select_type_name, level);
+	}LISTod;
+}
+
+void TYPEinsert_select_type_members_swift( Type type, int level ){
+	TypeBody typebody = TYPEget_body(type);
+	if( typebody->referenced_by_select == NULL )return;
+	indent_swift(level);
+	raw("//SELECT data types (indirectly) referencing the current type as a member of the select list\n");
+	
+	SCOPE_begin_search();
+	LISTdo(typebody->referenced_by_select, refby, Type){
+		insert_select_type_member_tree(type, refby, "Self", level);
+	}LISTod;
+	SCOPE_end_search();
+}

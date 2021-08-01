@@ -31,6 +31,9 @@ typedef enum  {
 extern type_optionality EXPRresult_is_optional(Expression e, bool deep);
 extern void EXPRbounds_swift( Scope SELF, TypeBody tb, SwiftOutCommentOption in_comment );
 extern void EXPR_swift( Scope SELF, Expression e, Type target_type, bool paren);
-extern void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, Type lhsType, bool paren, unsigned int previous_op, bool can_wrap);
+extern void EXPRaggregate_init_swift(bool resolve_generic, Scope SELF, Expression rhs, Type lhsType, bool leaf_owned );
+extern void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, Type lhsType, 
+																		 bool paren, unsigned int previous_op, bool can_wrap);
+extern Expression EXPRempty_aggregate_initializer(void);
 
 #endif /* swift_expression_h */

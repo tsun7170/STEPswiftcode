@@ -1242,6 +1242,21 @@ static void ENUMresolve_ambiguity( Type t ) {
 	}
 }
 
+//*TY2021/07/31 added for TYPEOF() support
+static void SELECTresolve_reference_tree(Type select_type) {
+	assert(TYPEis_select(select_type));
+	TypeBody typebody = TYPEget_body(select_type);
+	
+	LISTdo(typebody->list, selection_case, Type) {
+		TypeBody casebody = TYPEget_body(selection_case);
+		if( casebody->referenced_by_select == NULL ){
+			casebody->referenced_by_select = LISTcreate();
+		}
+		LISTadd_last(casebody->referenced_by_select, select_type);
+	}LISTod;
+}
+
+
 void ENTITYresolve_types( Entity e );
 
 /** also resolves inheritance counts and sub/super consistency */
@@ -1265,11 +1280,15 @@ void SCOPEresolve_types( Scope s ) {
 						
             case OBJ_TYPE:
                 if( ERRORis_enabled( ERROR_select_loop ) ) {
-                    TYPEcheck_select_cyclicity( ( Type )x );
+                    TYPEcheck_select_cyclicity( (Type)x );
                 }
 						//*TY2020/12/27 added emum case symbol ambiguity check
 						if( TYPEis_enumeration((Type)x) ) {
 							ENUMresolve_ambiguity( (Type)x );
+						}
+						//*TY2021/07/31 added for TYPEOF() support
+						if( TYPEis_select((Type)x) ) {
+							SELECTresolve_reference_tree( (Type)x );
 						}
                 break;
             case OBJ_VARIABLE:  /* really constants */

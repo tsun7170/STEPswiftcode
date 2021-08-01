@@ -48,4 +48,5 @@ extern const char* whereRuleLabel_swiftName( Where w, char buf[BUFSIZ] );
 extern void TYPEwhereDefinitions_swift( Scope scope, int level );
 extern void TYPEwhereRuleValidation_swift( Type type, int level );
 
+extern void TYPEinsert_select_type_members_swift( Type type, int level );
 #endif /* swift_type_h */

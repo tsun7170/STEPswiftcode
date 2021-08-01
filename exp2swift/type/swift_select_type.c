@@ -1096,6 +1096,8 @@ static void selectTypeValueComparison_swift(Type select_type,  int level) {
 
 //MARK: - type members
 static void selectTypeMembers_swift(Type select_type,  int level) {
+	int level2 = level+nestingIndent_swift;
+
 	TypeBody typeBody = TYPEget_body(select_type);
 	char buf[BUFSIZ];
 	
@@ -1103,8 +1105,7 @@ static void selectTypeMembers_swift(Type select_type,  int level) {
 	raw("//MARK: SDAIGenericType\n");
 	indent_swift(level);
 	raw("public var typeMembers: Set<SDAI.STRING> {\n");
-	{	int level2 = level+nestingIndent_swift;
-		
+	{
 		indent_swift(level2);
 		raw("var members: Set<SDAI.STRING> = [SDAI.STRING(Self.typeName)]\n");
 
@@ -1118,6 +1119,9 @@ static void selectTypeMembers_swift(Type select_type,  int level) {
 		
 		indent_swift(level2);
 		raw("}\n");
+		
+		TYPEinsert_select_type_members_swift(select_type, level2);
+		
 		indent_swift(level2);
 		raw("return members\n");
 	}

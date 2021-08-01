@@ -27,6 +27,9 @@
 
 
 void typeAliasDefinition_swift( Schema schema, Type type, Type original, int level) {
+	int level2 = level  + nestingIndent_swift;
+	int level3 = level2 + nestingIndent_swift;
+	
 	char buf[BUFSIZ];
 	
 	raw("//MARK: - Defined data type (type alias)\n");
@@ -44,7 +47,7 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 	wrap("%s__", SCHEMA_swiftName(schema, buf));
 	raw( "%s__type {\n", TYPE_swiftName(type,type->superscope,buf));
 
-	{	int level2 = level+nestingIndent_swift;
+	{	
 		indent_swift(level2);
 		raw( "public typealias Supertype = %s\n", TYPE_swiftName(original, type->superscope, buf));
 		indent_swift(level2);
@@ -74,6 +77,23 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		raw("public static var bareTypeName: String = ");
 		wrap("\"%s\"\n", TYPE_canonicalName(type,NO_QUALIFICATION,buf));
 
+		indent_swift(level2);
+		raw("public var typeMembers: Set<SDAI.STRING> {\n");
+		{
+			indent_swift(level3);
+			raw("var members = rep.typeMembers\n");
+
+			indent_swift(level3);
+			raw("members.insert(SDAI.STRING(Self.typeName))\n");
+			
+			TYPEinsert_select_type_members_swift(type, level3);
+			
+			indent_swift(level3);
+			raw("return members\n");
+		}
+		indent_swift(level2);
+		raw( "}\n\n" );
+		
 		indent_swift(level2);
 		raw( "public var rep: Supertype\n" );
 

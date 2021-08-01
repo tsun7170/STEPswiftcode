@@ -67,6 +67,9 @@ static void enumWhereRuleValidation_swift( Type type, int level ) {
 //MARK: - enum type
 
 void enumTypeDefinition_swift(Schema schema, Type type, int level) {
+	int level2 = level+nestingIndent_swift;
+	int level3 = level2 + nestingIndent_swift;
+	
 	char buf[BUFSIZ];
 	int count = DICTcount_type(type->symbol_table, OBJ_EXPRESSION);
 	Element* enumCases = NULL;
@@ -85,8 +88,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 	wrap( "public enum %s : SDAI.ENUMERATION, SDAIValue, ", typename );
 	wrap( "%s__%s__type {\n", SCHEMA_swiftName(schema, buf),typename );
 	
-	{	int level2 = level+nestingIndent_swift;
-		
+	{	
 		if(count>0) {
 			enumCases = (Element*)sc_calloc( count, sizeof(Element) );
 			
@@ -114,15 +116,25 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 			}
 		}
 		
-		
+		//MARK: SDAIGenericType
 		raw("\n");
 		indent_swift(level2);
 		raw("// SDAIGenericType\n");
 
 		indent_swift(level2);
 		raw("public var typeMembers: Set<SDAI.STRING> {\n");
-		indent_swift(level2+nestingIndent_swift);
-		raw("return [SDAI.STRING(Self.typeName)]\n");
+		{
+			indent_swift(level3);
+			raw("var members = Set<SDAI.STRING>()\n");
+
+			indent_swift(level3);
+			raw("members.insert(SDAI.STRING(Self.typeName))\n");
+			
+			TYPEinsert_select_type_members_swift(type, level3);
+			
+			indent_swift(level3);
+			raw("return members\n");
+		}
 		indent_swift(level2);
 		raw( "}\n\n" );
 
@@ -158,6 +170,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("public func enumValue<ENUM:SDAIEnumerationType>(enumType:ENUM.Type) -> ENUM? { return self as? ENUM }\n");
 		raw("\n");		
 		
+		//MARK: SDAIUnderlyingType
 		indent_swift(level2);
 		raw("// SDAIUnderlyingType\n");
 
@@ -188,7 +201,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("}\n");
 
 		
-		
+		//MARK: InitializableByP21Parameter
 		indent_swift(level2);
 		raw("// InitializableByP21Parameter\n");
 	

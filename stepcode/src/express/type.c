@@ -604,24 +604,6 @@ static void add_attributes_from_entity(Type selection_case, Dictionary result) {
 		added->aux = selection_case;
 		assert(added->data != NULL);
 	}
-	
-	
-//	Linked_List attr_defs_from_entity;
-//	DICTdo_init( all_attrs_from_entity, &de );
-//	while( 0 != ( attr_defs_from_entity = DICTdo(&de) ) ) {
-//		const char* attr_name = DICT_key;
-//		
-//		Linked_List effective_attrs = LISTcopy(attr_defs_from_entity);
-//		filter_out_shadowed_attr_definitions(effective_attrs);
-//		put_origin(effective_attrs, selection_case);
-//		
-//		Linked_List select_attr_list = DICTlookup(result, attr_name);
-//		if( select_attr_list == NULL ) {
-//			select_attr_list = LISTcreate();
-//			DICTdefine(result, attr_name, select_attr_list, NULL, OBJ_UNKNOWN);
-//		}
-//		LISTadd_all(select_attr_list, effective_attrs);
-//	}
 }
 
 static void add_attributes_from_select(Type selection_case, Dictionary result) {

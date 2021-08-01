@@ -48,6 +48,26 @@ static bool attributeHead_swift
 
 //MARK: - attribute observers
 
+static void emitObserveLeavingReferenceOwner(Variable attr, int level) {
+	/* 
+	 //OBSERVING ENTITY: <observer>
+	 referencedComplex.partialEntityInstance(<observer>.self)?
+		 .<observer attr>__observe(leavingReferencerOwner: referencerOwner)
+	 */
+	
+	char buf[BUFSIZ];
+	LISTdo( VARget_observers(attr), observingAttr, Variable) {
+		Entity observingEntity = observingAttr->defined_in;
+		
+		indent_swift(level);
+		raw("//OBSERVING ENTITY: %s\n", ENTITY_swiftName(observingEntity, NO_QUALIFICATION, buf));
+		
+		indent_swift(level);
+		raw("referencedComplex.partialEntityInstance(%s.self)?", partialEntity_swiftName(observingEntity, buf));
+		wrap(".%s__observe(leavingReferencerOwner: referencerOwner)\n", partialEntityAttribute_swiftName(observingAttr, buf));
+	} LISTod
+}
+
 static void emitObserveRemovedReference(Variable attr, int level) {
 	/* 
 	 //OBSERVING ENTITY: <observer>
@@ -138,7 +158,7 @@ static void attribureObservers_swift(Entity entity, Variable attr, int level) {
 				for referencedComplex in attrValue.entityReferences.map({ $0.complexEntity }) {
 					//OBSERVING ENTITY: <observer>
 					referencedComplex.partialEntityInstance(<observer>.self)?
-						.<observer attr>__observeRemovedReference(in: referencerOwner)
+						.<observer attr>__observe(leavingReferencerOwner: referencerOwner)
 					
 					...
 					...		
@@ -274,7 +294,7 @@ static void attribureObservers_swift(Entity entity, Variable attr, int level) {
 			raw("for referencedComplex in attrValue.entityReferences.map({ $0.complexEntity }) {\n");
 
 			if( VARis_observed(attr)){
-				emitObserveRemovedReference(attr, level3);
+				emitObserveLeavingReferenceOwner(attr, level3);
 			}
 			
 			if( VARis_overriden(attr)) {
@@ -283,7 +303,7 @@ static void attribureObservers_swift(Entity entity, Variable attr, int level) {
 				DICTdo_init(attr->overriders, &de);
 				while( 0 != ( overrider = DICTdo( &de ) ) ) {
 					if( VARis_observed(overrider)){
-						emitObserveRemovedReference(overrider, level3);
+						emitObserveLeavingReferenceOwner(overrider, level3);
 					}
 				}
 			}
@@ -301,44 +321,6 @@ static void attribureObservers_swift(Entity entity, Variable attr, int level) {
 	raw("}\n");
 }
 
-//static void aggregateAttributeObservers_swift(Entity entity, Variable attr, int level) {
-//	 /*
-//		internal func _<attr>__aggregateObserver<AGG:SDAIObservableAggregate>( 
-//			oldAggregate: AGG?, newAggregate: AGG?) -> AGG? 
-//		{
-//			oldAggregate?.teardown()
-//			guard var configured = newAggregate else { return nil }
-//			configured?.observer = { [unowned self] (removing, adding) in self
-//				._<attr>__observer(removing:removing, adding:adding) }
-//			return configured
-//		}		
-//		*/
-//	 
-//	char buf[BUFSIZ];
-//	
-//	indent_swift(level);
-//	raw("/// aggregate element observer setup\n");
-//	indent_swift(level);
-//	wrap("internal func %s__aggregateObserver<AGG:SDAIObservableAggregate>(", partialEntityAttribute_swiftName(attr, buf));
-//	positively_wrap();
-//	wrap("oldAggregate: AGG?, newAggregate: AGG?) -> AGG? ");
-//	raw("{\n");	
-//	{	int level2 = level + nestingIndent_swift;
-//		indent_swift(level2);
-//		raw("oldAggregate?.teardown()\n");
-//		indent_swift(level2);
-//		raw("guard var configured = newAggregate else { return nil }\n");
-//		indent_swift(level2);
-//		raw("configured.observer = { [unowned self] (removing, adding) in " );
-//		wrap("self.%s__observer(SELF:SELF, removing:removing, adding:adding) }\n", partialEntityAttribute_swiftName(attr, buf));
-//		indent_swift(level2);
-//		raw("return configured\n");
-//	}
-//	indent_swift(level);
-//	raw("}\n");
-//	
-//	simpleAttribureObservers_swift(entity, attr, level);
-//}
 
 static void observerBroadcasting(Entity entity, int level) {
 	/*
@@ -513,26 +495,105 @@ static void explicitAttributeRedefinition_swift(Entity entity, Variable attr, in
 	raw(" */\n");
 }
 
+//MARK: - explicit dynamic attribute
+static void dynamicAttributeValueProvider_swift(Entity entity, Variable attr, int level) {
+	/* 
+	 internal static func <attr>__provider(complex: SDAI.ComplexEntity) -> <ENTITY>__<ATTR>__provider? {
+		 let resolved = complex.resolvePartialEntityInstance(from:[<entity>.typeIdentity, ...])
+		 return resolved as? <ENTITY>__<ATTR>__provider
+	 }
+	 */
+	
+	int level2 = level + nestingIndent_swift;
+	char buf[BUFSIZ];
+	
+	indent_swift(level);
+	raw("internal static func %s__provider(complex: SDAI.ComplexEntity) -> ",
+			partialEntityAttribute_swiftName(attr, buf) );
+	raw("%s? {\n",
+			dynamicAttribute_swiftProtocolName(attr, buf) );
+	{
+		indent_swift(level2);
+		wrap("let resolved = complex.resolvePartialEntityInstance(from: [");
+		DictionaryEntry de;
+		Variable overrider;
+		char* sep = "";
+		assert(attr->overriders != NULL);
+		DICTdo_init(attr->overriders, &de);
+		while( 0 != (overrider = DICTdo(&de)) ) {
+			if( !VARis_derived(overrider) ) continue;
+			raw("%s",sep);
+			wrap("%s.typeIdentity",  partialEntity_swiftName(overrider->defined_in, buf));
+			sep = ", ";
+		}
+		wrap("])\n");
+		
+		indent_swift(level2);
+		raw("return resolved as? %s\n", dynamicAttribute_swiftProtocolName(attr, buf) );
+	}
+	indent_swift(level);
+	raw("}\n");
+}
+
 static void explicitDynamicAttributeDefinition_swift(Entity entity, Variable attr, int level) {
 	// same as static
 	explicitStaticAttributeDefinition_swift(entity, attr, level);
-	
-//	char buf[BUFSIZ];
-//	
-//	attributeHead_swift(entity, "public internal(set)", NO_PREFIX, attr, YES_DYNAMIC, level, NOT_IN_COMMENT, buf);
-//	raw(" //DYNAMIC");
-//	if( VARis_observed(attr) ) raw(" //OBSERVED");
-//	raw(" \n");
-//	
-//	if( attribute_need_observer(attr) ) {
-//		if( TYPEis_aggregation_data_type(attr->type)) {
-//			aggregateAttributeObservers_swift(entity, attr, level);
-//		}
-//		else {
-//			simpleAttribureObservers_swift(entity, attr, level);
-//		}
-//	}
+	raw("\n");
+	dynamicAttributeValueProvider_swift(entity, attr, level);
 }
+
+static void fixupPartialComplexEntityAttributes_swift(Entity entity, Linked_List dynamic_attrs, int level) {
+/*
+	final public override class func fixupPartialComplexEntityAttributes(partialComplex: SDAI.ComplexEntity, baseComplex: SDAI.ComplexEntity) {
+ guard let pe = partialComplex.partialEntityInstance(<entity>.self) else { return }
+ 
+	 if pe.<attr> == nil, self.<attr>__provider(complex: partialComplex) == nil, let base_<attr>__provider = self.<attr>__provider(complex: baseComplex) {
+		 pe.<attr> = base_<attr>__provider.<attr>__getter(complex: baseComplex)
+	 }
+ 
+	 ...
+	 ...
+ }
+ */
+
+	int level2 = level + nestingIndent_swift;
+	int level3 = level2 + nestingIndent_swift;
+	char buf[BUFSIZ];
+
+	if( LISTis_empty(dynamic_attrs) )return;
+	
+	indent_swift(level);
+	raw("//PARTIAL COMPLEX ENTITY SUPPORT\n");	
+	indent_swift(level);
+	raw("final public override class func fixupPartialComplexEntityAttributes(partialComplex: SDAI.ComplexEntity, baseComplex: SDAI.ComplexEntity) {\n");
+	{
+		indent_swift(level2);
+		raw("guard let pe = partialComplex.partialEntityInstance(%s.self) else { return }\n",
+				partialEntity_swiftName(entity, buf));
+		
+		LISTdo(dynamic_attrs, attr, Variable){
+			if( VARis_optional(attr) )continue;
+			
+			raw("\n");
+			indent_swift(level2);
+			raw("if pe.%s == nil, ", partialEntityAttribute_swiftName(attr, buf));
+			wrap("self.%s__provider(complex: partialComplex) == nil, ", buf);
+			positively_wrap();
+			wrap("let base_%s__provider = self.%s__provider(complex: baseComplex) {\n", 
+					 buf, buf);
+			
+			indent_swift(level3);
+			raw("pe.%s = base_%s__provider.%s__getter(complex: baseComplex)\n",
+					buf, buf, buf);
+
+			indent_swift(level2);
+			raw("}\n");
+		}LISTod;
+	}
+	indent_swift(level);
+	raw("}\n");
+}
+
 
 //MARK: - derived attribute
 static void derivedAttributeGetterDefinitionHead(Entity entity, Variable attr, const char *attrName, int level) {
@@ -729,7 +790,14 @@ static void inverseSimpleAttributeDefinition_swift(Entity entity, Variable attr,
 	 guard let _ = complex.entityReference(<ATTR TYPE>.self) else { return }
 	 self.<attr> = nil
 	 }
+
+	 internal func <attr>__observe(leavingReferencerOwner complex: SDAI.ComplexEntity) {
+	 guard let _ = complex.entityReference(<ATTR TYPE>.self) else { return }
+	 self.<attr> = nil
+	 }
 	 */
+	
+	char buf[BUFSIZ];
 	
 	assert(VARis_optional_by_large(attr));
 	
@@ -743,8 +811,15 @@ static void inverseSimpleAttributeDefinition_swift(Entity entity, Variable attr,
 	
 	indent_swift(level);
 	raw("/// INVERSE SIMPLE ATTRIBUTE\n");
+	Variable observing_attr = VARget_inverse(attr);
 	indent_swift(level);
-	raw("internal private(set) weak var %s: %s?\n\n",
+	raw("/// observing %s", 
+			partialEntity_swiftName(observing_attr->defined_in, buf) );
+	raw(" .%s\n",
+			partialEntityAttribute_swiftName(observing_attr, buf));
+
+	indent_swift(level);
+	raw("internal private(set) weak var %s: %s?\n",
 			partialAttrName, attrTypeName);
 	
 	// addedReference observer func
@@ -761,7 +836,7 @@ static void inverseSimpleAttributeDefinition_swift(Entity entity, Variable attr,
 		raw("self.%s = newSource\n", partialAttrName );
 	}
 	indent_swift(level);
-	raw("}\n\n");
+	raw("}\n");
 
 	// removedReference observer func
 	indent_swift(level);
@@ -776,7 +851,22 @@ static void inverseSimpleAttributeDefinition_swift(Entity entity, Variable attr,
 		indent_swift(level2);
 		raw("self.%s = nil\n", partialAttrName );
 	}
-	
+	indent_swift(level);
+	raw("}\n");
+
+	// leavingReferenceOwner observer func
+	indent_swift(level);
+	raw("/// INVERSE SIMPLE ATTR SUPPORT(LEAVING REFERENCE OWNER)\n");
+	indent_swift(level);
+	raw("internal func %s__observe(leavingReferencerOwner complex: SDAI.ComplexEntity) {\n", partialAttrName);
+	{
+		indent_swift(level2);
+		raw("guard let _ = complex.entityReference(%s.self) else { return }\n",
+				attrTypeName);
+		
+		indent_swift(level2);
+		raw("self.%s = nil\n", partialAttrName );
+	}
 	indent_swift(level);
 	raw("}\n");
 }
@@ -784,7 +874,7 @@ static void inverseSimpleAttributeDefinition_swift(Entity entity, Variable attr,
 static void inverseAggregateAttributeDefinition_swift(Entity entity, Variable attr, int level) {
 	/*
 	 internal var <attr>: <AGGR<<ATTR BASETYPE>> {
-	  return _<attr>.map{ %0.object }
+	  return _<attr>.map{ %0.reference }
 	 }
 	 private var _<attr>: <AGGR<SDAI.UnownedWrap<<ATTR BASETYPE>>> 
 	 
@@ -795,10 +885,19 @@ static void inverseAggregateAttributeDefinition_swift(Entity entity, Variable at
 	 
 	 internal func <attr>__observeRemovedReference(in complex: SDAI.ComplexEntity) {
 	 guard let oldSource = complex.entityReference(<ATTR BASETYPE>.self) else { return }
-	 self._<attr>.remove(member: SDAI.UnownedWrap(oldSource)) )
+	 let success = self._<attr>.remove(member: SDAI.UnownedWrap(oldSource)) )
+	 assert(success, "failed to remove inverse attribute element")
+	 }
+	 
+	 internal func <attr>__observe(leavingReferencerOwner complex: SDAI.ComplexEntity) {
+	 guard let oldSource = complex.entityReference(<ATTR BASETYPE>.self) else { return }
+	 let success = self._<attr>.removeAll(member: SDAI.UnownedWrap(oldSource)) )
+	 assert(success, "failed to remove inverse attribute elements")
 	 }
 	 */
 
+	char buf[BUFSIZ];
+	
 	assert(!VARis_optional_by_large(attr));
 	
 	int level2 = level+nestingIndent_swift;
@@ -811,13 +910,20 @@ static void inverseAggregateAttributeDefinition_swift(Entity entity, Variable at
 
 	indent_swift(level);
 	raw("/// INVERSE AGGREGATE ATTRIBUTE\n");
+	Variable observing_attr = VARget_inverse(attr);
+	indent_swift(level);
+	raw("/// observing %s", 
+			partialEntity_swiftName(observing_attr->defined_in, buf) );
+	raw(" .%s\n",
+			partialEntityAttribute_swiftName(observing_attr, buf));
+
 	indent_swift(level);
 	raw("internal var %s: ",partialAttrName);
 	TYPE_head_swift(entity, attr->type, WO_COMMENT, LEAF_OWNED);
 	raw(" {\n");
 	{
 		indent_swift(level2);
-		raw("return _%s.map{ $0.object }\n", partialAttrName);
+		raw("return _%s.map{ $0.reference }\n", partialAttrName);
 	}
 	indent_swift(level);
 	raw("}\n");
@@ -825,8 +931,9 @@ static void inverseAggregateAttributeDefinition_swift(Entity entity, Variable at
 	// backing store
 	indent_swift(level);
 	raw("private var _%s = ",partialAttrName);
-	TYPE_head_swift(entity, attr->type, WO_COMMENT, LEAF_UNOWNED);
-	raw("() // unowned backing store\n\n");
+//	TYPE_head_swift(entity, attr->type, WO_COMMENT, LEAF_UNOWNED);
+	EXPRaggregate_init_swift(NO_RESOLVING_GENERIC, entity, EXPRempty_aggregate_initializer(), attr->type, LEAF_UNOWNED);
+	raw(" // unowned backing store\n");
 	
 	// addedReference observer func
 	indent_swift(level);
@@ -842,7 +949,7 @@ static void inverseAggregateAttributeDefinition_swift(Entity entity, Variable at
 			raw("self._%s.add(member: SDAI.UnownedWrap(newSource) )\n", partialAttrName );
 	}
 	indent_swift(level);
-	raw("}\n\n");
+	raw("}\n");
 
 	// removedReference observer func
 	indent_swift(level);
@@ -855,11 +962,32 @@ static void inverseAggregateAttributeDefinition_swift(Entity entity, Variable at
 				attrBaseTypeName);
 		
 		indent_swift(level2);
-		wrap("self._%s.remove(member: SDAI.UnownedWrap(oldSource) )\n", partialAttrName );
+		raw("let success = self._%s.remove(member: SDAI.UnownedWrap(oldSource) )\n", partialAttrName );
+
+		indent_swift(level2);
+		raw("assert(success, \"failed to remove inverse attribute element\")\n");
 	}
-	
 	indent_swift(level);
-	raw("}\n\n");
+	raw("}\n");
+
+	// leaving reference owner observer func
+	indent_swift(level);
+	raw("/// INVERSE AGGREGATE ATTR SUPPORT(LEAVING REFERENCE OWNER)\n");
+	indent_swift(level);
+	raw("internal func %s__observe(leavingReferencerOwner complex: SDAI.ComplexEntity) {\n", partialAttrName);
+	{
+		indent_swift(level2);
+		raw("guard let oldSource = complex.entityReference(%s.self) else { return }\n",
+				attrBaseTypeName);
+		
+		indent_swift(level2);
+		raw("let success = self._%s.removeAll(member: SDAI.UnownedWrap(oldSource) )\n", partialAttrName );
+
+		indent_swift(level2);
+		raw("assert(success, \"failed to remove inverse attribute elements\")\n");
+	}
+	indent_swift(level);
+	raw("}\n");
 }
 
 //MARK: - local attributes list
@@ -1060,6 +1188,7 @@ static void isValueEqualOptionally_swift( Entity entity, int level ) {
 }
 
 static void valueComparisonSupports_swift( Entity entity, int level ) {
+	raw("\n");
 	indent_swift(level);
 	raw("//VALUE COMPARISON SUPPORT\n");
 	hashAsValue_swift(entity, level);
@@ -1376,7 +1505,11 @@ static void p21Constructor( Entity entity, int level ) {
 //MARK: - partial entity swift definition
 
 void partialEntityDefinition_swift
- ( Entity entity, int level, Linked_List attr_overrides, Linked_List dynamic_attrs ) {
+ ( Entity entity, int level, Linked_List attr_overrides, Linked_List dynamic_attrs ) 
+{
+	 int level2 = level  + nestingIndent_swift;
+	 int level3 = level2 + nestingIndent_swift;
+	 
 	 raw("\n\n");
 	 raw("//MARK: - Partial Entity\n");
 	 
@@ -1386,8 +1519,7 @@ void partialEntityDefinition_swift
 		 wrap("public final class %s : SDAI.PartialEntity {\n", partialEntity_swiftName(entity, buf));
 	 }
 	 
-	 {	int level2 = level+nestingIndent_swift;
-		 
+	 {
 		 indent_swift(level2);
 		 raw("public override class var entityReferenceType: SDAI.EntityReference.Type {\n");
 		 {	char buf[BUFSIZ];
@@ -1398,6 +1530,25 @@ void partialEntityDefinition_swift
 		 raw("}\n");
 		 
 		 localAttributeDefinitions_swift(entity, level2, attr_overrides, dynamic_attrs);
+		 fixupPartialComplexEntityAttributes_swift(entity, dynamic_attrs, level2);
+		 
+		 indent_swift(level2);
+		 raw("public override var typeMembers: Set<SDAI.STRING> {\n");
+		 {
+			 indent_swift(level3);
+			 raw("var members = Set<SDAI.STRING>()\n");
+
+			 indent_swift(level3);
+			 raw("members.insert(SDAI.STRING(Self.typeName))\n");
+			 
+			 TYPEinsert_select_type_members_swift(ENTITYget_type(entity), level3);
+			 
+			 indent_swift(level3);
+			 raw("return members\n");
+		 }
+		 indent_swift(level2);
+		 raw( "}\n\n" );
+		 		 
 		 valueComparisonSupports_swift(entity, level2);
 		 TYPEwhereDefinitions_swift( entity, level2);
 		 uniqueDefinitions_swift(entity, level2);

@@ -196,6 +196,8 @@ struct TypeBody_ {
 	Dictionary all_supertypes; // dict of (linked_list of originating selection) keyed by super-entity name
 	//*TY2021/06/05
 	Select_type_attribute select_type_attribute;
+	//*TY2021/07/31 for TYPEOF() support
+	Linked_List referenced_by_select;
 };
 
 /********************/

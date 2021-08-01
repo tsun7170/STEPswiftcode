@@ -75,17 +75,46 @@ schemaInstance.mode = .readOnly
 
 let validationMonitor = MyValidationMonitor()
 
-var doValidations = true
-if doValidations {
+var doIndividualWhereValidation = true
+if doIndividualWhereValidation {
+//	let entityType = ap242.eTESSELLATED_ITEM.self	// WHERE_wr1
+	let entityType = ap242.eANNOTATION_OCCURRENCE.self	// WHERE_wr2
+	let instances = schemaInstance.entityExtent(type: entityType)
+	for (i,entity) in instances.enumerated() {
+		let result = type(of: entity.partialEntity).WHERE_wr2(SELF: entity)
+		print("[\(i)] \(result)")
+		continue
+	}
+}
+
+var doEntityValidation = false
+if doEntityValidation {
+	let entityType = ap242.eANNOTATION_PLACEHOLDER_OCCURRENCE.self
+	let instances = schemaInstance.entityExtent(type: entityType)
+	for (i,entity) in instances.enumerated() {
+		let result = entityType.validateWhereRules(instance: entity, prefix: "\(entity): ")
+		print("[\(i)] \(result)")
+		continue
+	}
+}
+
+var doGlobalRuleValidation = false
+if doGlobalRuleValidation {
 	let globalResult = schemaInstance.validateGlobalRules(monitor:validationMonitor)
 	print("\n glovalRuleValidationRecord(\(globalResult.count)):\n\(globalResult)"  )
-	
+}
+
+var doUniqunessRuleValidation = false
+if doUniqunessRuleValidation {
 	let uniquenessResult = schemaInstance.validateUniquenessRules(monitor:validationMonitor)
 	print("\n uniquenessRuleValidationRecord(\(uniquenessResult.count)):\n\(uniquenessResult)")
-	
+}	
+
+var doWhereRuleValidation = false
+if doWhereRuleValidation {
 	let whereResult = schemaInstance.validateWhereRules(monitor:validationMonitor)
 	print("\n whereRuleValidationRecord:\n\(whereResult)" )
-}
+}	
 
 var doAllValidaton = false
 if doAllValidaton {
@@ -97,9 +126,9 @@ if doAllValidaton {
 }
 
 //MARK: entity look up
-var entityType = ap242.eSHAPE_REPRESENTATION.self
+var entityType = ap242.ePRODUCT.self
 let instances = schemaInstance.entityExtent(type: entityType)
-print("\(entityType): \(instances)")
+print("\(entityType): \(Array(instances))")
 
 var name = 1
 while name != 0 {

@@ -1277,15 +1277,9 @@ static Type resolve_generic_type(Type lhs_generic, Type rhs_concrete) {
 	return lhs_generic;
 }
 
-static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Type lhsType ) {
+void EXPRaggregate_init_swift(bool resolve_generic, Scope SELF, Expression rhs, Type lhsType , bool leaf_unowned) {
 	TypeBody lhs_tb = TYPEget_body( lhsType );
 
-//	// lhs: AGGREGATE
-//	if( TYPEis_AGGREGATE(lhsType) && lhs_tb->tag == NULL ){
-//		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
-//		return;
-//	}
-	
 	if( resolve_generic && TYPEcontains_generic(lhsType) ){
 		lhsType = resolve_generic_type(lhsType, rhs->return_type);
 	}
@@ -1293,19 +1287,14 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 	// rhs: ?
 	if( isLITERAL_INFINITY(rhs) ) {
 		raw("(nil as ");
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT, LEAF_OWNED);
+		TYPE_head_swift(SELF, lhsType, WO_COMMENT, leaf_unowned);
 		raw("?)");
 		return;
 	}
 
 	// rhs: [AIE...]
 	if( TYPEis_AGGREGATE(rhs->type) ) {
-//		if( TYPEis_AGGREGATE(lhsType) && TYPEis_runtime(TYPEget_base_type(lhsType)) ){
-//			EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
-//			return;
-//		}
-		
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT, LEAF_OWNED);
+		TYPE_head_swift(SELF, lhsType, WO_COMMENT, leaf_unowned);
 		raw("(");
 		if( lhs_tb->upper ){
 			positively_wrap();
@@ -1339,9 +1328,9 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 	
 	// rhs: select type
 	if( TYPEis_select(rhs->return_type) ){
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT, LEAF_OWNED);
+		TYPE_head_swift(SELF, lhsType, WO_COMMENT, leaf_unowned);
 		raw("(");
-		raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT, LEAF_OWNED); raw("*/"); // DEBUG
+		raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT, leaf_unowned); raw("*/"); // DEBUG
 		EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
 		raw(")");
 		return;
@@ -1353,7 +1342,7 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 		return;
 	}
 	
-	TYPE_head_swift(SELF, lhsType, WO_COMMENT, LEAF_OWNED);
+	TYPE_head_swift(SELF, lhsType, WO_COMMENT, leaf_unowned);
 	raw("(");
 	if( lhs_tb->upper ){
 		positively_wrap();
@@ -1383,7 +1372,7 @@ static void aggregate_init(bool resolve_generic, Scope SELF, Expression rhs, Typ
 					(TYPEis_runtime(TYPEget_base_type(rhs->return_type))||TYPEis_generic(TYPEget_base_type(rhs->return_type))) ){
 		wrap("generic: ");
 	}
-	raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT, LEAF_OWNED); raw("*/"); // DEBUG
+	raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT, leaf_unowned); raw("*/"); // DEBUG
 	
 	EXPR_swift(SELF, rhs, lhsType, NO_PAREN);
 	raw(")");
@@ -1412,7 +1401,7 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 
 	if( resolve_generic && TYPEcontains_generic(lhsType) ) {
 		if( TYPEis_aggregation_data_type(lhsType) ) {
-			aggregate_init(resolve_generic, SELF, rhs, lhsType);
+			EXPRaggregate_init_swift(resolve_generic, SELF, rhs, lhsType, LEAF_OWNED);
 			return;
 		}
 		
@@ -1448,7 +1437,7 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 	
 	if( TYPEis_aggregation_data_type(lhsType) ) {
 //		raw("/*%s lhs type*/",TYPEis_runtime(lhsType)? "runtime":"unknown");
-		aggregate_init(resolve_generic, SELF, rhs, lhsType);
+		EXPRaggregate_init_swift(resolve_generic, SELF, rhs, lhsType, LEAF_OWNED);
 		return;
 	}
 	
@@ -1472,4 +1461,16 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 	EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
 		raw(")");
 		return;
+}
+
+Expression EXPRempty_aggregate_initializer(void) {
+	static Expression empty_aggregate_initializer = NULL;
+	
+	if( empty_aggregate_initializer != NULL )return empty_aggregate_initializer;
+	
+	empty_aggregate_initializer = EXP_new();
+	empty_aggregate_initializer->type = Type_Aggregate;
+	empty_aggregate_initializer->return_type = Type_Runtime;
+	empty_aggregate_initializer->u.list = LISTcreate();
+	return empty_aggregate_initializer;
 }
