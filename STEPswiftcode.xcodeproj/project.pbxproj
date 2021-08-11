@@ -139,7 +139,7 @@
 		F40EE5E3254546D800F293C3 /* swift_named_aggregate_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_named_aggregate_type.c; sourceTree = "<group>"; };
 		F40EE5E8254546F200F293C3 /* swift_named_simple_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_named_simple_type.h; sourceTree = "<group>"; };
 		F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_named_simple_type.c; sourceTree = "<group>"; };
-		F413BEB1262C598700217744 /* TestCases */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TestCases; sourceTree = "<group>"; };
+		F413BEB1262C598700217744 /* TestCases */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TestCases; path = ../../TestCases; sourceTree = "<group>"; };
 		F41BE8B7268BB693005990D1 /* swiftP21readTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = swiftP21readTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F41BE8B9268BB694005990D1 /* swiftP21readTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = swiftP21readTest.swift; sourceTree = "<group>"; };
 		F41BE8BB268BB694005990D1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };

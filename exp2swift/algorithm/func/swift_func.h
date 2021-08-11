@@ -11,11 +11,13 @@
 
 #include "../express/alg.h"
 
-char 				FUNC_swiftNameInitial( Function func );
+extern char 				FUNC_swiftNameInitial( Function func );
 
-const char* FUNC_swiftName( Function func, char buf[BUFSIZ] );
-const char* FUNCcall_swiftName( Expression fcall, char buf[BUFSIZ] );
+extern const char* FUNC_swiftName( Function func, char buf[BUFSIZ] );
+extern const char* FUNCcall_swiftName( Expression fcall, char buf[BUFSIZ] );
+extern const char* FUNC_cache_swiftName( Function func, char buf[BUFSIZ] );
 
-void FUNC_swift(Schema schema, bool nested, Function func, int level );
+extern void FUNC_swift(Schema schema, bool nested, Function func, int level );
+extern void FUNC_result_cache_var_swift( Schema schema, Function func, int level );
 
 #endif /* swift_func_h */

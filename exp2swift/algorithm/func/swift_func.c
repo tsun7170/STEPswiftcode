@@ -21,6 +21,7 @@
 #include "swift_algorithm.h"
 #include "swift_statement.h"
 #include "swift_symbol.h"
+#include "swift_schema.h"
 
 
 char 				FUNC_swiftNameInitial( Function func ) {
@@ -33,6 +34,65 @@ const char* FUNC_swiftName( Function func, char buf[BUFSIZ] ) {
 
 const char* FUNCcall_swiftName( Expression fcall, char buf[BUFSIZ] ) {
 	return canonical_swiftName(fcall->symbol.name, buf);
+}
+
+const char* FUNC_cache_swiftName( Function func, char buf[BUFSIZ] ) {
+	snprintf(buf, BUFSIZ, "_%s__cache", func->symbol.name);
+	return buf;
+}
+
+//MARK: - function return value cache
+
+void FUNC_result_cache_var_swift( Schema schema, Function func, int level ) {
+	char buf[BUFSIZ];
+	
+	indent_swift(level);
+	raw("//MARK: - function result cache\n");
+	
+	indent_swift(level);
+	raw("private var %s = SDAI.FunctionResultCache(", FUNC_cache_swiftName(func, buf));
+	wrap("controller: %s.schemaDefinition)\n", SCHEMA_swiftName(schema, buf));
+}
+
+static void func_result_cache_lookup_swift( Schema schema, Function func, int level ) {
+	int level2 = level + nestingIndent_swift;
+	
+	char buf[BUFSIZ];
+	
+	//
+	indent_swift(level);
+	raw("// CACHE LOOKUP\n");
+
+	//
+	indent_swift(level);
+	raw("let _params = SDAI.ParameterList( ");	
+	char* sep = "";
+
+	LISTdo(func->u.func->parameters, formalp, Variable) {
+		raw("%s", sep);
+		positively_wrap();
+		wrap("%s", variable_swiftName(formalp,buf));
+		sep = ", ";
+	}LISTod;
+
+	raw(" )\n");
+	
+	//
+	indent_swift(level);
+	raw("if case .available(let _cached_value) = %s.cachedValue(params: _params) {\n", FUNC_cache_swiftName(func, buf) );
+	
+	//
+	bool return_optional = YES_FORCE_OPTIONAL;
+	if( TYPEis_logical(func->u.func->return_type) ) return_optional = NO_FORCE_OPTIONAL;
+
+	indent_swift(level2);
+	raw("return _cached_value as%s ", return_optional ? "?" : "!" );
+	TYPE_head_swift(func->superscope, func->u.func->return_type, WO_COMMENT, LEAF_OWNED);
+	raw("\n");
+
+	//
+	indent_swift(level);
+	raw("}\n");
 }
 
 //MARK: - main entry point
@@ -104,6 +164,12 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 	
 	// function body
 	{	int level2 = level+nestingIndent_swift;
+		
+		if( !nested ){
+			func_result_cache_lookup_swift(schema, func, level2);
+			raw("\n");
+		}
+		
 		ALGvarnize_args_swift(func->u.func->parameters, level2);
 		ALGscope_declarations_swift(schema, func, level2);
 		int tempvar_id = 1;

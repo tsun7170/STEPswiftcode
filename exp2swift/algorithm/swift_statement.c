@@ -15,6 +15,7 @@
 #include "swift_expression.h"
 #include "swift_proc.h"
 #include "decompose_expression.h"
+#include "swift_func.h"
 
 //const char * alias_swiftName(Statement s) {
 //	return s->symbol.name;
@@ -365,13 +366,25 @@ void STMT_swift( Scope algo, Statement stmt, int* tempvar_id, int level ) {
 				raw("return\n");
 			}
 			else {
+				bool nested = !SCOPEis_schema(algo->superscope);
+				
+				
 				Linked_List tempvars;
 				Expression simplified = EXPR_decompose(stmt->u.ret->value, algo->u.func->return_type, tempvar_id, &tempvars);
 				if( EXPR_tempvars_swift(algo, tempvars, level) > 0 ) indent_swift(level);
 				
 				raw("return ");
 				assert(algo->u_tag==scope_is_func);
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, algo->u.func->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+				if( !nested ){
+					char buf[BUFSIZ];
+					raw("%s.updateCache(params: _params, value: ", FUNC_cache_swiftName(algo, buf));
+
+					EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, algo->u.func->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+					raw(")");					
+			}
+				else {
+					EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, algo->u.func->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);					
+				}
 				raw("\n");
 				
 				EXPR_delete_tempvar_definitions(tempvars);

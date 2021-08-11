@@ -77,8 +77,20 @@ let validationMonitor = MyValidationMonitor()
 
 var doIndividualWhereValidation = true
 if doIndividualWhereValidation {
-//	let entityType = ap242.eTESSELLATED_ITEM.self	// WHERE_wr1
-	let entityType = ap242.eANNOTATION_OCCURRENCE.self	// WHERE_wr2
+//	let entityType = ap242.eANNOTATION_OCCURRENCE.self	// WHERE_wr1
+//	let entityType = ap242.eANNOTATION_PLACEHOLDER_OCCURRENCE.self	// WHERE_wr1
+//	let entityType = ap242.eDRAUGHTING_MODEL.self	// WHERE_wr2
+	let entityType = ap242.eFOUNDED_ITEM.self	// WHERE_wr2
+//	let entityType = ap242.eMECHANICAL_DESIGN_GEOMETRIC_PRESENTATION_REPRESENTATION.self	// WHERE_wr8
+//	let entityType = ap242.ePLACED_DATUM_TARGET_FEATURE.self	// WHERE_wr3
+//	//	let entityType = ap242.eREPRESENTATION_ITEM.self	// WHERE_wr1
+//	let entityType = ap242.eREPRESENTATION_MAP.self	// WHERE_wr1
+//	let entityType = ap242.eSURFACE_STYLE_RENDERING_WITH_PROPERTIES.self	// WHERE_wr1
+//	//	let entityType = ap242.eTESSELLATED_ITEM.self	// WHERE_wr1
+//	let entityType = ap242.eTESSELLATED_SHAPE_REPRESENTATION.self	// WHERE_wr2
+//	let entityType = ap242.eUNEQUALLY_DISPOSED_GEOMETRIC_TOLERANCE.self	// WHERE_wr1
+
+
 	let instances = schemaInstance.entityExtent(type: entityType)
 	for (i,entity) in instances.enumerated() {
 		let result = type(of: entity.partialEntity).WHERE_wr2(SELF: entity)

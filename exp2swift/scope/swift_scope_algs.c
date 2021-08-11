@@ -105,7 +105,10 @@ static void schemaLevelFunction_swift( Schema schema, Function func ) {
 		
 		FUNC_swift(schema, false, func, level2 );
 	}
-	raw("}\n");
+	raw("}\n\n");
+	
+	FUNC_result_cache_var_swift(schema, func, level);
+	raw("\n");
 }
 
 static void schemaLevelProcedure_swift( Schema schema, Procedure proc ) {
