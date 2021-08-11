@@ -888,6 +888,20 @@ void EXPR__swift( Scope SELF, Expression e, Type target_type, bool paren, unsign
 	}
 }
 
+static Type align_aggregate_type( Type source_type, Type target_type) {
+	if( TYPEis_runtime(TYPEget_base_type(target_type)) ) return source_type ;
+	if( TYPEis_AGGREGATE(source_type) ) return source_type;
+	
+	Type aligned = TYPEcreate_aggregate(TYPEget_type(source_type), 
+																			TYPEget_base_type(target_type), 
+																			TYPEget_body(source_type)->lower, 
+																			TYPEget_body(source_type)->upper, 
+																			TYPEget_unique(source_type), 
+																			TYPEget_optional(source_type) );
+	return aligned;
+}
+
+
 /** print expression that has op and operands */
 void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,  Type target_type,
 									 bool paren, unsigned int previous_op, bool can_wrap) {
@@ -905,10 +919,8 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,  Type target_type,
 				Type op1_type = oe->op1->return_type;
 				Type op2_type = oe->op2->return_type;
 				if( TYPEis_aggregation_data_type(target_type) && TYPEis_aggregation_data_type(op1_type) && TYPEis_aggregation_data_type(op2_type) ){
-					if( !TYPEis_runtime(TYPEget_base_type(target_type)) ){
-						op1_type = TYPEis_AGGREGATE(op1_type) ? op1_type : target_type;
-						op2_type = TYPEis_AGGREGATE(op2_type) ? op2_type : target_type;
-					}
+					op1_type = align_aggregate_type(op1_type, target_type);
+					op2_type = align_aggregate_type(op2_type, target_type);
 				}
 				
 				EXPRop2__swift( SELF,SELF, oe, " + ", op1_type,op2_type, paren, previous_op, can_wrap, NEED_OPTIONAL_OPERAND );
@@ -921,10 +933,8 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,  Type target_type,
 				Type op1_type = oe->op1->return_type;
 				Type op2_type = oe->op2->return_type;
 				if( TYPEis_aggregation_data_type(target_type) && TYPEis_aggregation_data_type(op1_type) && TYPEis_aggregation_data_type(op2_type) ){
-					if( !TYPEis_runtime(TYPEget_base_type(target_type)) ){
-						op1_type = TYPEis_AGGREGATE(op1_type) ? op1_type : target_type;
-						op2_type = TYPEis_AGGREGATE(op2_type) ? op2_type : target_type;
-					}
+					op1_type = align_aggregate_type(op1_type, target_type);
+					op2_type = align_aggregate_type(op2_type, target_type);
 				}
 			
 				EXPRop2__swift( SELF,SELF, oe, " * ", op1_type,op2_type, paren, previous_op, can_wrap, NEED_OPTIONAL_OPERAND );
@@ -937,10 +947,8 @@ void EXPRop__swift( Scope SELF, struct Op_Subexpression * oe,  Type target_type,
 				Type op1_type = oe->op1->return_type;
 				Type op2_type = oe->op2->return_type;
 				if( TYPEis_aggregation_data_type(target_type) && TYPEis_aggregation_data_type(op1_type) && TYPEis_aggregation_data_type(op2_type) ){
-					if( !TYPEis_runtime(TYPEget_base_type(target_type)) ){
-						op1_type = TYPEis_AGGREGATE(op1_type) ? op1_type : target_type;
-						op2_type = TYPEis_AGGREGATE(op2_type) ? op2_type : target_type;
-					}
+					op1_type = align_aggregate_type(op1_type, target_type);
+					op2_type = align_aggregate_type(op2_type, target_type);
 				}
 			
 				EXPRop2__swift( SELF,SELF, oe, " - ", op1_type,op2_type, paren, OP_UNKNOWN, can_wrap, NEED_OPTIONAL_OPERAND );

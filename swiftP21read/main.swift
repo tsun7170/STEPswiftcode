@@ -80,9 +80,9 @@ if doIndividualWhereValidation {
 //	let entityType = ap242.eANNOTATION_OCCURRENCE.self	// WHERE_wr1
 //	let entityType = ap242.eANNOTATION_PLACEHOLDER_OCCURRENCE.self	// WHERE_wr1
 //	let entityType = ap242.eDRAUGHTING_MODEL.self	// WHERE_wr2
-	let entityType = ap242.eFOUNDED_ITEM.self	// WHERE_wr2
+//	let entityType = ap242.eFOUNDED_ITEM.self	// WHERE_wr2
 //	let entityType = ap242.eMECHANICAL_DESIGN_GEOMETRIC_PRESENTATION_REPRESENTATION.self	// WHERE_wr8
-//	let entityType = ap242.ePLACED_DATUM_TARGET_FEATURE.self	// WHERE_wr3
+	let entityType = ap242.ePLACED_DATUM_TARGET_FEATURE.self	// WHERE_wr3
 //	//	let entityType = ap242.eREPRESENTATION_ITEM.self	// WHERE_wr1
 //	let entityType = ap242.eREPRESENTATION_MAP.self	// WHERE_wr1
 //	let entityType = ap242.eSURFACE_STYLE_RENDERING_WITH_PROPERTIES.self	// WHERE_wr1
@@ -93,7 +93,7 @@ if doIndividualWhereValidation {
 
 	let instances = schemaInstance.entityExtent(type: entityType)
 	for (i,entity) in instances.enumerated() {
-		let result = type(of: entity.partialEntity).WHERE_wr2(SELF: entity)
+		let result = type(of: entity.partialEntity).WHERE_wr3(SELF: entity)
 		print("[\(i)] \(result)")
 		continue
 	}

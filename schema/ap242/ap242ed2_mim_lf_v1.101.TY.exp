@@ -37566,7 +37566,7 @@ FUNCTION dependently_instantiated(set_of_input_instances : SET OF GENERIC : IGEN
  			RETURN(false);	-- origin of dead_end(1)
  		END_IF;
  
- 		set_of_referring_instances := set_of_referring_instances - dead_ends - in_chain;
+ 		set_of_referring_instances := set_of_referring_instances - (dead_ends + in_chain);
 
  		number_of_referring_instances := SIZEOF(set_of_referring_instances);
  		REPEAT j := 1 TO number_of_referring_instances;
