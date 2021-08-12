@@ -7,8 +7,9 @@
 (*
   2021/06/10: modified FUNCTION using_items() to prevent duplicated search.
  	2021/02/28: slightly modified for exp2swift translation, plus some bug fixes on original schema definition.
+  2021/08/12: fixed logic error in surface_style_rendering_with_properties.WR1
  
- 	by Tsutomu Yoshida, Tsutomu Yoshida, Minokamo, Japan.
+ 	by Tsutomu Yoshida, Minokamo, Japan.
 *)
  
 -- -*- Mode: Express -*-
@@ -31301,7 +31302,11 @@ ENTITY surface_style_rendering_with_properties
   SUBTYPE OF (surface_style_rendering);
   properties : SET [1 : 2] OF rendering_properties_select;
 WHERE
-  WR1: (HIINDEX(properties) = 1) XOR (TYPEOF(properties[1]) <> TYPEOF(properties[2]));
+--*TY2021/08/12  WR1: (HIINDEX(properties) = 1) XOR (TYPEOF(properties[1]) <> TYPEOF(properties[2]));
+ WR1: (HIINDEX(properties) = 1) OR (TYPEOF(properties[1]) <> TYPEOF(properties[2])); (*TY2021/08/12
+ since (ref. ISO 10303-46 (6.4.62))
+ 	WR1: All of the properties shall be of different types.
+ *)
 END_ENTITY;
 
 ENTITY surface_style_segmentation_curve

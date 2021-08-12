@@ -39,8 +39,7 @@ else {
 	exit(1)
 }
 
-let output = decoder.decode(input: charstream)
-if output == nil {
+ guard let createdModels = decoder.decode(input: charstream) else {
 	print("decoder error: \(String(describing: decoder.error))")
 	exit(2)
 }
@@ -68,7 +67,7 @@ guard let schema = exchange.shcemaRegistory.values.first else { exit(3) }
 let schemaInstance = SDAIPopulationSchema.SchemaInstance(repository: repository, 
 																												 name: "examle", 
 																												 schema: schema.schemaDefinition)
-for model in repository.contents.models.values {
+for model in createdModels {
 	schemaInstance.add(model:model)
 }
 schemaInstance.mode = .readOnly
@@ -77,24 +76,21 @@ let validationMonitor = MyValidationMonitor()
 
 var doIndividualWhereValidation = true
 if doIndividualWhereValidation {
-//	let entityType = ap242.eANNOTATION_OCCURRENCE.self	// WHERE_wr1
+	let entityType = ap242.eANNOTATION_OCCURRENCE.self	// WHERE_wr1
 //	let entityType = ap242.eANNOTATION_PLACEHOLDER_OCCURRENCE.self	// WHERE_wr1
 //	let entityType = ap242.eDRAUGHTING_MODEL.self	// WHERE_wr2
 //	let entityType = ap242.eFOUNDED_ITEM.self	// WHERE_wr2
 //	let entityType = ap242.eMECHANICAL_DESIGN_GEOMETRIC_PRESENTATION_REPRESENTATION.self	// WHERE_wr8
-	let entityType = ap242.ePLACED_DATUM_TARGET_FEATURE.self	// WHERE_wr3
-//	//	let entityType = ap242.eREPRESENTATION_ITEM.self	// WHERE_wr1
-//	let entityType = ap242.eREPRESENTATION_MAP.self	// WHERE_wr1
-//	let entityType = ap242.eSURFACE_STYLE_RENDERING_WITH_PROPERTIES.self	// WHERE_wr1
-//	//	let entityType = ap242.eTESSELLATED_ITEM.self	// WHERE_wr1
+//	let entityType = ap242.ePLACED_DATUM_TARGET_FEATURE.self	// WHERE_wr3
+//	let entityType = ap242.eREPRESENTATION_ITEM.self	// WHERE_wr1
+//	let entityType = ap242.eTESSELLATED_ITEM.self	// WHERE_wr1
 //	let entityType = ap242.eTESSELLATED_SHAPE_REPRESENTATION.self	// WHERE_wr2
-//	let entityType = ap242.eUNEQUALLY_DISPOSED_GEOMETRIC_TOLERANCE.self	// WHERE_wr1
 
 
 	let instances = schemaInstance.entityExtent(type: entityType)
 	for (i,entity) in instances.enumerated() {
-		let result = type(of: entity.partialEntity).WHERE_wr3(SELF: entity)
-		print("[\(i)] \(result)")
+		let result = type(of: entity.partialEntity).WHERE_wr1(SELF: entity)
+		print("[\(i)] \(entity): \(result)")
 		continue
 	}
 }
@@ -110,19 +106,19 @@ if doEntityValidation {
 	}
 }
 
-var doGlobalRuleValidation = false
+var doGlobalRuleValidation = true
 if doGlobalRuleValidation {
 	let globalResult = schemaInstance.validateGlobalRules(monitor:validationMonitor)
 	print("\n glovalRuleValidationRecord(\(globalResult.count)):\n\(globalResult)"  )
 }
 
-var doUniqunessRuleValidation = false
+var doUniqunessRuleValidation = true
 if doUniqunessRuleValidation {
 	let uniquenessResult = schemaInstance.validateUniquenessRules(monitor:validationMonitor)
 	print("\n uniquenessRuleValidationRecord(\(uniquenessResult.count)):\n\(uniquenessResult)")
 }	
 
-var doWhereRuleValidation = false
+var doWhereRuleValidation = true
 if doWhereRuleValidation {
 	let whereResult = schemaInstance.validateWhereRules(monitor:validationMonitor)
 	print("\n whereRuleValidationRecord:\n\(whereResult)" )
