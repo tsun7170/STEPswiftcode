@@ -10,7 +10,7 @@ import Foundation
 import SwiftSDAIcore
 
 //MARK: - activity monitor
-class MyActivityMonitor: P21Decode.ActivityMonitor {
+class MyActivityMonitor: AP242P21DecodeManager.ActivityMonitor {
 	override func tokenStreamDidSet(error p21Error: P21Decode.P21Error) {
 		print("error detected on token stream: \(p21Error)")
 	}
@@ -67,5 +67,19 @@ class MyActivityMonitor: P21Decode.ActivityMonitor {
 	
 	override func completedResolving() {
 		print("\n completed resolving.")
+	}
+	
+	//MARK: AP242P21DecodeManager specific
+	override func startedLoading(p21entry: AP242P21DecodeManager.P21Entry) {
+		print("\n loading file: \(p21entry.entryName) ", terminator: "")
+		entityCount = 0
+	}
+	
+	override func completedLoading(p21entry: AP242P21DecodeManager.P21Entry) {
+		print(" file: \(p21entry.entryName) completed loading with status(\(p21entry.status))")
+	}
+	
+	override func identified(externalReferences: [AP242P21DecodeManager.ExternalReferenceEntry], originatedFrom p21entry: AP242P21DecodeManager.P21Entry) {
+		print(" file: \(p21entry.entryName) contains \(externalReferences.count) external references.")
 	}
 }

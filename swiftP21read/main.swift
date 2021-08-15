@@ -13,7 +13,10 @@ import SwiftSDAIap242
 print("swiftP21read")
 
 let testDataFolder = ProcessInfo.processInfo.environment["TEST_DATA_FOLDER"]!
-let url = URL(fileURLWithPath: testDataFolder + "NIST_CTC_STEP_PMI/nist_ctc_02_asme1_ap242-e2.stp")
+//let url = URL(fileURLWithPath: testDataFolder + "NIST_CTC_STEP_PMI/nist_ctc_02_asme1_ap242-e2.stp")
+//let url = URL(fileURLWithPath: testDataFolder + "CAx STEP FILE LIBRARY/sg1-c5-214.stp")
+let url = URL(fileURLWithPath: testDataFolder + "CAx STEP FILE LIBRARY/s1-c5-214/s1-c5-214.stp")
+//let url = URL(fileURLWithPath: testDataFolder + "CAx STEP FILE LIBRARY/s1-c5-214/TAIL_TURBINE.stp")
 
 let stepsource = try String(contentsOf: url) 
 
@@ -43,17 +46,215 @@ else {
 	print("decoder error: \(String(describing: decoder.error))")
 	exit(2)
 }
-
-//MARK: find top level entities
 let exchange = decoder.exchangeStructrure!
-let toplevel = exchange.topLevelEntities
-let numToplevel = toplevel.count
-let numTotal = exchange.entityInstanceRegistory.count
-print("decoded \(numTotal) entities")
-print("top level entities (\(numToplevel)): \(toplevel)\n")
+guard let schema = exchange.shcemaRegistory.values.first else { exit(3) }
+let schemaInstance = repository.createSchemaInstance(name: "example", schema: schema.schemaDefinition)
+for model in createdModels {
+	schemaInstance.add(model:model)
+}
+schemaInstance.mode = .readOnly
 
+
+//MARK:- print notable entities
+do{
+	//MARK: product
+	let entityType = ap242.ePRODUCT.self
+	let instances = schemaInstance.entityExtent(type: entityType)
+	print("\(entityType):")
+	for (i,instance) in instances.enumerated() {
+		print(" [\(i)]\t\(instance) .ID=\(instance.ID) .NAME=\(instance.NAME)")
+		
+		//MARK: product_definition_formation
+		if let usedin = SDAI.USEDIN(T: instance, ROLE: \ap242.ePRODUCT_DEFINITION_FORMATION.OF_PRODUCT) {
+			for (j,instance) in usedin.enumerated() {
+				print(" [\(i).\(j)]\t\(instance) .ID=\(instance.ID)")
+				
+				//MARK: product_definition
+				if let usedin = SDAI.USEDIN(T: instance, ROLE: \ap242.ePRODUCT_DEFINITION.FORMATION) {
+					for (k,instance) in usedin.enumerated() {
+						print(" [\(i).\(j).\(k)]\t\(instance) .ID=\(instance.ID)")
+						
+						//MARK: product_definition_shape
+						if let usedin = SDAI.USEDIN(T: instance, ROLE: \ap242.ePRODUCT_DEFINITION_SHAPE.DEFINITION) {
+							for (l,instance) in usedin.enumerated() {
+								print(" [\(i).\(j).\(k).\(l)]\t\(instance) .NAME=\(instance.NAME)")
+								
+								//MARK: shape_definition_representation
+								if let usedin = SDAI.USEDIN(T: instance, ROLE: \ap242.eSHAPE_DEFINITION_REPRESENTATION.DEFINITION) {
+									for (m,instance) in usedin.enumerated() {
+										print(" [\(i).\(j).\(k).\(l).\(m)]\t\(instance) .USED_REPRESENTATION=\(instance.USED_REPRESENTATION)") // shape_representation
+									}
+								}
+								if !usedin.isEmpty {print("--")}
+								//MARK: shape_aspect
+								if let usedin = SDAI.USEDIN(T: instance, ROLE: \ap242.eSHAPE_ASPECT.OF_SHAPE) {
+									for (m,instance) in usedin.enumerated() {
+										print(" [\(i).\(j).\(k).\(l).\(m)]\t\(instance)")
+										
+										//MARK: geometric_item_specific_usage
+										if let usedin = SDAI.USEDIN(T: instance, ROLE: \ap242.eGEOMETRIC_ITEM_SPECIFIC_USAGE.DEFINITION) {
+											for (n,instance) in usedin.enumerated() {
+												print(" [\(i).\(j).\(k).\(l).\(m).\(n)]\t\(instance) .USED_REPRESENTATION=\(instance.USED_REPRESENTATION)") // constructive_geometry_representation
+											}
+										}
+									}
+								}
+							}
+							if !usedin.isEmpty {print("--")}
+						}
+						//MARK: applied_document_reference
+						if let usedin = SDAI.USEDIN(T: instance, ROLE: \ap242.eAPPLIED_DOCUMENT_REFERENCE.ITEMS) {
+							for (l,instance) in usedin.enumerated() {
+								print(" [\(i).\(j).\(k).\(l)]\t\(instance) .SOURCE=\(instance.SOURCE)")
+							}
+//							print("--")
+						}
+					}
+				}
+			}
+		}		
+	}
+	print("")
+}
+	
+do{
+	//MARK: - shape_representation
+	let entityType = ap242.eSHAPE_REPRESENTATION.self
+	let instances = schemaInstance.entityExtent(type: entityType)
+	print("\(entityType):")
+	for (i,instance) in instances.enumerated() {
+		print(" [\(i)]\t\(instance) .ID=\(instance.ID ?? "?") .NAME=\(instance.NAME)")
+		for (i1,item) in instance.ITEMS.enumerated() {
+			print(" .ITEM[\(i1)]\t\(item.complexEntity)")
+		}
+		
+		//MARK: shape_representation_relationship
+		if let usedin = SDAI.USEDIN(T: instance, ROLE: \ap242.eSHAPE_REPRESENTATION_RELATIONSHIP.REP_1) {
+			for (j,instance) in usedin.enumerated() {
+				print(" [\(i).\(j)]\t\(instance) \n\t .REP_2=\(instance.REP_2)")
+				continue
+			}
+			if !usedin.isEmpty {print("--")}
+		}
+		
+		//MARK: property_definition_representation
+		if let usedin = SDAI.USEDIN(T: instance, ROLE: \ap242.ePROPERTY_DEFINITION_REPRESENTATION.USED_REPRESENTATION) {
+			for (j,instance) in usedin.enumerated() {
+				let prop_def = instance.DEFINITION
+				let doc_file = prop_def.DEFINITION
+				print(" [\(i).\(j)]\t\(instance) .DEFINITION=\(prop_def) .DEFINITION.NAME=\(prop_def.NAME ?? "?")\n\t .DEFINITION.DEFINITION=\(String(describing: doc_file)) .DEFINITION.DEFINITION.ID=\(doc_file?.GROUP_REF(ap242.eDOCUMENT_FILE.self)?.ID ?? "?")")
+				continue
+			}
+			if !usedin.isEmpty {print("--")}
+		}
+		//MARK: constructive_geometry_representation_relationship
+		if let usedin = SDAI.USEDIN(T: instance, ROLE: \ap242.eCONSTRUCTIVE_GEOMETRY_REPRESENTATION_RELATIONSHIP.REP_1) {
+			for (j,instance) in usedin.enumerated() {
+				print(" [\(i).\(j)]\t\(instance) \n\t .REP_2=\(instance.REP_2)")
+				continue
+			}
+		}
+	}
+	print("")
+}
+do{
+	//MARK: - constructive_geometry_representation
+	let entityType = ap242.eCONSTRUCTIVE_GEOMETRY_REPRESENTATION.self
+	let instances = schemaInstance.entityExtent(type: entityType)
+	print("\(entityType):")
+	for (i,instance) in instances.enumerated() {
+		print(" [\(i)]\t\(instance)")
+		for (i1,item) in instance.ITEMS.enumerated() {
+			print(" .ITEM[\(i1)]\t\(item.complexEntity)")
+		}
+	}
+	print("")
+}
+do{
+	//MARK: applied_document_reference
+	let entityType = ap242.eAPPLIED_DOCUMENT_REFERENCE.self
+	let instances = schemaInstance.entityExtent(type: entityType)
+	print("\(entityType):")
+	for (i,instance) in instances.enumerated() {
+		print(" [\(i)]\t\(instance) .ASSIGNED_DOCUMENT=\(instance.ASSIGNED_DOCUMENT) .ITEMS=\(instance.ITEMS)")
+		
+		//MARK: document_product_equivalence
+		if let usedin = SDAI.USEDIN(T: instance.ASSIGNED_DOCUMENT, ROLE: \ap242.eDOCUMENT_PRODUCT_EQUIVALENCE.RELATING_DOCUMENT) {
+			for (j,instance) in usedin.enumerated() {
+				print(" [\(i).\(j)]\t\(instance) .RELATED_PRODUCT=\(instance.RELATED_PRODUCT)")
+				
+				//MARK: product_definition_withassociated_documents
+				if let usedin = SDAI.USEDIN(T: instance.RELATED_PRODUCT, ROLE: \ap242.ePRODUCT_DEFINITION_WITH_ASSOCIATED_DOCUMENTS.FORMATION) {
+					for (k,instance) in usedin.enumerated() {
+						print(" [\(i).\(j).\(k)]\t\(instance) .DOCUMENTATION_IDS=\(instance.DOCUMENTATION_IDS)") // document_file
+					}
+				}
+			}
+		}
+	}
+	print("")
+}
+do{
+	//MARK: - applied_external_identification_assignment
+	let entityType = ap242.eAPPLIED_EXTERNAL_IDENTIFICATION_ASSIGNMENT.self
+	let instances = schemaInstance.entityExtent(type: entityType)
+	print("\(entityType):")
+	for (i,instance) in instances.enumerated() {
+		print(" [\(i)]\t\(instance) .ASSIGNED_ID=\(instance.ASSIGNED_ID) .SOURCE=\(instance.SOURCE) .ITEMS:\(instance.ITEMS)")
+	}
+	print("")
+}
+do{
+	//MARK: - external_source
+	let entityType = ap242.eEXTERNAL_SOURCE.self
+	let instances = schemaInstance.entityExtent(type: entityType)
+	print("\(entityType):")
+	for (i,instance) in instances.enumerated() {
+		print(" [\(i)]\t\(instance) .SOURCE_ID=\(instance.SOURCE_ID)")
+	}
+	print("")
+}
+do{
+	//MARK: - document_file
+	let entityType = ap242.eDOCUMENT_FILE.self
+	let instances = schemaInstance.entityExtent(type: entityType)
+	print("\(entityType):")
+	for (i,instance) in instances.enumerated() {
+		print(" [\(i)]\t\(instance) .ID=\(instance.ID)")
+		
+		//MARK: property_definition
+		if let usedin = SDAI.USEDIN(T: instance, ROLE: \ap242.ePROPERTY_DEFINITION.DEFINITION) {
+			for (j,instance) in usedin.enumerated() {
+				print(" [\(i).\(j)]\t\(instance) .NAME=\(instance.NAME)")
+				
+				//MARK: property_definition_representation
+				if let usedin = SDAI.USEDIN(T: instance, ROLE: \ap242.ePROPERTY_DEFINITION_REPRESENTATION.DEFINITION) {
+					for (k,instance) in usedin.enumerated() {
+						let representation = instance.USED_REPRESENTATION
+						print(" [\(i).\(j).\(k)]\t\(instance) .USED_REPRESENTATION=\(representation)")
+						for (l,item) in representation.ITEMS.enumerated() {
+							if let descritive_rep_item = item.GROUP_REF(ap242.eDESCRIPTIVE_REPRESENTATION_ITEM.self) {
+								print(" .ITEMS[\(l)]\t\(item) .NAME=\(item.NAME) .DESCRIPTION=\(descritive_rep_item.DESCRIPTION)")
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
+	print("")
+}
+
+//MARK: - find top level entities
 var printTopLevels = false
 if printTopLevels {
+	let toplevel = exchange.topLevelEntities
+	let numToplevel = toplevel.count
+	let numTotal = exchange.entityInstanceRegistory.count
+	print("decoded \(numTotal) entities")
+	print("top level entities (\(numToplevel)): \(toplevel)\n")
+	
 	for (name,instances) in toplevel {
 		if let some = instances.first, let instance = exchange.entityInstanceRegistory[some], let complex = instance.resolved {
 			print("\(name) #\(some): \(complex)")
@@ -63,18 +264,10 @@ if printTopLevels {
 }
 
 //MARK: validation
-guard let schema = exchange.shcemaRegistory.values.first else { exit(3) }
-let schemaInstance = SDAIPopulationSchema.SchemaInstance(repository: repository, 
-																												 name: "examle", 
-																												 schema: schema.schemaDefinition)
-for model in createdModels {
-	schemaInstance.add(model:model)
-}
-schemaInstance.mode = .readOnly
 
 let validationMonitor = MyValidationMonitor()
 
-var doIndividualWhereValidation = true
+var doIndividualWhereValidation = false
 if doIndividualWhereValidation {
 	let entityType = ap242.eANNOTATION_OCCURRENCE.self	// WHERE_wr1
 //	let entityType = ap242.eANNOTATION_PLACEHOLDER_OCCURRENCE.self	// WHERE_wr1
@@ -106,19 +299,19 @@ if doEntityValidation {
 	}
 }
 
-var doGlobalRuleValidation = true
+var doGlobalRuleValidation = false
 if doGlobalRuleValidation {
 	let globalResult = schemaInstance.validateGlobalRules(monitor:validationMonitor)
 	print("\n glovalRuleValidationRecord(\(globalResult.count)):\n\(globalResult)"  )
 }
 
-var doUniqunessRuleValidation = true
+var doUniqunessRuleValidation = false
 if doUniqunessRuleValidation {
 	let uniquenessResult = schemaInstance.validateUniquenessRules(monitor:validationMonitor)
 	print("\n uniquenessRuleValidationRecord(\(uniquenessResult.count)):\n\(uniquenessResult)")
 }	
 
-var doWhereRuleValidation = true
+var doWhereRuleValidation = false
 if doWhereRuleValidation {
 	let whereResult = schemaInstance.validateWhereRules(monitor:validationMonitor)
 	print("\n whereRuleValidationRecord:\n\(whereResult)" )
@@ -134,18 +327,17 @@ if doAllValidaton {
 }
 
 //MARK: entity look up
-var entityType = ap242.ePRODUCT.self
-let instances = schemaInstance.entityExtent(type: entityType)
-print("\(entityType): \(Array(instances))")
-
 var name = 1
 while name != 0 {
 	if let instance = exchange.entityInstanceRegistory[name], let complex = instance.resolved {
-		print("#\(name): source = \(instance.source)\n\(complex)")
-		print("")
+		print("#\(name): source = \(instance.source)\n\(complex)\n")
+		name = 0
+		continue
 	}
-	name = 0
-	print("")
+	else {
+		name = 0
+		continue
+	}
 }
 
 

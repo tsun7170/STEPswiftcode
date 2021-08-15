@@ -88,6 +88,13 @@
 		F48BF95C24C26BFF005B5B0A /* swift_entity.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF94E24C26BFE005B5B0A /* swift_entity.c */; };
 		F48BF95D24C26BFF005B5B0A /* swift_symbol.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF95024C26BFE005B5B0A /* swift_symbol.c */; };
 		F48BF95E24C26BFF005B5B0A /* swift_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF95424C26BFE005B5B0A /* swift_type.c */; };
+		F4B644A926C7ADB200C1C43C /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B644A826C7ADB200C1C43C /* main.swift */; };
+		F4B644B326C7AE5800C1C43C /* MyActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F447F934269992FA00F31B35 /* MyActivityMonitor.swift */; };
+		F4B644BA26C7AE5C00C1C43C /* MyValidationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F447F93B2699937200F31B35 /* MyValidationMonitor.swift */; };
+		F4B644C226C7AEDB00C1C43C /* ap242P21DecodeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B644C126C7AEDB00C1C43C /* ap242P21DecodeManager.swift */; };
+		F4B644CB26C7B1AD00C1C43C /* SwiftSDAIap242 in Frameworks */ = {isa = PBXBuildFile; productRef = F4B644CA26C7B1AD00C1C43C /* SwiftSDAIap242 */; };
+		F4B644CD26C7B1B200C1C43C /* SwiftSDAIcore in Frameworks */ = {isa = PBXBuildFile; productRef = F4B644CC26C7B1B200C1C43C /* SwiftSDAIcore */; };
+		F4B644D426C8DAB500C1C43C /* ap242P21DecodeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B644C126C7AEDB00C1C43C /* ap242P21DecodeManager.swift */; };
 		F4E728FC25002891007FDFD9 /* swift_select_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F4E728FB25002891007FDFD9 /* swift_select_type.c */; };
 		F4E7D606250819D2000B5362 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E7D605250819D2000B5362 /* main.swift */; };
 		F4E7D60B250819E2000B5362 /* SwiftSDAIcore in Frameworks */ = {isa = PBXBuildFile; productRef = F4E7D60A250819E2000B5362 /* SwiftSDAIcore */; };
@@ -113,6 +120,15 @@
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 		F48BF92524C0E0C5005B5B0A /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		F4B644A426C7ADB200C1C43C /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -388,6 +404,10 @@
 		F48BF95124C26BFE005B5B0A /* swift_symbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_symbol.h; sourceTree = "<group>"; };
 		F48BF95324C26BFE005B5B0A /* swift_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_type.h; sourceTree = "<group>"; };
 		F48BF95424C26BFE005B5B0A /* swift_type.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_type.c; sourceTree = "<group>"; };
+		F4B644A626C7ADB200C1C43C /* MultiP21reads */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MultiP21reads; sourceTree = BUILT_PRODUCTS_DIR; };
+		F4B644A826C7ADB200C1C43C /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		F4B644C126C7AEDB00C1C43C /* ap242P21DecodeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ap242P21DecodeManager.swift; sourceTree = "<group>"; };
+		F4B644C926C7B19800C1C43C /* SwiftSDAIcore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftSDAIcore; path = ../SwiftSDAIcore; sourceTree = "<group>"; };
 		F4E728FA25002891007FDFD9 /* swift_select_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_select_type.h; sourceTree = "<group>"; };
 		F4E728FB25002891007FDFD9 /* swift_select_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_select_type.c; sourceTree = "<group>"; };
 		F4E7D603250819D2000B5362 /* swiftP21read */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = swiftP21read; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -421,6 +441,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4B644A326C7ADB200C1C43C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4B644CD26C7B1B200C1C43C /* SwiftSDAIcore in Frameworks */,
+				F4B644CB26C7B1AD00C1C43C /* SwiftSDAIap242 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -497,6 +526,7 @@
 				F4E7D604250819D2000B5362 /* swiftP21read */,
 				F47CCCDD257D801500FB0438 /* SDAISwiftCore */,
 				F41BE8B8268BB693005990D1 /* swiftP21readTest */,
+				F4B644A726C7ADB200C1C43C /* MultiP21reads */,
 				F44D024524BE3FDA00E77B2A /* Products */,
 				F45A7F8F24E3B24700669F95 /* Frameworks */,
 			);
@@ -510,6 +540,7 @@
 				F4E7D603250819D2000B5362 /* swiftP21read */,
 				F47CCCDC257D801500FB0438 /* SDAISwiftCore */,
 				F41BE8B7268BB693005990D1 /* swiftP21readTest.xctest */,
+				F4B644A626C7ADB200C1C43C /* MultiP21reads */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -963,6 +994,7 @@
 		F45A7F8F24E3B24700669F95 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F4B644C926C7B19800C1C43C /* SwiftSDAIcore */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1048,6 +1080,15 @@
 				F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */,
 			);
 			path = type;
+			sourceTree = "<group>";
+		};
+		F4B644A726C7ADB200C1C43C /* MultiP21reads */ = {
+			isa = PBXGroup;
+			children = (
+				F4B644A826C7ADB200C1C43C /* main.swift */,
+				F4B644C126C7AEDB00C1C43C /* ap242P21DecodeManager.swift */,
+			);
+			path = MultiP21reads;
 			sourceTree = "<group>";
 		};
 		F4E7D604250819D2000B5362 /* swiftP21read */ = {
@@ -1137,6 +1178,27 @@
 			productReference = F48BF92724C0E0C5005B5B0A /* yacc&lex */;
 			productType = "com.apple.product-type.tool";
 		};
+		F4B644A526C7ADB200C1C43C /* MultiP21reads */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4B644AC26C7ADB200C1C43C /* Build configuration list for PBXNativeTarget "MultiP21reads" */;
+			buildPhases = (
+				F4B644A226C7ADB200C1C43C /* Sources */,
+				F4B644A326C7ADB200C1C43C /* Frameworks */,
+				F4B644A426C7ADB200C1C43C /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MultiP21reads;
+			packageProductDependencies = (
+				F4B644CA26C7B1AD00C1C43C /* SwiftSDAIap242 */,
+				F4B644CC26C7B1B200C1C43C /* SwiftSDAIcore */,
+			);
+			productName = MultiP21reads;
+			productReference = F4B644A626C7ADB200C1C43C /* MultiP21reads */;
+			productType = "com.apple.product-type.tool";
+		};
 		F4E7D602250819D2000B5362 /* swiftP21read */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F4E7D609250819D2000B5362 /* Build configuration list for PBXNativeTarget "swiftP21read" */;
@@ -1165,7 +1227,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1240;
-				LastUpgradeCheck = 1220;
+				LastUpgradeCheck = 1240;
 				ORGANIZATIONNAME = "Minokamo, Japan";
 				TargetAttributes = {
 					F41BE8B6268BB693005990D1 = {
@@ -1179,6 +1241,9 @@
 					};
 					F48BF92624C0E0C5005B5B0A = {
 						CreatedOnToolsVersion = 11.6;
+					};
+					F4B644A526C7ADB200C1C43C = {
+						CreatedOnToolsVersion = 12.4;
 					};
 					F4E7D602250819D2000B5362 = {
 						CreatedOnToolsVersion = 12.0;
@@ -1203,6 +1268,7 @@
 				F4E7D602250819D2000B5362 /* swiftP21read */,
 				F47CCCDB257D801500FB0438 /* SDAISwiftCore */,
 				F41BE8B6268BB693005990D1 /* swiftP21readTest */,
+				F4B644A526C7ADB200C1C43C /* MultiP21reads */,
 			);
 		};
 /* End PBXProject section */
@@ -1324,11 +1390,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4B644A226C7ADB200C1C43C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4B644BA26C7AE5C00C1C43C /* MyValidationMonitor.swift in Sources */,
+				F4B644C226C7AEDB00C1C43C /* ap242P21DecodeManager.swift in Sources */,
+				F4B644A926C7ADB200C1C43C /* main.swift in Sources */,
+				F4B644B326C7AE5800C1C43C /* MyActivityMonitor.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F4E7D5FF250819D2000B5362 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				F447F93C2699937200F31B35 /* MyValidationMonitor.swift in Sources */,
+				F4B644D426C8DAB500C1C43C /* ap242P21DecodeManager.swift in Sources */,
 				F4E7D606250819D2000B5362 /* main.swift in Sources */,
 				F447F935269992FA00F31B35 /* MyActivityMonitor.swift in Sources */,
 			);
@@ -1573,6 +1651,33 @@
 			};
 			name = Release;
 		};
+		F4B644AA26C7ADB200C1C43C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = ZX793TWQF2;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F4B644AB26C7ADB200C1C43C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = ZX793TWQF2;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		F4E7D607250819D2000B5362 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1649,6 +1754,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		F4B644AC26C7ADB200C1C43C /* Build configuration list for PBXNativeTarget "MultiP21reads" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4B644AA26C7ADB200C1C43C /* Debug */,
+				F4B644AB26C7ADB200C1C43C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		F4E7D609250819D2000B5362 /* Build configuration list for PBXNativeTarget "swiftP21read" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1666,6 +1780,14 @@
 			productName = SwiftSDAIap242;
 		};
 		F47CCCE7257E2B7600FB0438 /* SwiftSDAIcore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftSDAIcore;
+		};
+		F4B644CA26C7B1AD00C1C43C /* SwiftSDAIap242 */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftSDAIap242;
+		};
+		F4B644CC26C7B1B200C1C43C /* SwiftSDAIcore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SwiftSDAIcore;
 		};

@@ -38,5 +38,14 @@ class swiftP21readTest: XCTestCase {
 		XCTAssertTrue(markers.count == 101)
 	}
 	
+	func testURL() {
+		let testDataFolder = ProcessInfo.processInfo.environment["TEST_DATA_FOLDER"]!
+		let url = URL(fileURLWithPath: testDataFolder + "CAx STEP FILE LIBRARY/s1-c5-214/s1-c5-214.stp")
+		let file = url.lastPathComponent
+		let dir = url.deletingLastPathComponent()
+		XCTAssertTrue(file == "s1-c5-214.stp")
 
+		let anotherUrl = URL(fileURLWithPath: dir.path+"/"+file)
+		XCTAssertTrue(url == anotherUrl)
+	}
 }

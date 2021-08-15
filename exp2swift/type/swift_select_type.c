@@ -1475,6 +1475,7 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 	selectVarForwarding_swift(select_type, "loBound", "Int",  level);
 	selectVarForwarding_swift(select_type, "loIndex", "Int",  level);
 	selectVarForwarding_swift(select_type, "size",    "Int",  level);
+	selectVarForwarding_swift(select_type, "isEmpty", "Bool", level);
 	
 	raw("\n");
 	indent_swift(level);
