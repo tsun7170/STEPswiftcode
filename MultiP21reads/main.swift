@@ -13,7 +13,8 @@ import SwiftSDAIap242
 print("MultiP21reads")
 
 let testDataFolder = ProcessInfo.processInfo.environment["TEST_DATA_FOLDER"]!
-let url = URL(fileURLWithPath: testDataFolder + "CAx STEP FILE LIBRARY/s1-c5-214/s1-c5-214.stp")
+//let url = URL(fileURLWithPath: testDataFolder + "CAx STEP FILE LIBRARY/s1-c5-214/s1-c5-214.stp")
+let url = URL(fileURLWithPath: testDataFolder + "CAx STEP FILE LIBRARY/s1-tu-203/s1-tu-203.stp")
 
 let repository = SDAISessionSchema.SdaiRepository(name: "examle", description: "example repository")
 
@@ -23,6 +24,7 @@ let schemaList: P21Decode.SchemaList = [
 	"AP203_CONFIGURATION_CONTROLLED_3D_DESIGN_OF_MECHANICAL_PARTS_AND_ASSEMBLIES_MIM_LF  { 1 0 10303 403 3 1 4}": AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.self,
 	"AP203_CONFIGURATION_CONTROLLED_3D_DESIGN_OF_MECHANICAL_PARTS_AND_ASSEMBLIES_MIM_LF { 1 0 10303 403 2 1 2}": AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.self,
 	"CONFIG_CONTROL_DESIGN": AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.self,
+	"CONFIGURATION_CONTROL_3D_DESIGN_ED2_MIM_LF { 1 0 10303 403 1 1 4}": AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.self,
 	"AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }": AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF.self,
 ]
 
@@ -45,7 +47,7 @@ print("\n LOADED p21 FILES")
 for (i,entry) in manager.p21entries.values
 	.sorted(by:{$0.entryName < $1.entryName})
 	.enumerated() {
-	print("[\(i)]\t \(entry.entryName)\t\t STATUS= \(entry.status)", terminator:"")
+	print("[\(i)]\t \(entry.entryName)\t\t MODELs=\(entry.sdaiModels?.compactMap{$0.name} ?? [])\t\t STATUS= \(entry.status)", terminator:"")
 	if let extref = entry as? AP242P21DecodeManager.ExternalReferenceEntry {
 		print("\t UPSTREAM= \(extref.upStream.entryName)\t FORMAT= \(extref.documentFormat.asSwiftType))")
 //		print("\t\t IDENT=\(String(describing: extref.loadedIdentity))")
@@ -62,7 +64,7 @@ schemaInstance.add(models: manager.models)
 schemaInstance.mode = .readOnly
 
 //MARK: validation
-var doAllValidaton = true
+var doAllValidaton = false
 if doAllValidaton {
 	let validationPassed = schemaInstance.validateAllConstraints(monitor: MyValidationMonitor())
 	print("\n\n validationPassed: ", validationPassed)
@@ -83,7 +85,7 @@ while name != 0 {
 		continue
 	}
 	if let instance = exchange.entityInstanceRegistory[name], let complex = instance.resolved {
-		print("#\(name): source = \(instance.source)\n\(complex)\n")
+		print("\n#\(name): source = \(instance.source)\n\(complex)\n")
 		name = 0
 		continue
 	}

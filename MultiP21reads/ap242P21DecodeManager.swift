@@ -255,7 +255,9 @@ public class AP242P21DecodeManager: SDAI.Object {
 		schemaInstance.mode = .readOnly
 
 		// product
+		var productIDs: [SDAI.STRING] = []
 		for product in schemaInstance.entityExtent(type: ap242.ePRODUCT.self) {
+			productIDs.append(SDAI.STRING(product.ID))
 			if product.ID != extRef.expectedIdentity.productID { continue }
 			
 			// shape definition representation
@@ -265,7 +267,7 @@ public class AP242P21DecodeManager: SDAI.Object {
 				.filter { $0.DEFINITION.DEFINITION.FORMATION?.OF_PRODUCT == product } )
 			guard shapeDefRep.count == 1
 			else { 
-				extRef.status = .loadedWithWarnings("loaded data does not contain unique shape definition representation entity")
+				extRef.status = .loadedWithWarnings("loaded data does not contain unique SHAPE DEFINITION REPRESENTATION")
 				return
 			}
 			
@@ -279,11 +281,11 @@ public class AP242P21DecodeManager: SDAI.Object {
 																						productName: product.NAME)
 			extRef.loadedIdentity = ident
 			if extRef.expectedIdentity != ident {
-				extRef.status = .loadedWithWarnings("loaded product itentity is not consistent with expected")
+				extRef.status = .loadedWithWarnings("loaded PRODUCT itentity is not consistent with expected")
 			}
 			return
 		}
-		extRef.status = .loadedWithWarnings("product with expected id(\(extRef.expectedIdentity.productID)) is not contained")
+		extRef.status = .loadedWithWarnings("PRODUCT with expected ID(\(extRef.expectedIdentity.productID.asSwiftType)) is not contained; found PRODUCTs:\(productIDs)")
 	}
 	
 }
