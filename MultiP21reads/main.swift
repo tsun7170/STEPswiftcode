@@ -13,8 +13,8 @@ import SwiftSDAIap242
 print("MultiP21reads")
 
 let testDataFolder = ProcessInfo.processInfo.environment["TEST_DATA_FOLDER"]!
-//let url = URL(fileURLWithPath: testDataFolder + "CAx STEP FILE LIBRARY/s1-c5-214/s1-c5-214.stp")
-let url = URL(fileURLWithPath: testDataFolder + "CAx STEP FILE LIBRARY/s1-tu-203/s1-tu-203.stp")
+let url = URL(fileURLWithPath: testDataFolder + "CAx STEP FILE LIBRARY/s1-c5-214/s1-c5-214.stp")
+//let url = URL(fileURLWithPath: testDataFolder + "CAx STEP FILE LIBRARY/s1-tu-203/s1-tu-203.stp")
 
 let repository = SDAISessionSchema.SdaiRepository(name: "examle", description: "example repository")
 
