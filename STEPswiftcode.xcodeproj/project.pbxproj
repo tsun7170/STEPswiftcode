@@ -12,6 +12,8 @@
 		F40EE5EA254546F200F293C3 /* swift_named_simple_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */; };
 		F40EE5F225457CE300F293C3 /* SwiftSDAIap242 in Frameworks */ = {isa = PBXBuildFile; productRef = F40EE5F125457CE300F293C3 /* SwiftSDAIap242 */; };
 		F41BE8BA268BB694005990D1 /* swiftP21readTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41BE8B9268BB694005990D1 /* swiftP21readTest.swift */; };
+		F42951DF26D1037D006107B7 /* SwiftAP242PDMkit in Frameworks */ = {isa = PBXBuildFile; productRef = F42951DE26D1037D006107B7 /* SwiftAP242PDMkit */; };
+		F42951E126D1038E006107B7 /* SwiftAP242PDMkit in Frameworks */ = {isa = PBXBuildFile; productRef = F42951E026D1038E006107B7 /* SwiftAP242PDMkit */; };
 		F43B6BEF24CD3D6C007493AB /* swift_entity_partial.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */; };
 		F43B6BF124CD3E20007493AB /* swift_entity_reference.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF024CD3E20007493AB /* swift_entity_reference.c */; };
 		F43B6BF724CEC040007493AB /* swift_rule.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF624CEC040007493AB /* swift_rule.c */; };
@@ -70,8 +72,6 @@
 		F45A2EA925173EA100A9E3C2 /* swift_enum_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F45A2EA825173EA100A9E3C2 /* swift_enum_type.c */; };
 		F45A7F8E24D00EEF00669F95 /* swift_statement.c in Sources */ = {isa = PBXBuildFile; fileRef = F45A7F8D24D00EEF00669F95 /* swift_statement.c */; };
 		F45D5E7A25B2C6E900CACCF9 /* decompose_expression.c in Sources */ = {isa = PBXBuildFile; fileRef = F45D5E7925B2C6E800CACCF9 /* decompose_expression.c */; };
-		F47CCCDF257D801500FB0438 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47CCCDE257D801500FB0438 /* main.swift */; };
-		F47CCCE8257E2B7600FB0438 /* SwiftSDAIcore in Frameworks */ = {isa = PBXBuildFile; productRef = F47CCCE7257E2B7600FB0438 /* SwiftSDAIcore */; };
 		F48BF92A24C0E0C5005B5B0A /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF92924C0E0C5005B5B0A /* main.c */; };
 		F48BF92F24C0E110005B5B0A /* expscan.l in Sources */ = {isa = PBXBuildFile; fileRef = F44D030A24BE429E00E77B2A /* expscan.l */; };
 		F48BF93024C0E115005B5B0A /* expparse.y in Sources */ = {isa = PBXBuildFile; fileRef = F44D031424BE429E00E77B2A /* expparse.y */; };
@@ -102,15 +102,6 @@
 
 /* Begin PBXCopyFilesBuildPhase section */
 		F44D025024BE402700E77B2A /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
-		F47CCCDA257D801500FB0438 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -155,10 +146,10 @@
 		F40EE5E3254546D800F293C3 /* swift_named_aggregate_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_named_aggregate_type.c; sourceTree = "<group>"; };
 		F40EE5E8254546F200F293C3 /* swift_named_simple_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_named_simple_type.h; sourceTree = "<group>"; };
 		F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_named_simple_type.c; sourceTree = "<group>"; };
-		F413BEB1262C598700217744 /* TestCases */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TestCases; path = ../../TestCases; sourceTree = "<group>"; };
 		F41BE8B7268BB693005990D1 /* swiftP21readTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = swiftP21readTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F41BE8B9268BB694005990D1 /* swiftP21readTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = swiftP21readTest.swift; sourceTree = "<group>"; };
 		F41BE8BB268BB694005990D1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F42951C626D0F812006107B7 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Package.swift; path = ../SwiftAP242PDMkit/Package.swift; sourceTree = "<group>"; };
 		F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_partial.c; sourceTree = "<group>"; };
 		F43B6BF024CD3E20007493AB /* swift_entity_reference.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_reference.c; sourceTree = "<group>"; };
 		F43B6BF524CEC040007493AB /* swift_rule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_rule.h; sourceTree = "<group>"; };
@@ -370,8 +361,8 @@
 		F45A7F8D24D00EEF00669F95 /* swift_statement.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_statement.c; sourceTree = "<group>"; };
 		F45D5E7825B2C6E800CACCF9 /* decompose_expression.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = decompose_expression.h; sourceTree = "<group>"; };
 		F45D5E7925B2C6E800CACCF9 /* decompose_expression.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = decompose_expression.c; sourceTree = "<group>"; };
-		F47CCCDC257D801500FB0438 /* SDAISwiftCore */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SDAISwiftCore; sourceTree = BUILT_PRODUCTS_DIR; };
-		F47CCCDE257D801500FB0438 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		F474A05826D0ECEE000E6EEB /* SwiftAP242PDMkit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftAP242PDMkit; path = ../SwiftAP242PDMkit; sourceTree = "<group>"; };
+		F474A06026D0EDC1000E6EEB /* SwiftSDAIap242 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftSDAIap242; path = ../SwiftSDAIap242; sourceTree = "<group>"; };
 		F48BF91E24C07A2B005B5B0A /* ordered_attrs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ordered_attrs.h; sourceTree = "<group>"; };
 		F48BF91F24C07A2B005B5B0A /* sc_export.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sc_export.h; sourceTree = "<group>"; };
 		F48BF92024C07A2C005B5B0A /* sc_stdbool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sc_stdbool.h; sourceTree = "<group>"; };
@@ -429,14 +420,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F47CCCD9257D801500FB0438 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F47CCCE8257E2B7600FB0438 /* SwiftSDAIcore in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		F48BF92424C0E0C5005B5B0A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -449,6 +432,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F4B644CD26C7B1B200C1C43C /* SwiftSDAIcore in Frameworks */,
+				F42951E126D1038E006107B7 /* SwiftAP242PDMkit in Frameworks */,
 				F4B644CB26C7B1AD00C1C43C /* SwiftSDAIap242 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -458,6 +442,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F4E7D60B250819E2000B5362 /* SwiftSDAIcore in Frameworks */,
+				F42951DF26D1037D006107B7 /* SwiftAP242PDMkit in Frameworks */,
 				F40EE5F225457CE300F293C3 /* SwiftSDAIap242 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -524,7 +509,6 @@
 				F44D025924BE40B600E77B2A /* stepcode */,
 				F48BF92824C0E0C5005B5B0A /* yacc&lex */,
 				F4E7D604250819D2000B5362 /* swiftP21read */,
-				F47CCCDD257D801500FB0438 /* SDAISwiftCore */,
 				F41BE8B8268BB693005990D1 /* swiftP21readTest */,
 				F4B644A726C7ADB200C1C43C /* MultiP21reads */,
 				F44D024524BE3FDA00E77B2A /* Products */,
@@ -538,7 +522,6 @@
 				F44D025224BE402700E77B2A /* exp2swift */,
 				F48BF92724C0E0C5005B5B0A /* yacc&lex */,
 				F4E7D603250819D2000B5362 /* swiftP21read */,
-				F47CCCDC257D801500FB0438 /* SDAISwiftCore */,
 				F41BE8B7268BB693005990D1 /* swiftP21readTest.xctest */,
 				F4B644A626C7ADB200C1C43C /* MultiP21reads */,
 			);
@@ -994,17 +977,12 @@
 		F45A7F8F24E3B24700669F95 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F42951C626D0F812006107B7 /* Package.swift */,
+				F474A06026D0EDC1000E6EEB /* SwiftSDAIap242 */,
+				F474A05826D0ECEE000E6EEB /* SwiftAP242PDMkit */,
 				F4B644C926C7B19800C1C43C /* SwiftSDAIcore */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		F47CCCDD257D801500FB0438 /* SDAISwiftCore */ = {
-			isa = PBXGroup;
-			children = (
-				F47CCCDE257D801500FB0438 /* main.swift */,
-			);
-			path = SDAISwiftCore;
 			sourceTree = "<group>";
 		};
 		F48BF92824C0E0C5005B5B0A /* yacc&lex */ = {
@@ -1097,7 +1075,6 @@
 				F4E7D605250819D2000B5362 /* main.swift */,
 				F447F934269992FA00F31B35 /* MyActivityMonitor.swift */,
 				F447F93B2699937200F31B35 /* MyValidationMonitor.swift */,
-				F413BEB1262C598700217744 /* TestCases */,
 			);
 			path = swiftP21read;
 			sourceTree = "<group>";
@@ -1141,26 +1118,6 @@
 			productReference = F44D025224BE402700E77B2A /* exp2swift */;
 			productType = "com.apple.product-type.tool";
 		};
-		F47CCCDB257D801500FB0438 /* SDAISwiftCore */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = F47CCCE2257D801600FB0438 /* Build configuration list for PBXNativeTarget "SDAISwiftCore" */;
-			buildPhases = (
-				F47CCCD8257D801500FB0438 /* Sources */,
-				F47CCCD9257D801500FB0438 /* Frameworks */,
-				F47CCCDA257D801500FB0438 /* CopyFiles */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = SDAISwiftCore;
-			packageProductDependencies = (
-				F47CCCE7257E2B7600FB0438 /* SwiftSDAIcore */,
-			);
-			productName = SDAISwiftCore;
-			productReference = F47CCCDC257D801500FB0438 /* SDAISwiftCore */;
-			productType = "com.apple.product-type.tool";
-		};
 		F48BF92624C0E0C5005B5B0A /* yacc&lex */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F48BF92B24C0E0C5005B5B0A /* Build configuration list for PBXNativeTarget "yacc&lex" */;
@@ -1194,6 +1151,7 @@
 			packageProductDependencies = (
 				F4B644CA26C7B1AD00C1C43C /* SwiftSDAIap242 */,
 				F4B644CC26C7B1B200C1C43C /* SwiftSDAIcore */,
+				F42951E026D1038E006107B7 /* SwiftAP242PDMkit */,
 			);
 			productName = MultiP21reads;
 			productReference = F4B644A626C7ADB200C1C43C /* MultiP21reads */;
@@ -1215,6 +1173,7 @@
 			packageProductDependencies = (
 				F4E7D60A250819E2000B5362 /* SwiftSDAIcore */,
 				F40EE5F125457CE300F293C3 /* SwiftSDAIap242 */,
+				F42951DE26D1037D006107B7 /* SwiftAP242PDMkit */,
 			);
 			productName = swiftP21read;
 			productReference = F4E7D603250819D2000B5362 /* swiftP21read */;
@@ -1235,9 +1194,6 @@
 					};
 					F44D025124BE402700E77B2A = {
 						CreatedOnToolsVersion = 11.5;
-					};
-					F47CCCDB257D801500FB0438 = {
-						CreatedOnToolsVersion = 12.2;
 					};
 					F48BF92624C0E0C5005B5B0A = {
 						CreatedOnToolsVersion = 11.6;
@@ -1266,7 +1222,6 @@
 				F44D025124BE402700E77B2A /* exp2swift */,
 				F48BF92624C0E0C5005B5B0A /* yacc&lex */,
 				F4E7D602250819D2000B5362 /* swiftP21read */,
-				F47CCCDB257D801500FB0438 /* SDAISwiftCore */,
 				F41BE8B6268BB693005990D1 /* swiftP21readTest */,
 				F4B644A526C7ADB200C1C43C /* MultiP21reads */,
 			);
@@ -1369,14 +1324,6 @@
 				F44D037824BE42B400E77B2A /* pretty_stmt.c in Sources */,
 				F44D033724BE429E00E77B2A /* variable.c in Sources */,
 				F48BF95D24C26BFF005B5B0A /* swift_symbol.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F47CCCD8257D801500FB0438 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F47CCCDF257D801500FB0438 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1602,33 +1549,6 @@
 			};
 			name = Release;
 		};
-		F47CCCE0257D801500FB0438 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = ZX793TWQF2;
-				ENABLE_HARDENED_RUNTIME = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		F47CCCE1257D801500FB0438 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = ZX793TWQF2;
-				ENABLE_HARDENED_RUNTIME = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
 		F48BF92C24C0E0C5005B5B0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1736,15 +1656,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		F47CCCE2257D801600FB0438 /* Build configuration list for PBXNativeTarget "SDAISwiftCore" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				F47CCCE0257D801500FB0438 /* Debug */,
-				F47CCCE1257D801500FB0438 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		F48BF92B24C0E0C5005B5B0A /* Build configuration list for PBXNativeTarget "yacc&lex" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1779,9 +1690,13 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = SwiftSDAIap242;
 		};
-		F47CCCE7257E2B7600FB0438 /* SwiftSDAIcore */ = {
+		F42951DE26D1037D006107B7 /* SwiftAP242PDMkit */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = SwiftSDAIcore;
+			productName = SwiftAP242PDMkit;
+		};
+		F42951E026D1038E006107B7 /* SwiftAP242PDMkit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftAP242PDMkit;
 		};
 		F4B644CA26C7B1AD00C1C43C /* SwiftSDAIap242 */ = {
 			isa = XCSwiftPackageProductDependency;
