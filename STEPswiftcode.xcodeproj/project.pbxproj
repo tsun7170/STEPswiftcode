@@ -12,6 +12,7 @@
 		F40EE5EA254546F200F293C3 /* swift_named_simple_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */; };
 		F40EE5F225457CE300F293C3 /* SwiftSDAIap242 in Frameworks */ = {isa = PBXBuildFile; productRef = F40EE5F125457CE300F293C3 /* SwiftSDAIap242 */; };
 		F41BE8BA268BB694005990D1 /* swiftP21readTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41BE8B9268BB694005990D1 /* swiftP21readTest.swift */; };
+		F4245F11270CF971000E728C /* SwiftSDAIcore in Frameworks */ = {isa = PBXBuildFile; productRef = F4245F10270CF971000E728C /* SwiftSDAIcore */; };
 		F42951DF26D1037D006107B7 /* SwiftAP242PDMkit in Frameworks */ = {isa = PBXBuildFile; productRef = F42951DE26D1037D006107B7 /* SwiftAP242PDMkit */; };
 		F42951E126D1038E006107B7 /* SwiftAP242PDMkit in Frameworks */ = {isa = PBXBuildFile; productRef = F42951E026D1038E006107B7 /* SwiftAP242PDMkit */; };
 		F43B6BEF24CD3D6C007493AB /* swift_entity_partial.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */; };
@@ -97,7 +98,6 @@
 		F4B644D426C8DAB500C1C43C /* ap242P21DecodeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B644C126C7AEDB00C1C43C /* ap242P21DecodeManager.swift */; };
 		F4E728FC25002891007FDFD9 /* swift_select_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F4E728FB25002891007FDFD9 /* swift_select_type.c */; };
 		F4E7D606250819D2000B5362 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E7D605250819D2000B5362 /* main.swift */; };
-		F4E7D60B250819E2000B5362 /* SwiftSDAIcore in Frameworks */ = {isa = PBXBuildFile; productRef = F4E7D60A250819E2000B5362 /* SwiftSDAIcore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -395,6 +395,7 @@
 		F48BF95124C26BFE005B5B0A /* swift_symbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_symbol.h; sourceTree = "<group>"; };
 		F48BF95324C26BFE005B5B0A /* swift_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_type.h; sourceTree = "<group>"; };
 		F48BF95424C26BFE005B5B0A /* swift_type.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_type.c; sourceTree = "<group>"; };
+		F4A35135270E4B2D0020434A /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		F4B644A626C7ADB200C1C43C /* MultiP21reads */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MultiP21reads; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4B644A826C7ADB200C1C43C /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		F4B644C126C7AEDB00C1C43C /* ap242P21DecodeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ap242P21DecodeManager.swift; sourceTree = "<group>"; };
@@ -441,8 +442,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F4E7D60B250819E2000B5362 /* SwiftSDAIcore in Frameworks */,
 				F42951DF26D1037D006107B7 /* SwiftAP242PDMkit in Frameworks */,
+				F4245F11270CF971000E728C /* SwiftSDAIcore in Frameworks */,
 				F40EE5F225457CE300F293C3 /* SwiftSDAIap242 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -503,6 +504,7 @@
 		F44D023B24BE3FDA00E77B2A = {
 			isa = PBXGroup;
 			children = (
+				F4A35135270E4B2D0020434A /* LICENSE */,
 				F447F92D269797A900F31B35 /* IDETemplateMacros.plist */,
 				F44D025324BE402700E77B2A /* exp2swift */,
 				F455D4F324EC73F7004C5320 /* schema */,
@@ -1171,9 +1173,9 @@
 			);
 			name = swiftP21read;
 			packageProductDependencies = (
-				F4E7D60A250819E2000B5362 /* SwiftSDAIcore */,
 				F40EE5F125457CE300F293C3 /* SwiftSDAIap242 */,
 				F42951DE26D1037D006107B7 /* SwiftAP242PDMkit */,
+				F4245F10270CF971000E728C /* SwiftSDAIcore */,
 			);
 			productName = swiftP21read;
 			productReference = F4E7D603250819D2000B5362 /* swiftP21read */;
@@ -1215,6 +1217,9 @@
 				Base,
 			);
 			mainGroup = F44D023B24BE3FDA00E77B2A;
+			packageReferences = (
+				F4245F0F270CF971000E728C /* XCRemoteSwiftPackageReference "SwiftSDAIcore" */,
+			);
 			productRefGroup = F44D024524BE3FDA00E77B2A /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1685,10 +1690,26 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		F4245F0F270CF971000E728C /* XCRemoteSwiftPackageReference "SwiftSDAIcore" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tsun7170/SwiftSDAIcore.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		F40EE5F125457CE300F293C3 /* SwiftSDAIap242 */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SwiftSDAIap242;
+		};
+		F4245F10270CF971000E728C /* SwiftSDAIcore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F4245F0F270CF971000E728C /* XCRemoteSwiftPackageReference "SwiftSDAIcore" */;
+			productName = SwiftSDAIcore;
 		};
 		F42951DE26D1037D006107B7 /* SwiftAP242PDMkit */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1703,10 +1724,6 @@
 			productName = SwiftSDAIap242;
 		};
 		F4B644CC26C7B1B200C1C43C /* SwiftSDAIcore */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SwiftSDAIcore;
-		};
-		F4E7D60A250819E2000B5362 /* SwiftSDAIcore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SwiftSDAIcore;
 		};
