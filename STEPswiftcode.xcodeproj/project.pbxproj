@@ -10,11 +10,8 @@
 		F40EE5DE254546AB00F293C3 /* swift_type_alias.c in Sources */ = {isa = PBXBuildFile; fileRef = F40EE5DD254546AB00F293C3 /* swift_type_alias.c */; };
 		F40EE5E4254546D800F293C3 /* swift_named_aggregate_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F40EE5E3254546D800F293C3 /* swift_named_aggregate_type.c */; };
 		F40EE5EA254546F200F293C3 /* swift_named_simple_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */; };
-		F40EE5F225457CE300F293C3 /* SwiftSDAIap242 in Frameworks */ = {isa = PBXBuildFile; productRef = F40EE5F125457CE300F293C3 /* SwiftSDAIap242 */; };
 		F41BE8BA268BB694005990D1 /* swiftP21readTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41BE8B9268BB694005990D1 /* swiftP21readTest.swift */; };
 		F4245F11270CF971000E728C /* SwiftSDAIcore in Frameworks */ = {isa = PBXBuildFile; productRef = F4245F10270CF971000E728C /* SwiftSDAIcore */; };
-		F42951DF26D1037D006107B7 /* SwiftAP242PDMkit in Frameworks */ = {isa = PBXBuildFile; productRef = F42951DE26D1037D006107B7 /* SwiftAP242PDMkit */; };
-		F42951E126D1038E006107B7 /* SwiftAP242PDMkit in Frameworks */ = {isa = PBXBuildFile; productRef = F42951E026D1038E006107B7 /* SwiftAP242PDMkit */; };
 		F43B6BEF24CD3D6C007493AB /* swift_entity_partial.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */; };
 		F43B6BF124CD3E20007493AB /* swift_entity_reference.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF024CD3E20007493AB /* swift_entity_reference.c */; };
 		F43B6BF724CEC040007493AB /* swift_rule.c in Sources */ = {isa = PBXBuildFile; fileRef = F43B6BF624CEC040007493AB /* swift_rule.c */; };
@@ -73,6 +70,8 @@
 		F45A2EA925173EA100A9E3C2 /* swift_enum_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F45A2EA825173EA100A9E3C2 /* swift_enum_type.c */; };
 		F45A7F8E24D00EEF00669F95 /* swift_statement.c in Sources */ = {isa = PBXBuildFile; fileRef = F45A7F8D24D00EEF00669F95 /* swift_statement.c */; };
 		F45D5E7A25B2C6E900CACCF9 /* decompose_expression.c in Sources */ = {isa = PBXBuildFile; fileRef = F45D5E7925B2C6E800CACCF9 /* decompose_expression.c */; };
+		F46CE5C7270F9ABA004A122F /* SwiftSDAIap242 in Frameworks */ = {isa = PBXBuildFile; productRef = F46CE5C6270F9ABA004A122F /* SwiftSDAIap242 */; };
+		F46CE5CF270F9ADA004A122F /* SwiftAP242PDMkit in Frameworks */ = {isa = PBXBuildFile; productRef = F46CE5CE270F9ADA004A122F /* SwiftAP242PDMkit */; };
 		F48BF92A24C0E0C5005B5B0A /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F48BF92924C0E0C5005B5B0A /* main.c */; };
 		F48BF92F24C0E110005B5B0A /* expscan.l in Sources */ = {isa = PBXBuildFile; fileRef = F44D030A24BE429E00E77B2A /* expscan.l */; };
 		F48BF93024C0E115005B5B0A /* expparse.y in Sources */ = {isa = PBXBuildFile; fileRef = F44D031424BE429E00E77B2A /* expparse.y */; };
@@ -93,8 +92,6 @@
 		F4B644B326C7AE5800C1C43C /* MyActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F447F934269992FA00F31B35 /* MyActivityMonitor.swift */; };
 		F4B644BA26C7AE5C00C1C43C /* MyValidationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F447F93B2699937200F31B35 /* MyValidationMonitor.swift */; };
 		F4B644C226C7AEDB00C1C43C /* ap242P21DecodeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B644C126C7AEDB00C1C43C /* ap242P21DecodeManager.swift */; };
-		F4B644CB26C7B1AD00C1C43C /* SwiftSDAIap242 in Frameworks */ = {isa = PBXBuildFile; productRef = F4B644CA26C7B1AD00C1C43C /* SwiftSDAIap242 */; };
-		F4B644CD26C7B1B200C1C43C /* SwiftSDAIcore in Frameworks */ = {isa = PBXBuildFile; productRef = F4B644CC26C7B1B200C1C43C /* SwiftSDAIcore */; };
 		F4B644D426C8DAB500C1C43C /* ap242P21DecodeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B644C126C7AEDB00C1C43C /* ap242P21DecodeManager.swift */; };
 		F4E728FC25002891007FDFD9 /* swift_select_type.c in Sources */ = {isa = PBXBuildFile; fileRef = F4E728FB25002891007FDFD9 /* swift_select_type.c */; };
 		F4E7D606250819D2000B5362 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E7D605250819D2000B5362 /* main.swift */; };
@@ -432,9 +429,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F4B644CD26C7B1B200C1C43C /* SwiftSDAIcore in Frameworks */,
-				F42951E126D1038E006107B7 /* SwiftAP242PDMkit in Frameworks */,
-				F4B644CB26C7B1AD00C1C43C /* SwiftSDAIap242 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -442,9 +436,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F42951DF26D1037D006107B7 /* SwiftAP242PDMkit in Frameworks */,
 				F4245F11270CF971000E728C /* SwiftSDAIcore in Frameworks */,
-				F40EE5F225457CE300F293C3 /* SwiftSDAIap242 in Frameworks */,
+				F46CE5CF270F9ADA004A122F /* SwiftAP242PDMkit in Frameworks */,
+				F46CE5C7270F9ABA004A122F /* SwiftSDAIap242 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1151,9 +1145,6 @@
 			);
 			name = MultiP21reads;
 			packageProductDependencies = (
-				F4B644CA26C7B1AD00C1C43C /* SwiftSDAIap242 */,
-				F4B644CC26C7B1B200C1C43C /* SwiftSDAIcore */,
-				F42951E026D1038E006107B7 /* SwiftAP242PDMkit */,
 			);
 			productName = MultiP21reads;
 			productReference = F4B644A626C7ADB200C1C43C /* MultiP21reads */;
@@ -1173,9 +1164,9 @@
 			);
 			name = swiftP21read;
 			packageProductDependencies = (
-				F40EE5F125457CE300F293C3 /* SwiftSDAIap242 */,
-				F42951DE26D1037D006107B7 /* SwiftAP242PDMkit */,
 				F4245F10270CF971000E728C /* SwiftSDAIcore */,
+				F46CE5C6270F9ABA004A122F /* SwiftSDAIap242 */,
+				F46CE5CE270F9ADA004A122F /* SwiftAP242PDMkit */,
 			);
 			productName = swiftP21read;
 			productReference = F4E7D603250819D2000B5362 /* swiftP21read */;
@@ -1219,6 +1210,8 @@
 			mainGroup = F44D023B24BE3FDA00E77B2A;
 			packageReferences = (
 				F4245F0F270CF971000E728C /* XCRemoteSwiftPackageReference "SwiftSDAIcore" */,
+				F46CE5C5270F9ABA004A122F /* XCRemoteSwiftPackageReference "SwiftSDAIap242" */,
+				F46CE5CD270F9ADA004A122F /* XCRemoteSwiftPackageReference "SwiftAP242PDMkit" */,
 			);
 			productRefGroup = F44D024524BE3FDA00E77B2A /* Products */;
 			projectDirPath = "";
@@ -1699,33 +1692,39 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		F46CE5C5270F9ABA004A122F /* XCRemoteSwiftPackageReference "SwiftSDAIap242" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tsun7170/SwiftSDAIap242.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		F46CE5CD270F9ADA004A122F /* XCRemoteSwiftPackageReference "SwiftAP242PDMkit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tsun7170/SwiftAP242PDMkit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		F40EE5F125457CE300F293C3 /* SwiftSDAIap242 */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SwiftSDAIap242;
-		};
 		F4245F10270CF971000E728C /* SwiftSDAIcore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F4245F0F270CF971000E728C /* XCRemoteSwiftPackageReference "SwiftSDAIcore" */;
 			productName = SwiftSDAIcore;
 		};
-		F42951DE26D1037D006107B7 /* SwiftAP242PDMkit */ = {
+		F46CE5C6270F9ABA004A122F /* SwiftSDAIap242 */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = SwiftAP242PDMkit;
-		};
-		F42951E026D1038E006107B7 /* SwiftAP242PDMkit */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SwiftAP242PDMkit;
-		};
-		F4B644CA26C7B1AD00C1C43C /* SwiftSDAIap242 */ = {
-			isa = XCSwiftPackageProductDependency;
+			package = F46CE5C5270F9ABA004A122F /* XCRemoteSwiftPackageReference "SwiftSDAIap242" */;
 			productName = SwiftSDAIap242;
 		};
-		F4B644CC26C7B1B200C1C43C /* SwiftSDAIcore */ = {
+		F46CE5CE270F9ADA004A122F /* SwiftAP242PDMkit */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = SwiftSDAIcore;
+			package = F46CE5CD270F9ADA004A122F /* XCRemoteSwiftPackageReference "SwiftAP242PDMkit" */;
+			productName = SwiftAP242PDMkit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
