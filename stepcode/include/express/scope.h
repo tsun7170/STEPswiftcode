@@ -79,7 +79,7 @@
 
 struct Scope_ {
     Symbol          symbol;
-    char            type;       /* see above */
+    char            type;       /* see expbasic.h */
     ClientData      clientData; /**< user may use this for any purpose */
     int             search_id;  /**< key to avoid searching this scope twice */
     Dictionary      symbol_table, enum_table;
@@ -118,6 +118,10 @@ struct Scope_ {
 
 #define SCOPEis(scope)          ((scope)->type)
 #define SCOPEis_schema(scope)       ((scope)->type == OBJ_SCHEMA)
+//*TY2021/10/31
+#define SCOPEis_function(scope)			((scope)->type == OBJ_FUNCTION)
+#define SCOPEis_procedure(scope)		((scope)->type == OBJ_PROCEDURE)
+#define SCOPEis_rule(scope)		((scope)->type == OBJ_RULE)
 
 #define SCOPEget_symbol(scope)      (&(scope)->symbol)
 #define SCOPEput_name(scope,name)   ((scope)->symbol.name = name)

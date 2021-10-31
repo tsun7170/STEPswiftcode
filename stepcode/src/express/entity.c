@@ -142,10 +142,6 @@ static Entity ENTITY_find_inherited_entity( Entity entity, char * name, int down
     /* can be searched twice by A.  Similar problem with */
     /* sub/super inheritance. */
 		if( SCOPE_search_visited(entity) ) return NULL;
-//    if( entity->search_id == __SCOPE_search_id ) {
-//        return NULL;
-//    }
-//    entity->search_id = __SCOPE_search_id;
 
     LISTdo( entity->u.entity->supertypes, super, Entity )
     if( streq( super->symbol.name, name ) ) {
@@ -224,10 +220,6 @@ Variable ENTITY_find_inherited_attribute( Entity entity, char * name, int * down
     /* if A ref's B which ref's C, and A ref's C.  Then C */
     /* can be searched twice by A.  Similar problem with */
     /* sub/super inheritance. */
-//    if( entity->search_id == __SCOPE_search_id ) {
-//        return NULL;
-//    }
-//    entity->search_id = __SCOPE_search_id;
 	if( SCOPE_search_visited(entity) ) return NULL;
 	
     /* first look locally */
@@ -264,10 +256,8 @@ Variable ENTITY_find_inherited_attribute( Entity entity, char * name, int * down
 
 Variable ENTITYfind_inherited_attribute( struct Scope_ *entity, char * name,
         struct Symbol_ ** down_where, bool under_search ) {
-//    extern int __SCOPE_search_id;
     int down_flag = 0;
 
-//    __SCOPE_search_id++;
 	if( !under_search ) SCOPE_begin_search();
 	Variable result;
 	if( down_where ) {

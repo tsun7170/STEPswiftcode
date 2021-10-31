@@ -178,7 +178,6 @@ extern Variable ENTITYfind_attribute_effective_definition( Entity entity, const 
 extern SC_EXPRESS_EXPORT Variable     ENTITYget_named_attribute PROTO( ( Entity, char * ) );
 extern SC_EXPRESS_EXPORT bool      ENTITYdeclares_variable PROTO( ( Entity, struct Variable_ * ) );
 //*TY2020/07/19 changed the function signature
-//extern SC_EXPRESS_EXPORT Linked_List  ENTITYget_all_attributes PROTO( ( Entity ) );
 extern SC_EXPRESS_EXPORT Dictionary  ENTITYget_all_attributes PROTO( ( Entity ) ); // returns dict of (linked_list of attr) keyed by attr simple name
 //*TY2020/07/11
 extern int ENTITYget_attr_ambiguous_count( Entity entity, const char* attrName );	// 0: not defined anywhere, 1: unique defintion, >1: ambiguous definition

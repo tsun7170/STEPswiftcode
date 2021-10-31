@@ -201,19 +201,6 @@ static void emit_usedin_call( Scope SELF, Expression e, bool can_wrap ){
 			wrap("ROLE: \\%s", as_schemaSwiftName_n(schema_name, buf2, BUFSIZ));
 			wrap(".%s", as_entitySwiftName_n(entity_name, buf2, BUFSIZ));
 			wrap(".%s", as_attributeSwiftName_n(attr_name, buf2, BUFSIZ));
-			
-//			
-//			Entity ent = SCOPEfind(SELF, entsep+1, SCOPE_FIND_ENTITY);
-//			if( ent != NULL ){
-//				wrap("ENTITY: %s.self, ", ENTITY_swiftName(ent, SELF, buf));
-//			}
-//			else {
-//				// entity not found; probably error in source
-//				wrap("ENTITY: %s.self, ", canonical_swiftName_n(arg2->symbol.name, buf, symlen));
-//			}
-//			
-//			wrap("ATTR: ");
-//			simpleStringLiteral_swift(attrsep+1);
 		}
 	}
 	else {
@@ -235,36 +222,6 @@ static void EXPRopNEGATE_swift( Scope SELF, struct Op_Subexpression * oe, Type o
 	}
 }
 
-//static void emit_TYPEOF(Scope SELF, Expression arg, bool builtin_type, bool can_wrap, struct Op_Subexpression *oe, char *typename, char* sep) {
-//	wrap_if(can_wrap, "SDAI.TYPEOF(");
-//	EXPR_swift( SELF, arg, arg->return_type, NO_PAREN );
-//	raw(", ");
-//	
-//	char buf[BUFSIZ];
-//	assert(oe->op1->symbol.name != NULL);
-//	
-//	if( !builtin_type ){
-//		Generic x = SCOPEfind(SELF, (char*)canonical_dictName(sep+1, buf), SCOPE_FIND_TYPE | SCOPE_FIND_ENTITY);
-//		if( x != NULL ){
-//			if( DICT_type == OBJ_TYPE ){
-//				wrap_if(YES_WRAP, "IS: %s.self", TYPE_swiftName((Type)x, SELF, buf) );
-//			}
-//			else {
-//				assert(DICT_type == OBJ_ENTITY);
-//				wrap_if(YES_WRAP, "IS: %s.self", ENTITY_swiftName((Entity)x, SELF, buf) );
-//			}
-//			
-//		}
-//		else {
-//			// unknown type/entity; probably error in source
-//			wrap_if(YES_WRAP, "IS: %s.self", typename);
-//		}
-//	}
-//	else {
-//		wrap_if(YES_WRAP, "IS: SDAI.%s.self", typename);
-//	}
-//	raw(")");
-//}
 
 static void emit_CONTAINS(Scope SELF, bool can_wrap, struct Op_Subexpression *oe) {
 	// op1 IN op2
@@ -275,9 +232,6 @@ static void emit_CONTAINS(Scope SELF, bool can_wrap, struct Op_Subexpression *oe
 		op2basetype = op1type;
 		op2type = TYPEcreate_aggregate(TYPEis(op2type), op2basetype, TYPEget_body(op2type)->lower, TYPEget_body(op2type)->upper, TYPEget_body(op2type)->flags.unique, TYPEget_body(op2type)->flags.optional);
 	}
-//	else if( op1type == NULL || TYPEis_runtime(op1type) ){
-//		op1type = op2basetype;
-//	}
 	
 	wrap_if(can_wrap, "SDAI.aggregate(");
 	EXPR__swift( SELF, oe->op2, op2type, YES_PAREN, oe->op_code, YES_WRAP );
@@ -391,7 +345,6 @@ static void EXPRquery_swift(Scope SELF, bool can_wrap, Expression e) {
 
 	indent_swift(level);
 	raw("return ");
-//	EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF, e->u.query->expression, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 	EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 	raw( " }" );
 	
@@ -645,9 +598,9 @@ type_optionality EXPRresult_is_optional(Expression e, bool deep) {
 			
 		case funcall_:
 			if( e->u.funcall.function->u_tag != scope_is_func ) return no_optional;
-			if( TYPEis_boolean(e->u.funcall.function->u.func->return_type) ) return no_optional;
-			if( TYPEis_logical(e->u.funcall.function->u.func->return_type) ) return no_optional;
-			return yes_optional;
+			
+			if( FUNCreturn_indeterminate(e->u.funcall.function) ) return yes_optional;
+			return no_optional;
 			
 		case op_:
 			return operator_returns_optional(&e->e, deep);

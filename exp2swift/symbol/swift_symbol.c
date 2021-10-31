@@ -32,21 +32,6 @@ const char* canonical_swiftName_n(const char* name, char* buf, int maxlen) {
 
 const char* canonical_swiftName(const char* name, char buf[BUFSIZ]) {
 	return canonical_swiftName_n(name, buf, BUFSIZ-1);
-//	char* to = buf;
-//	int remain = BUFSIZ-1;
-//	for(const char* from = name; *from; ++from ) {
-//		if( islower(*from) ) {
-//			(*to) = toupper(*from);
-//		}
-//		else {
-//			(*to) = (*from);
-//		}
-//		++to;
-//		--remain;
-//		if( remain == 0 ) break;
-//	}
-//	(*to) = 0;
-//	return buf;
 }
 
 const char* canonical_dictName_n(const char* name, char* buf, int maxlen) {
@@ -69,27 +54,10 @@ const char* canonical_dictName_n(const char* name, char* buf, int maxlen) {
 
 extern const char* canonical_dictName(const char* name, char buf[BUFSIZ]) {
 	return canonical_dictName_n(name, buf, BUFSIZ-1);
-//
-//	char* to = buf;
-//	int remain = BUFSIZ-1;
-//	for(const char* from = name; *from; ++from ) {
-//		if( isupper(*from) ) {
-//			(*to) = tolower(*from);
-//		}
-//		else {
-//			(*to) = (*from);
-//		}
-//		++to;
-//		--remain;
-//		if( remain == 0 ) break;
-//	}
-//	(*to) = 0;
-//	return buf;
 }
 
 
 const char * variable_swiftName(Variable v, char buf[BUFSIZ]) {
-//	return canonical_swiftName(v->name->symbol.name, buf);
 	return asVariable_swiftName_n(v->name->symbol.name, buf, BUFSIZ);
 }
 
@@ -106,9 +74,9 @@ bool optionalType_swift(Scope current, Type type, bool optional, SwiftOutComment
 	bool simple_type = 	( type->symbol.name != NULL) || 
 						!(TYPEhas_bounds(type) || TYPEget_unique(type));
 	
-//	optional &= !TYPEis_optional(type);
 	if( TYPEis_optional(type) ) optional = true;
 	if( TYPEis_logical(type) ) optional = false;
+//	if( TYPEis_boolean(type) ) optional = false;
 	
 	if( optional && !simple_type ) raw("(");
 	TYPE_head_swift(current, type, in_comment, LEAF_OWNED);

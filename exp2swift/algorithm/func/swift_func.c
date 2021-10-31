@@ -82,12 +82,11 @@ static void func_result_cache_lookup_swift( Schema schema, Function func, int le
 	raw("if case .available(let _cached_value) = %s.cachedValue(params: _params) {\n", FUNC_cache_swiftName(func, buf) );
 	
 	//
-	bool return_optional = YES_FORCE_OPTIONAL;
-	if( TYPEis_logical(func->u.func->return_type) ) return_optional = NO_FORCE_OPTIONAL;
+	bool return_optional = FUNCreturn_indeterminate(func);
 
 	indent_swift(level2);
 	raw("return _cached_value as%s ", return_optional ? "?" : "!" );
-	TYPE_head_swift(func->superscope, func->u.func->return_type, WO_COMMENT, LEAF_OWNED);
+	TYPE_head_swift(func->superscope, FUNCget_return_type(func), WO_COMMENT, LEAF_OWNED);
 	raw("\n");
 
 	//
@@ -141,8 +140,7 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 	
 	// return type
 	aggressively_wrap();
-	bool return_optional = YES_FORCE_OPTIONAL;
-	if( TYPEis_logical(func->u.func->return_type) ) return_optional = NO_FORCE_OPTIONAL;
+	bool return_optional = FUNCreturn_indeterminate(func);
 	raw("-> ");
 	optionalType_swift(func->superscope, func->u.func->return_type, return_optional, NOT_IN_COMMENT);
 	

@@ -794,8 +794,6 @@ void VAR_resolve_expressions( Variable v, Entity entity /* was scope */ ) {
         if( is_resolve_failed( v->initializer ) ) {
             resolve_failed( v->name );
         }
-//			//*TY2020/07/04
-//			VARput_dynamic(v);
     }
 }
 
@@ -1172,10 +1170,6 @@ int ENTITY_check_subsuper_cyclicity( Entity e, Entity enew ) {
         ERRORreport_with_symbol( ERROR_subsuper_loop, &sub->symbol, e->symbol.name );
         return 1;
     }
-//    if( sub->search_id == __SCOPE_search_id ) {
-//        return 0;
-//    }
-//    sub->search_id = __SCOPE_search_id;
 		if( SCOPE_search_visited(sub) ) return 0;
 	
 		if( ENTITY_check_subsuper_cyclicity( e, sub ) ) {
@@ -1187,7 +1181,6 @@ int ENTITY_check_subsuper_cyclicity( Entity e, Entity enew ) {
 }
 
 void ENTITYcheck_subsuper_cyclicity( Entity e ) {
-//    __SCOPE_search_id++;
 		SCOPE_begin_search();
     ( void ) ENTITY_check_subsuper_cyclicity( e, e );
 		SCOPE_end_search();
@@ -1202,10 +1195,6 @@ int TYPE_check_select_cyclicity( TypeBody tb, Type tnew ) {
                                      &item->symbol, item->symbol.name );
             return 1;
         }
-//        if( item->search_id == __SCOPE_search_id ) {
-//            return 0;
-//        }
-//        item->search_id = __SCOPE_search_id;
 				if( SCOPE_search_visited(item) ) return 0;
 			
         if( TYPE_check_select_cyclicity( tb, item ) ) {
@@ -1220,7 +1209,6 @@ int TYPE_check_select_cyclicity( TypeBody tb, Type tnew ) {
 
 void TYPEcheck_select_cyclicity( Type t ) {
     if( t->u.type->body->type == select_ ) {
-//        __SCOPE_search_id++;
 			SCOPE_begin_search();
 			( void ) TYPE_check_select_cyclicity( t->u.type->body, t );
 			SCOPE_end_search();
@@ -1294,13 +1282,11 @@ void SCOPEresolve_types( Scope s ) {
             case OBJ_VARIABLE:  /* really constants */
                 var = ( Variable )x;
                 /* before OBJ_BITS hack, we looked in s->superscope */
-//						assert(var->type->superscope != NULL);
                 TYPEresolve( &var->type );
                 if( is_resolve_failed( var->type ) ) {
                     resolve_failed( var->name );
                     resolve_failed( s );
                 }
-//						assert(var->type->superscope != NULL);
                 break;
             case OBJ_ENTITY:
                 ENTITYcheck_missing_supertypes( ( Entity )x );
@@ -1586,16 +1572,24 @@ static void TYPEresolve_expressions( Type t, Scope s ) {
 #define NO_OPTIONAL		0
 static void ALGresolve_variable(Variable var, unsigned int default_optionality){
 	if( VARis_constant(var) )return;
-//	if( VARis_inout(var) )return;
 	
 	Type var_type = VARget_type(var);
-	if( TYPEis_logical(var_type) /*|| TYPEis_boolean(var_type)*/ )return;
+	if( TYPEis_logical(var_type) )return;
 	var->flags.optional = default_optionality;
 }
 static void ALGresolve_parameters( Linked_List parameters, bool defaut_optionality ){
 	LISTdo(parameters, formalp, Variable){
 		ALGresolve_variable(formalp, defaut_optionality);	
 	}LISTod;
+}
+
+//*TY2021/10/29
+static void ALGresolve_return_type(Function func) {
+	Type return_type = FUNCget_return_type(func);
+	func->u.func->return_determinate = false;
+	if( TYPEis_logical(return_type) ){
+		func->u.func->return_determinate = true;
+	}
 }
 
 void SCOPEresolve_expressions_statements( Scope s ) {
@@ -1623,8 +1617,10 @@ void SCOPEresolve_expressions_statements( Scope s ) {
                 break;
             case OBJ_FUNCTION:
                 ALGresolve_expressions_statements( ( Scope )x, ( ( Scope )x )->u.func->body );
-						//*TY2020/11/28
-						ALGresolve_parameters( ((Function)x)->u.func->parameters, YES_OPTIONAL_IMPLICITLY);
+							//*TY2020/11/28
+							ALGresolve_parameters( ((Function)x)->u.func->parameters, YES_OPTIONAL_IMPLICITLY);
+							//*TY2021/10/30
+							ALGresolve_return_type((Function)x);
                 break;
             case OBJ_PROCEDURE:
                 ALGresolve_expressions_statements( ( Scope )x, ( ( Scope )x )->u.proc->body );

@@ -201,7 +201,7 @@ Type TYPEcreate_name( Symbol * symbol ) {
     TypeHead t = TYPEHEAD_new();
 
     s->u.type = t;
-	s->u_tag = scope_is_type;	//*TY2020/08/02
+	  s->u_tag = scope_is_type;	//*TY2020/08/02
     s->symbol = *symbol;
     return s;
 }
@@ -557,32 +557,6 @@ Type TYPEget_nonaggregate_base_type( Type t ) {
 }
 
 //MARK: - select type related
-//static void put_origin(Linked_List list, Scope origin) {
-//	LISTdo_links(list, link) {
-//		link->aux = origin;
-//	}LISTod;
-//}
-//static void filter_out_shadowed_attr_definitions(Linked_List attr_list) {
-//	Link pivot = LISTLINKfirst(attr_list);
-//	
-//	while( pivot->next != attr_list->mark ){
-//		Variable pivot_attr = (Variable)(pivot->data);
-//		assert(pivot_attr!=NULL);
-//		if( VARis_redeclaring(pivot_attr) ) pivot_attr = pivot_attr->original_attribute;
-//		Entity defined_in = pivot_attr->defined_in;
-//		
-//		Link next;
-//		for( Link node = pivot->next; ((void)(next=node->next), node!=attr_list->mark); node = next ){
-//			Variable attr = (Variable)node->data;
-//			if( VARis_redeclaring(attr) ) attr = attr->original_attribute;
-//			if( attr->defined_in != defined_in ) continue;
-//			
-//			LINKremove(node);
-//		}
-//		pivot = pivot->next;
-//		if(pivot == attr_list->mark) break;
-//	}
-//}
 static void add_attributes_from_entity(Type selection_case, Dictionary result) {
 	Entity case_entity = TYPEget_body(selection_case)->entity;
 	assert(case_entity->u_tag==scope_is_entity);
@@ -661,13 +635,9 @@ int SELECTget_attr_ambiguous_count( Type select_type, const char* attrName ) {
 		if( VARis_redeclaring(attr) ) attr = attr->original_attribute;
 		if( attr_type == NULL ) attr_type = VARget_type(attr);
 		
-		//		if( defined_entity != NULL && attr->defined_in != defined_entity ) return 2;
 		if( defined_entity != NULL ){
 			if ( attr->defined_in != defined_entity ){
 				if( TYPEget_common(attr_type, VARget_type(attr)) == NULL ) return 2;
-				//			if( !TYPEs_are_equal(attr_type, VARget_type(attr)) && 
-				//				 !TYPEs_are_equal(VARget_type(attr), attr_type) &&
-				//				 !(TYPEis_entity(attr_type) && TYPEis_entity(VARget_type(attr))) ) return 2;
 			}
 		}
 		else {
@@ -882,7 +852,6 @@ Type TYPEget_common(Type t, Type tref) {
 		}
 	}
 	
-//	return Type_Generic;
 	return NULL;
 }
 
@@ -1029,11 +998,9 @@ bool TYPE_may_yield_entity_reference(Type t){
 				return true;
 			}
 			tb->select_type_attribute = resolving_select_attribute;
-//			bool infinite_loop_detected = false;
 			LISTdo(tb->list, selection, Type) {
 				bool child_result = TYPE_may_yield_entity_reference(selection);
 				if( tb->select_type_attribute == infinite_looping_select_attribute ) {
-//					infinite_loop_detected = true;
 					tb->select_type_attribute = resolving_select_attribute;
 				}
 				else if( child_result == true ){
@@ -1041,24 +1008,12 @@ bool TYPE_may_yield_entity_reference(Type t){
 					return true;
 				}
 			}LISTod;
-//			if( infinite_loop_detected ){
-//				tb->select_type_attribute = yes_yield_entity_reference;
-//				return true;
-//			}
 			tb->select_type_attribute = no_yield_entity_reference;
 			return false;
 		}
 			
 		case indeterminate_: return true;
 			
-//		case integer_:
-//		case real_:		
-//		case string_:	
-//		case binary_:	
-//		case boolean_:
-//		case logical_:
-//		case number_:	
-//		case enumeration_:			
 		default:	return false;
 	}
 }

@@ -123,54 +123,9 @@ Expression EXPcreate( Type type ) {
     SYMBOLset( e );
     e->type = type;
     e->return_type = Type_Unknown;
-	//*TY2020/08/23
-//	if(type==Type_Aggregate){
-//		if(all_aggregate_initializers == NULL){
-//			all_aggregate_initializers = LISTcreate();
-//		}
-//		LISTadd_last(all_aggregate_initializers, e);
-//	}
     return( e );
 }
 
-//*TY2020/08/23
-//Linked_List all_aggregate_initializers = NULL;
-//static void check_aggr(int expr_no, Expression expr, const char* message, bool printit) {
-//	Expression prev = NULL;
-//	bool prev_repeat = false;
-//	if(printit && expr_no==37) printf("expr[%d]@%p\t u.list@%p\n",expr_no,expr,expr->u.list);
-//	
-//	int i = 1;
-//	LISTdo(expr->u.list, arg, Expression) {
-//		if(printit && expr_no==37){
-//			printf("list[%d]:@%p\t u_tag=%d\t type@%p\t typebody(type:%d)@%p\n",i,arg,arg->u_tag,arg->type,arg->type->u.type->body->type,arg->type->u.type->body);
-//		}
-//		bool repeat = arg->type->u.type->body->flags.repeat;
-//		if( repeat ) {
-//			assert(prev != NULL);
-//			assert(prev_repeat == false);
-//			prev = NULL;
-//			prev_repeat = false;
-//		}
-//		else {
-//			prev = arg;
-//			prev_repeat = repeat;
-//		}
-//		++i;
-//	}LISTod;
-//}
-//void check_aggregate_initializers(const char* message, bool printit) {
-//	if(all_aggregate_initializers == NULL) {
-//		if(printit) printf("%s: no aggregate initializers defined\n", message);
-//		return;
-//	}
-//	int count_of_initializers = LISTget_length(all_aggregate_initializers);
-//	if(printit)printf("%s: count of aggregate initializers = %d\n", message, count_of_initializers);
-//	int i = 0;
-//	LISTdo(all_aggregate_initializers, expr, Expression) {
-//		check_aggr(++i, expr, message,printit);
-//	}LISTod;
-//}
 
 
 /**
@@ -1414,15 +1369,6 @@ static bool funcalls_are_equal( struct Funcall* fc1, struct Funcall* fc2){
 	if( !lists_of_extpressions_are_equal(fc1->list, fc2->list) )return false;
 	return true;
 }
-//static bool names_are_equal( const char* name1, const char* name2){
-//	bool equal_symbol = name1 == name2;
-//	if( !equal_symbol ){
-//		if(name1!=NULL && name2!=NULL){
-//			equal_symbol = strcmp(name1, name2)==0;
-//		}
-//	}
-//	return equal_symbol;
-//}
 
 bool EXPs_are_equal( Expression e1, Expression e2){
 	if( e1 == e2 )return true;

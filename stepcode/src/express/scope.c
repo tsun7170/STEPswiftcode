@@ -179,7 +179,6 @@ Generic SCOPEfind( Scope scope, char * name, int type ) {
     extern Dictionary EXPRESSbuiltins;  /* procedures/functions */
     Generic x;
 
-//    __SCOPE_search_id++;
 		SCOPE_begin_search();
     x = SCOPE_find( scope, name, type );
 		SCOPE_end_search();
@@ -203,10 +202,6 @@ Generic SCOPE_find( Scope scope, char * name, int type ) {
     Generic result;
     Rename * rename;
 
-//    if( scope->search_id == __SCOPE_search_id ) {
-//        return 0;
-//    }
-//    scope->search_id = __SCOPE_search_id;
 		if( SCOPE_search_visited(scope) ) return 0;
 
     /* go up the superscopes, looking for object */

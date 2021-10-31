@@ -91,6 +91,7 @@ struct Function_ {
     Type return_type;
     struct FullText text;
     int builtin;    /**< builtin if true */
+		int return_determinate;	//*TY2021/10/29 function always return determinate (non-optional) value if true
 };
 
 struct Rule_ {
@@ -158,6 +159,8 @@ extern SC_EXPRESS_EXPORT struct freelist_head WHERE_fl;
 #define RULEput_where(r,w)  ((r)->where = (w))
 #define WHEREget_label(w)   ((w)->label)
 #define WHEREget_expression(w)  ((w)->expr)
+//*TY2021/10/30
+#define FUNCreturn_indeterminate(f)	(!((f)->u.func->return_determinate))
 
 /***********************/
 /* function prototypes */

@@ -313,12 +313,16 @@ void EXPRESSinitialize( void ) {
     SCANinitialize();
 
     EXPRESSbuiltins = DICTcreate( 35 );
-#define funcdef(x,y,c,r) \
+	//*TY2021/10/30
+#define RETURN_DETERMINATE	true
+#define RETURN_INDETERMINATE false
+#define funcdef(x,y,c,r,opt) \
             x = ALGcreate(OBJ_FUNCTION);\
             x->symbol.name = y;\
             x->u.func->pcount = c; \
             x->u.func->parameters = LISTcreate(); \
             x->u.func->return_type = r; \
+						x->u.func->return_determinate = opt; \
             x->u.func->builtin = true; \
             resolved_all(x); \
             DICTdefine(EXPRESSbuiltins,y,(Generic)x,0,OBJ_FUNCTION);
@@ -370,97 +374,97 @@ void EXPRESSinitialize( void ) {
 		procdef_param(proc_remove, "P", Type_Integer_Generic, YES_OPT, NO__VAR);
 	
 
-    funcdef( func_abs,    KW_ABS,    1, Type_Number );
+    funcdef( func_abs,    KW_ABS,    1, Type_Number, RETURN_INDETERMINATE );
 		funcdef_param(func_abs, "V", Type_Number_Generic, YES_OPT, NO__VAR);
 	
-    funcdef( func_acos,   KW_ACOS,   1, Type_Real );
+    funcdef( func_acos,   KW_ACOS,   1, Type_Real, RETURN_INDETERMINATE );
 		funcdef_param(func_acos, "V", Type_Number_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_asin,   KW_ASIN,   1, Type_Real );
+    funcdef( func_asin,   KW_ASIN,   1, Type_Real, RETURN_INDETERMINATE );
 		funcdef_param(func_asin, "V", Type_Number_Generic, YES_OPT, NO__VAR);
 
 
-    funcdef( func_atan,   KW_ATAN,   2, Type_Real );
+    funcdef( func_atan,   KW_ATAN,   2, Type_Real, RETURN_INDETERMINATE );
 		funcdef_param(func_atan, "V1", Type_Number_Generic, YES_OPT, NO__VAR);
 		funcdef_param(func_atan, "V2", Type_Number_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_blength, KW_BLENGTH, 1, Type_Integer );
+    funcdef( func_blength, KW_BLENGTH, 1, Type_Integer, RETURN_INDETERMINATE );
 		funcdef_param(func_blength, "V", Type_Binary_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_cos,    KW_COS,    1, Type_Real );
+    funcdef( func_cos,    KW_COS,    1, Type_Real, RETURN_INDETERMINATE );
 		funcdef_param(func_cos, "V", Type_Number_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_exists, KW_EXISTS, 1, Type_Boolean );
+    funcdef( func_exists, KW_EXISTS, 1, Type_Boolean, RETURN_DETERMINATE );
 		funcdef_param(func_exists, "V", Type_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_exp,    KW_EXP,    1, Type_Real );
+    funcdef( func_exp,    KW_EXP,    1, Type_Real, RETURN_INDETERMINATE );
 		funcdef_param(func_exp, "V", Type_Number_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_format, KW_FORMAT, 2, Type_String );
+    funcdef( func_format, KW_FORMAT, 2, Type_String, RETURN_INDETERMINATE );
 		funcdef_param(func_format, "N", Type_Number_Generic, YES_OPT, NO__VAR);
 		funcdef_param(func_format, "F", Type_String_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_hibound, KW_HIBOUND, 1, Type_Integer );
+    funcdef( func_hibound, KW_HIBOUND, 1, Type_Integer, RETURN_INDETERMINATE );
 		funcdef_param(func_hibound, "V", Type_Aggregate_Of_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_hiindex, KW_HIINDEX, 1, Type_Integer );
+    funcdef( func_hiindex, KW_HIINDEX, 1, Type_Integer, RETURN_INDETERMINATE );
 		funcdef_param(func_hiindex, "V", Type_Aggregate_Of_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_length, KW_LENGTH, 1, Type_Integer );
+    funcdef( func_length, KW_LENGTH, 1, Type_Integer, RETURN_INDETERMINATE );
 		funcdef_param(func_length, "V", Type_String_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_lobound, KW_LOBOUND, 1, Type_Integer );
+    funcdef( func_lobound, KW_LOBOUND, 1, Type_Integer, RETURN_INDETERMINATE );
 		funcdef_param(func_lobound, "V", Type_Aggregate_Of_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_log,    KW_LOG,    1, Type_Real );
+    funcdef( func_log,    KW_LOG,    1, Type_Real, RETURN_INDETERMINATE );
 		funcdef_param(func_log, "V", Type_Number_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_log10,  KW_LOG10,  1, Type_Real );
+    funcdef( func_log10,  KW_LOG10,  1, Type_Real, RETURN_INDETERMINATE );
 		funcdef_param(func_log10, "V", Type_Number_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_log2,   KW_LOG2,   1, Type_Real );
+    funcdef( func_log2,   KW_LOG2,   1, Type_Real, RETURN_INDETERMINATE );
 		funcdef_param(func_log2, "V", Type_Number_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_loindex, KW_LOINDEX, 1, Type_Integer );
+    funcdef( func_loindex, KW_LOINDEX, 1, Type_Integer, RETURN_INDETERMINATE );
 		funcdef_param(func_loindex, "V", Type_Aggregate_Of_Generic, YES_OPT, NO__VAR);
 
-    funcdef( FUNC_NVL,    KW_NVL,    2, Type_Generic );
+    funcdef( FUNC_NVL,    KW_NVL,    2, Type_Generic, RETURN_DETERMINATE );
 		funcdef_param(FUNC_NVL, "V", Type_Generic, YES_OPT, NO__VAR);
 		funcdef_param(FUNC_NVL, "SUBSTITUTE", Type_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_odd,    KW_ODD,    1, Type_Logical );
+    funcdef( func_odd,    KW_ODD,    1, Type_Logical, RETURN_DETERMINATE );
 		funcdef_param(func_odd, "V", Type_Integer_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_rolesof, KW_ROLESOF, 1, Type_Set_Of_String );
+    funcdef( func_rolesof, KW_ROLESOF, 1, Type_Set_Of_String, RETURN_DETERMINATE );
 		funcdef_param(func_rolesof, "V", Type_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_sin,    KW_SIN,    1, Type_Real );
+    funcdef( func_sin,    KW_SIN,    1, Type_Real, RETURN_INDETERMINATE );
 		funcdef_param(func_sin, "V", Type_Number_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_sizeof, KW_SIZEOF, 1, Type_Integer );
+    funcdef( func_sizeof, KW_SIZEOF, 1, Type_Integer, RETURN_INDETERMINATE );
 		funcdef_param(func_sizeof, "V", Type_Aggregate_Of_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_sqrt,   KW_SQRT,   1, Type_Real );
+    funcdef( func_sqrt,   KW_SQRT,   1, Type_Real, RETURN_INDETERMINATE );
 		funcdef_param(func_sqrt, "V", Type_Number_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_tan,    KW_TAN,    1, Type_Real );
+    funcdef( func_tan,    KW_TAN,    1, Type_Real, RETURN_INDETERMINATE );
 		funcdef_param(func_tan, "V", Type_Number_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_typeof, KW_TYPEOF, 1, Type_Set_Of_String );
+    funcdef( func_typeof, KW_TYPEOF, 1, Type_Set_Of_String, RETURN_DETERMINATE );
 		funcdef_param(func_typeof, "V", Type_Generic, YES_OPT, NO__VAR);
 
-    funcdef( FUNC_USEDIN, KW_USEDIN,  2, Type_Bag_Of_GenericEntity );
+    funcdef( FUNC_USEDIN, KW_USEDIN,  2, Type_Bag_Of_GenericEntity, RETURN_DETERMINATE );
 		funcdef_param(FUNC_USEDIN, "T", Type_Generic, YES_OPT, NO__VAR);
 		funcdef_param(FUNC_USEDIN, "R", Type_String_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_value,  KW_VALUE,   1, Type_Number );
+    funcdef( func_value,  KW_VALUE,   1, Type_Number, RETURN_INDETERMINATE );
 		funcdef_param(func_value, "V", Type_String_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_value_in, KW_VALUE_IN,    2, Type_Logical );
+    funcdef( func_value_in, KW_VALUE_IN,    2, Type_Logical, RETURN_DETERMINATE );
 		funcdef_param(func_value_in, "C", Type_Aggregate_Of_Generic, YES_OPT, NO__VAR);
 		funcdef_param(func_value_in, "V", Type_Generic, YES_OPT, NO__VAR);
 
-    funcdef( func_value_unique, KW_VALUE_UNIQUE, 1, Type_Logical );
+    funcdef( func_value_unique, KW_VALUE_UNIQUE, 1, Type_Logical, RETURN_DETERMINATE );
 		funcdef_param(func_value_unique, "V", Type_Aggregate_Of_Generic, YES_OPT, NO__VAR);
 
 	

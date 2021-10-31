@@ -302,10 +302,6 @@ extern SC_EXPRESS_EXPORT void     EXPcleanup PROTO( ( void ) );
 extern SC_EXPRESS_EXPORT Type     EXPtype PROTO( ( Expression, struct Scope_ * ) );
 extern SC_EXPRESS_EXPORT int      EXPget_integer_value PROTO( ( Expression ) );
 
-//*TY2020/08/23
-//extern Linked_List all_aggregate_initializers;
-//extern void check_aggregate_initializers(const char* message, bool print);
-
 //*TY2021/01/18
 extern bool EXP_is_literal( Expression e );
 extern bool EXP_is_indeterminate( Expression e);

@@ -366,6 +366,7 @@ void STMT_swift( Scope algo, Statement stmt, int* tempvar_id, int level ) {
 				raw("return\n");
 			}
 			else {
+				assert(SCOPEis_function(algo));
 				bool nested = !SCOPEis_schema(algo->superscope);
 				
 				
@@ -375,16 +376,18 @@ void STMT_swift( Scope algo, Statement stmt, int* tempvar_id, int level ) {
 				
 				raw("return ");
 				assert(algo->u_tag==scope_is_func);
+				char* closing = ")))";closing+=3;
 				if( !nested ){
 					char buf[BUFSIZ];
 					raw("%s.updateCache(params: _params, value: ", FUNC_cache_swiftName(algo, buf));
-
-					EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, algo->u.func->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
-					raw(")");					
-			}
-				else {
-					EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, algo->u.func->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);					
+					--closing;
 				}
+				if( !FUNCreturn_indeterminate(algo) ){
+					raw("SDAI.UNWRAP(");
+					--closing;
+				}
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, algo->u.func->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+				raw(closing);
 				raw("\n");
 				
 				EXPR_delete_tempvar_definitions(tempvars);

@@ -204,10 +204,6 @@ static void SCHEMA_get_entities_use( Scope scope, Linked_List result ) {
     DictionaryEntry de;
     Rename * rename;
 
-//    if( scope->search_id == __SCOPE_search_id ) {
-//        return;
-//    }
-//    scope->search_id = __SCOPE_search_id;
 		if( SCOPE_search_visited(scope) ) return;
 	
     /* fully USE'd schema */
@@ -242,10 +238,6 @@ static void SCHEMA_get_entities_ref( Scope scope, Linked_List result ) {
     Rename * rename;
     DictionaryEntry de;
 
-//    if( scope->search_id == __SCOPE_search_id ) {
-//        return;
-//    }
-//    scope->search_id = __SCOPE_search_id;
 		if( SCOPE_search_visited(scope) ) return;
 	
     ENTITY_MARK++;
@@ -271,7 +263,6 @@ Linked_List SCHEMAget_entities_ref( Scope scope ) {
 
     ENTITY_MARK++;
 
-//	__SCOPE_search_id++;
 		SCOPE_begin_search();
 		SCHEMA_get_entities_ref( scope, result );
 		SCOPE_end_search();
