@@ -112,7 +112,6 @@
 		F43B6BFC24CEC064007493AB /* swift_proc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_proc.c; sourceTree = "<group>"; };
 		F43B6BFF24D0064D007493AB /* swift_algorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_algorithm.h; sourceTree = "<group>"; };
 		F43B6C0024D0064D007493AB /* swift_algorithm.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_algorithm.c; sourceTree = "<group>"; };
-		F447F92D269797A900F31B35 /* IDETemplateMacros.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = IDETemplateMacros.plist; path = ../../../../Library/Developer/Xcode/UserData/IDETemplateMacros.plist; sourceTree = "<group>"; };
 		F44D025224BE402700E77B2A /* exp2swift */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = exp2swift; sourceTree = BUILT_PRODUCTS_DIR; };
 		F44D02B824BE427C00E77B2A /* sc_trace_fprintf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sc_trace_fprintf.c; sourceTree = "<group>"; };
 		F44D02B924BE427C00E77B2A /* sc_memmgr.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sc_memmgr.cc; sourceTree = "<group>"; };
@@ -281,6 +280,7 @@
 		F4C0F14E2743C01400EC7C18 /* INTENT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = INTENT.md; sourceTree = "<group>"; };
 		F4C0F14F2743C04900EC7C18 /* NEWS */ = {isa = PBXFileReference; lastKnownFileType = text; path = NEWS; sourceTree = "<group>"; };
 		F4C0F1502743C07400EC7C18 /* SC_VERSION.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = SC_VERSION.txt; sourceTree = "<group>"; };
+		F4C0F1532746E97000EC7C18 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		F4E728FA25002891007FDFD9 /* swift_select_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_select_type.h; sourceTree = "<group>"; };
 		F4E728FB25002891007FDFD9 /* swift_select_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_select_type.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -340,8 +340,8 @@
 		F44D023B24BE3FDA00E77B2A = {
 			isa = PBXGroup;
 			children = (
+				F4C0F1532746E97000EC7C18 /* README.md */,
 				F4A35135270E4B2D0020434A /* LICENSE */,
-				F447F92D269797A900F31B35 /* IDETemplateMacros.plist */,
 				F44D025324BE402700E77B2A /* exp2swift */,
 				F455D4F324EC73F7004C5320 /* schema */,
 				F44D025924BE40B600E77B2A /* stepcode */,
