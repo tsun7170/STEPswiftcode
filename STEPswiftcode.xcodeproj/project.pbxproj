@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -101,7 +101,6 @@
 		F40EE5E3254546D800F293C3 /* swift_named_aggregate_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_named_aggregate_type.c; sourceTree = "<group>"; };
 		F40EE5E8254546F200F293C3 /* swift_named_simple_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_named_simple_type.h; sourceTree = "<group>"; };
 		F40EE5E9254546F200F293C3 /* swift_named_simple_type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_named_simple_type.c; sourceTree = "<group>"; };
-		F42951C626D0F812006107B7 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Package.swift; path = ../SwiftAP242PDMkit/Package.swift; sourceTree = "<group>"; };
 		F43B6BEE24CD3D6C007493AB /* swift_entity_partial.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_partial.c; sourceTree = "<group>"; };
 		F43B6BF024CD3E20007493AB /* swift_entity_reference.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_entity_reference.c; sourceTree = "<group>"; };
 		F43B6BF524CEC040007493AB /* swift_rule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_rule.h; sourceTree = "<group>"; };
@@ -238,8 +237,6 @@
 		F45A7F8D24D00EEF00669F95 /* swift_statement.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = swift_statement.c; sourceTree = "<group>"; };
 		F45D5E7825B2C6E800CACCF9 /* decompose_expression.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = decompose_expression.h; sourceTree = "<group>"; };
 		F45D5E7925B2C6E800CACCF9 /* decompose_expression.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = decompose_expression.c; sourceTree = "<group>"; };
-		F474A05826D0ECEE000E6EEB /* SwiftAP242PDMkit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftAP242PDMkit; path = ../SwiftAP242PDMkit; sourceTree = "<group>"; };
-		F474A06026D0EDC1000E6EEB /* SwiftSDAIap242 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftSDAIap242; path = ../SwiftSDAIap242; sourceTree = "<group>"; };
 		F48BF91E24C07A2B005B5B0A /* ordered_attrs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ordered_attrs.h; sourceTree = "<group>"; };
 		F48BF91F24C07A2B005B5B0A /* sc_export.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sc_export.h; sourceTree = "<group>"; };
 		F48BF92024C07A2C005B5B0A /* sc_stdbool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sc_stdbool.h; sourceTree = "<group>"; };
@@ -271,7 +268,6 @@
 		F48BF95324C26BFE005B5B0A /* swift_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = swift_type.h; sourceTree = "<group>"; };
 		F48BF95424C26BFE005B5B0A /* swift_type.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = swift_type.c; sourceTree = "<group>"; };
 		F4A35135270E4B2D0020434A /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
-		F4B644C926C7B19800C1C43C /* SwiftSDAIcore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SwiftSDAIcore; path = ../SwiftSDAIcore; sourceTree = "<group>"; };
 		F4C0F1492743BFD100EC7C18 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		F4C0F14A2743BFD100EC7C18 /* CONTRIBUTING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CONTRIBUTING.md; sourceTree = "<group>"; };
 		F4C0F14B2743BFD200EC7C18 /* AUTHORS */ = {isa = PBXFileReference; lastKnownFileType = text; path = AUTHORS; sourceTree = "<group>"; };
@@ -346,7 +342,6 @@
 				F455D4F324EC73F7004C5320 /* schema */,
 				F44D025924BE40B600E77B2A /* stepcode */,
 				F44D024524BE3FDA00E77B2A /* Products */,
-				F45A7F8F24E3B24700669F95 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -580,17 +575,6 @@
 			path = exppp;
 			sourceTree = "<group>";
 		};
-		F45A7F8F24E3B24700669F95 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				F42951C626D0F812006107B7 /* Package.swift */,
-				F474A06026D0EDC1000E6EEB /* SwiftSDAIap242 */,
-				F474A05826D0ECEE000E6EEB /* SwiftAP242PDMkit */,
-				F4B644C926C7B19800C1C43C /* SwiftSDAIcore */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		F48BF93C24C26BFE005B5B0A /* expression */ = {
 			isa = PBXGroup;
 			children = (
@@ -705,9 +689,6 @@
 			);
 			mainGroup = F44D023B24BE3FDA00E77B2A;
 			packageReferences = (
-				F4245F0F270CF971000E728C /* XCRemoteSwiftPackageReference "SwiftSDAIcore" */,
-				F46CE5C5270F9ABA004A122F /* XCRemoteSwiftPackageReference "SwiftSDAIap242" */,
-				F46CE5CD270F9ADA004A122F /* XCRemoteSwiftPackageReference "SwiftAP242PDMkit" */,
 			);
 			productRefGroup = F44D024524BE3FDA00E77B2A /* Products */;
 			projectDirPath = "";
@@ -972,33 +953,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		F4245F0F270CF971000E728C /* XCRemoteSwiftPackageReference "SwiftSDAIcore" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tsun7170/SwiftSDAIcore.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
-		F46CE5C5270F9ABA004A122F /* XCRemoteSwiftPackageReference "SwiftSDAIap242" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tsun7170/SwiftSDAIap242.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
-		F46CE5CD270F9ADA004A122F /* XCRemoteSwiftPackageReference "SwiftAP242PDMkit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tsun7170/SwiftAP242PDMkit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = F44D023C24BE3FDA00E77B2A /* Project object */;
 }

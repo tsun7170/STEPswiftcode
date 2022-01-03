@@ -246,7 +246,7 @@ extern SC_EXPRESS_EXPORT Type Type_List_Of_GenericEntity;
 extern SC_EXPRESS_EXPORT Type Type_Aggregate_Of_GenericEntity;
 
 
-//*TY2021/1/1
+//*TY2021/1/1 - to suppress type casting code on assignment
 #define Type_Binary_Generic		Type_Generic
 #define Type_Boolean_Generic	Type_Generic
 #define Type_Integer_Generic	Type_Generic

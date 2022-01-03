@@ -176,7 +176,7 @@ void openSwiftFileForRule(Schema s, Rule rule) {
 
 void openSwiftFileForFunction(Schema s, Function func) {
 	openSwiftFile(s, "func", FUNC_swiftNameInitial(func), func->symbol.name);
-//	if( strcmp(func->symbol.name, "dependently_instantiated")==0 ){
+//	if( strcmp(func->symbol.name, "compare_values")==0 ){
 //		bool debug = true;
 //	}
 }

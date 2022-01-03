@@ -1086,6 +1086,11 @@ Type EXPresolve_op_plus_like( Expression e, Scope s ) {
        return resulttype;
     }
 
+	//*TY2022/01/03
+	if( TYPEis_string(op1type) || TYPEis_string(op2type) ) {
+		return ( Type_String );
+	}
+	
     /* crude but sufficient */
     if( TYPEis_real(op1type) || TYPEis_real(op2type) ) {
         return( Type_Real );

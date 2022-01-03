@@ -206,7 +206,7 @@ static void emit_usedin_call( Scope SELF, Expression e, bool can_wrap ){
 	else {
 		raw(", ");
 		wrap("R: ");
-		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF, arg2, Type_String, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+		EXPRassignment_rhs_swift(YES_RESOLVING_GENERIC, SELF, arg2, Type_String_Generic, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 	}
 	raw(")");
 }
@@ -1097,7 +1097,12 @@ void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * oe, cha
 	//OPERAND1
 //	raw("/*");TYPE_head_swift(SELF1, oe->op1->return_type, YES_IN_COMMENT);raw("*/");	// DEBUG
 
-	if( both_literal || TYPEis_AGGREGATE(oe->op1->type) ){
+	if( TYPEis_generic(op1target_type) ){
+		raw("SDAI.GENERIC(");
+		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF1, oe->op1, op1target_type, NO_PAREN, oe->op_code, can_wrap);
+		raw(")");
+	}
+	else if( both_literal || TYPEis_AGGREGATE(oe->op1->type) ){
 		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF1, oe->op1, op1target_type, YES_PAREN, oe->op_code, can_wrap);
 	}
 	else if( !need_optional_operand ){
@@ -1137,7 +1142,12 @@ void EXPRop2__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * oe, cha
 	//OPERAND2
 //	raw("/*"); TYPE_head_swift(SELF2, oe->op2->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
 
-	if( both_literal || TYPEis_AGGREGATE(oe->op2->type) ){
+	if( TYPEis_generic(op2target_type) ){
+		raw("SDAI.GENERIC(");
+		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF2, oe->op2, op2target_type, NO_PAREN, oe->op_code, can_wrap2);
+		raw(")");		
+	}
+	else if( both_literal || TYPEis_AGGREGATE(oe->op2->type) ){
 		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF2, oe->op2, op2target_type, YES_PAREN, oe->op_code, can_wrap2);
 	}
 	else if( !need_optional_operand ){
