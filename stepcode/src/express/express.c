@@ -159,7 +159,7 @@ Symbol * EXPRESS_get_symbol( Generic e ) {
     return( &( ( Express )e )->symbol );
 }
 
-Express EXPRESScreate() {
+Express EXPRESScreate(void) {
     Express model = SCOPEcreate( OBJ_EXPRESS );
     model->u.express = ( struct Express_ * )sc_calloc( 1, sizeof( struct Express_ ) );
 	model->u_tag = scope_is_express;	//*TY2020/08/02
@@ -183,7 +183,7 @@ typedef struct Dir {
     char * leaf;
 } Dir;
 
-static void EXPRESS_PATHinit() {
+static void EXPRESS_PATHinit(void) {
     char * p;
     Dir * dir;
 
@@ -244,7 +244,7 @@ static void EXPRESS_PATHinit() {
                 strcpy( dir->full, start );
                 dir->leaf = dir->full + length;
             } else {
-                sprintf( dir->full, "%s/", start );
+                snprintf( dir->full,sizeof (dir->full), "%s/", start );
                 dir->leaf = dir->full + length + 1;
             }
             LISTadd_last( EXPRESS_path, ( Generic )dir );
@@ -262,7 +262,7 @@ static void EXPRESS_PATHfree( void ) {
 }
 
 /** inform object system about bit representation for handling pass diagnostics */
-void PASSinitialize() {
+void PASSinitialize(void) {
     OBJcreate( OBJ_PASS, UNK_get_symbol, "pass", OBJ_PASS_BITS );
 }
 
@@ -775,34 +775,34 @@ Schema EXPRESSfind_schema( Dictionary modeldict, char * name ) {
 
     /* go down path looking for file */
     LISTdo( EXPRESS_path, dir, Dir * )
-    sprintf( dir->leaf, "%s.exp", lower );
-    if( print_objects_while_running & OBJ_SCHEMA_BITS ) {
-        fprintf( stderr, "pass %d: %s (schema file?)\n",
-                 EXPRESSpass, dir->full );
-    }
-    fp = fopen( dir->full, "r" );
-    if( fp ) {
-        Express express;
+			snprintf( dir->full,sizeof dir->full, "%s.exp", lower );
+			if( print_objects_while_running & OBJ_SCHEMA_BITS ) {
+					fprintf( stderr, "pass %d: %s (schema file?)\n",
+									 EXPRESSpass, dir->full );
+			}
+			fp = fopen( dir->full, "r" );
+			if( fp ) {
+					Express express;
 
-        if( print_objects_while_running & OBJ_SCHEMA_BITS ) {
-            fprintf( stderr, "pass %d: %s (schema file found)\n",
-                     EXPRESSpass, dir->full );
-        }
+					if( print_objects_while_running & OBJ_SCHEMA_BITS ) {
+							fprintf( stderr, "pass %d: %s (schema file found)\n",
+											 EXPRESSpass, dir->full );
+					}
 
-        express = PARSERrun( SCANstrdup( dir->full ), fp );
-        if( express ) {
-            s = ( Schema )DICTlookup( modeldict, name );
-        }
-        if( s ) {
-            return s;
-        }
-        ERRORreport( ERROR_schema_not_in_own_schema_file,
-                     name, dir->full );
-        return 0;
-    } else {
-        if( print_objects_while_running & OBJ_SCHEMA_BITS ) {
-            fprintf( stderr, "pass %d: %s (schema file not found), errno = %d\n", EXPRESSpass, dir->full, errno );
-        }
+					express = PARSERrun( SCANstrdup( dir->full ), fp );
+					if( express ) {
+							s = ( Schema )DICTlookup( modeldict, name );
+					}
+					if( s ) {
+							return s;
+					}
+					ERRORreport( ERROR_schema_not_in_own_schema_file,
+											 name, dir->full );
+					return 0;
+			} else {
+					if( print_objects_while_running & OBJ_SCHEMA_BITS ) {
+							fprintf( stderr, "pass %d: %s (schema file not found), errno = %d\n", EXPRESSpass, dir->full, errno );
+					}
     }
     LISTod
     return 0;

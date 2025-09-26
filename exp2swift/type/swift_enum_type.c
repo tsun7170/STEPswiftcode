@@ -40,7 +40,7 @@ static void enumWhereRuleValidation_swift( Type type, int level ) {
 			raw("return [:]\n");		
 		} 
 		else {
-			char typename[BUFSIZ];TYPE_swiftName(type, NO_QUALIFICATION, typename);
+			char typename[BUFSIZ];TYPE_swiftName(type, NO_QUALIFICATION, SWIFT_QUALIFIER, typename);
 			indent_swift(level2);
 			raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
 			
@@ -83,7 +83,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 	raw("*/\n");
 	
 	char typename[BUFSIZ];
-	TYPE_swiftName(type,type->superscope,typename);
+	TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typename);
 	indent_swift(level);
 	wrap( "public enum %s : SDAI.ENUMERATION, SDAIValue, ", typename );
 	wrap( "%s__%s__type {\n", SCHEMA_swiftName(schema, buf),typename );
@@ -178,9 +178,9 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("public typealias FundamentalType = Self\n");
 
 		indent_swift(level2);
-		raw("public static var typeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope,buf));
-		
+		raw("public static let typeName: String = ");
+		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf));
+
 		indent_swift(level2);
 		raw("public var asFundamentalType: FundamentalType { return self }\n\n");
 
@@ -206,8 +206,8 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("// InitializableByP21Parameter\n");
 	
 		indent_swift(level2);
-		raw("public static var bareTypeName: String = ");
-		wrap("\"%s\"\n\n", TYPE_canonicalName(type,NO_QUALIFICATION,buf));
+		raw("public static let bareTypeName: String = ");
+		wrap("\"%s\"\n\n", TYPE_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 
 		indent_swift(level2);
 		raw("public	init?(p21untypedParam: P21Decode.ExchangeStructure.UntypedParameter, from exchangeStructure: P21Decode.ExchangeStructure) {\n");
@@ -339,7 +339,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 
 void enumTypeExtension_swift(Schema schema, Type type, int level) {
 	char typebuf[BUFSIZ];
-	const char* typename = TYPE_swiftName(type,type->superscope,typebuf);
+	const char* typename = TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
 
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);

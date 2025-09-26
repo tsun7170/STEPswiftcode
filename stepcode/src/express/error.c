@@ -144,7 +144,7 @@ static int ERROR_printf( const char *format, ... ) {
     return result;
 }
 
-static void ERROR_nexterror() {
+static void ERROR_nexterror(void) {
     if( ERROR_string == ERROR_string_end ) {
         return;
     }
@@ -336,7 +336,7 @@ va_dcl {
     sym.filename = current_filename;
     sym.line = line;
 
-    vsprintf( buf, what->message, args );
+    vsnprintf( buf, sizeof buf, what->message, args );
 
     /* gross, but there isn't any way to do this more directly */
     /* without writing yet another variant of ERRORreport_with_line */
@@ -435,7 +435,7 @@ va_dcl {
     va_end( args );
 }
 
-void ERRORnospace() {
+void ERRORnospace(void) {
     fprintf( stderr, "%s: out of space\n", EXPRESSprogram_name );
     ERRORabort( 0 );
 }
@@ -533,6 +533,6 @@ void ERRORsafe( jmp_buf env ) {
     memcpy( ERROR_safe_env, env, sizeof( jmp_buf ) );
 }
 
-void ERRORunsafe() {
+void ERRORunsafe(void) {
     ERROR_unsafe = true;
 }

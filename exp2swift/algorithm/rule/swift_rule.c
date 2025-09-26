@@ -36,9 +36,9 @@ char 				RULE_swiftNameInitial( Rule rule ) {
 
 void RULE_swift(Schema schema, Rule rule, int level ) {
 	// EXPRESS summary
-	beginExpress_swift("RULE DEFINITION");
+	beginExpress_swift("RULE DEFINITION", AS_MARKDOWN_EXPRESS);
 	RULE_out(rule, level);
-	endExpress_swift();	
+	endExpress_swift(AS_MARKDOWN_EXPRESS);	
 	
 	//rule head
 	indent_swift(level);
@@ -64,7 +64,7 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 
 			char buf[BUFSIZ];
 			raw("let %s = ", variable_swiftName(entity_ref,buf));
-			wrap("SDAI.POPULATION(OF: %s.self, FROM: allComplexEntities)\n", ENTITY_swiftName(ent, NO_QUALIFICATION, buf) );
+			wrap("SDAI.POPULATION(OF: %s.self, FROM: allComplexEntities)\n", ENTITY_swiftName(ent, NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
 		}LISTod;
 		raw("\n");
 		

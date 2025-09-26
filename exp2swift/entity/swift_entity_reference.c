@@ -47,16 +47,16 @@ static void supertypeReferenceDefinition_swift(Entity entity, int level ) {
 			indent_swift(level);
 			wrap("public var %s%s: %s { return self } \t// [%d]\n", 
 					 superEntity_swiftPrefix,
-					 ENTITY_swiftName(super, NO_QUALIFICATION, buf1), 
-					 ENTITY_swiftName(super, entity, buf2), 
+					 ENTITY_swiftName(super, NO_QUALIFICATION, SWIFT_QUALIFIER, buf1),
+					 ENTITY_swiftName(super, entity, SWIFT_QUALIFIER, buf2),
 					 entity_index);
 		}
 		else {
 			indent_swift(level);
 			wrap("public let %s%s: %s \t// [%d]\n", 
 					 superEntity_swiftPrefix,
-					 ENTITY_swiftName(super, NO_QUALIFICATION, buf1), 
-					 ENTITY_swiftName(super, entity, buf2), 
+					 ENTITY_swiftName(super, NO_QUALIFICATION, SWIFT_QUALIFIER, buf1),
+					 ENTITY_swiftName(super, entity, SWIFT_QUALIFIER, buf2),
 					 entity_index);
 		}
 	}LISTod;
@@ -76,8 +76,8 @@ static void supertypeReferenceDefinition_swift(Entity entity, int level ) {
 		indent_swift(level);
 		wrap("public var %s%s: %s? {\t// [%d]\n", 
 				 subEntity_swiftPrefix,
-				 ENTITY_swiftName(sub, NO_QUALIFICATION, buf1), 
-				 ENTITY_swiftName(sub, entity, buf2), 
+				 ENTITY_swiftName(sub, NO_QUALIFICATION, SWIFT_QUALIFIER, buf1),
+				 ENTITY_swiftName(sub, entity, SWIFT_QUALIFIER, buf2),
 				 entity_index);
 
 		indent_swift(level2);
@@ -120,7 +120,7 @@ static void superEntityReference_swift(Entity entity, Entity supertype, bool is_
 	}
 	else {
 		char buf[BUFSIZ];
-		wrap_if(can_wrap,"%s%s", (is_subtype_attr ? subEntity_swiftPrefix : superEntity_swiftPrefix), ENTITY_swiftName(supertype, NO_QUALIFICATION, buf) );
+		wrap_if(can_wrap,"%s%s", (is_subtype_attr ? subEntity_swiftPrefix : superEntity_swiftPrefix), ENTITY_swiftName(supertype, NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
 	}
 }
 
@@ -140,8 +140,8 @@ static void partialEntityReference_swift(Entity entity, Entity partial, bool is_
 /// @param level <#level description#>
 /// @param label <#label description#>
 /// @return optionality of variable type
-static bool attributeRefHead_swift(Entity entity, char* access, Variable attr, bool is_subtype_attr, int level, char* label) {	
-	 
+static bool attributeRefHead_swift(Schema schema, Entity entity, char* access, Variable attr, bool is_subtype_attr, int level, char* label) {
+
 	 { char buf[BUFSIZ];
 		 
 		 //markdown
@@ -151,15 +151,15 @@ static bool attributeRefHead_swift(Entity entity, char* access, Variable attr, b
 		 if( VARis_inverse(attr) ){
 			 Variable observing_attr = VARget_inverse(attr);
 			 indent_swift(level);
-			 raw("/// observing %s", 
-					 ENTITY_swiftName(observing_attr->defined_in, NO_QUALIFICATION, buf) );
+			 raw("/// observing ``%s``",
+					 ENTITY_swiftName(observing_attr->defined_in, schema->superscope, DOCC_QUALIFIER, buf) );
 			 raw(" .%s\n",
 					 attribute_swiftName(observing_attr, buf));
 		 }
 		 indent_swift(level);
 		 raw("/// - origin: %s( ``%s`` )\n", 
 				 (entity==attr->defined_in ? "SELF" : (is_subtype_attr ? "SUB" : "SUPER")), 
-				 ENTITY_swiftName(attr->defined_in, NO_QUALIFICATION, buf)
+				 ENTITY_swiftName(attr->defined_in, schema->superscope, DOCC_QUALIFIER, buf)
 				 );
 		 
 		 indent_swift(level);
@@ -584,12 +584,12 @@ static void explicitDynamicGetterSetter_swift(Variable attr, bool is_subtype_att
 }
 
 
-static void explicitAttributeReference_swift(Entity entity, Variable attr, bool is_subtype_attr, int level) {
+static void explicitAttributeReference_swift(Schema schema, Entity entity, Variable attr, bool is_subtype_attr, int level) {
 	Entity partial = attr->defined_in;
 	
 	if( VARis_dynamic(attr) ) {
-		attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, 
-													 (VARis_observed(attr) 
+		attributeRefHead_swift( schema, entity, "public", attr, is_subtype_attr, level,
+													 (VARis_observed(attr)
 														? "EXPLICIT(DYNAMIC)(OBSERVED)" 
 														: "EXPLICIT(DYNAMIC)") );
 		{	int level2 = level+nestingIndent_swift;
@@ -600,8 +600,8 @@ static void explicitAttributeReference_swift(Entity entity, Variable attr, bool 
 		raw("}\n");
 	}
 	else {
-		attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, 
-													 (VARis_observed(attr) 
+		attributeRefHead_swift( schema, entity, "public", attr, is_subtype_attr, level,
+													 (VARis_observed(attr)
 														? "EXPLICIT(OBSERVED)" 
 														: "EXPLICIT") );
 		{	int level2 = level+nestingIndent_swift;
@@ -705,13 +705,13 @@ static void derivedGetter_swift(Variable attr, bool is_subtype_attr, Entity enti
 }
 
 //MARK: explicit attribute redef (type cast)
-static void explicitAttributeOverrideReference_swift(Entity entity, Variable attr, bool is_subtype_attr, int level) {
+static void explicitAttributeOverrideReference_swift(Schema schema, Entity entity, Variable attr, bool is_subtype_attr, int level) {
 	Variable original = VARget_original_attr(attr);
 	Entity partial = original->defined_in;
 	
 	if( VARis_dynamic(original) ) {
-		attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, 
-													 (VARis_observed(attr) 
+		attributeRefHead_swift( schema, entity, "public", attr, is_subtype_attr, level,
+													 (VARis_observed(attr)
 														? "EXPLICIT REDEF(DYNAMIC)(OBSERVED)" 
 														: "EXPLICIT REDEF(DYNAMIC)") );
 		{	int level2 = level+nestingIndent_swift;
@@ -722,8 +722,8 @@ static void explicitAttributeOverrideReference_swift(Entity entity, Variable att
 		raw("}\n");
 	}
 	else {
-		attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, 
-													 (VARis_observed(attr) 
+		attributeRefHead_swift( schema, entity, "public", attr, is_subtype_attr, level,
+													 (VARis_observed(attr)
 														? "EXPLICIT REDEF(OBSERVED)" 
 														: "EXPLICIT REDEF") );
 		{	int level2 = level+nestingIndent_swift;
@@ -737,10 +737,10 @@ static void explicitAttributeOverrideReference_swift(Entity entity, Variable att
 }
 
 //MARK: derived attribute
-static void derivedAttributeReference_swift(Entity entity, Variable attr, bool is_subtype_attr, int level) {
+static void derivedAttributeReference_swift(Schema schema, Entity entity, Variable attr, bool is_subtype_attr, int level) {
 	Entity partial = attr->defined_in;
 	
-	attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, "DERIVE" );
+	attributeRefHead_swift( schema, entity, "public", attr, is_subtype_attr, level, "DERIVE" );
 	{	int level2 = level+nestingIndent_swift;
 		
 		derivedGetter_swift(attr, is_subtype_attr, entity, level2, partial);
@@ -750,11 +750,11 @@ static void derivedAttributeReference_swift(Entity entity, Variable attr, bool i
 }
 
 //MARK: derived attribute redef
-static void derivedAttributeOverrideReference_swift(Entity entity, Variable attr, bool is_subtype_attr, int level) {
+static void derivedAttributeOverrideReference_swift(Schema schema, Entity entity, Variable attr, bool is_subtype_attr, int level) {
 	Entity partial = attr->defined_in;
 	
 	assert(VARis_dynamic(attr));
-	attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, "EXPLICIT REDEF(DERIVE)" );
+	attributeRefHead_swift( schema, entity, "public", attr, is_subtype_attr, level, "EXPLICIT REDEF(DERIVE)" );
 	{	int level2 = level+nestingIndent_swift;
 
 		derivedGetter_swift(attr, is_subtype_attr, entity, level2, partial);
@@ -764,18 +764,184 @@ static void derivedAttributeOverrideReference_swift(Entity entity, Variable attr
 }
 
 //MARK: - inverse attribute access
-static void inverseAttributeReference_swift(Entity entity, Variable attr, bool is_subtype_attr, int level) {
-	int level2 = level+nestingIndent_swift;
+static void inverseAggregateAttributeGetter_swift(Entity entity, Variable attr, bool is_subtype_attr, int level) {
+	/*
+	 get {
+		 if let cached = cachedValue(derivedAttributeName:"<attr>") {
+			 return cached.value as! <attr_type>
+		 }
+		 let swiftValue = <attr_type>.SwiftType(self.referencingEntities(for: \<source>.<attr>))
+		 let value = <attr_type>(from: swiftValue, bound1: <I1>, bound2: <I2?>)
+		 updateCache(derivedAttributeName:"<attr>", value:value)
+		 return value
+	 }
+	 */
 
-	Entity partial = attr->defined_in;
+//	char partialAttr[BUFSIZ];
+
+	// getter
+	indent_swift(level);
+	raw("get {\n");
+	{	int level2 = level+nestingIndent_swift;
+		int level3 = level2+nestingIndent_swift;
+
+		char attrname[BUFSIZ];
+		canonical_swiftName(ATTRget_name_string(attr), attrname);
+
+		// check cashed value
+		/*
+		 if let cached = cachedValue(derivedAttributeName:"<attr>") {
+		 return cached.value as! <attr_type>
+		 }
+		 */
+		indent_swift(level2);
+		raw("if let cached = cachedValue(derivedAttributeName:\"%s\") {\n",attrname);
+		indent_swift(level3);
+		raw("return cached.value as! ");
+		variableType_swift(entity, attr, (is_subtype_attr ? YES_FORCE_OPTIONAL : NO_FORCE_OPTIONAL), NOT_IN_COMMENT);
+		raw("\n");
+		indent_swift(level2);
+		raw("}\n");
+
+		// get inverse reference value
+		/*
+		 let swiftValue = <attr_type>.SwiftType(self.referencingEntities(for: \<source>.<attr>))
+		 */
+		char buf[BUFSIZ];
+		Variable observing_attr = VARget_inverse(attr);
+		Type attr_element_type = TYPEget_body(attr->type)->base;
+		Entity source = TYPEget_body(attr_element_type)->entity; //observing_attr->defined_in;
+
+		indent_swift(level2);
+		raw("let swiftValue = ");
+		TYPE_head_swift(entity, attr->type, NOT_IN_COMMENT, LEAF_OWNED);
+		raw(".SwiftType( self.referencingEntities(for: \\%s",
+				ENTITY_swiftName(source, NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
+				);
+		raw(".%s) )\n",
+				attribute_swiftName(observing_attr, buf)
+				);
+
+		/*
+		 let value = <attr_type>(from: swiftValue, bound1: <I1>, bound2: <I2?>)
+		 */
+		TypeBody attr_tb = TYPEget_body( attr->type );
+
+		indent_swift(level2);
+		raw("let value = ");
+		TYPE_head_swift(entity, attr->type, NOT_IN_COMMENT, LEAF_OWNED);
+		raw("(from: swiftValue, bound1: SDAI.UNWRAP(");
+		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, attr_tb->lower, Type_Integer, NO_PAREN, OP_UNKNOWN, NO_WRAP);
+		raw("), bound2: ");
+		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, attr_tb->upper, Type_Integer, NO_PAREN, OP_UNKNOWN, NO_WRAP);
+		raw(")\n");
+
+
+		// save as cached value
+		/*
+		 updateCache(derivedAttributeName:"<attr>", value:value)
+		 */
+		indent_swift(level2);
+		raw("updateCache(derivedAttributeName:\"%s\", value:value)\n",attrname);
+
+		indent_swift(level2);
+		raw("return value\n");
+	}
+	indent_swift(level);
+	raw("}\n");
+
+
+}
+
+static void inverseSimpleAttributeGetter_swift(Entity entity, Variable attr, bool is_subtype_attr, int level) {
+	/*
+	 get {
+		 if let cached = cachedValue(derivedAttributeName:"<attr>") {
+			 return cached.value as! <attr_type>
+		 }
+		 let value = self.referencingEntity(for: \<source>.<attr>)
+		 updateCache(derivedAttributeName:"<attr>", value:value)
+		 return value
+	 }
+	 */
+
+//	char partialAttr[BUFSIZ];
+
+	// getter
+	indent_swift(level);
+	raw("get {\n");
+	{	int level2 = level+nestingIndent_swift;
+		int level3 = level2+nestingIndent_swift;
+
+		char attrname[BUFSIZ];
+		canonical_swiftName(ATTRget_name_string(attr), attrname);
+
+		// check cashed value
+		/*
+		 if let cached = cachedValue(derivedAttributeName:"<attr>") {
+		 return cached.value as! <attr_type>
+		 }
+		 */
+		indent_swift(level2);
+		raw("if let cached = cachedValue(derivedAttributeName:\"%s\") {\n",attrname);
+		indent_swift(level3);
+		raw("return cached.value as! ");
+		variableType_swift(entity, attr, (is_subtype_attr ? YES_FORCE_OPTIONAL : NO_FORCE_OPTIONAL), NOT_IN_COMMENT);
+		raw("\n");
+		indent_swift(level2);
+		raw("}\n");
+
+		// get inverse reference value
+		/*
+		 let value = self.referencingEntity(for: \<source>.<attr>)
+		 */
+		char buf[BUFSIZ];
+		Variable observing_attr = VARget_inverse(attr);
+		Entity source = observing_attr->defined_in;
+
+		indent_swift(level2);
+		raw("let value = self.referencingEntity(for: \\%s",
+				ENTITY_swiftName(source, NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
+				);
+		raw(".%s)\n",
+				attribute_swiftName(observing_attr, buf)
+				);
+
+		// save as cached value
+		/*
+		 updateCache(derivedAttributeName:"<attr>", value:value)
+		 */
+		indent_swift(level2);
+		raw("updateCache(derivedAttributeName:\"%s\", value:value)\n",attrname);
+
+		indent_swift(level2);
+		raw("return value\n");
+	}
+	indent_swift(level);
+	raw("}\n");
+
+}
+
+
+static void inverseAttributeReference_swift(Schema schema, Entity entity, Variable attr, bool is_subtype_attr, int level) {
+//	int level2 = level+nestingIndent_swift;
+
+//	Entity partial = attr->defined_in;
 	char partialAttr[BUFSIZ];
 	partialEntityAttribute_swiftName(attr, partialAttr);
 
-	attributeRefHead_swift( entity, "public", attr, is_subtype_attr, level, "INVERSE" );
-	
+	attributeRefHead_swift( schema, entity, "public", attr, is_subtype_attr, level, "INVERSE" );
+
 	{
 		// getter
-		explicitStaticGetter_swift(attr, is_subtype_attr, entity, level2, partial, partialAttr);
+//		explicitStaticGetter_swift(attr, is_subtype_attr, entity, level2, partial, partialAttr);
+
+		if( TYPEis_aggregation_data_type(attr->type) ){
+			inverseAggregateAttributeGetter_swift(entity, attr, is_subtype_attr, level);
+		}
+		else{
+			inverseSimpleAttributeGetter_swift(entity, attr, is_subtype_attr, level);
+		}
 	}
 	
 	indent_swift(level);
@@ -783,7 +949,7 @@ static void inverseAttributeReference_swift(Entity entity, Variable attr, bool i
 }
 
 //MARK: - attribute access main entry point
-static void entityAttributeReferences_swift( Entity entity, Linked_List effective_attrs, int level ){
+static void entityAttributeReferences_swift( Schema schema, Entity entity, Linked_List effective_attrs, int level ){
 	raw("\n");
 	indent_swift(level);
 	raw("//MARK: ATTRIBUTES\n");
@@ -816,21 +982,21 @@ static void entityAttributeReferences_swift( Entity entity, Linked_List effectiv
 		bool is_subtype_attr = LIST_aux;
 		if( VARis_redeclaring(attr) ) {
 			if( VARis_derived(attr) ) {
-				derivedAttributeOverrideReference_swift(entity, attr, is_subtype_attr, level);
+				derivedAttributeOverrideReference_swift(schema, entity, attr, is_subtype_attr, level);
 			}
 			else {
-				explicitAttributeOverrideReference_swift(entity, attr, is_subtype_attr, level);
+				explicitAttributeOverrideReference_swift(schema, entity, attr, is_subtype_attr, level);
 			}
 		}
 		else {
 			if( VARis_derived(attr) ) {
-				derivedAttributeReference_swift(entity, attr, is_subtype_attr, level);
+				derivedAttributeReference_swift(schema, entity, attr, is_subtype_attr, level);
 			}
 			else if( VARis_inverse(attr) ){
-				inverseAttributeReference_swift(entity, attr, is_subtype_attr, level);
+				inverseAttributeReference_swift(schema, entity, attr, is_subtype_attr, level);
 			}
 			else {	// explicit
-				explicitAttributeReference_swift(entity, attr, is_subtype_attr, level);
+				explicitAttributeReference_swift(schema, entity, attr, is_subtype_attr, level);
 			}
 		}
 		raw("\n");
@@ -888,12 +1054,12 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 			++entity_index;
 			indent_swift(level2);
 			wrap("guard let super%d = complexEntity?.entityReference(%s.self) else { return nil }\n", 
-					 entity_index, ENTITY_swiftName(super, entity, buf) );
-			
+					 entity_index, ENTITY_swiftName(super, entity, SWIFT_QUALIFIER, buf) );
+
 			indent_swift(level2);
 			wrap("self.%s%s = super%d\n\n", 
 					 superEntity_swiftPrefix,
-					 ENTITY_swiftName(super, NO_QUALIFICATION, buf),
+					 ENTITY_swiftName(super, NO_QUALIFICATION, SWIFT_QUALIFIER, buf),
 					 entity_index);
 		}LISTod;
 //		raw("\n");
@@ -1042,10 +1208,17 @@ static void dictEntityDefinition_swift( Entity entity, Linked_List effective_att
 	raw("private static func createEntityDefinition() -> SDAIDictionarySchema.EntityDefinition {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
+		int level3 = level2+nestingIndent_swift;
 		char buf[BUFSIZ];
 		indent_swift(level2);
-		raw("let entityDef = SDAIDictionarySchema.EntityDefinition(name: \"%s\", type: self, explicitAttributeCount: %d)\n", 
-				ENTITY_canonicalName(entity, buf), partialEntityExplicitAttributeCount(entity));
+		raw("let entityDef = SDAIDictionarySchema.EntityDefinition.Prototype( \n");
+		indent_swift(level3);
+		raw("name: \"%s\", \n",
+				ENTITY_canonicalName(entity, buf)
+				);
+		indent_swift(level3);
+		raw("type: self, explicitAttributeCount: %d)\n",
+				partialEntityExplicitAttributeCount(entity));
 
 		
 		raw("\n");
@@ -1054,7 +1227,7 @@ static void dictEntityDefinition_swift( Entity entity, Linked_List effective_att
 		LISTdo(ENTITYget_super_entity_list(entity), supertype, Entity) {
 			indent_swift(level2);
 			raw("entityDef.add(supertype: %s.self)\n", 
-					ENTITY_swiftName(supertype, NO_QUALIFICATION, buf) );
+					ENTITY_swiftName(supertype, NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
 		}LISTod;
 		
 		
@@ -1072,12 +1245,15 @@ static void dictEntityDefinition_swift( Entity entity, Linked_List effective_att
 				bool may_yield_entity_ref = TYPE_may_yield_entity_reference(VARget_type(attr));
 				
 				indent_swift(level2);
-				raw("entityDef.addAttribute(name: \"%s\", ", canonical_swiftName(ATTRget_name_string(attr), buf) );
-				raw("keyPath: \\%s", ENTITY_swiftName(entity, NO_QUALIFICATION, buf) );
-				raw(".%s, ", attribute_swiftName(attr, buf) );
-				
-				aggressively_wrap();
-				wrap("kind: .");
+				raw("entityDef.addAttribute(name: \"%s\", \n", canonical_swiftName(ATTRget_name_string(attr), buf) );
+
+				indent_swift(level3);
+				raw("keyPath: \\%s",
+						ENTITY_swiftName(entity, NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
+				raw(".%s, \n", attribute_swiftName(attr, buf) );
+
+				indent_swift(level3);
+				raw("kind: .");
 				if( is_inverse ){
 					raw("inverse");
 				}
@@ -1092,7 +1268,7 @@ static void dictEntityDefinition_swift( Entity entity, Linked_List effective_att
 				}
 				raw(", ");
 				
-				wrap("source: .");
+				raw("source: .");
 				if( is_thistype_attr ){
 					raw("thisEntity");
 				}
@@ -1104,7 +1280,7 @@ static void dictEntityDefinition_swift( Entity entity, Linked_List effective_att
 				}
 				raw(", ");
 
-				wrap("mayYieldEntityReference: ");
+				raw("mayYieldEntityReference: ");
 				if( may_yield_entity_ref ){
 					raw("true");
 				}
@@ -1126,14 +1302,14 @@ static void dictEntityDefinition_swift( Entity entity, Linked_List effective_att
 			LISTdo(unique_rules, unique, Linked_List) {
 				++serial;
 				indent_swift(level2);
-				raw("entityDef.addUniqunessRule(label:\"%s\", rule: %s.%s)\n", 
+				raw("entityDef.addUniquenessRule(label:\"%s\", rule: %s.%s)\n",
 						uniqueRuleLabel_swiftName(serial, unique, buf),  partial_name, buf );
 			}LISTod;
 		}
 		
 		raw("\n");
 		indent_swift(level2);
-		raw("return entityDef\n");
+		raw("return entityDef.freeze()\n");
 	}
 	
 	indent_swift(level);
@@ -1180,8 +1356,8 @@ static void entityWhereRuleValidation_swift( Entity entity, int level ) {
 }
 
 
-//MARK: - entity reference defition main entry point
-void entityReferenceDefinition_swift( Entity entity, int level ) {
+//MARK: - entity reference definition main entry point
+void entityReferenceDefinition_swift( Schema schema, Entity entity, int level ) {
 	raw("\n\n");
 	raw("//MARK: - Entity Reference\n");
 	
@@ -1196,8 +1372,8 @@ void entityReferenceDefinition_swift( Entity entity, int level ) {
 	indent_swift(level);
 	{
 		char buf[BUFSIZ];
-		wrap("public final class %s : SDAI.EntityReference {\n", 
-				 ENTITY_swiftName(entity, NO_QUALIFICATION, buf));
+		wrap("public final class %s : SDAI.EntityReference, @unchecked Sendable {\n", 
+				 ENTITY_swiftName(entity, NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 	}
 	
 	{	int level2 = level+nestingIndent_swift;
@@ -1205,9 +1381,10 @@ void entityReferenceDefinition_swift( Entity entity, int level ) {
 		supertypeReferenceDefinition_swift(entity, level2);
 		
 		Linked_List effective_attrs = LISTcreate();
-		entityAttributeReferences_swift(entity, effective_attrs, level2);
+		entityAttributeReferences_swift(schema, entity, effective_attrs, level2);
 		entityReferenceInitializers_swift(entity, level2);
 		entityWhereRuleValidation_swift(entity, level2);
+
 		dictEntityDefinition_swift(entity, effective_attrs, level2);
 		LISTfree(effective_attrs);
 	}

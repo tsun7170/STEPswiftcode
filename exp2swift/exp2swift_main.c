@@ -5,6 +5,8 @@
 //  Created by Yoshida on 2020/04/12.
 //  Copyright © 2020 Tsutomu Yoshida, Minokamo, Japan. All rights reserved.
 //
+// see also: main() in stepcode/src/express/fedex.c
+
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -72,6 +74,7 @@ int Handle_Exp2swift_Args( int i, char * arg ) {
     return 1;
 }
 
+/// called from main() in stepcode/src/express/fedex.c
 void EXPRESSinit_init( void ) {
     exppp_alphabetize = true;
     EXPRESSbackend = EXPRESS_swift;

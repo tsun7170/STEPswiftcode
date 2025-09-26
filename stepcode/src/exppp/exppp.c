@@ -156,7 +156,7 @@ static void vwrap( const char * fmt, va_list args ) {
     char * p, * start = buf;
     int len;
 
-    vsprintf( buf, fmt, args );
+    vsnprintf( buf, sizeof buf, fmt, args );
 
     len = (int)strlen( buf );
 
@@ -216,7 +216,7 @@ static void vraw( const char * fmt, va_list args ) {
     char buf[10000];
     int len;
 
-    vsprintf( buf, fmt, args );
+    vsnprintf( buf, sizeof buf, fmt, args );
 
     len = (int)strlen( buf );
 
@@ -236,6 +236,16 @@ void raw( const char * fmt, ... ) {
 	va_start( args, fmt );
 	vraw( fmt, args );
 	va_end( args );
+}
+
+//*TY2025/09/25
+int never_wrap(void) {
+	int original = exppp_linelength;
+	exppp_linelength = 100000;
+	return original;
+}
+void restore_wrap(int original) {
+	exppp_linelength = original;
 }
 
 //*TY2020/07/11
@@ -278,7 +288,7 @@ void restoreWrapIndent(int captured_indent2) {
 	indent2 = captured_indent2;
 }
 
-void exppp_init() {
+void exppp_init(void) {
     static bool first_time = true;
 
     if( !first_time ) {
@@ -303,7 +313,7 @@ void exppp_ref_info( Symbol * s ) {
  */
 bool first_line = true;       /* if first line */
 
-void first_newline() {
+void first_newline(void) {
     if( first_line ) {
         first_line = false;
     } else {
@@ -438,7 +448,7 @@ void maybeBreak( int len, bool first ) {
  */
 void breakLongStr( const char * in ) {
     const char * iptr = in, * end;
-    unsigned int inlen = (uint)strlen( in );
+    unsigned int inlen = (unsigned int)strlen( in );
     bool first = true;
     /* used to ensure that we don't overrun the input buffer */
     end = in + inlen;
@@ -491,7 +501,7 @@ int prep_buffer( char * buf, int len ) {
 }
 
 /** \return length of string */
-int finish_buffer() {
+int finish_buffer(void) {
     exppp_buf = 0;
     curpos = old_curpos;
     error_sym.line = old_lineno;
@@ -500,7 +510,7 @@ int finish_buffer() {
 }
 
 /** \return 0 if successful */
-int prep_string() {
+int prep_string(void) {
     /* this should never happen */
     if( string_func_in_use ) {
         fprintf( stderr, "cannot generate EXPRESS string representations recursively!\n" );
@@ -525,7 +535,7 @@ int prep_string() {
     return 0;
 }
 
-char * finish_string() {
+char * finish_string(void) {
     char * b = ( char * )sc_realloc( exppp_buf, 1 + exppp_maxbuflen - exppp_buflen );
 
     if( b == 0 ) {
@@ -542,7 +552,7 @@ char * finish_string() {
 
 static FILE * oldfp;
 
-void prep_file() {
+void prep_file(void) {
     /* this can only happen if user calls output func while suspended */
     /* inside another output func both called from debugger */
     if( file_func_in_use ) {
@@ -557,7 +567,7 @@ void prep_file() {
     curpos = 1;
 }
 
-void finish_file() {
+void finish_file(void) {
     exppp_fp = oldfp;       /* reset back to original file */
     file_func_in_use = false;
 }

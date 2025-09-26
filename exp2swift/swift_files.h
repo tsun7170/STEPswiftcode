@@ -11,9 +11,12 @@
 
 #include <express/schema.h>
 
+#define AS_MARKDOWN_EXPRESS	true
+#define AS_PLAIN_EXPRESS false
+
 extern const int nestingIndent_swift;
-void beginExpress_swift(char* description);
-void endExpress_swift(void);
+void beginExpress_swift(char* description, bool asMarkDown);
+void endExpress_swift(bool asMarkDown);
 void indent_swift(int level);
 void indent_with_char(int level, char c);
 

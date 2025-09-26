@@ -375,7 +375,7 @@ Symbol * TYPE_get_symbol( Generic t ) {
 
 
 /** Initialize the Type module */
-void TYPEinitialize() {
+void TYPEinitialize(void) {
 	//*TY2020/08/26
 	current_filename = __FILE__;
 	yylineno = __LINE__;

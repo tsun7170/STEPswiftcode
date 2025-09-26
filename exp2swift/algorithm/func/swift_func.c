@@ -50,7 +50,7 @@ void FUNC_result_cache_var_swift( Schema schema, Function func, int level ) {
 	raw("//MARK: - function result cache\n");
 	
 	indent_swift(level);
-	raw("private var %s = SDAI.FunctionResultCache(", FUNC_cache_swiftName(func, buf));
+	raw("private let %s = SDAI.FunctionResultCache(", FUNC_cache_swiftName(func, buf));
 	wrap("controller: %s.schemaDefinition)\n", SCHEMA_swiftName(schema, buf));
 }
 
@@ -99,9 +99,9 @@ static void func_result_cache_lookup_swift( Schema schema, Function func, int le
 void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 	if(!nested) {
 		// EXPRESS summary
-		beginExpress_swift("FUNCTION DEFINITION");
+		beginExpress_swift("FUNCTION DEFINITION", AS_MARKDOWN_EXPRESS);
 		FUNC_out(func, level);
-		endExpress_swift();	
+		endExpress_swift(AS_MARKDOWN_EXPRESS);	
 	}
 	
 	// function head
@@ -123,11 +123,11 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 		char* sep = "";
 		raw("<");
 		LISTdo(generics, gtag, Type) {
-			wrap("%s%s: SDAIGenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION,buf));
+			wrap("%s%s: SDAIGenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 			sep=", ";
 		}LISTod;
 		LISTdo(aggregates, atag, Type) {
-			wrap("%s%s: SDAIAggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION,buf));
+			wrap("%s%s: SDAIAggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 			sep=", ";
 		}LISTod;
 		raw(">");
@@ -153,7 +153,7 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 		LISTdo(aggregates, atag, Type) {
 			Type aggr = atag->u.type->head;	
 			positively_wrap();
-			wrap("%s%s.ELEMENT == ",sep,TYPE_swiftName(atag,NULL,buf));
+			wrap("%s%s.ELEMENT == ",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 			TYPE_head_swift(func->superscope, TYPEget_base_type(aggr), WO_COMMENT, LEAF_OWNED);
 			sep = ", ";
 		}LISTod;

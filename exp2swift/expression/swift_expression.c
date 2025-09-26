@@ -113,7 +113,7 @@ void EXPRbounds_swift(Scope SELF, TypeBody tb, SwiftOutCommentOption in_comment 
 static void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * oe, bool can_wrap ) {
 		char buf[BUFSIZ];
 		Entity ent = SCOPEfind(SELF, (char*)canonical_dictName(oe->op2->symbol.name, buf), SCOPE_FIND_ENTITY);
-		type_optionality optional = EXPRresult_is_optional(oe->op1, CHECK_SHALLOW);
+		TypeOptionality optional = EXPRresult_is_optional(oe->op1, CHECK_SHALLOW);
 		
 		switch (optional) {
 			case no_optional:
@@ -139,7 +139,7 @@ static void EXPRopGroup_swift( Scope SELF, struct Op_Subexpression * oe, bool ca
 		wrap_if(can_wrap, ".GROUP_REF(");
 
 		if( ent != NULL ){
-			wrap_if(can_wrap, ENTITY_swiftName(ent, SELF, buf));
+			wrap_if(can_wrap, ENTITY_swiftName(ent, SELF, SWIFT_QUALIFIER, buf));
 		}
 		else {
 			// symbol not found; probably error in source
@@ -268,11 +268,11 @@ static void EXPRopIn_swift( Scope SELF, struct Op_Subexpression * oe, bool can_w
 			Generic x = SCOPEfind(SELF, (char*)canonical_dictName(sep+1, buf), SCOPE_FIND_TYPE | SCOPE_FIND_ENTITY);
 			if( x != NULL ){
 				if( DICT_type == OBJ_TYPE ){
-					wrap_if(YES_WRAP, "IS: %s.self", TYPE_swiftName((Type)x, SELF, buf) );
+					wrap_if(YES_WRAP, "IS: %s.self", TYPE_swiftName((Type)x, SELF, SWIFT_QUALIFIER, buf) );
 				}
 				else {
 					assert(DICT_type == OBJ_ENTITY);
-					wrap_if(YES_WRAP, "IS: %s.self", ENTITY_swiftName((Entity)x, SELF, buf) );
+					wrap_if(YES_WRAP, "IS: %s.self", ENTITY_swiftName((Entity)x, SELF, SWIFT_QUALIFIER, buf) );
 				}
 				
 			}
@@ -393,7 +393,7 @@ void EXPRopCONCAT__swift( Scope SELF1, Scope SELF2, struct Op_Subexpression * oe
 
 static void EXPR_aggregate_initializer_swift(Scope SELF, bool can_wrap, Expression e, Type target_type) {
 	if(LISTis_empty(e->u.list)){
-		wrap_if(can_wrap, "SDAI.EMPLY_AGGREGATE" );
+		wrap_if(can_wrap, "SDAI.EMPTY_AGGREGATE" );
 		return;
 	}
 	
@@ -464,7 +464,7 @@ static void EXPR_aggregate_initializer_swift(Scope SELF, bool can_wrap, Expressi
 
 
 //MARK: - expression return type check
-static type_optionality operator_returns_optional(struct Op_Subexpression * oe, bool deep) {
+static TypeOptionality operator_returns_optional(struct Op_Subexpression * oe, bool deep) {
 	switch( oe->op_code ) {
 			//MARK: - Arithmetic Op
 		case OP_NEGATE:
@@ -560,7 +560,7 @@ static type_optionality operator_returns_optional(struct Op_Subexpression * oe, 
 }
 
 //MARK: - optionality check
-type_optionality EXPRresult_is_optional(Expression e, bool deep) {
+TypeOptionality EXPRresult_is_optional(Expression e, bool deep) {
 	switch( TYPEis( e->type ) ) {
 		case indeterminate_:
 		case integer_:
@@ -581,9 +581,9 @@ type_optionality EXPRresult_is_optional(Expression e, bool deep) {
 			if( e->u_tag == expr_is_variable ){
 				return VARis_optional_by_large(e->u.variable)? yes_optional : no_optional;
 			}
-			else if( e->u_tag == expr_is_user_defined ){
+			else if( e->u_tag == expr_is_type_optionality ){
 				// expr is _TEMPVAR_
-				return (type_optionality)e->u.user_defined;
+				return (TypeOptionality)e->u.optionality;
 			}
 			return unknown;	// attribute of generic entity
 			
@@ -722,7 +722,7 @@ void EXPR__swift( Scope SELF, Expression e, Type target_type, bool paren, unsign
 		{
 			char buf[BUFSIZ];
 			if( (e->type->symbol.name != NULL) && (strcmp(e->symbol.name, e->type->symbol.name) == 0) ){
-				wrap_if(can_wrap, TYPE_swiftName(e->type, SELF, buf));
+				wrap_if(can_wrap, TYPE_swiftName(e->type, SELF, SWIFT_QUALIFIER, buf));
 			}
 			else {
 				// probably enum case label
@@ -749,7 +749,11 @@ void EXPR__swift( Scope SELF, Expression e, Type target_type, bool paren, unsign
 				emit_usedin_call(SELF, e, can_wrap);
 				break;
 			}
-			
+
+			if( e->u.funcall.function == FUNC_NVL ){
+				printf("emitting NVL call\n");
+			}
+
 			bool isfunc = (e->u.funcall.function->u_tag == scope_is_func);
 			assert(isfunc || (e->u.funcall.function->u_tag == scope_is_entity));
 			
@@ -1377,6 +1381,16 @@ void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, 
 		}
 		
 		if( !rhs_is_partial ){
+			//*TY2025/08/13
+			if( EXP_is_literal(rhs) ){
+				TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT, LEAF_OWNED);	// wrap with explicit type cast
+				raw(".FundamentalType(");
+
+				EXPR__swift(SELF, rhs, lhsType, paren, previous_op, can_wrap);
+				raw(")");
+				return;
+			}
+
 			//	raw("/*generic*/");
 			EXPR__swift(SELF, rhs, rhs->return_type, paren, previous_op, can_wrap);
 			return;

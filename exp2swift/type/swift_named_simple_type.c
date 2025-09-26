@@ -40,9 +40,9 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 	raw("*/\n");
 	
 	indent_swift(level);
-	raw( "public struct %s: ", TYPE_swiftName(type,type->superscope,buf));
+	raw( "public struct %s: ", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
 	wrap("%s__", SCHEMA_swiftName(schema, buf));
-	raw( "%s__type {\n", TYPE_swiftName(type,type->superscope,buf));
+	raw( "%s__type {\n", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
 
 	{
 		indent_swift(level2);
@@ -57,12 +57,12 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 		raw("public typealias SwiftType = Supertype.SwiftType\n");
 
 		indent_swift(level2);
-		raw("public static var typeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope,buf));
+		raw("public static let typeName: String = ");
+		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf));
 
 		indent_swift(level2);
-		raw("public static var bareTypeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,NO_QUALIFICATION,buf));
+		raw("public static let bareTypeName: String = ");
+		wrap("\"%s\"\n", TYPE_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 
 		indent_swift(level2);
 		raw("public var typeMembers: Set<SDAI.STRING> {\n");
@@ -137,7 +137,7 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 
 void namedSimpleTypeExtension_swift( Schema schema, Type type, int level) {
 	char typebuf[BUFSIZ];
-	const char* typename = TYPE_swiftName(type,type->superscope,typebuf);
+	const char* typename = TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
 
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);

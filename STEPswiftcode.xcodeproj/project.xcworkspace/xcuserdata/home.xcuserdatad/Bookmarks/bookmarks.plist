@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>top-level-items</key>
+	<array>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>18</string>
+					<key>EndingLineNumber</key>
+					<string>166</string>
+					<key>StartingColumnNumber</key>
+					<string>1</string>
+					<key>StartingLineNumber</key>
+					<string>166</string>
+					<key>Timestamp</key>
+					<string>776758814.8312891</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>exp2swift/swift_files.c</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>printOutTimeStamp</string>
+				<key>leading</key>
+				<string>	}
+	
+	</string>
+				<key>trailing</key>
+				<string>(filename);
+	printOutHeaderComment();
+
+</string>
+			</dict>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>29</string>
+					<key>EndingLineNumber</key>
+					<string>1355</string>
+					<key>StartingColumnNumber</key>
+					<string>5</string>
+					<key>StartingLineNumber</key>
+					<string>1355</string>
+					<key>Timestamp</key>
+					<string>776762197.299438</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>exp2swift/expression/swift_expression.c</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>EXPRassignment_rhs_swift</string>
+				<key>leading</key>
+				<string>}
+
+void </string>
+				<key>trailing</key>
+				<string>(bool resolve_generic, Scope SELF, Expression rhs, Type lhsType, bool paren, unsigned int previous_op, bool can_wrap) {
+	bool rhs_is_partial = TYPEis_partial_entity(rhs-&gt;return_type);
+	
+</string>
+			</dict>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -24,11 +24,11 @@
 #define YES_RESOLVING_GENERIC	true
 #define NO_RESOLVING_GENERIC	false
 
-typedef enum  {
-	no_optional, yes_optional, unknown
-} type_optionality;
+//typedef enum  {
+//	no_optional, yes_optional, unknown
+//} type_optionality;
 
-extern type_optionality EXPRresult_is_optional(Expression e, bool deep);
+extern TypeOptionality EXPRresult_is_optional(Expression e, bool deep);
 extern void EXPRbounds_swift( Scope SELF, TypeBody tb, SwiftOutCommentOption in_comment );
 extern void EXPR_swift( Scope SELF, Expression e, Type target_type, bool paren);
 extern void EXPRaggregate_init_swift(bool resolve_generic, Scope SELF, Expression rhs, Type lhsType, bool leaf_owned );

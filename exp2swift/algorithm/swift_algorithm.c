@@ -104,7 +104,7 @@ void ALGvarnize_args_swift( Linked_List args, int level ) {
 
 void ALGscope_declarations_swift(Schema schema, Scope s, int level ) {
 	SCOPEtypeList_swift(schema, s, level);
-	SCOPEentityList_swift(s, level);
+	SCOPEentityList_swift(schema, s, level);
 	SCOPEalgList_swift(schema, s, level);
 
 	Linked_List consts = LISTcreate();

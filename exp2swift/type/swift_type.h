@@ -24,10 +24,13 @@ typedef enum {
 #define LEAF_OWNED	false
 #define LEAF_UNOWNED	true
 
-extern int accumulate_qualification(Scope target, Scope current, char buf[BUFSIZ]);
+#define SWIFT_QUALIFIER	"."
+#define DOCC_QUALIFIER	"/"
 
-extern const char* TYPE_canonicalName( Type t, Scope current, char buf[BUFSIZ] );
-extern const char* TYPE_swiftName( Type t, Scope current, char buf[BUFSIZ]  );
+extern int accumulate_qualification(Scope target, Scope current, const char* delimiter, char buf[BUFSIZ]);
+
+extern const char* TYPE_canonicalName( Type t, Scope current, const char* delimiter, char buf[BUFSIZ] );
+extern const char* TYPE_swiftName( Type t, Scope current, const char* delimiter, char buf[BUFSIZ]  );
 extern char TYPE_swiftNameInitial( Type t );
 extern const char* enumCase_swiftName( Expression expr, char buf[BUFSIZ] );
 extern const char* selectCase_swiftName( Type selection, char buf[BUFSIZ] );
@@ -42,7 +45,7 @@ extern const char* builtinTYPE_body_swiftname( Type t );
 extern const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption in_comment, bool leaf_unowned, char buf[BUFSIZ]);
 
 extern bool TYPEis_swiftAssignable(Type lhstype, Type rhstype);
-extern bool TYPEis_observable_aggregate(Type t);
+extern bool TYPEis_entityYieldingAggregate(Type t);
 
 extern const char* whereRuleLabel_swiftName( Where w, char buf[BUFSIZ] );
 extern void TYPEwhereDefinitions_swift( Scope scope, int level );

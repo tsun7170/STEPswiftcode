@@ -33,7 +33,7 @@ static void assign_tempvar_symbol(Expression e, int*/*inout*/ tempvar_id){
 	assert(*tempvar_id > 0);
 	
 	char buf[BUFSIZ];
-	sprintf(buf, "_temp%d",*tempvar_id);
+	snprintf(buf,BUFSIZ, "_temp%d",*tempvar_id);
 	assert(strlen(buf) < BUFSIZ);
 	
 	char* symbol_name = sc_malloc(strlen(buf)+1);
@@ -55,8 +55,8 @@ static Expression create_temp_expression(int*/*inout*/ tempvar_id, Type target_t
 	assign_tempvar_symbol(simplified, tempvar_id);
 	simplified->type = Type_Identifier;
 	simplified->return_type = target_type;
-	simplified->u.user_defined = (Generic)EXPRresult_is_optional(definition, CHECK_DEEP);
-	simplified->u_tag = expr_is_user_defined;
+	simplified->u.optionality = EXPRresult_is_optional(definition, CHECK_DEEP);
+	simplified->u_tag = expr_is_type_optionality;
 	
 	LISTadd_last_marking_aux(tempvars, definition, simplified);
 	return simplified;

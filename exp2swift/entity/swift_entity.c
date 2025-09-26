@@ -24,12 +24,10 @@
 #include "swift_symbol.h"
 
 
-const char* ENTITY_swiftName( Entity e, Scope current, char buf[BUFSIZ] ) {
-	int qual_len = accumulate_qualification(e->superscope, current, buf);
-//	char buf2[BUFSIZ];
-//	snprintf(&buf[qual_len], BUFSIZ-qual_len, "e%s", canonical_swiftName(e->symbol.name, buf2));
-//	return buf;
-	return as_entitySwiftName_n(e->symbol.name, &buf[qual_len], BUFSIZ-qual_len);
+const char* ENTITY_swiftName( Entity e, Scope current, const char* delimiter, char buf[BUFSIZ] ) {
+	int qual_len = accumulate_qualification(e->superscope, current, delimiter, buf);
+	as_entitySwiftName_n(e->symbol.name, &buf[qual_len], BUFSIZ-qual_len);
+	return buf;
 }
 
 const char* as_entitySwiftName_n( const char* symbol_name, char* buf, int bufsize ) {
@@ -51,7 +49,7 @@ const char* ENTITY_canonicalName( Entity e, char buf[BUFSIZ] ) {
 
 const char* ENTITY_swiftProtocolName( Entity e, char buf[BUFSIZ]) {
 	char buf2[BUFSIZ];
-	snprintf(buf, BUFSIZ, "%s_protocol",ENTITY_swiftName(e, NO_QUALIFICATION, buf2));
+	snprintf(buf, BUFSIZ, "%s_protocol",ENTITY_swiftName(e, NO_QUALIFICATION, SWIFT_QUALIFIER, buf2));
 	return buf;
 }
 
@@ -78,7 +76,7 @@ const char* dynamicAttribute_swiftProtocolName( Variable original, char buf[BUFS
 	char buf2[BUFSIZ];
 	char buf3[BUFSIZ];
 	snprintf(buf, BUFSIZ, "%s__%s__provider", 
-					 ENTITY_swiftName(original->defined_in, NO_QUALIFICATION, buf2), 
+					 ENTITY_swiftName(original->defined_in, NO_QUALIFICATION, SWIFT_QUALIFIER, buf2), 
 					 attribute_swiftName(original,buf3));
 	return buf;
 }
@@ -112,7 +110,7 @@ extern bool attribute_need_observer( Variable attr ) {
 		return attribute_need_observer( VARget_redeclaring_attr(attr) );
 	}
 	
-	if( VARis_overriden(attr)) {
+	if( VARis_overridden(attr)) {
 		DictionaryEntry de;
 		Variable overrider;
 		DICTdo_init(attr->overriders, &de);
@@ -215,9 +213,9 @@ static void attribute_out( Entity leaf, Variable v, int level ) {
 			//		raw("-- OVERRIDING ENTITY: %s\n",  _VARget_redeclaring_entity_name_string(v));
 			raw("-- OVERRIDING ENTITY: %s\n", ENTITYget_name(VARget_redeclaring_attr(v)->defined_in) );
 		}
-		if( VARis_overriden(v)) {
+		if( VARis_overridden(v)) {
 			indent_swift(level2);
-			raw("-- possibly overriden by\n");
+			raw("-- possibly overridden by\n");
 			Variable effective_definition = ENTITYfind_attribute_effective_definition(leaf, ATTRget_name_string(v));
 			DictionaryEntry de;
 			Variable overrider;
@@ -293,12 +291,12 @@ static void listAllAttributes( Entity leaf, Entity entity, int level ) {
 
 //MARK: - main entry point
 
-void ENTITY_swift( Entity entity, int level, 
+void ENTITY_swift( Schema schema, Entity entity, int level,
 									Linked_List dynamic_attrs, Linked_List attr_overrides ) {
 	// EXPRESS summary
-	beginExpress_swift("ENTITY DEFINITION");
+	beginExpress_swift("ENTITY DEFINITION", AS_PLAIN_EXPRESS);
 	ENTITY_out(entity, level);
-	endExpress_swift();	
+	endExpress_swift(AS_PLAIN_EXPRESS);	
 	
 	raw("\n//MARK: - ALL DEFINED ATTRIBUTES\n/*\n");
 	entity_no = 0;
@@ -309,7 +307,7 @@ void ENTITY_swift( Entity entity, int level,
 	partialEntityDefinition_swift(entity, level, attr_overrides, dynamic_attrs);
 	
 	// entity reference definition
-	entityReferenceDefinition_swift(entity, level);
+	entityReferenceDefinition_swift(schema, entity, level);
 }
 
 

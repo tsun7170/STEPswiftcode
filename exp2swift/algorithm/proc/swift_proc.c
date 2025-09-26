@@ -40,9 +40,9 @@ const char* PROCcall_swiftName( Statement pcall, char buf[BUFSIZ] ) {
 void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 	if(!nested) {
 		// EXPRESS summary
-		beginExpress_swift("PROCEDURE DEFINITION");
+		beginExpress_swift("PROCEDURE DEFINITION", AS_MARKDOWN_EXPRESS);
 		PROC_out(proc, level);
-		endExpress_swift();	
+		endExpress_swift(AS_MARKDOWN_EXPRESS);	
 	}
 	
 		// function head
@@ -64,11 +64,11 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 			char* sep = "";
 			raw("<");
 			LISTdo(generics, gtag, Type) {
-				wrap("%s%s: SDAIGenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION,buf));
+				wrap("%s%s: SDAIGenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 				sep=", ";
 			}LISTod;
 			LISTdo(aggregates, atag, Type) {
-				wrap("%s%s: SDAIAggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION,buf));
+				wrap("%s%s: SDAIAggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 				sep=", ";
 			}LISTod;
 			raw(">");
@@ -87,7 +87,7 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 			LISTdo(aggregates, atag, Type) {
 				Type base = atag->u.type->head;	//hack!
 				positively_wrap();
-				wrap("%s%s.Element == ",sep,TYPE_swiftName(atag,NULL,buf));
+				wrap("%s%s.Element == ",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 				TYPE_head_swift(proc->superscope, base, NOT_IN_COMMENT, LEAF_OWNED);
 				sep = ", ";
 			}LISTod;

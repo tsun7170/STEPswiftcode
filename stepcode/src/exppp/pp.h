@@ -35,6 +35,9 @@ extern void positively_wrap(void);
 extern void aggressively_wrap(void);
 extern int captureWrapIndent(void);
 extern void restoreWrapIndent(int captured_indent2);
+//*TY2025/09/25
+int never_wrap(void);
+void restore_wrap(int original);
 
 
 /** convert a real into our preferred form compatible with 10303-11

@@ -381,12 +381,20 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
 
                 /* should make this data-driven! */
                 if( func == FUNC_NVL ) {
-                    EXPresolve( ( Expression )LISTget_first( expr->u.funcall.list ), scope, typecheck );
-                    EXPresolve( ( Expression )LISTget_second( expr->u.funcall.list ), scope, typecheck );
+									Expression arg1 = ( Expression )LISTget_first( expr->u.funcall.list );
+									Expression arg2 = ( Expression )LISTget_second( expr->u.funcall.list );
+
+                    EXPresolve( arg1, scope, typecheck );
+                    EXPresolve( arg2, scope, typecheck );
 									//*TY2020/12/30
-									Type arg1type = (( Expression )LISTget_first( expr->u.funcall.list ))->return_type;
+									Type arg1type = arg1->return_type;
 									expr->return_type = arg1type;
-									
+
+									//*TY2025/08/13
+									if( EXP_is_literal(arg2) ) {
+										arg2->return_type = arg1type;
+									}
+
                     func_args_checked = true;
                 }
 
@@ -1687,7 +1695,7 @@ static int WHEREresolve( Linked_List list, Scope scope, int need_self ) {
     }
 }
 
-struct tag * TAGcreate_tags() {
+struct tag * TAGcreate_tags(void) {
     extern int tag_count;
 
     return( ( struct tag * )calloc( tag_count, sizeof( struct tag ) ) );
