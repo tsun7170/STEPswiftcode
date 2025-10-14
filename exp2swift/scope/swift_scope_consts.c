@@ -25,7 +25,10 @@
 
 
 static void SCOPEconst_swift(Scope current, char* access, Variable v, int level ) {
-	
+
+	indent_swift(level);
+	raw("/// constant value definition\n");
+
 	/* print attribute name */
 	indent_swift(level);
 	{
@@ -45,8 +48,7 @@ static void SCOPEconst_swift(Scope current, char* access, Variable v, int level 
 			raw( " = SDAI.UNWRAP(" );
 		}
 		aggressively_wrap();
-		int oldwrap = captureWrapIndent();
-//		EXPR_swift( NULL, v->initializer, NO_PAREN );
+		int oldwrap = captureWrapIndent(0);
 		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, current, v->initializer, v->type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 		restoreWrapIndent(oldwrap);
 	}
@@ -58,7 +60,6 @@ static void SCOPEconst_swift(Scope current, char* access, Variable v, int level 
 void SCOPEconstList_swift( bool nested, Scope s, Linked_List orderedConsts, int level ) {
 	Variable var;
 	DictionaryEntry de;
-//	Linked_List orderedConsts = NULL;
 	int num_consts = 0;
 	
 	DICTdo_type_init( s->symbol_table, &de, OBJ_VARIABLE );
@@ -66,14 +67,7 @@ void SCOPEconstList_swift( bool nested, Scope s, Linked_List orderedConsts, int 
 		if( !VARis_constant(var) ) continue;
 		++num_consts;
 		
-//		if( !orderedConsts ) {
-//			orderedConsts = LISTcreate();
-//			LISTadd_first( orderedConsts, var );
-//		} 
-//		else {
-			/* sort by v->offset */
-			SCOPElocals_order( orderedConsts, var );
-//		}
+		SCOPElocals_order( orderedConsts, var );
 	}
 
 	if( num_consts == 0 )return;

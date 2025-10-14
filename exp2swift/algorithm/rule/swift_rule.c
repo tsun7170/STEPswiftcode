@@ -70,7 +70,12 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		
 		//rule body
 		ALGscope_declarations_swift(schema, rule, level2);
-		STMTlist_swift(rule, rule->u.rule->body, &tempvar_id, level2);
+
+		if( !LISTis_empty(rule->u.rule->body) ){
+			indent_swift(level2);
+			raw("//BODY\n");
+			STMTlist_swift(rule, rule->u.rule->body, &tempvar_id, level2);
+		}
 		
 		//where rules
 		raw("\n");
@@ -83,7 +88,7 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		LISTdo(where_rules, where, Where){
 
 			Linked_List tempvars;
-			Expression simplified = EXPR_decompose(where->expr, Type_Logical, &tempvar_id, &tempvars);
+			Expression simplified = EXPR_decompose(schema, where->expr, Type_Logical, &tempvar_id, &tempvars);
 			EXPR_tempvars_swift(schema, tempvars, level2);
 			
 			char buf[BUFSIZ];
@@ -101,15 +106,6 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		raw("\n");
 		indent_swift(level2);
 		raw("return _conformance\n");
-//		char* sep = " ";
-//		LISTdo(where_rules, where, Where){
-//			raw("%s",sep);
-//			
-//			char buf[BUFSIZ];
-//			wrap("%s",whereRuleLabel_swiftName(where, buf));
-//			sep = " && ";
-//		}LISTod;
-//		raw("\n");
 	}
 	
 	indent_swift(level);

@@ -33,7 +33,7 @@ extern void wrap_provisionally(int next_len);
 extern void force_wrap(void);
 extern void positively_wrap(void);
 extern void aggressively_wrap(void);
-extern int captureWrapIndent(void);
+extern int captureWrapIndent(int offset);
 extern void restoreWrapIndent(int captured_indent2);
 //*TY2025/09/25
 int never_wrap(void);

@@ -98,12 +98,16 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		raw( "public var rep: Supertype\n" );
 
 		indent_swift(level2);
+		raw("/// initialize from the fundamental type value\n");
+		indent_swift(level2);
 		raw( "public init(fundamental: FundamentalType) {\n" );
 		indent_swift(level2+nestingIndent_swift);
 		raw( "rep = Supertype(fundamental: fundamental)\n" );
 		indent_swift(level2);
 		raw("}\n\n");
 		
+		indent_swift(level2);
+		raw("/// initialize from SDAI generic type value\n");
 		indent_swift(level2);
 		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
@@ -139,8 +143,7 @@ void typeAliasExtension_swift( Schema schema, Type type, Type original, int leve
 	indent_swift(level);
 	raw( "public protocol %s__%s__subtype: ", schemaname, typename);
 	wrap("%s__%s__type\n", schemaname, typename);
-//	indent_swift(level);
-//	wrap("where Supertype: %s__%s__type\n", schemaname, typename);
+
 	indent_swift(level);
 	raw( "{}\n");
 }

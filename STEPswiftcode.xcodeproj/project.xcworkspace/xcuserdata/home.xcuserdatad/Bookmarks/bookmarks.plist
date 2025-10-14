@@ -10,59 +10,15 @@
 				<key>location-parameters</key>
 				<dict>
 					<key>EndingColumnNumber</key>
-					<string>18</string>
+					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>166</string>
+					<string>1468</string>
 					<key>StartingColumnNumber</key>
-					<string>1</string>
+					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>166</string>
+					<string>1467</string>
 					<key>Timestamp</key>
-					<string>776758814.8312891</string>
-				</dict>
-				<key>rebasable-url</key>
-				<dict>
-					<key>base</key>
-					<string>workspace</string>
-					<key>payload</key>
-					<dict>
-						<key>relative-path</key>
-						<string>exp2swift/swift_files.c</string>
-					</dict>
-				</dict>
-			</dict>
-			<key>text-context</key>
-			<dict>
-				<key>focused</key>
-				<string>printOutTimeStamp</string>
-				<key>leading</key>
-				<string>	}
-	
-	</string>
-				<key>trailing</key>
-				<string>(filename);
-	printOutHeaderComment();
-
-</string>
-			</dict>
-			<key>type</key>
-			<string>bookmark</string>
-		</dict>
-		<dict>
-			<key>destination</key>
-			<dict>
-				<key>location-parameters</key>
-				<dict>
-					<key>EndingColumnNumber</key>
-					<string>29</string>
-					<key>EndingLineNumber</key>
-					<string>1355</string>
-					<key>StartingColumnNumber</key>
-					<string>5</string>
-					<key>StartingLineNumber</key>
-					<string>1355</string>
-					<key>Timestamp</key>
-					<string>776762197.299438</string>
+					<string>782122536.177254</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -78,15 +34,195 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>EXPRassignment_rhs_swift</string>
+				<string>void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, Type lhsType, bool paren, unsigned int previous_op, bool can_wrap) {
+</string>
 				<key>leading</key>
 				<string>}
 
-void </string>
+</string>
 				<key>trailing</key>
-				<string>(bool resolve_generic, Scope SELF, Expression rhs, Type lhsType, bool paren, unsigned int previous_op, bool can_wrap) {
-	bool rhs_is_partial = TYPEis_partial_entity(rhs-&gt;return_type);
+				<string>	bool rhs_is_partial = TYPEis_partial_entity(rhs-&gt;return_type);
 	
+	if( (!rhs_is_partial) &amp;&amp; (lhsType == NULL) ) {
+</string>
+			</dict>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>24</string>
+					<key>EndingLineNumber</key>
+					<string>170</string>
+					<key>StartingColumnNumber</key>
+					<string>23</string>
+					<key>StartingLineNumber</key>
+					<string>170</string>
+					<key>Timestamp</key>
+					<string>781514874.163658</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>exp2swift/swift_files.c</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string> </string>
+				<key>leading</key>
+				<string>
+//	if(streq(filename,"applied_area")) {
+//		printf("DEBUG BREAK</string>
+				<key>trailing</key>
+				<string>POINT\n");
+//	}
+}
+</string>
+			</dict>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>820</string>
+					<key>StartingColumnNumber</key>
+					<string>0</string>
+					<key>StartingLineNumber</key>
+					<string>819</string>
+					<key>Timestamp</key>
+					<string>782122170.948626</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>exp2swift/expression/swift_expression.c</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>		}
+</string>
+				<key>leading</key>
+				<string>				wrap_if(can_wrap, canonical_swiftName(e-&gt;symbol.name,buf) );
+			}
+</string>
+				<key>trailing</key>
+				<string>			break;
+
+			//MARK: entity_
+</string>
+			</dict>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>1174</string>
+					<key>StartingColumnNumber</key>
+					<string>0</string>
+					<key>StartingLineNumber</key>
+					<string>1173</string>
+					<key>Timestamp</key>
+					<string>782122314.546187</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>exp2swift/expression/swift_expression.c</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>				EXPRopDot_swift( SELF, oe, paren, can_wrap );
+</string>
+				<key>leading</key>
+				<string>			//MARK:OP_DOT
+			case OP_DOT:
+</string>
+				<key>trailing</key>
+				<string>				break;
+				
+			//MARK:OP_GROUP
+</string>
+			</dict>
+			<key>type</key>
+			<string>bookmark</string>
+		</dict>
+		<dict>
+			<key>destination</key>
+			<dict>
+				<key>location-parameters</key>
+				<dict>
+					<key>EndingColumnNumber</key>
+					<string>0</string>
+					<key>EndingLineNumber</key>
+					<string>1179</string>
+					<key>StartingColumnNumber</key>
+					<string>0</string>
+					<key>StartingLineNumber</key>
+					<string>1178</string>
+					<key>Timestamp</key>
+					<string>782122314.5458241</string>
+				</dict>
+				<key>rebasable-url</key>
+				<dict>
+					<key>base</key>
+					<string>workspace</string>
+					<key>payload</key>
+					<dict>
+						<key>relative-path</key>
+						<string>exp2swift/expression/swift_expression.c</string>
+					</dict>
+				</dict>
+			</dict>
+			<key>text-context</key>
+			<dict>
+				<key>focused</key>
+				<string>				EXPRopGroup_swift( SELF, oe, paren, can_wrap );
+</string>
+				<key>leading</key>
+				<string>			//MARK:OP_GROUP
+			case OP_GROUP:
+</string>
+				<key>trailing</key>
+				<string>				break;
+				
+				
 </string>
 			</dict>
 			<key>type</key>

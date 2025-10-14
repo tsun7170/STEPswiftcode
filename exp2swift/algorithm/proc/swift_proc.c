@@ -77,6 +77,10 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 		// parameters
 		raw("(");
 		ALGargs_swift( proc->superscope, NO_FORCE_OPTIONAL, proc->u.proc->parameters, YES_DROP_SINGLE_LABEL, level );
+	if( LISTget_length(proc->u.proc->parameters) > 1 ){
+		raw("\n");
+		indent_swift(level);
+	}
 		raw(")");
 				
 		if(!LISTis_empty(aggregates)) {
@@ -99,6 +103,9 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 			
 			ALGvarnize_args_swift(proc->u.proc->parameters, level2);
 			ALGscope_declarations_swift(schema, proc, level2);
+
+			indent_swift(level2);
+			raw("//BODY\n");
 			int tempvar_id = 1;
 			STMTlist_swift(proc, proc->u.proc->body, &tempvar_id, level2);
 		}

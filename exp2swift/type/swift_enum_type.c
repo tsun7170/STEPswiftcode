@@ -185,12 +185,16 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("public var asFundamentalType: FundamentalType { return self }\n\n");
 
 		indent_swift(level2);
+		raw("/// initialize from the fundamental type value\n");
+		indent_swift(level2);
 		raw("public init(fundamental: FundamentalType) {\n");
 		indent_swift(level2+nestingIndent_swift);
 		raw("self = fundamental\n");
 		indent_swift(level2);
 		raw("}\n\n" );
 
+		indent_swift(level2);
+		raw("/// initialize from SDAI generic type value\n");
 		indent_swift(level2);
 		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
@@ -209,6 +213,8 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("public static let bareTypeName: String = ");
 		wrap("\"%s\"\n\n", TYPE_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 
+		indent_swift(level2);
+		raw("/// initialize from ISO 10303-21 exchange structure untyped parameters\n");
 		indent_swift(level2);
 		raw("public	init?(p21untypedParam: P21Decode.ExchangeStructure.UntypedParameter, from exchangeStructure: P21Decode.ExchangeStructure) {\n");
 		{	int level3 = level2 + nestingIndent_swift;
@@ -240,7 +246,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 			}
 			
 			indent_swift(level3);
-			raw("case .rhsOccurenceName(let rhsname):\n");
+			raw("case .rhsOccurrenceName(let rhsname):\n");
 			{	int level4 = level3 + nestingIndent_swift; int level5 = level4 + nestingIndent_swift;
 				
 				indent_swift(level4);
@@ -290,6 +296,8 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw("}\n\n");
 
+		indent_swift(level);
+		raw("/// initialize from ISO 10303-21 exchange structure omitted parameters\n");
 		indent_swift(level2);
 		raw("public init(p21omittedParamfrom exchangeStructure: P21Decode.ExchangeStructure) {\n");
 		indent_swift(level2+nestingIndent_swift);

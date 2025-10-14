@@ -61,7 +61,7 @@ static void func_result_cache_lookup_swift( Schema schema, Function func, int le
 	
 	//
 	indent_swift(level);
-	raw("// CACHE LOOKUP\n");
+	raw("//CACHE LOOKUP\n");
 
 	//
 	indent_swift(level);
@@ -134,10 +134,14 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 	}
 	
 	// parameters
-	raw("(");
+	raw("( ");
 	ALGargs_swift( func->superscope, NO_FORCE_OPTIONAL, func->u.func->parameters, YES_DROP_SINGLE_LABEL, level );
-	raw(") ");
-	
+	if( LISTget_length(func->u.func->parameters) > 1 ){
+		raw("\n");
+		indent_swift(level);
+	}
+	raw(" ) ");
+
 	// return type
 	aggressively_wrap();
 	bool return_optional = FUNCreturn_indeterminate(func);
@@ -170,6 +174,9 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 		
 		ALGvarnize_args_swift(func->u.func->parameters, level2);
 		ALGscope_declarations_swift(schema, func, level2);
+
+		indent_swift(level2);
+		raw("//BODY\n");
 		int tempvar_id = 1;
 		STMTlist_swift(func, func->u.func->body, &tempvar_id, level2);
 	}

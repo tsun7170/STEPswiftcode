@@ -101,7 +101,7 @@ typedef Literal         Aggregate_Literal, Integer_Literal,
         Binary_Literal;
 
 typedef enum  {
-	no_optional, yes_optional, unknown
+	no_optional, yes_optional, unknown_optional
 } TypeOptionality;
 
 /****************/

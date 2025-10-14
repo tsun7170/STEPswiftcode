@@ -85,12 +85,16 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 		raw( "public var rep: Supertype\n\n" );
 		
 		indent_swift(level2);
+		raw("/// initialize from the fundamental type value\n");
+		indent_swift(level2);
 		raw( "public init(fundamental: FundamentalType) {\n" );
 		indent_swift(level2+nestingIndent_swift);
 		raw( "rep = Supertype(fundamental: fundamental)\n" );
 		indent_swift(level2);
 		raw("}\n\n");
 	
+		indent_swift(level2);
+		raw("/// initialize from SDAI generic type value\n");
 		indent_swift(level2);
 		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
@@ -142,8 +146,6 @@ void namedSimpleTypeExtension_swift( Schema schema, Type type, int level) {
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);
 
-//	char buf[BUFSIZ];
-
 	raw("\n\n//MARK: - DEFINED TYPE HIERARCHY\n");
 
 	indent_swift(level);
@@ -153,8 +155,7 @@ void namedSimpleTypeExtension_swift( Schema schema, Type type, int level) {
 	indent_swift(level);
 	raw( "public protocol %s__%s__subtype: ", schemaname, typename);
 	wrap("%s__%s__type\n", schemaname, typename);
-//	indent_swift(level);
-//	raw( "where Supertype == %s\n", TYPE_swiftName(type,schema->superscope,buf));
+
 	indent_swift(level);
 	raw( "{}\n");
 }

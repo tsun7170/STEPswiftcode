@@ -167,7 +167,7 @@ static void openSwiftFile(Schema s, const char* category, char initial, const ch
 	printOutTimeStamp(filename);
 	printOutHeaderComment();
 
-//	if(streq(filename,"universal_pair")) {
+//	if(streq(filename,"applied_area")) {
 //		printf("DEBUG BREAK POINT\n");
 //	}
 }

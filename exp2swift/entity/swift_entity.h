@@ -14,6 +14,7 @@
 #include "../express/express.h"
 
 extern const char* ENTITY_swiftName( Entity e, Scope current, const char* delimiter, char buf[BUFSIZ] );
+extern const char* ENTITY_REFTYPE_swiftName( Entity e, Scope current, const char* delimiter, char buf[BUFSIZ] );
 extern const char* as_entitySwiftName_n( const char* symbol_name, char* buf, int bufsize );
 extern char 				ENTITY_swiftNameInitial( Entity e);
 extern const char* ENTITY_canonicalName( Entity e, char buf[BUFSIZ] );
@@ -28,7 +29,6 @@ extern const char* partialEntityAttribute_swiftName( Variable attr, char buf[BUF
 extern const char* dynamicAttribute_swiftProtocolName( Variable original, char buf[BUFSIZ] );
 extern bool attribute_need_observer( Variable attr ); 
 
-//extern const char* whereRuleLabel_swiftName( Where w, char buf[BUFSIZ] );
 extern const char* uniqueRuleLabel_swiftName( int serial, Linked_List unique, char buf[BUFSIZ] );
 
 
@@ -38,7 +38,7 @@ extern void ENTITY_swiftProtocol(Schema schema, Entity e, int level, Linked_List
 
 // swift_entity_partial.c
 extern void partialEntityDefinition_swift
- ( Entity entity, int level, Linked_List attr_overrides, Linked_List dynamic_attrs );
+ ( Schema schema, Entity entity, int level, Linked_List attr_overrides, Linked_List dynamic_attrs );
 
 extern void explicitDynamicAttributeProtocolDefinition_swift
  (Schema schema, Entity entity, Variable attr, int level);
