@@ -196,7 +196,7 @@ static void fixupPartialComplexEntityAttributes_swift(Entity entity, Linked_List
 	if( LISTis_empty(dynamic_attrs) )return;
 	
 	indent_swift(level);
-	raw("//PARTIAL COMPLEX ENTITY SUPPORT\n");	
+	raw("//PARTIAL COMPLEX ENTITY SUPPORT - to fill up the explicit attribute values with the baseComplex's redeclared derived attribute value so that the partial complex entities constructed from the baseComplex can provide the consistent attribute values\n");	
 	indent_swift(level);
 	raw("final public override class func fixupPartialComplexEntityAttributes(partialComplex: SDAI.ComplexEntity, baseComplex: SDAI.ComplexEntity) {\n");
 	{
@@ -1006,7 +1006,7 @@ static void p21Constructor( Entity entity, int level ) {
 		indent_swift(level2);
 		raw("guard parameters.count == numParams\n"); 
 		indent_swift(level2);
-		raw("else { exchangeStructure.error = \"number of p21 parameters(\\(parameters.count)) are different from expected(\\(numParams)) for entity(\\(Self.entityName)) constructor\"; return nil }\n\n");
+		raw("else { exchangeStructure.error = \"number of p21 parameters(\\(parameters.count)) are different from expected(\\(numParams)) for partial entity(\\(Self.entityName)) constructor\"; return nil }\n\n");
 		
 		int paramNo = 0;				
 		LISTdo(params, attr, Variable) {
@@ -1037,9 +1037,10 @@ static void p21Constructor( Entity entity, int level ) {
 					paramNo
 					);
 			indent_swift(level2);
-			raw("else { exchangeStructure.add(errorContext: \"while recovering parameter #%d for entity(\\(Self.entityName)) constructor\"); return nil }\n\n",
-					paramNo
-					);
+			raw("else { exchangeStructure.add(errorContext: \"while recovering parameter [%d]%s for partial entity(\\(Self.entityName)) constructor\"); return nil }\n\n",
+					paramNo,
+          variable_swiftName(attr, buf)
+          );
 			++paramNo;
 		}LISTod;
 				
@@ -1107,13 +1108,19 @@ void partialEntityDefinition_swift
 	}
 
 	 {	char buf[BUFSIZ];
-		 
+
+     Linked_List params = ENTITYget_constructor_params(entity);
+
 		 indent_swift(level);
 		 raw("@_documentation(visibility:public)\n");
 		 indent_swift(level);
-		 wrap("public final class %s : SDAI.PartialEntity, @unchecked Sendable {\n",
-					partialEntity_swiftName(entity, buf)
-					);
+     wrap("public final class %s : SDAI.PartialEntity",
+          partialEntity_swiftName(entity, buf)
+          );
+     if( LISTget_length(params) == 0 ){
+       wrap(", InitializableByVoid");
+     }
+     wrap(", @unchecked Sendable {\n");
 	 }
 	 
 	 {

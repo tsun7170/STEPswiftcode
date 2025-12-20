@@ -408,7 +408,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "4FCA80E5-759A-41B1-9A50-FD2E71569E8A"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             condition = "num_params &gt; 3"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
@@ -434,6 +434,22 @@
             startingLineNumber = "168"
             endingLineNumber = "168"
             landmarkName = "openSwiftFile(s, category, initial, filename)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "A56393BB-7667-4AA2-9B28-035E4074F085"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "exp2swift/entity/swift_entity_reference.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1227"
+            endingLineNumber = "1227"
+            landmarkName = "entityReferenceInitializers_swift(entity, level)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>

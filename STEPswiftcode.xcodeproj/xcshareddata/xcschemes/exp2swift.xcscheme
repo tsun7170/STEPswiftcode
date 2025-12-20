@@ -60,8 +60,12 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "ap242/ap242ed2_mim_lf_v1.101.TY.exp"
+            argument = "ap242/ap242ed2_mim_lf_v1.101_TY.exp"
             isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "ap242/ap242ed2_mim_lf_v1.101.TY.exp"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "debug/debug1.exp"
@@ -76,12 +80,17 @@
          <EnvironmentVariable
             key = "EXPRESS_PATH"
             value = "$(SRCROOT)/schema/"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "EXPRESS_PATH"
             value = "/Users/home/Dropbox/STEP/STEPcode/StepSchema/StepSchema/"
             isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "EXPRESS_PATH"
+            value = "$(SRCROOT)/../SwiftSDAIap242/schema/"
+            isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
       <AdditionalOptions>

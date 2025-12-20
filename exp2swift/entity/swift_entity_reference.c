@@ -128,6 +128,17 @@ static void supertypeReferenceDefinition_swift(Entity entity, int level ) {
 	}LISTod;
 }
 
+static bool ENTITY_is_initializable_by_void(Entity entity) {
+  Linked_List supertypes = ENTITYget_super_entity_list(entity);
+
+  LISTdo( supertypes, super, Entity ) {
+    Linked_List params = ENTITYget_constructor_params(super);
+    if( LISTget_length(params) > 0 ) return false;
+  }LISTod;
+
+  return true;
+}
+
 static void ENTITY_partial_out(Schema schema, Entity entity) {
 	raw("\n");
 	raw("- PARTIAL ENTITY:\n");
@@ -788,7 +799,9 @@ static void inverseAggregateAttributeGetter_swift(Entity entity, Variable attr, 
 		 if let cached = cachedValue(derivedAttributeName:"<attr>") {
 			 return cached.value as! <attr_type>
 		 }
-		 let swiftValue = <attr_type>.SwiftType(self.referencingEntities(for: \<source>.<attr>))
+     let keypath = \<source>.<attr>
+     let entities = self.referencingEntities(for: keypath)
+		 let swiftValue = <attr_type>.SwiftType(entities)
 		 let value = <attr_type>(from: swiftValue, bound1: <I1>, bound2: <I2?>)
 		 updateCache(derivedAttributeName:"<attr>", value:value)
 		 return value
@@ -825,22 +838,32 @@ static void inverseAggregateAttributeGetter_swift(Entity entity, Variable attr, 
 
 		// get inverse reference value
 		/*
-		 let swiftValue = <attr_type>.SwiftType(self.referencingEntities(for: \<source>.<attr>))
+     let keypath = \<source>.<attr>
+     let entities = self.referencingEntities(for: keypath)
+     let swiftValue = <attr_type>.SwiftType(entities)
 		 */
 		char buf[BUFSIZ];
 		Variable observing_attr = VARget_inverse(attr);
 		Type attr_element_type = TYPEget_body(attr->type)->base;
 		Entity source = TYPEget_body(attr_element_type)->entity; //observing_attr->defined_in;
 
+    indent_swift(level2);
+    raw("let keypath = ");
+     raw("\\%s",
+        ENTITY_swiftName(source, NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
+        );
+    raw(".%s\n",
+        attribute_swiftName(observing_attr, buf)
+        );
+
+    indent_swift(level2);
+    raw("let entities = ");
+    raw("self.referencingEntities(for: keypath)\n");
+
 		indent_swift(level2);
 		raw("let swiftValue = ");
 		TYPE_head_swift(entity, attr->type, NOT_IN_COMMENT, LEAF_OWNED);
-		raw(".SwiftType( self.referencingEntities(for: \\%s",
-				ENTITY_swiftName(source, NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
-				);
-		raw(".%s) )\n",
-				attribute_swiftName(observing_attr, buf)
-				);
+		raw(".SwiftType( entities )\n");
 
 		/*
 		 let value = <attr_type>(from: swiftValue, bound1: <I1>, bound2: <I2?>)
@@ -850,7 +873,9 @@ static void inverseAggregateAttributeGetter_swift(Entity entity, Variable attr, 
 		indent_swift(level2);
 		raw("let value = ");
 		TYPE_head_swift(entity, attr->type, NOT_IN_COMMENT, LEAF_OWNED);
-		raw("(from: swiftValue, bound1: SDAI.UNWRAP(");
+    raw("(");
+    force_wrap();
+		raw("from: swiftValue, bound1: SDAI.UNWRAP(");
 		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, attr_tb->lower, Type_Integer, NO_PAREN, OP_UNKNOWN, NO_WRAP);
 		raw("), bound2: ");
 		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, attr_tb->upper, Type_Integer, NO_PAREN, OP_UNKNOWN, NO_WRAP);
@@ -1184,7 +1209,58 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 		raw("}\n\n");	
 	}
 
-	
+  if( ENTITY_is_initializable_by_void(entity) ) {
+  /*
+   /// InitializableByVoid conformance
+   public convenience init() {
+    let partials = [
+      <partial#0>(),
+      <partial#1>(),
+      <partial#2>(),
+      ...
+    ]
+    let complex = SDAI.ComplexEntity(entities: partials)
+    self.init(complex: complex)!
+   }
+   */
+
+    indent_swift(level);
+    raw("/// InitializableByVoid conformance\n");
+    indent_swift(level);
+    raw("public convenience init() {\n");
+
+    {  int level2 = level+nestingIndent_swift;
+      indent_swift(level2);
+      raw("let partials = [\n");
+
+      Linked_List supertypes = ENTITYget_super_entity_list(entity);
+
+      LISTdo( supertypes, super, Entity ) {
+        int level3 = level2+nestingIndent_swift;
+
+        char partial[BUFSIZ]; partialEntity_swiftName(super, partial);
+        indent_swift(level3);
+        raw("%s(),\n",
+            partial
+            );
+      }LISTod;
+
+      indent_swift(level2);
+      raw("]\n");
+
+
+      indent_swift(level2);
+      raw("let complex = SDAI.ComplexEntity(entities: partials)\n");
+
+      indent_swift(level2);
+      raw("self.init(complex: complex)!\n");
+    }
+
+    indent_swift(level);
+    raw("}\n\n");
+  }
+
+
 }
 
 //MARK: - SDAI Dictionary Schema support
@@ -1403,6 +1479,9 @@ void entityReferenceDefinition_swift( Schema schema, Entity entity, int level ) 
 		if( LISTget_length(ENTITYget_super_entity_list(entity)) == 1 ) {
 			wrap("SDAISimpleEntityType, ");
 		}
+    if( ENTITY_is_initializable_by_void(entity) ) {
+      wrap("InitializableByVoid, ");
+    }
 		wrap("@unchecked Sendable {\n");
 	}
 	

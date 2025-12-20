@@ -50,8 +50,14 @@ void FUNC_result_cache_var_swift( Schema schema, Function func, int level ) {
 	raw("//MARK: - function result cache\n");
 	
 	indent_swift(level);
-	raw("private let %s = SDAI.FunctionResultCache(", FUNC_cache_swiftName(func, buf));
-	wrap("controller: %s.schemaDefinition)\n", SCHEMA_swiftName(schema, buf));
+	raw("private let %s = SDAI.FunctionResultCache(",
+      FUNC_cache_swiftName(func, buf));
+  force_wrap();
+  wrap("label: \"%s\",",
+       FUNC_swiftName(func, buf));
+  force_wrap();
+	wrap("controller: %s.schemaDefinition )\n",
+       SCHEMA_swiftName(schema, buf));
 }
 
 static void func_result_cache_lookup_swift( Schema schema, Function func, int level ) {
