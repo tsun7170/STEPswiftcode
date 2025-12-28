@@ -1281,6 +1281,37 @@ static void selectEntityReferenceYieldingConformance_swift(Type select_type,  in
 	indent_swift(level);
 	raw( "}\n\n" );
 
+  // persistentEntityReferences
+  indent_swift(level);
+  raw("public var persistentEntityReferences: AnySequence<SDAI.GenericPersistentEntityReference> {\n");
+  {
+    indent_swift(level2);
+    raw("switch self {\n");
+
+    LISTdo( typeBody->list, selection, Type ) {
+      indent_swift(level2);
+      raw("case .%s", selectCase_swiftName(selection, buf));
+
+      if( TYPEis_entity(selection)){
+        raw("(let entity): return entity.persistentEntityReferences\n");
+      }
+      else if( TYPEis_select(selection)){
+        raw("(let select): return select.persistentEntityReferences\n");
+      }
+      else if( TYPEis_entityYieldingAggregate(selection)){
+        raw("(let aggregate): return aggregate.persistentEntityReferences\n");
+      }
+      else {
+        raw(": return AnySequence<SDAI.GenericPersistentEntityReference>(EmptyCollection<SDAI.GenericPersistentEntityReference>())\n");
+      }
+    } LISTod;
+
+    indent_swift(level2);
+    raw("}\n");
+  }
+  indent_swift(level);
+  raw( "}\n\n" );
+
 	/* 	func isHolding(entityReference: SDAI.EntityReference) -> Bool */
 	indent_swift(level);
 	raw("public func isHolding(entityReference: SDAI.EntityReference) -> Bool {\n");
