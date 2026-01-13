@@ -154,7 +154,7 @@ void SCHEMA_swift( Schema schema ) {
 	// swift code generation
 	raw("//MARK: - SCHEMA\n");
 	{	char buf[BUFSIZ];
-		raw("public enum %s: SDAISchema {\n", SCHEMA_swiftName(schema, buf));
+		raw("public enum %s: SDAI.SchemaType {\n", SCHEMA_swiftName(schema, buf));
 		
 		indent_swift(level2);
 		raw("public static let schemaDefinition = createSchemaDefinition()\n");

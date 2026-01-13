@@ -1144,7 +1144,7 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 	raw( "}\n\n");
 	
 	/*
-	 public required convenience init?<G: SDAIGenericType>(fromGeneric generic: G?) {
+	 public required convenience init?<G: SDAI.GenericType>(fromGeneric generic: G?) {
 		 guard let entityRef = generic?.entityReference else { return nil }
 		 self.init(complex: entityRef.complexEntity)
 	 }
@@ -1152,7 +1152,7 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 	indent_swift(level);
 	raw("/// initialize from SDAI generic type\n");
 	indent_swift(level);
-	raw( "public required convenience init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
+	raw( "public required convenience init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
 	{	int level2=level+nestingIndent_swift;
 		
 		indent_swift(level2);
@@ -1164,13 +1164,13 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 	raw( "}\n\n");
 	
 	/*
-	 public convenience init?<S: SDAISelectType>(_ select: S?) { self.init(possiblyFrom: select) }
+	 public convenience init?<S: SDAI.SelectType>(_ select: S?) { self.init(possiblyFrom: select) }
 	 public convenience init?(_ complex: SDAI.ComplexEntity?) { self.init(complex: complex) }
 	 */
 	indent_swift(level);
 	raw("/// initialize from SDAI select type (type conversion form)\n");
 	indent_swift(level);
-	raw( "public convenience init?<S: SDAISelectType>(_ select: S?) { self.init(possiblyFrom: select) }\n");
+	raw( "public convenience init?<S: SDAI.SelectType>(_ select: S?) { self.init(possiblyFrom: select) }\n");
 
 
 	indent_swift(level);
@@ -1473,14 +1473,14 @@ void entityReferenceDefinition_swift( Schema schema, Entity entity, int level ) 
 	indent_swift(level);
 	{
 		char buf[BUFSIZ];
-		wrap("public final class %s : SDAI.EntityReference, SDAIDualModeReference, ",
+		wrap("public final class %s : SDAI.EntityReference, SDAI.DualModeReference, ",
 				 ENTITY_swiftName(entity, NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
 				 );
 		if( LISTget_length(ENTITYget_super_entity_list(entity)) == 1 ) {
-			wrap("SDAISimpleEntityType, ");
+			wrap("SDAI.SimpleEntityType, ");
 		}
     if( ENTITY_is_initializable_by_void(entity) ) {
-      wrap("InitializableByVoid, ");
+      wrap("SDAI.InitializableByVoid, ");
     }
 		wrap("@unchecked Sendable {\n");
 	}

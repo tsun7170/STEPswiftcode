@@ -129,11 +129,11 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 		char* sep = "";
 		raw("<");
 		LISTdo(generics, gtag, Type) {
-			wrap("%s%s: SDAIGenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+			wrap("%s%s: SDAI.GenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 			sep=", ";
 		}LISTod;
 		LISTdo(aggregates, atag, Type) {
-			wrap("%s%s: SDAIAggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+			wrap("%s%s: SDAI.AggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 			sep=", ";
 		}LISTod;
 		raw(">");

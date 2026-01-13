@@ -85,7 +85,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 	char typename[BUFSIZ];
 	TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typename);
 	indent_swift(level);
-	wrap( "public enum %s : SDAI.ENUMERATION, SDAIValue, ", typename );
+	wrap( "public enum %s : SDAI.ENUMERATION, SDAI.Value, ", typename );
 	wrap( "%s__%s__type {\n", SCHEMA_swiftName(schema, buf),typename );
 	
 	{	
@@ -116,10 +116,10 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 			}
 		}
 		
-		//MARK: SDAIGenericType
+		//MARK: SDAI.GenericType
 		raw("\n");
 		indent_swift(level2);
-		raw("// SDAIGenericType\n");
+		raw("// SDAI.GenericType\n");
 
 		indent_swift(level2);
 		raw("public var typeMembers: Set<SDAI.STRING> {\n");
@@ -157,22 +157,22 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw("public var genericEnumValue: SDAI.GenericEnumValue? { SDAI.GenericEnumValue(self) }\n");
 		indent_swift(level2);
-		raw("public func arrayOptionalValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.ARRAY_OPTIONAL<ELEM>? {nil}\n");
+		raw("public func arrayOptionalValue<ELEM:SDAI.GenericType>(elementType:ELEM.Type) -> SDAI.ARRAY_OPTIONAL<ELEM>? {nil}\n");
 		indent_swift(level2);
-		raw("public func arrayValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.ARRAY<ELEM>? {nil}\n");
+		raw("public func arrayValue<ELEM:SDAI.GenericType>(elementType:ELEM.Type) -> SDAI.ARRAY<ELEM>? {nil}\n");
 		indent_swift(level2);
-		raw("public func listValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.LIST<ELEM>? {nil}\n");
+		raw("public func listValue<ELEM:SDAI.GenericType>(elementType:ELEM.Type) -> SDAI.LIST<ELEM>? {nil}\n");
 		indent_swift(level2);
-		raw("public func bagValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.BAG<ELEM>? {nil}\n");
+		raw("public func bagValue<ELEM:SDAI.GenericType>(elementType:ELEM.Type) -> SDAI.BAG<ELEM>? {nil}\n");
 		indent_swift(level2);
-		raw("public func setValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.SET<ELEM>? {nil}\n");
+		raw("public func setValue<ELEM:SDAI.GenericType>(elementType:ELEM.Type) -> SDAI.SET<ELEM>? {nil}\n");
 		indent_swift(level2);
-		raw("public func enumValue<ENUM:SDAIEnumerationType>(enumType:ENUM.Type) -> ENUM? { return self as? ENUM }\n");
+		raw("public func enumValue<ENUM:SDAI.EnumerationType>(enumType:ENUM.Type) -> ENUM? { return self as? ENUM }\n");
 		raw("\n");		
 		
-		//MARK: SDAIUnderlyingType
+		//MARK: SDAI.UnderlyingType
 		indent_swift(level2);
-		raw("// SDAIUnderlyingType\n");
+		raw("// SDAI.UnderlyingType\n");
 
 		indent_swift(level2);
 		raw("public typealias FundamentalType = Self\n");
@@ -196,7 +196,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw("/// initialize from SDAI generic type value\n");
 		indent_swift(level2);
-		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
+		raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
 		raw("guard let enumval = generic?.enumValue(enumType: Self.self) else { return nil }\n");
 		indent_swift(level2+nestingIndent_swift);
@@ -355,13 +355,13 @@ void enumTypeExtension_swift(Schema schema, Type type, int level) {
 	raw("\n\n//MARK: - ENUMERATION TYPE HIERARCHY\n");
 	indent_swift(level);
 	raw( "public protocol %s__%s__type: ", schemaname, typename);
-	wrap("SDAIEnumerationType ");
+	wrap("SDAI.EnumerationType ");
 	wrap("{}\n\n");
 	
 	
 	indent_swift(level);
 	raw( "public protocol %s__%s__subtype: ", schemaname, typename );
-	wrap("%s__%s__type, SDAIDefinedType\n", schemaname, typename );
+	wrap("%s__%s__type, SDAI.DefinedType\n", schemaname, typename );
 	indent_swift(level);
 	wrap("where Supertype: %s__%s__type\n", schemaname, typename);
 	indent_swift(level);

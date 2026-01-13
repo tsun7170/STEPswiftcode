@@ -590,7 +590,7 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 
 	
 	/*
-	 public init?<T: SDAIUnderlyingType>(possiblyFrom underlyingType: T?){
+	 public init?<T: SDAI.UnderlyingType>(possiblyFrom underlyingType: T?){
 	 	guard let underlyingType = underlyingType else { return nil }
 
 	 	if let fundamental = underlyingType.asFundamentalType as? <selection>.FundamentalType {
@@ -608,7 +608,7 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	indent_swift(level);
 	raw("/// initialize from the underlying type value\n");
 	indent_swift(level);
-	raw("public init?<T: SDAIUnderlyingType>(possiblyFrom underlyingType: T?){\n");
+	raw("public init?<T: SDAI.UnderlyingType>(possiblyFrom underlyingType: T?){\n");
 	{	int level2 = level+nestingIndent_swift;
 		
 		const char* ifhead = "if";
@@ -769,7 +769,7 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	
 
 	/*
-	 public init?<G: SDAIGenericType>(fromGeneric generic: G?) {
+	 public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {
 	 guard let select = generic else { return nil }
 	 
 	 	if let fundamental = select as? Self {
@@ -785,7 +785,7 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	indent_swift(level);
 	raw("/// initialize from SDAI generic type value\n");
 	indent_swift(level);
-	raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
+	raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
 	{	int level2=level+nestingIndent_swift;
 		indent_swift(level2);
 		raw("guard let select = generic else { return nil }\n\n");
@@ -990,11 +990,11 @@ static void selectSubtypeConstructor_swift(Schema schema, Type select_type,  int
 	 	self.init(fundamental: FundamentalType(possiblyFrom: complex)) 
 	 }
 	 
-	 init?<T: SDAIUnderlyingType>(possiblyFrom underlyingType: T?) { 
+	 init?<T: SDAI.UnderlyingType>(possiblyFrom underlyingType: T?) { 
 	 	self.init(fundamental: FundamentalType(possiblyFrom: underlyingType)) 
 	 }
 	 
-	 init?<G: SDAIGenericType>(fromGeneric generic: G?) { 
+	 init?<G: SDAI.GenericType>(fromGeneric generic: G?) { 
 	 	self.init(fundamental: FundamentalType.convert(fromGeneric: generic))
 	 }
 	*/
@@ -1011,7 +1011,7 @@ static void selectSubtypeConstructor_swift(Schema schema, Type select_type,  int
 	indent_swift(level);
 	raw("/// initialize SELECT subtype from the underlying type value\n");
 	indent_swift(level);
-	raw("init?<T: SDAIUnderlyingType>(possiblyFrom underlyingType: T?) {\n");
+	raw("init?<T: SDAI.UnderlyingType>(possiblyFrom underlyingType: T?) {\n");
 	indent_swift(level+nestingIndent_swift);
 	raw("self.init(fundamental: FundamentalType(possiblyFrom: underlyingType))\n");
 	indent_swift(level);
@@ -1021,7 +1021,7 @@ static void selectSubtypeConstructor_swift(Schema schema, Type select_type,  int
 	indent_swift(level);
 	raw("/// initialize SELECT subtype from SDAI generic type value\n");
 	indent_swift(level);
-	raw("init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
+	raw("init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
 	indent_swift(level+nestingIndent_swift);
 	raw("self.init(fundamental: FundamentalType.convert(fromGeneric: generic))\n");
 	indent_swift(level);
@@ -1035,11 +1035,11 @@ static void selectTypeValueComparison_swift(Type select_type,  int level) {
 	char buf[BUFSIZ];
 
 	indent_swift(level);
-	raw("//MARK: - SDAIValue\n");
+	raw("//MARK: - SDAI.Value\n");
 
 	/////////
 	indent_swift(level);
-	raw("public func isValueEqual<T: SDAIValue>(to rhs: T) -> Bool {\n");
+	raw("public func isValueEqual<T: SDAI.Value>(to rhs: T) -> Bool {\n");
 	{	int level2 = level+nestingIndent_swift;
 		indent_swift(level2);
 		raw("switch self {\n");
@@ -1059,7 +1059,7 @@ static void selectTypeValueComparison_swift(Type select_type,  int level) {
 
 	/////////
 	indent_swift(level);
-	raw("public func isValueEqualOptionally<T: SDAIValue>(to rhs: T?) -> Bool? {\n");
+	raw("public func isValueEqualOptionally<T: SDAI.Value>(to rhs: T?) -> Bool? {\n");
 	{	int level2 = level+nestingIndent_swift;
 		indent_swift(level2);
 		raw("switch self {\n");
@@ -1098,7 +1098,7 @@ static void selectTypeValueComparison_swift(Type select_type,  int level) {
 	
 	/////////
 	indent_swift(level);
-	raw("public func isValueEqual<T: SDAIValue>(to rhs: T, visited comppairs: inout Set<SDAI.ComplexPair>) -> Bool {\n");
+	raw("public func isValueEqual<T: SDAI.Value>(to rhs: T, visited comppairs: inout Set<SDAI.ComplexPair>) -> Bool {\n");
 	{	int level2 = level+nestingIndent_swift;
 		indent_swift(level2);
 		raw("switch self {\n");
@@ -1117,7 +1117,7 @@ static void selectTypeValueComparison_swift(Type select_type,  int level) {
 	
 	/////////
 	indent_swift(level);
-	raw("public func isValueEqualOptionally<T: SDAIValue>(to rhs: T?, visited comppairs: inout Set<SDAI.ComplexPair>) -> Bool? {\n");
+	raw("public func isValueEqualOptionally<T: SDAI.Value>(to rhs: T?, visited comppairs: inout Set<SDAI.ComplexPair>) -> Bool? {\n");
 	{	int level2 = level+nestingIndent_swift;
 		indent_swift(level2);
 		raw("switch self {\n");
@@ -1145,7 +1145,7 @@ static void selectTypeMembers_swift(Type select_type,  int level) {
 	char buf[BUFSIZ];
 	
 	indent_swift(level);
-	raw("//MARK: SDAIGenericType\n");
+	raw("//MARK: SDAI.GenericType\n");
 	indent_swift(level);
 	raw("public var typeMembers: Set<SDAI.STRING> {\n");
 	{
@@ -1200,7 +1200,7 @@ static void selectAggregateValueConversion_swift(Type select_type, const char* v
 	char buf[BUFSIZ];
 	
 	indent_swift(level);
-	raw("public func %s<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> %s<ELEM>? {\n", varname, vartype);
+	raw("public func %s<ELEM:SDAI.GenericType>(elementType:ELEM.Type) -> %s<ELEM>? {\n", varname, vartype);
 	{	int level2 = level+nestingIndent_swift;
 		indent_swift(level2);
 		raw("switch self {\n");
@@ -1222,7 +1222,7 @@ static void selectEnumValueConversion_swift(Type select_type, int level) {
 	char buf[BUFSIZ];
 	
 	indent_swift(level);
-	raw("public func enumValue<ENUM:SDAIEnumerationType>(enumType:ENUM.Type) -> ENUM? {\n");
+	raw("public func enumValue<ENUM:SDAI.EnumerationType>(enumType:ENUM.Type) -> ENUM? {\n");
 	{	int level2 = level+nestingIndent_swift;
 		indent_swift(level2);
 		raw("switch self {\n");
@@ -1248,7 +1248,7 @@ static void selectEntityReferenceYieldingConformance_swift(Type select_type,  in
 	char buf[BUFSIZ];
 	
 	indent_swift(level);
-	raw("//MARK: SDAIEntityReferenceYielding\n");
+	raw("//MARK: SDAI.EntityReferenceYielding\n");
 
 	// entityReferences
 	indent_swift(level);
@@ -1384,12 +1384,12 @@ static void selectGenericTypeBaseConformance_swift( Type select_type, int level)
 	
 }
 
-//MARK: - SDAIUnderlyingType
+//MARK: - SDAI.UnderlyingType
 static void selectUnderlyingTypeConformance_swift(int level, Schema schema, Type select_type) {
 	char buf[BUFSIZ];
 	
 	indent_swift(level);
-	raw("//MARK: SDAIUnderlyingType\n");
+	raw("//MARK: SDAI.UnderlyingType\n");
 	
 	indent_swift(level);
 	raw("public typealias FundamentalType = Self\n");
@@ -1484,7 +1484,7 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 	char buf[BUFSIZ];
 	
 	indent_swift(level);
-	raw("//MARK: SDAIAggregationType\n");
+	raw("//MARK: SDAI.AggregationType\n");
 
 	indent_swift(level);
 	wrap("public typealias ELEMENT = %s\n", TYPEhead_string_swift(select_type->superscope, aggregate_base, NOT_IN_COMMENT, LEAF_OWNED, buf));
@@ -1699,7 +1699,7 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 		TYPE_swiftName(select_type,select_type->superscope, SWIFT_QUALIFIER, typename);
 
 		indent_swift(level);
-		wrap( "public enum %s : SDAIValue, ", typename );
+		wrap( "public enum %s : SDAI.Value, ", typename );
 		positively_wrap();
 		raw(  "%s__", SCHEMA_swiftName(schema, buf) );
 		raw(  "%s__type {\n", typename );
@@ -1763,7 +1763,7 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 			selectGenericTypeBaseConformance_swift(select_type, level2);
 			raw("\n");
 
-			// SDAIGenericType
+			// SDAI.GenericType
 			selectTypeMembers_swift(select_type, level2);
 			raw("\n");
 
@@ -1786,18 +1786,18 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 			selectEnumValueConversion_swift(select_type, level2);
 			raw("\n");
 			
-			// SDAIUnderlyingType
+			// SDAI.UnderlyingType
 			selectUnderlyingTypeConformance_swift(level2, schema, select_type);
 			raw("\n");
 			
-			// SDAIEntityReferenceYielding
+			// SDAI.EntityReferenceYielding
 			selectEntityReferenceYieldingConformance_swift(select_type, level2);
 			raw("\n");
 			
 			// SDAIAggregationBehavior
 			selectAggregationBehaviorConformance_swift(select_type, level2);
 			
-			// SDAIAggregationType
+			// SDAI.AggregationType
 			if( common_aggregate_base != NULL ){
 				raw("\n");
 				selectAggregateTypeConformance_swift(select_type, common_aggregate_base, level2);				
@@ -1824,10 +1824,10 @@ void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {
 	//type protocol
 	indent_swift(level);
 	raw( "public protocol %s__%s__type: ", schemaname, typename);
-	wrap("SDAISelectType");
+	wrap("SDAI.SelectType");
 	if( common_aggregate_base != NULL ){
 		raw(", ");
-		wrap("SDAIAggregationType");
+		wrap("SDAI.AggregationType");
 		if( common_aggregate_base == Type_Entity ){
 			wrap("where ELEMENT == SDAI.EntityReference");
 		}
@@ -1852,7 +1852,7 @@ void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {
 	// subtype protocol
 	indent_swift(level);
 	raw( "public protocol %s__%s__subtype: ", schemaname, typename );
-	wrap("%s__%s__type, SDAIDefinedType\n", schemaname, typename );
+	wrap("%s__%s__type, SDAI.DefinedType\n", schemaname, typename );
 
 	indent_swift(level);
 	wrap("where Supertype: %s__%s__type\n", schemaname, typename);

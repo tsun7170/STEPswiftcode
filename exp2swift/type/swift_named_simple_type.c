@@ -96,7 +96,7 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw("/// initialize from SDAI generic type value\n");
 		indent_swift(level2);
-		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
+		raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
 		raw("guard let repval = generic?.");
 		switch( TYPEis(type) ){
@@ -150,8 +150,8 @@ void namedSimpleTypeExtension_swift( Schema schema, Type type, int level) {
 
 	indent_swift(level);
 	raw( "public protocol %s__%s__type: ", schemaname, typename);
-	wrap("SDAI__%s__subtype {}\n\n", builtinTYPE_body_swiftname(type) );
-	 
+	wrap("SDAI.%s__Subtype {}\n\n", builtinTYPE_body_swiftname(type) );
+
 	indent_swift(level);
 	raw( "public protocol %s__%s__subtype: ", schemaname, typename);
 	wrap("%s__%s__type\n", schemaname, typename);

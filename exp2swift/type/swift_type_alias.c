@@ -109,7 +109,7 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		indent_swift(level2);
 		raw("/// initialize from SDAI generic type value\n");
 		indent_swift(level2);
-		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
+		raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
 		raw("guard let repval = Supertype.convert(fromGeneric: generic) else { return nil }\n");
 		indent_swift(level2+nestingIndent_swift);

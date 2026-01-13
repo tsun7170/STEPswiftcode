@@ -1118,7 +1118,7 @@ void partialEntityDefinition_swift
           partialEntity_swiftName(entity, buf)
           );
      if( LISTget_length(params) == 0 ){
-       wrap(", InitializableByVoid");
+       wrap(", SDAI.InitializableByVoid");
      }
      wrap(", @unchecked Sendable {\n");
 	 }
