@@ -33,6 +33,19 @@
 #include "swift_named_aggregate_type.h"
 #include "decompose_expression.h"
 
+const char* scope_prefix(Scope scope) {
+  switch SCOPEis(scope) {
+  case OBJ_ENTITY:
+    return TYPE_swiftNamePrefix(ENTITYget_type(scope));
+
+  case OBJ_TYPE:
+    return TYPE_swiftNamePrefix(scope);
+
+  default:
+    return "";
+  }
+}
+
 // returns length of qualification string
 int accumulate_qualification(Scope target, Scope current, const char* delimiter, char buf[BUFSIZ]) {
 	int qual_len = 0;
@@ -45,8 +58,10 @@ int accumulate_qualification(Scope target, Scope current, const char* delimiter,
 	if( target->superscope == current ) {
 		int prnlen;
 		char cbuf[BUFSIZ];
+    const char* prefix = scope_prefix(target);
 		snprintf(&buf[qual_len], BUFSIZ-qual_len,
-						 "%s%s%n",
+						 "%s%s%s%n",
+             prefix,
 						 canonical_swiftName(target->symbol.name,cbuf),
 						 delimiter,
 						 &prnlen
@@ -58,8 +73,10 @@ int accumulate_qualification(Scope target, Scope current, const char* delimiter,
 		if( qual_len > 0 ) {
 			int prnlen;
 			char cbuf[BUFSIZ];
+      const char* prefix = scope_prefix(target);
 			snprintf(&buf[qual_len], BUFSIZ-qual_len,
-							 "%s%s%n",
+							 "%s%s%s%n",
+               prefix,
 							 canonical_swiftName(target->symbol.name,cbuf),
 							 delimiter,
 							 &prnlen
@@ -79,6 +96,39 @@ const char* TYPE_canonicalName( Type t, Scope current, const char* delimiter, ch
 	return buf;
 }
 
+const char* TYPE_swiftNamePrefix( Type t )
+{
+  assert(TYPEis_valid(t));
+
+  const char* prefix;// = "";
+
+  if( TYPEget_body(t) == NULL ){
+    prefix = "g";
+  }
+  else{
+    switch (TYPEis(t)) {
+      case entity_:
+        prefix = "e";
+        break;
+      case select_:
+        prefix = "s";
+        break;
+      case enumeration_:
+        prefix = "n";
+        break;
+      case generic_:
+      case aggregate_:
+        prefix = "g";
+        break;
+
+      default:
+        prefix = "t";
+        break;
+    }
+  }
+  return prefix;
+}
+
 const char* TYPE_swiftName
  ( Type t,
 	Scope current,
@@ -88,35 +138,41 @@ const char* TYPE_swiftName
 	assert(TYPEis_valid(t));
 	int qual_len = accumulate_qualification(t->superscope, current, delimiter, buf);
 	
-	const char* prefix;// = "";
-	char suffix[BUFSIZ] = "";
-	if( TYPEget_body(t) == NULL ){
-		prefix = "g";
-	}
-	else{
-		switch (TYPEis(t)) {
-			case entity_:
-				prefix = "e";
-				if( strcmp(delimiter, DOCC_QUALIFIER) != 0 ){
-					snprintf(suffix, sizeof(suffix), "%sPRef",delimiter);
-				}
-				break;
-			case select_:
-				prefix = "s";
-				break;
-			case enumeration_:
-				prefix = "n";
-				break;
-			case generic_:
-			case aggregate_:
-				prefix = "g";
-				break;
-				
-			default:
-				prefix = "t";
-				break;
-		}
-	}
+  const char* prefix = TYPE_swiftNamePrefix(t);
+
+  char suffix[BUFSIZ] = "";
+  if( TYPEget_body(t) != NULL && TYPEis(t) == entity_) {
+    if( strcmp(delimiter, DOCC_QUALIFIER) != 0 ){
+      snprintf(suffix, sizeof(suffix), "%sPRef",delimiter);
+    }
+  }
+//	if( TYPEget_body(t) == NULL ){
+//		prefix = "g";
+//	}
+//	else{
+//		switch (TYPEis(t)) {
+//			case entity_:
+//				prefix = "e";
+//				if( strcmp(delimiter, DOCC_QUALIFIER) != 0 ){
+//					snprintf(suffix, sizeof(suffix), "%sPRef",delimiter);
+//				}
+//				break;
+//			case select_:
+//				prefix = "s";
+//				break;
+//			case enumeration_:
+//				prefix = "n";
+//				break;
+//			case generic_:
+//			case aggregate_:
+//				prefix = "g";
+//				break;
+//				
+//			default:
+//				prefix = "t";
+//				break;
+//		}
+//	}
 	
 	assert(t->symbol.name != NULL);
 	char buf2[BUFSIZ];

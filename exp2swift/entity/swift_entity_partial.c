@@ -153,7 +153,7 @@ static void dynamicAttributeValueProvider_swift(Entity entity, Variable attr, in
 					sep
 					);
 			wrap("%s.typeIdentity",
-					 partialEntity_swiftName(overrider->defined_in, buf)
+					 partialEntity_swiftName(overrider->defined_in, entity->superscope, SWIFT_QUALIFIER, buf)
 					 );
 			sep = ", ";
 		}
@@ -202,7 +202,7 @@ static void fixupPartialComplexEntityAttributes_swift(Entity entity, Linked_List
 	{
 		indent_swift(level2);
 		raw("guard let pe = partialComplex.partialEntityInstance(%s.self) else { return }\n",
-				partialEntity_swiftName(entity, buf)
+				partialEntity_swiftName(entity, entity->superscope, SWIFT_QUALIFIER, buf)
 				);
 
 		LISTdo(dynamic_attrs, attr, Variable){
@@ -448,7 +448,7 @@ static void inverseSimpleAttributeDefinition_swift(Entity entity, Variable attr,
 	Variable observing_attr = VARget_inverse(attr);
 	indent_swift(level);
 	raw("// observing %s",
-			partialEntity_swiftName(observing_attr->defined_in, buf)
+			partialEntity_swiftName(observing_attr->defined_in, entity->superscope, SWIFT_QUALIFIER, buf)
 			);
 	raw(" .%s\n",
 			partialEntityAttribute_swiftName(observing_attr, buf)
@@ -502,7 +502,7 @@ static void inverseAggregateAttributeDefinition_swift(Entity entity, Variable at
 	Variable observing_attr = VARget_inverse(attr);
 	indent_swift(level);
 	raw("// observing %s",
-			partialEntity_swiftName(observing_attr->defined_in, buf)
+			partialEntity_swiftName(observing_attr->defined_in, entity->superscope, SWIFT_QUALIFIER, buf)
 			);
 	raw(" .%s\n",
 			partialEntityAttribute_swiftName(observing_attr, buf)
@@ -1111,11 +1111,11 @@ void partialEntityDefinition_swift
 
      Linked_List params = ENTITYget_constructor_params(entity);
 
-		 indent_swift(level);
-		 raw("@_documentation(visibility:public)\n");
+//		 indent_swift(level);
+//		 raw("@_documentation(visibility:public)\n");
 		 indent_swift(level);
      wrap("public final class %s : SDAI.PartialEntity",
-          partialEntity_swiftName(entity, buf)
+          partialEntity_swiftName(entity, NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
           );
      if( LISTget_length(params) == 0 ){
        wrap(", SDAI.InitializableByVoid");
@@ -1180,7 +1180,7 @@ void partialEntityAttrOverrideProtocolConformance_swift
 
 	 indent_swift(level);
 	 raw("extension %s", SCHEMA_swiftName(schema, buf));
-	 wrap(".%s :", partialEntity_swiftName(entity, buf));
+	 wrap(".%s :", partialEntity_swiftName(entity, schema, SWIFT_QUALIFIER, buf));
 	 char* sep = "";
 	 LISTdo( attr_overrides, attr, Variable ) {
 		 assert(attr->original_attribute);

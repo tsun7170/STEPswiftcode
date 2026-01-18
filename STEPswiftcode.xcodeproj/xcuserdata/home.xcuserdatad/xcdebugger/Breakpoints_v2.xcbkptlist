@@ -286,8 +286,8 @@
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "99"
-            endingLineNumber = "99"
+            startingLineNumber = "155"
+            endingLineNumber = "155"
             landmarkName = "TYPE_swiftName(t, current, delimiter, buf)"
             landmarkType = "9">
          </BreakpointContent>
@@ -334,9 +334,9 @@
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "545"
-            endingLineNumber = "545"
-            landmarkName = "TYPE_body_swift(current, t, in_comment, leaf_unowned)"
+            startingLineNumber = "601"
+            endingLineNumber = "601"
+            landmarkName = "TYPEwhereDefinitions_swift(scope, level)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -382,9 +382,9 @@
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "546"
-            endingLineNumber = "546"
-            landmarkName = "TYPE_body_swift(current, t, in_comment, leaf_unowned)"
+            startingLineNumber = "602"
+            endingLineNumber = "602"
+            landmarkName = "TYPEwhereDefinitions_swift(scope, level)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>

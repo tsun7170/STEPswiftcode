@@ -18,8 +18,8 @@ extern const char* ENTITY_REFTYPE_swiftName( Entity e, Scope current, const char
 extern const char* as_entitySwiftName_n( const char* symbol_name, char* buf, int bufsize );
 extern char 				ENTITY_swiftNameInitial( Entity e);
 extern const char* ENTITY_canonicalName( Entity e, char buf[BUFSIZ] );
-extern const char* ENTITY_swiftProtocolName( Entity e, char buf[BUFSIZ]);
-extern const char* partialEntity_swiftName( Entity e, char buf[BUFSIZ] );
+//extern const char* ENTITY_swiftProtocolName( Entity e, char buf[BUFSIZ]);
+extern const char* partialEntity_swiftName( Entity e, Scope current, const char* delimiter, char buf[BUFSIZ] );
 extern const char* superEntity_swiftPrefix;
 extern const char* subEntity_swiftPrefix;
 
@@ -48,7 +48,7 @@ extern void partialEntityAttrOverrideProtocolConformance_swift
 
 
 // swift_entity_reference.c
-extern void entityReferenceDefinition_swift( Schema schema, Entity entity, int level );
+extern void entityReferenceDefinition_swift( Schema schema, Entity entity, int level, Linked_List attr_overrides, Linked_List dynamic_attrs  );
 
 
 

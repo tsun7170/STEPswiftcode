@@ -63,21 +63,25 @@ const char* ENTITY_canonicalName( Entity e, char buf[BUFSIZ] ) {
 	return canonical_swiftName(e->symbol.name, buf);
 }
 
-const char* ENTITY_swiftProtocolName( Entity e, char buf[BUFSIZ]) {
-	char buf2[BUFSIZ];
-	snprintf(buf, BUFSIZ,
-					 "%s_protocol",
-					 ENTITY_swiftName(e, NO_QUALIFICATION, SWIFT_QUALIFIER, buf2)
-					 );
-	return buf;
-}
+//const char* ENTITY_swiftProtocolName( Entity e, char buf[BUFSIZ]) {
+//	char buf2[BUFSIZ];
+//	snprintf(buf, BUFSIZ,
+//					 "%s_protocol",
+//					 ENTITY_swiftName(e, NO_QUALIFICATION, SWIFT_QUALIFIER, buf2)
+//					 );
+//	return buf;
+//}
 
-const char* partialEntity_swiftName( Entity e, char buf[BUFSIZ] ) {
-	snprintf(buf, BUFSIZ,
-					 "_%s",
-					 e->symbol.name
-					 );
-	return buf;
+const char* partialEntity_swiftName( Entity e, Scope current, const char* delimiter, char buf[BUFSIZ] ) {
+//	snprintf(buf, BUFSIZ,
+//					 "_%s",
+//					 e->symbol.name
+//					 );
+
+  int qual_len = accumulate_qualification(e, current, delimiter, buf);
+  snprintf(&buf[qual_len], BUFSIZ-qual_len, "PartialEntity");
+
+  return buf;
 }
 
 const char* attribute_swiftName( Variable attr, char buf[BUFSIZ] ) {
@@ -337,11 +341,11 @@ void ENTITY_swift( Schema schema, Entity entity, int level,
 	listAllAttributes(entity, entity, level);
 	raw("*/\n");
 	
-	// partial entity definition
-	partialEntityDefinition_swift(schema, entity, level, attr_overrides, dynamic_attrs);
+//	// partial entity definition
+//	partialEntityDefinition_swift(schema, entity, level, attr_overrides, dynamic_attrs);
 	
 	// entity reference definition
-	entityReferenceDefinition_swift(schema, entity, level);
+	entityReferenceDefinition_swift(schema, entity, level, attr_overrides, dynamic_attrs);
 }
 
 

@@ -529,7 +529,7 @@ Expression e,
 		if( e->u.funcall.function->u_tag == scope_is_entity ) {
 			char buf[BUFSIZ];
 			raw("%s",
-					partialEntity_swiftName(e->u.funcall.function, buf)
+					partialEntity_swiftName(e->u.funcall.function, e->u.funcall.function->superscope, SWIFT_QUALIFIER, buf)
 					);
 			return;
 		}
@@ -880,7 +880,7 @@ void EXPR__swift
 					formals = e->u.funcall.function->u.func->parameters;
 				}
 				else {	// entity constructor call
-					func = partialEntity_swiftName(e->u.funcall.function, buf);
+					func = partialEntity_swiftName(e->u.funcall.function, e->u.funcall.function->superscope, SWIFT_QUALIFIER, buf);
 					formals = ENTITYget_constructor_params(e->u.funcall.function);
 				}
 				

@@ -30,6 +30,7 @@ typedef enum {
 extern int accumulate_qualification(Scope target, Scope current, const char* delimiter, char buf[BUFSIZ]);
 
 extern const char* TYPE_canonicalName( Type t, Scope current, const char* delimiter, char buf[BUFSIZ] );
+extern const char* TYPE_swiftNamePrefix( Type t );
 extern const char* TYPE_swiftName( Type t, Scope current, const char* delimiter, char buf[BUFSIZ]  );
 extern char TYPE_swiftNameInitial( Type t );
 extern const char* enumCase_swiftName( Expression expr, char buf[BUFSIZ] );

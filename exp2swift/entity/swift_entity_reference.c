@@ -143,11 +143,11 @@ static void ENTITY_partial_out(Schema schema, Entity entity) {
 	raw("\n");
 	raw("- PARTIAL ENTITY:\n");
 
-	char qual[BUFSIZ] = ""; accumulate_qualification(entity->superscope, schema->superscope, DOCC_QUALIFIER, qual);
-	char partial[BUFSIZ]; partialEntity_swiftName(entity, partial);
+//	char qual[BUFSIZ] = ""; accumulate_qualification(entity->superscope, schema->superscope, DOCC_QUALIFIER, qual);
+	char partial[BUFSIZ]; partialEntity_swiftName(entity, schema->superscope, DOCC_QUALIFIER, partial);
 
-	raw("\t+\t``%s%s``\n",
-			qual,
+	raw("\t+\t``%s``\n",
+//			qual,
 			partial
 			);
 }
@@ -161,8 +161,8 @@ static void partialEntityReferenceDefinition_swift( Entity entity, int level ) {
 	indent_swift(level);
 	raw("//MARK: PARTIAL ENTITY\n");
 
-	char partial[BUFSIZ]; partialEntity_swiftName(entity, partial);
-	
+	char partial[BUFSIZ]; partialEntity_swiftName(entity, entity->superscope, SWIFT_QUALIFIER, partial);
+
 	indent_swift(level);
 	raw("public override class var partialEntityType: SDAI.PartialEntity.Type {\n");
 	{
@@ -429,8 +429,8 @@ static void explicitDynamicGetterSetter_swift(Variable attr, bool is_subtype_att
 	partialEntityAttribute_swiftName(attr, partialAttrName);
 	
 	char originalPartialEntityName[BUFSIZ];
-	partialEntity_swiftName(original->defined_in, originalPartialEntityName);
-	
+	partialEntity_swiftName(original->defined_in, entity->superscope, SWIFT_QUALIFIER, originalPartialEntityName);
+
 	// getter
 	indent_swift(level);
 	raw("get {\n");
@@ -1101,7 +1101,7 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 		
 		indent_swift(level2);
 		raw( "guard let partial = complexEntity?.partialEntityInstance(%s.self) else { return nil }\n", 
-				partialEntity_swiftName(entity, buf)
+				partialEntity_swiftName(entity, entity->superscope, SWIFT_QUALIFIER, buf)
 				);
 		indent_swift(level2);
 		raw( "self.partialEntity = partial\n\n");
@@ -1194,7 +1194,7 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
 		raw("/// initialize simple entity reference from single partial entity\n");
 		indent_swift(level);
 		raw("public convenience init?(_ partial:%s) {\n",
-				partialEntity_swiftName(entity, buf)
+				partialEntity_swiftName(entity,entity, SWIFT_QUALIFIER, buf)
 				);
 
 		{	int level2 = level+nestingIndent_swift;
@@ -1238,7 +1238,7 @@ static void entityReferenceInitializers_swift( Entity entity, int level ){
       LISTdo( supertypes, super, Entity ) {
         int level3 = level2+nestingIndent_swift;
 
-        char partial[BUFSIZ]; partialEntity_swiftName(super, partial);
+        char partial[BUFSIZ]; partialEntity_swiftName(super,super->superscope, SWIFT_QUALIFIER, partial);
         indent_swift(level3);
         raw("%s(),\n",
             partial
@@ -1388,7 +1388,7 @@ static void dictEntityDefinition_swift( Entity entity, Linked_List effective_att
 			indent_swift(level2);
 			raw("//MARK: UNIQUENESS RULE REGISTRATIONS\n");
 			int serial = 0;
-			char partial_name[BUFSIZ];partialEntity_swiftName(entity, partial_name);
+			char partial_name[BUFSIZ];partialEntity_swiftName(entity, entity->superscope, SWIFT_QUALIFIER, partial_name);
 			LISTdo(unique_rules, unique, Linked_List) {
 				++serial;
 				indent_swift(level2);
@@ -1432,7 +1432,7 @@ static void entityWhereRuleValidation_swift( Entity entity, int level ) {
 		indent_swift(level2);
 		raw("var result = super.validateWhereRules(instance:instance, prefix:prefix2)\n");
 		
-		char partial[BUFSIZ];partialEntity_swiftName(entity, partial);
+		char partial[BUFSIZ];partialEntity_swiftName(entity, entity->superscope, SWIFT_QUALIFIER, partial);
 		LISTdo( where_rules, where, Where ){
 			char whereLabel[BUFSIZ];
 			indent_swift(level2);
@@ -1453,7 +1453,13 @@ static void entityWhereRuleValidation_swift( Entity entity, int level ) {
 
 
 //MARK: - entity reference definition main entry point
-void entityReferenceDefinition_swift( Schema schema, Entity entity, int level ) {
+void entityReferenceDefinition_swift
+ ( Schema schema,
+  Entity entity,
+  int level,
+  Linked_List attr_overrides,
+  Linked_List dynamic_attrs )
+{
 	raw("\n\n");
 	raw("//MARK: - Entity Reference\n");
 	
@@ -1512,6 +1518,9 @@ void entityReferenceDefinition_swift( Schema schema, Entity entity, int level ) 
 
 		dictEntityDefinition_swift(entity, effective_attrs, level2);
 		LISTfree(effective_attrs);
+
+    // partial entity definition
+    partialEntityDefinition_swift(schema, entity, level2, attr_overrides, dynamic_attrs);
 	}
 	
 	indent_swift(level);
