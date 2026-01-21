@@ -74,8 +74,8 @@ void SCOPEconstList_swift( bool nested, Scope s, Linked_List orderedConsts, int 
 	
 	raw("\n");
 	indent_swift(level);
-	raw( "//CONSTANT\n" );
-	
+	raw( "//MARK: CONSTANT\n" );
+
 	char* access = (nested ? "" : "public static ");
 	
 	LISTdo(orderedConsts, var, Variable) {

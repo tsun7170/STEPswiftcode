@@ -32,7 +32,7 @@ void beginExpress_swift(char* description, bool asMarkDown) {
 	raw( "//MARK: -%s in EXPRESS\n", description );
 	if(asMarkDown) {
 		raw("\n/** %s\n", description);
-		raw("- EXPRESS:\n");
+		raw("- EXPRESS source code:\n");
 		raw("```express\n");
 	}
 	else {

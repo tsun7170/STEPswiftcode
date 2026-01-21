@@ -1466,7 +1466,7 @@ void entityReferenceDefinition_swift
 	// markdown
 	raw("\n/** ENTITY reference\n");
 
-	raw("- EXPRESS:\n");
+	raw("- EXPRESS source code:\n");
 	raw("```express\n");
 	ENTITY_out(entity, level);
 	raw("\n```\n");

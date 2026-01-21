@@ -789,7 +789,7 @@ void EXPR__swift
 		case attribute_:
 		case identifier_:
 		{
-			bool need_optional = false;
+//			bool need_optional = false;
 			if( e->u_tag == expr_is_variable ) {
 				Variable v = e->u.variable;
 				if( v->flags.alias ) {
@@ -810,7 +810,7 @@ void EXPR__swift
 				if( ENTITYis_a(SELF, ent) ) {
 					wrap_if(can_wrap, "SELF.");
 					can_wrap = false;
-					need_optional = (optionality == no_optional);
+//					need_optional = (optionality == no_optional);
 				}
 			}
 			{

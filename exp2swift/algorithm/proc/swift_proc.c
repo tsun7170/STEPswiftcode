@@ -40,7 +40,7 @@ const char* PROCcall_swiftName( Statement pcall, char buf[BUFSIZ] ) {
 void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 	if(!nested) {
 		// EXPRESS summary
-		beginExpress_swift("PROCEDURE DEFINITION", AS_MARKDOWN_EXPRESS);
+		beginExpress_swift("PROCEDURE definition", AS_MARKDOWN_EXPRESS);
 		PROC_out(proc, level);
 		endExpress_swift(AS_MARKDOWN_EXPRESS);	
 	}

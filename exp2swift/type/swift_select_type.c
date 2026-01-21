@@ -139,7 +139,11 @@ static void listAllSelectionAttributes(Type select_type, int level) {
 }
 
 //MARK: - underlying reference codes
-static void selectTypeGroupReference_swift(Type select_type, int level) {
+static void selectTypeGroupReference_swift
+ (
+  Schema schema,
+  Type select_type, int level)
+{
 	char buf[BUFSIZ];
 	
 	TypeBody typeBody = TYPEget_body(select_type);
@@ -157,7 +161,17 @@ static void selectTypeGroupReference_swift(Type select_type, int level) {
 			raw(mark);
 			mark = NULL;
 		}
-		
+    // markdown
+    indent_swift(level);
+    raw("/// underlying type reference (NON-ENTITY)\n"
+        );
+    indent_swift(level);
+    raw("///\n");
+    indent_swift(level);
+    raw("/// - defined in: ``%s``\n",
+        TYPE_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
+        );
+
 		indent_swift(level);
 		raw("public var %s%s: ", superEntity_swiftPrefix, TYPE_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
 		wrap("%s? {\n", buf);
@@ -197,7 +211,17 @@ static void selectTypeGroupReference_swift(Type select_type, int level) {
 			raw(mark);
 			mark = NULL;
 		}
-		
+    // markdown
+    indent_swift(level);
+    raw("/// underlying type reference (ENTITY)\n"
+        );
+    indent_swift(level);
+    raw("///\n");
+    indent_swift(level);
+    raw("/// - defined in: ``%s``\n",
+        TYPE_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
+        );
+
 		indent_swift(level);
 		raw("public var %s%s: ", superEntity_swiftPrefix, as_entitySwiftName_n(entity_name, buf, sizeof(buf))); 
 		wrap("%s.PRef {\n", buf);
@@ -270,7 +294,7 @@ static void selectTypeGroupReference_swiftProtocol(Schema schema, Type select_ty
 		}
 		
 		indent_swift(level);
-		raw("var %s%s: ", superEntity_swiftPrefix, TYPE_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
+		raw("var %s%s: ", superEntity_swiftPrefix, TYPE_swiftName(selection, select_type/*->superscope*/, SWIFT_QUALIFIER, buf));
 		wrap("%s.%s? { get }\n", schemaname,buf);
 	} LISTod;				
 	
@@ -288,7 +312,7 @@ static void selectTypeGroupReference_swiftProtocol(Schema schema, Type select_ty
 		
 		indent_swift(level);
 		raw("var %s%s: ", superEntity_swiftPrefix, as_entitySwiftName_n(entity_name, buf, sizeof(buf))); 
-		wrap("%s.%s.PRef { get }\n", schemaname,buf);
+		wrap("%s.%s.PRef { get }\n", schemaname, buf);
 	}
 }
 static void selectSubtypeGroupReference_swift(Schema schema, Type select_type, int level) {
@@ -372,10 +396,15 @@ static void selectTypeAttributeReference_swift
 
 		// markdown
 		indent_swift(level);
-		raw("/// attribute of SELECT type ``%s``\n",
-				TYPE_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
-				);
-		LISTdo(typebody->list, selection_case, Type){
+		raw("/// SELECT type attribute\n"	);
+    indent_swift(level);
+    raw("///\n");
+    indent_swift(level);
+    raw("/// - defined in: ``%s``\n",
+        TYPE_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
+        );
+
+    LISTdo(typebody->list, selection_case, Type){
 			if( TYPEis_entity(selection_case) ) {
 				Entity case_entity = TYPEget_body(selection_case)->entity;
 				Variable base_attr = ENTITYfind_attribute_effective_definition(case_entity, attr_name);
@@ -1686,7 +1715,7 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 
 	// markdown
 	raw("\n/** SELECT type\n");
-	raw("- EXPRESS:\n");
+	raw("- EXPRESS source code:\n");
 	raw("```express\n");
 	TYPE_out(select_type, level);
 	raw("\n```\n");
@@ -1701,9 +1730,9 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 		indent_swift(level);
 		wrap( "public enum %s : SDAI.Value, ", typename );
 		positively_wrap();
-		raw(  "%s__", SCHEMA_swiftName(schema, buf) );
-		raw(  "%s__type {\n", typename );
-		
+//		raw(  "%s__", SCHEMA_swiftName(schema, buf) );
+		raw(  "TypeHierarchy.%s__TypeBehavior {\n", typename );
+
 		{	int level2 = level+nestingIndent_swift;
 			
 			LISTdo( typeBody->list, selection, Type ) {
@@ -1725,11 +1754,18 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 				// markdown
 				raw("\n");
 				indent_swift(level2);
-				raw("/// SELECT case ``%s`` (%s)",
+        raw("/// SELECT case (%s)",
+            case_kind
+            );
+        force_wrap();
+        raw("///");
+        force_wrap();
+				raw("/// - target: ``%s`` (%s)",
 						TYPE_swiftName(selection, schema->superscope, DOCC_QUALIFIER, buf),
 						case_kind
 						);
-				raw(" in ``%s``\n",
+        force_wrap();
+				raw("/// - defined in: ``%s``\n",
 						TYPE_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
 						);
 
@@ -1750,7 +1786,7 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 			selectTypeConstructor_swift(select_type, level2);
 			raw("\n");
 			
-			selectTypeGroupReference_swift(select_type, level2);
+			selectTypeGroupReference_swift(schema, select_type, level2);
 			raw("\n");
 
 			selectTypeAttributeReference_swift(schema, select_type, level2);		
@@ -1821,9 +1857,13 @@ void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {
 	Type common_aggregate_base = TYPE_retrieve_aggregate_base(select_type, NULL);
 
 	raw("\n\n//MARK: - SELECT TYPE HIERARCHY\n");
-	//type protocol
+	//__TypeBehavior protocol
+  indent_swift(level);
+  raw( "extension %s.TypeHierarchy {\n", schemaname);
+//  indent_swift(level);
+//  raw("@_documentation(visibility:public)\n");
 	indent_swift(level);
-	raw( "public protocol %s__%s__type: ", schemaname, typename);
+	raw( "public protocol %s__TypeBehavior: ", typename);
 	wrap("SDAI.SelectType");
 	if( common_aggregate_base != NULL ){
 		raw(", ");
@@ -1847,22 +1887,24 @@ void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {
 	}
 	
 	indent_swift(level);
-	raw("}\n\n");
-	
-	// subtype protocol
+	raw("}\n}\n\n");
+
+
+	// __Subtype protocol
 	indent_swift(level);
-	raw( "public protocol %s__%s__subtype: ", schemaname, typename );
-	wrap("%s__%s__type, SDAI.DefinedType\n", schemaname, typename );
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__Subtype: ", schemaname, typename );
+	wrap("%s__TypeBehavior, SDAI.DefinedType\n", typename );
 
 	indent_swift(level);
-	wrap("where Supertype: %s__%s__type\n", schemaname, typename);
+	wrap("where Supertype: %s__TypeBehavior\n", typename);
 
 	indent_swift(level);
-	raw( "{}\n\n");
-	
-	// subtype protocol extension
+	raw( "{}\n}\n\n");
+
+
+	// __Subtype protocol extension
 	indent_swift(level);
-	raw( "public extension %s__%s__subtype {\n", schemaname, typename );
+	raw( "public extension %s.TypeHierarchy.%s__Subtype {\n", schemaname, typename );
 
 	{	int level2 = level+nestingIndent_swift;
 		selectSubtypeConstructor_swift(schema, select_type, level2);

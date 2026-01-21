@@ -76,7 +76,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 	
 	// markdown
 	raw("\n/** ENUMERATION type\n");
-	raw("- EXPRESS:\n");
+	raw("- EXPRESS source code:\n");
 	raw("```express\n");
 	TYPE_out(type, level);
 	raw("\n```\n");
@@ -86,8 +86,8 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 	TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typename);
 	indent_swift(level);
 	wrap( "public enum %s : SDAI.ENUMERATION, SDAI.Value, ", typename );
-	wrap( "%s__%s__type {\n", SCHEMA_swiftName(schema, buf),typename );
-	
+	wrap( "TypeHierarchy.%s__TypeBehavior {\n", typename );
+
 	{	
 		if(count>0) {
 			enumCases = (Element*)sc_calloc( count, sizeof(Element) );
@@ -108,9 +108,13 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 				assert(enumCases[i] != NULL);
 				
 				//markdown
-				indent_swift(level2);
-				raw("/// ENUMERATION case in ``%s``\n", typename);
-				
+        indent_swift(level2);
+        raw("/// ENUMERATION case\n");
+        indent_swift(level2);
+        raw("///\n");
+        indent_swift(level2);
+        raw("/// - defined in: ``%s``\n", typename);
+
 				indent_swift(level2);
 				raw( "case %s\n", enumCase_swiftName( enumCases[i]->data, buf ) );
 			}
@@ -332,7 +336,11 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 			
 			//markdown
 			indent_swift(level);
-			raw("/// promoted ENUMERATION case in ``%s``\n", typename);
+			raw("/// promoted ENUMERATION case\n");
+      indent_swift(level);
+      raw("///\n");
+      indent_swift(level);
+      raw("/// - defined in ``%s``\n", typename);
 
 			indent_swift(level);
 			raw( "public static let %s = ", enumname );
@@ -353,17 +361,19 @@ void enumTypeExtension_swift(Schema schema, Type type, int level) {
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);
 
 	raw("\n\n//MARK: - ENUMERATION TYPE HIERARCHY\n");
+  //__TypeBehavior protocol
 	indent_swift(level);
-	raw( "public protocol %s__%s__type: ", schemaname, typename);
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__TypeBehavior: ", schemaname, typename);
 	wrap("SDAI.EnumerationType ");
-	wrap("{}\n\n");
+	wrap("{}\n}\n\n");
+
 	
-	
+  // __Subtype protocol
 	indent_swift(level);
-	raw( "public protocol %s__%s__subtype: ", schemaname, typename );
-	wrap("%s__%s__type, SDAI.DefinedType\n", schemaname, typename );
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__Subtype: ", schemaname, typename );
+	wrap("%s__TypeBehavior, SDAI.DefinedType\n", typename );
 	indent_swift(level);
-	wrap("where Supertype: %s__%s__type\n", schemaname, typename);
+	wrap("where Supertype: %s__TypeBehavior\n", typename);
 	indent_swift(level);
-	raw( "{}\n\n");
+	raw( "{}\n}\n\n");
 }

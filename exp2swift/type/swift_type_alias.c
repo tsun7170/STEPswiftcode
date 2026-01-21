@@ -36,7 +36,7 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 	
 	// markdown
 	raw("\n/** Defined data type (type alias)\n");
-	raw("- EXPRESS:\n");
+	raw("- EXPRESS source code:\n");
 	raw("```express\n");
 	TYPE_out(type, level);
 	raw("\n```\n");
@@ -44,8 +44,8 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 	
 	indent_swift(level);
 	raw( "public struct %s: ", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
-	wrap("%s__", SCHEMA_swiftName(schema, buf));
-	raw( "%s__type {\n", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
+//	wrap("%s__", SCHEMA_swiftName(schema, buf));
+	raw( "TypeHierarchy.%s__TypeBehavior {\n", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
 
 	{	
 		indent_swift(level2);
@@ -136,14 +136,16 @@ void typeAliasExtension_swift( Schema schema, Type type, Type original, int leve
 
 	raw("\n\n//MARK: - DEFINED TYPE HIERARCHY\n");
 
+  //__TypeBehavior protocol
 	indent_swift(level);
-	raw( "public protocol %s__%s__type: ", schemaname, typename);
-	wrap("%s__%s__subtype {}\n\n", schemaname, TYPE_swiftName(original, type->superscope, SWIFT_QUALIFIER, buf));
-	 
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__TypeBehavior: ", schemaname, typename);
+	wrap("%s__Subtype {}\n}\n\n", TYPE_swiftName(original, type->superscope, SWIFT_QUALIFIER, buf));
+
+  // __Subtype protocol
 	indent_swift(level);
-	raw( "public protocol %s__%s__subtype: ", schemaname, typename);
-	wrap("%s__%s__type\n", schemaname, typename);
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__Subtype: ", schemaname, typename);
+	wrap("%s__TypeBehavior\n", typename);
 
 	indent_swift(level);
-	raw( "{}\n");
+	raw( "{}\n}\n\n");
 }

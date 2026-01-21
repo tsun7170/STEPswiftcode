@@ -105,7 +105,7 @@ static void func_result_cache_lookup_swift( Schema schema, Function func, int le
 void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 	if(!nested) {
 		// EXPRESS summary
-		beginExpress_swift("FUNCTION DEFINITION", AS_MARKDOWN_EXPRESS);
+		beginExpress_swift("FUNCTION definition", AS_MARKDOWN_EXPRESS);
 		FUNC_out(func, level);
 		endExpress_swift(AS_MARKDOWN_EXPRESS);	
 	}

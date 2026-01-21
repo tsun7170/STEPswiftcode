@@ -135,7 +135,7 @@ void SCHEMA_swift( Schema schema ) {
 	int level2 = level+nestingIndent_swift;
 	
 	first_line = false;
-	beginExpress_swift("SCHEMA DEFINITION", AS_MARKDOWN_EXPRESS);
+	beginExpress_swift("SCHEMA definition", AS_MARKDOWN_EXPRESS);
 	raw( "SCHEMA %s;\n", schema->symbol.name );
 	
 	if( schema->u.schema->usedict || schema->u.schema->use_schemas
@@ -156,8 +156,15 @@ void SCHEMA_swift( Schema schema ) {
 	{	char buf[BUFSIZ];
 		raw("public enum %s: SDAI.SchemaType {\n", SCHEMA_swiftName(schema, buf));
 		
-		indent_swift(level2);
-		raw("public static let schemaDefinition = createSchemaDefinition()\n");
+    indent_swift(level2);
+    raw("public static let schemaDefinition = createSchemaDefinition()\n\n");
+
+    indent_swift(level2);
+    raw("//MARK: TypeHierarchy namespace\n");
+    indent_swift(level2);
+    raw("/// Namespace for the type system hierarchy protocol definitions\n");
+    indent_swift(level2);
+    raw("public enum TypeHierarchy {}\n");
 	}
 	
 	Linked_List constList = LISTcreate();

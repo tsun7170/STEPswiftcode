@@ -36,7 +36,7 @@ char 				RULE_swiftNameInitial( Rule rule ) {
 
 void RULE_swift(Schema schema, Rule rule, int level ) {
 	// EXPRESS summary
-	beginExpress_swift("RULE DEFINITION", AS_MARKDOWN_EXPRESS);
+	beginExpress_swift("RULE definition", AS_MARKDOWN_EXPRESS);
 	RULE_out(rule, level);
 	endExpress_swift(AS_MARKDOWN_EXPRESS);	
 	

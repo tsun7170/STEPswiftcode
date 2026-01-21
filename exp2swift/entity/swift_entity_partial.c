@@ -1096,7 +1096,7 @@ void partialEntityDefinition_swift
 	{	char buf[BUFSIZ];
 
 		raw("\n/** Partial Entity\n");
-		raw("- EXPRESS:\n");
+		raw("- EXPRESS source code:\n");
 		raw("```express\n");
 		ENTITY_out(entity, level);
 		raw("\n```\n");
