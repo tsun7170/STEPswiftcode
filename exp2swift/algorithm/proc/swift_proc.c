@@ -92,7 +92,7 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 				Type base = atag->u.type->head;	//hack!
 				positively_wrap();
 				wrap("%s%s.Element == ",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
-				TYPE_head_swift(proc->superscope, base, NOT_IN_COMMENT, LEAF_OWNED);
+				TYPE_head_swift(proc->superscope, base, NOT_IN_COMMENT);
 				sep = ", ";
 			}LISTod;
 		}

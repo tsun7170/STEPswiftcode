@@ -92,7 +92,7 @@ static void func_result_cache_lookup_swift( Schema schema, Function func, int le
 
 	indent_swift(level2);
 	raw("return _cached_value as%s ", return_optional ? "?" : "!" );
-	TYPE_head_swift(func->superscope, FUNCget_return_type(func), WO_COMMENT, LEAF_OWNED);
+	TYPE_head_swift(func->superscope, FUNCget_return_type(func), WO_COMMENT);
 	raw("\n");
 
 	//
@@ -164,7 +164,7 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 			Type aggr = atag->u.type->head;	
 			positively_wrap();
 			wrap("%s%s.ELEMENT == ",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
-			TYPE_head_swift(func->superscope, TYPEget_base_type(aggr), WO_COMMENT, LEAF_OWNED);
+			TYPE_head_swift(func->superscope, TYPEget_base_type(aggr), WO_COMMENT);
 			sep = ", ";
 		}LISTod;
 	}

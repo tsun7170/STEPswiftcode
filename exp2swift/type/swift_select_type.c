@@ -465,7 +465,7 @@ static void selectTypeAttributeReference_swift
 							raw("\n");
 						}
 						else {
-							TYPE_head_swift(NULL, attr_type, WO_COMMENT, LEAF_OWNED);
+							TYPE_head_swift(NULL, attr_type, WO_COMMENT);
 							raw("(");
 							wrap("entity.%s)\n",
 									 as_attributeSwiftName_n(attr_name, buf, BUFSIZ)
@@ -511,14 +511,14 @@ static void selectTypeAttributeReference_swift
 							}
 						}
 						else if( TYPEis_free_generic(base_attr_type) ){
-							TYPE_head_swift(NULL, attr_type, WO_COMMENT, LEAF_OWNED);
+							TYPE_head_swift(NULL, attr_type, WO_COMMENT);
 							raw(".convert(fromGeneric: ");
 							wrap("select.%s)",
 									 as_attributeSwiftName_n(attr_name, buf, BUFSIZ)
 									 );
 						}
 						else {
-							TYPE_head_swift(NULL, attr_type, WO_COMMENT, LEAF_OWNED);
+							TYPE_head_swift(NULL, attr_type, WO_COMMENT);
 							raw("(");
 							wrap("select.%s)",
 									 as_attributeSwiftName_n(attr_name, buf, BUFSIZ)
@@ -853,7 +853,7 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	
 	
 	indent_swift(level);
-	raw("// InitializableByP21Parameter\n");
+	raw("// Initializable.ByP21Parameter\n");
 	
 	indent_swift(level);
 	raw("public static let bareTypeName: String = ");
@@ -1516,7 +1516,7 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 	raw("//MARK: SDAI.AggregationType\n");
 
 	indent_swift(level);
-	wrap("public typealias ELEMENT = %s\n", TYPEhead_string_swift(select_type->superscope, aggregate_base, NOT_IN_COMMENT, LEAF_OWNED, buf));
+	wrap("public typealias ELEMENT = %s\n", TYPEhead_string_swift(select_type->superscope, aggregate_base, NOT_IN_COMMENT, buf));
 
 	selectVarForwarding_swift(select_type, "hiBound", "Int?", level);
 	selectVarForwarding_swift(select_type, "hiIndex", "Int",  level);
@@ -1643,66 +1643,73 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 static void SELECTwhereRuleValidation_swift( Type select_type, int level ) {
 	char typename[BUFSIZ]; TYPE_swiftName(select_type, select_type->superscope, SWIFT_QUALIFIER, typename);
 
-	raw("\n");
-	indent_swift(level);
-	raw("//MARK: WHERE RULE VALIDATION (SELECT TYPE)\n");
+  raw("\n");
+  indent_swift(level);
+  raw("//MARK: WHERE RULE VALIDATION (SELECT TYPE)\n");
 
-	indent_swift(level);
-	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
-	
-	{	int level2 = level+nestingIndent_swift;
-		char buf[BUFSIZ];
-		
-		indent_swift(level2);
-		raw("var result: [SDAI.WhereLabel:SDAI.LOGICAL] = [:]\n");
+  indent_swift(level);
+  raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel) -> SDAI.WhereRuleValidationRecords {\n");
 
-		// underlying case type validation
-		indent_swift(level2);
-		raw("switch instance {\n");
-		LISTdo( TYPEget_body(select_type)->list, selection_case, Type ) {
-			indent_swift(level2);
-			if( TYPEis_entity(selection_case)) {
-				raw("case .%s(let entity): ",
-						selectCase_swiftName(selection_case, buf));
-				wrap("result = %s.validateWhereRules(instance: entity.eval, ",
-						 ENTITY_swiftName(ENT_TYPEget_entity(selection_case), select_type->superscope, SWIFT_QUALIFIER, buf)
-						 );
-			}
-			else{
-				raw("case .%s(let selectValue): ",
-						selectCase_swiftName(selection_case, buf));
-				wrap("result = %s.validateWhereRules(instance: selectValue, ",
-							TYPE_swiftName(selection_case, select_type->superscope, SWIFT_QUALIFIER, buf)
-						 );
-			}
+  {  int level2 = level+nestingIndent_swift;
+    char buf[BUFSIZ];
+    
+    indent_swift(level2);
+    raw("var result: SDAI.WhereRuleValidationRecords = [:]\n");
 
-			wrap("prefix:prefix + \"\\\\%s\")\n",
-					 TYPE_canonicalName(selection_case,select_type->superscope, SWIFT_QUALIFIER, buf)
-					 );
-		} LISTod;				
-		
-		indent_swift(level2);
-		raw("case nil: break\n");
-		indent_swift(level2);
-		raw("}\n\n");
+    // underlying case type validation
+    indent_swift(level2);
+    raw("switch instance {\n");
+    LISTdo( TYPEget_body(select_type)->list, selection_case, Type ) {
+      indent_swift(level2);
+      if( TYPEis_entity(selection_case)) {
+        raw("case .%s(let entity): ",
+            selectCase_swiftName(selection_case, buf));
+        force_wrap();
+        wrap("if !entity.shouldPropagateValidation { break }");
+        force_wrap();
+        wrap("result = %s.validateWhereRules(instance: entity.eval, ",
+             ENTITY_swiftName(ENT_TYPEget_entity(selection_case), select_type->superscope, SWIFT_QUALIFIER, buf)
+             );
+        wrap("prefix:prefix + \"\\\\\\(entity)\")\n",
+             TYPE_canonicalName(selection_case,select_type->superscope, SWIFT_QUALIFIER, buf)
+             );
+      }
+      else{
+        raw("case .%s(let selectValue): ",
+            selectCase_swiftName(selection_case, buf));
+        wrap("result = %s.validateWhereRules(instance: selectValue, ",
+              TYPE_swiftName(selection_case, select_type->superscope, SWIFT_QUALIFIER, buf)
+             );
+        wrap("prefix:prefix + \"\\\\%s\")\n",
+             TYPE_canonicalName(selection_case,select_type->superscope, SWIFT_QUALIFIER, buf)
+             );
+      }
 
-		// selftype where validations
-		Linked_List where_rules = TYPEget_where(select_type);
-		LISTdo( where_rules, where, Where ){
-			char whereLabel[BUFSIZ];
-			indent_swift(level2);
-			raw("result[prefix + \".%s\"] = %s.%s(SELF: instance)\n", 
-					whereRuleLabel_swiftName(where, whereLabel),
-					typename,
-					whereLabel);
-		}LISTod;
+    } LISTod;
+    
+    indent_swift(level2);
+    raw("case nil: break\n");
+    indent_swift(level2);
+    raw("}\n\n");
 
-		indent_swift(level2);
-		raw("return result\n");		
-	}
-	
-	indent_swift(level);
-	raw("}\n\n");
+    // selftype where validations
+    Linked_List where_rules = TYPEget_where(select_type);
+    LISTdo( where_rules, where, Where ){
+      char whereLabel[BUFSIZ];
+      indent_swift(level2);
+      raw("result[prefix + \".%s\"] = %s.%s(SELF: instance)\n", 
+          whereRuleLabel_swiftName(where, whereLabel),
+          typename,
+          whereLabel);
+    }LISTod;
+
+    indent_swift(level2);
+    raw("return result\n");    
+  }
+  
+  indent_swift(level);
+  raw("}\n\n");
+
 	
 }
 
@@ -1873,7 +1880,7 @@ void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {
 		}
 		else {
 			char buf[BUFSIZ];
-			wrap("where ELEMENT == %s", TYPEhead_string_swift(schema->superscope, common_aggregate_base, NOT_IN_COMMENT, LEAF_OWNED, buf));
+			wrap("where ELEMENT == %s", TYPEhead_string_swift(schema->superscope, common_aggregate_base, NOT_IN_COMMENT, buf));
 		}
 	}
 	

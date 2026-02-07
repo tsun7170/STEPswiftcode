@@ -697,7 +697,7 @@ int EXPR_tempvars_swift( Scope s, Linked_List tempvar_definitions, int level ){
 		raw("let %s ", asVariable_swiftName_n(tempvar->symbol.name, buf, BUFSIZ));
 		{
 			raw("/* ");
-			EXPR_returnType_swift(s, expr, YES_IN_COMMENT, LEAF_OWNED);
+			EXPR_returnType_swift(s, expr, YES_IN_COMMENT);
 			switch(EXPRresult_is_optional(s, tempvar, CHECK_SHALLOW)){
 				case no_optional:
 					break;
@@ -711,7 +711,7 @@ int EXPR_tempvars_swift( Scope s, Linked_List tempvar_definitions, int level ){
 			raw(" */ ");
 		}
 		raw("= ");
-		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, expr, tempvar->return_type, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, expr, tempvar->return_type, EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 		raw("\n");
 	}LISTod;
 	

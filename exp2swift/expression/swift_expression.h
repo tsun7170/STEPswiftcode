@@ -24,21 +24,28 @@
 #define YES_RESOLVING_GENERIC	true
 #define NO_RESOLVING_GENERIC	false
 
+#define SUPPRESS_SELF true
+#define EMIT_SELF false
+
 
 extern TypeOptionality EXPRresult_is_optional
  (Scope SELF, Expression e, bool deep);
 
 extern void EXPRbounds_swift
- ( Scope SELF, TypeBody tb, SwiftOutCommentOption in_comment );
+ ( Scope SELF, TypeBody tb,
+  bool suppress_SELF,
+  SwiftOutCommentOption in_comment );
 
 extern void EXPR_swift
- ( Scope SELF, Expression e, Type target_type, TypeOptionality optionality, bool paren);
+ ( Scope SELF, Expression e, Type target_type, TypeOptionality optionality, bool suppress_SELF, bool paren);
 
 extern void EXPRaggregate_init_swift
- (bool resolve_generic, Scope SELF, Expression rhs, Type lhsType, bool leaf_owned );
+ (bool resolve_generic, Scope SELF, Expression rhs, Type lhsType,
+  bool suppress_SELF);
 
 extern void EXPRassignment_rhs_swift
 (bool resolve_generic, Scope SELF, Expression rhs, Type lhsType,
+ bool suppress_SELF,
  bool paren, unsigned int previous_op, bool can_wrap);
 
 extern Expression EXPRempty_aggregate_initializer(void);
@@ -46,7 +53,7 @@ extern Expression EXPRempty_aggregate_initializer(void);
 extern void EXPR_returnType_swift
  ( Scope SELF,
 	Expression e,
-	SwiftOutCommentOption in_comment,
-	bool leaf_unowned );
+	SwiftOutCommentOption in_comment
+  );
 
 #endif /* swift_expression_h */

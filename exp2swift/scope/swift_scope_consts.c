@@ -48,9 +48,9 @@ static void SCOPEconst_swift(Scope current, char* access, Variable v, int level 
 			raw( " = SDAI.UNWRAP(" );
 		}
 		aggressively_wrap();
-		int oldwrap = captureWrapIndent(0);
-		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, current, v->initializer, v->type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
-		restoreWrapIndent(oldwrap);
+//		int oldwrap = captureWrapIndent(0);
+		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, current, v->initializer, v->type, EMIT_SELF, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+//		restoreWrapIndent(oldwrap);
 	}
 	
 	raw( ")\n\n" );

@@ -26,41 +26,41 @@
 static void enumWhereRuleValidation_swift( Type type, int level ) {
 	Linked_List where_rules = TYPEget_where(type);
 
-	raw("\n");
-	indent_swift(level);
-	raw("//WHERE RULE VALIDATION (ENUMERATION TYPE)\n");
+  raw("\n");
+  indent_swift(level);
+  raw("//WHERE RULE VALIDATION (ENUMERATION TYPE)\n");
 
-	indent_swift(level);
-	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
-	
-	{	int level2 = level+nestingIndent_swift;
-		
-		if( LISTis_empty(where_rules) ) {
-			indent_swift(level2);
-			raw("return [:]\n");		
-		} 
-		else {
-			char typename[BUFSIZ];TYPE_swiftName(type, NO_QUALIFICATION, SWIFT_QUALIFIER, typename);
-			indent_swift(level2);
-			raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
-			
-			indent_swift(level2);
-			raw("var result: [SDAI.WhereLabel:SDAI.LOGICAL] = [:]\n");
-			
-			LISTdo( where_rules, where, Where ){
-				char whereLabel[BUFSIZ];
-				indent_swift(level2);
-				raw("result[prefix2 + \".%s\"] = %s.%s(SELF: instance)\n", 
-						whereRuleLabel_swiftName(where, whereLabel), typename, whereLabel);
-			}LISTod;
-			
-			indent_swift(level2);
-			raw("return result\n");		
-		}
-	}
-	
-	indent_swift(level);
-	raw("}\n\n");
+  indent_swift(level);
+  raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel) -> SDAI.WhereRuleValidationRecords {\n");
+
+  {  int level2 = level+nestingIndent_swift;
+    
+    if( LISTis_empty(where_rules) ) {
+      indent_swift(level2);
+      raw("return [:]\n");    
+    } 
+    else {
+      char typename[BUFSIZ];TYPE_swiftName(type, NO_QUALIFICATION, SWIFT_QUALIFIER, typename);
+      indent_swift(level2);
+      raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
+      
+      indent_swift(level2);
+      raw("var result: SDAI.WhereRuleValidationRecords = [:]\n");
+      
+      LISTdo( where_rules, where, Where ){
+        char whereLabel[BUFSIZ];
+        indent_swift(level2);
+        raw("result[prefix2 + \".%s\"] = %s.%s(SELF: instance)\n", 
+            whereRuleLabel_swiftName(where, whereLabel), typename, whereLabel);
+      }LISTod;
+      
+      indent_swift(level2);
+      raw("return result\n");    
+    }
+  }
+  
+  indent_swift(level);
+  raw("}\n\n");
 	
 }
 
@@ -209,9 +209,9 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("}\n");
 
 		
-		//MARK: InitializableByP21Parameter
+		//MARK: Initializable.ByP21Parameter
 		indent_swift(level2);
-		raw("// InitializableByP21Parameter\n");
+		raw("// Initializable.ByP21Parameter\n");
 	
 		indent_swift(level2);
 		raw("public static let bareTypeName: String = ");

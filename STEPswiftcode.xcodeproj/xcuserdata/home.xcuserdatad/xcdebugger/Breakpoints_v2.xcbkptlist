@@ -174,9 +174,9 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "233"
-            endingLineNumber = "233"
-            landmarkName = "emit_usedin_call(SELF, e, can_wrap)"
+            startingLineNumber = "244"
+            endingLineNumber = "244"
+            landmarkName = "emit_usedin_call(SELF, e, suppress_SELF, can_wrap)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -206,9 +206,9 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1203"
-            endingLineNumber = "1203"
-            landmarkName = "EXPRop2__swift(SELF1, SELF2, oe, opcode, op1target_type, op2target_type, paren, previous_op, can_wrap, need_optional_operand)"
+            startingLineNumber = "1242"
+            endingLineNumber = "1242"
+            landmarkName = "EXPRop2__swift(SELF1, SELF2, oe, opcode, op1target_type, op2target_type, suppress_SELF, paren, previous_op, can_wrap, need_optional_operand)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -222,9 +222,9 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1054"
-            endingLineNumber = "1054"
-            landmarkName = "EXPRop__swift(SELF, oe, target_type, paren, previous_op, can_wrap)"
+            startingLineNumber = "1090"
+            endingLineNumber = "1090"
+            landmarkName = "EXPRop__swift(SELF, oe, target_type, suppress_SELF, paren, previous_op, can_wrap)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -238,9 +238,9 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1219"
-            endingLineNumber = "1219"
-            landmarkName = "EXPRop2__swift(SELF1, SELF2, oe, opcode, op1target_type, op2target_type, paren, previous_op, can_wrap, need_optional_operand)"
+            startingLineNumber = "1258"
+            endingLineNumber = "1258"
+            landmarkName = "EXPRop2__swift(SELF1, SELF2, oe, opcode, op1target_type, op2target_type, suppress_SELF, paren, previous_op, can_wrap, need_optional_operand)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -302,9 +302,9 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "350"
-            endingLineNumber = "350"
-            landmarkName = "EXPRquery_swift(SELF, can_wrap, e)"
+            startingLineNumber = "376"
+            endingLineNumber = "376"
+            landmarkName = "EXPRquery_swift(SELF, can_wrap, e, suppress_SELF)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -334,8 +334,8 @@
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "601"
-            endingLineNumber = "601"
+            startingLineNumber = "679"
+            endingLineNumber = "679"
             landmarkName = "TYPEwhereDefinitions_swift(scope, level)"
             landmarkType = "9">
          </BreakpointContent>
@@ -366,8 +366,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "587"
-            endingLineNumber = "587"
+            startingLineNumber = "619"
+            endingLineNumber = "619"
             landmarkName = "operator_returns_optional(SELF, oe, deep)"
             landmarkType = "9">
          </BreakpointContent>
@@ -382,8 +382,8 @@
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "602"
-            endingLineNumber = "602"
+            startingLineNumber = "680"
+            endingLineNumber = "680"
             landmarkName = "TYPEwhereDefinitions_swift(scope, level)"
             landmarkType = "9">
          </BreakpointContent>
@@ -415,9 +415,9 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "909"
-            endingLineNumber = "909"
-            landmarkName = "EXPR__swift(SELF, e, target_type, optionality, paren, previous_op, can_wrap)"
+            startingLineNumber = "944"
+            endingLineNumber = "944"
+            landmarkName = "EXPR__swift(SELF, e, target_type, optionality, suppress_SELF, paren, previous_op, can_wrap)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -440,16 +440,128 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "A56393BB-7667-4AA2-9B28-035E4074F085"
+            uuid = "5531D5E2-D8D6-4F18-8AD3-A57D272CD433"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "exp2swift/entity/swift_entity_reference.c"
+            filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1227"
-            endingLineNumber = "1227"
-            landmarkName = "entityReferenceInitializers_swift(entity, level)"
+            startingLineNumber = "501"
+            endingLineNumber = "501"
+            landmarkName = "TYPE_body_swift(current, t, in_comment)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "84B79BF6-AC7C-4394-A829-65381CA1A09D"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "exp2swift/type/swift_type.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "513"
+            endingLineNumber = "513"
+            landmarkName = "TYPE_body_swift(current, t, in_comment)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "117E6F5B-01E8-42E9-811B-064DFEDC1B97"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "exp2swift/type/swift_type.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "287"
+            endingLineNumber = "287"
+            landmarkName = "additional_constraints(current, t, in_comment)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "1F76F77F-657C-4DE5-86CD-0C7CDC89E544"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "exp2swift/type/swift_type.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "295"
+            endingLineNumber = "295"
+            landmarkName = "additional_constraints(current, t, in_comment)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "2E11C323-7306-44A2-80B0-67FFA658B789"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "stepcode/src/express/generated/expparse.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2534"
+            endingLineNumber = "2534"
+            landmarkName = "yy_reduce(yypParser, yyruleno)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "3D4E1AA7-7A72-4975-95DE-87FD80B9258B"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "stepcode/src/express/generated/expparse.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2542"
+            endingLineNumber = "2542"
+            landmarkName = "yy_reduce(yypParser, yyruleno)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "533A55E5-2564-431C-AB0D-9A247937570D"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "stepcode/src/express/generated/expparse.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2564"
+            endingLineNumber = "2564"
+            landmarkName = "yy_reduce(yypParser, yyruleno)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "35F2362F-1DC0-40C0-8D6B-25F053DBC020"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "stepcode/src/express/generated/expparse.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2573"
+            endingLineNumber = "2573"
+            landmarkName = "yy_reduce(yypParser, yyruleno)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>

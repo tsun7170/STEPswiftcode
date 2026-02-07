@@ -12,13 +12,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>1468</string>
+					<string>1502</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>1467</string>
+					<string>1501</string>
 					<key>Timestamp</key>
-					<string>782122536.177254</string>
+					<string>792141439.697721</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -34,16 +34,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>void EXPRassignment_rhs_swift(bool resolve_generic, Scope SELF, Expression rhs, Type lhsType, bool paren, unsigned int previous_op, bool can_wrap) {
+				<string>void EXPRassignment_rhs_swift
 </string>
 				<key>leading</key>
-				<string>}
-
+				<string>
+//MARK: assignment RHS
 </string>
 				<key>trailing</key>
-				<string>	bool rhs_is_partial = TYPEis_partial_entity(rhs-&gt;return_type);
-	
-	if( (!rhs_is_partial) &amp;&amp; (lhsType == NULL) ) {
+				<string> (bool resolve_generic, Scope SELF, Expression rhs, Type lhsType,
+  bool suppress_SELF,
+  bool paren, unsigned int previous_op, bool can_wrap)
 </string>
 			</dict>
 			<key>type</key>
@@ -101,13 +101,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>820</string>
+					<string>855</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>819</string>
+					<string>854</string>
 					<key>Timestamp</key>
-					<string>782122170.948626</string>
+					<string>792141241.706077</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -146,13 +146,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>1174</string>
+					<string>1210</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>1173</string>
+					<string>1209</string>
 					<key>Timestamp</key>
-					<string>782122314.546187</string>
+					<string>792141241.706242</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -168,16 +168,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>				EXPRopDot_swift( SELF, oe, paren, can_wrap );
+				<string>				EXPRopDot_swift( SELF, oe, suppress_SELF, paren, can_wrap );
 </string>
 				<key>leading</key>
-				<string>			//MARK:OP_DOT
+				<string>			//MARK: OP_DOT
 			case OP_DOT:
 </string>
 				<key>trailing</key>
 				<string>				break;
 				
-			//MARK:OP_GROUP
+			//MARK: OP_GROUP
 </string>
 			</dict>
 			<key>type</key>
@@ -191,13 +191,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>1179</string>
+					<string>1215</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>1178</string>
+					<string>1214</string>
 					<key>Timestamp</key>
-					<string>782122314.5458241</string>
+					<string>792141241.706159</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -213,10 +213,10 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>				EXPRopGroup_swift( SELF, oe, paren, can_wrap );
+				<string>				EXPRopGroup_swift( SELF, oe, suppress_SELF, paren, can_wrap );
 </string>
 				<key>leading</key>
-				<string>			//MARK:OP_GROUP
+				<string>			//MARK: OP_GROUP
 			case OP_GROUP:
 </string>
 				<key>trailing</key>

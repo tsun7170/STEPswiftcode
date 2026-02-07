@@ -268,12 +268,65 @@ extern void TYPEextension_swift( Schema schema, Type t, int level ) {
 
 
 //MARK: - type references
+void additional_constraints
+ (Scope current,
+  Type t,
+  SwiftOutCommentOption in_comment
+  )
+{
+  if( in_comment == WO_COMMENT ) return;
+
+  bool comment_open = false;
+  TypeBody tb = TYPEget_body( t );
+
+  switch( tb->type ) {
+    case string_:
+    case binary_:
+      {
+        if(tb->precision){
+          if((in_comment != YES_IN_COMMENT) && (!comment_open)){
+            raw("/*");
+            comment_open = true;
+          }
+
+          EXPR_swift(current, tb->precision, tb->precision->return_type, no_optional, EMIT_SELF, YES_PAREN);
+        }
+        if(tb->flags.fixed) {
+          if((in_comment != YES_IN_COMMENT) && (!comment_open)){
+            raw("/*");
+            comment_open = true;
+          }
+          raw(" FIXED");
+        }
+        break;
+      }
+
+    case indeterminate_:
+    case integer_:
+    case real_:
+    case boolean_:
+    case logical_:
+    case number_:
+
+    case bag_:
+    case set_:
+    case array_:
+    case list_:
+
+    default:
+      break;
+  }
+
+  if(comment_open){
+    raw("*/");
+  }
+}
 
 void TYPE_head_swift
  ( Scope current,
 	Type t,
-	SwiftOutCommentOption in_comment,
-	bool leaf_unowned )
+	SwiftOutCommentOption in_comment
+  )
 {
 	if( t == NULL ){
 		switch (in_comment) {
@@ -292,9 +345,10 @@ void TYPE_head_swift
 	if( t->symbol.name ) {
 		char buf[BUFSIZ];
 		wrap( "%s", TYPE_swiftName(t,current, SWIFT_QUALIFIER, buf) );
-	} else {
-		TYPE_body_swift( current, t, in_comment, leaf_unowned );
-	}
+    additional_constraints(current, t, in_comment);
+  } else {
+    TYPE_body_swift( current, t, in_comment );
+  }
 }
 
 const char* builtinTYPE_body_swiftname( Type t ) {
@@ -332,8 +386,8 @@ const char* builtinTYPE_body_swiftname( Type t ) {
 void TYPE_body_swift
  ( Scope current,
 	Type t,
-	SwiftOutCommentOption in_comment,
-	bool leaf_unowned )
+	SwiftOutCommentOption in_comment
+  )
 {
 	TypeBody tb = TYPEget_body( t );
 	
@@ -387,7 +441,7 @@ void TYPE_body_swift
 				wrap("SDAI.AGGREGATE");
 				if( tb->base != NULL ){
 					raw( "<" );
-					TYPE_head_swift( current, tb->base, in_comment, leaf_unowned );
+					TYPE_head_swift( current, tb->base, in_comment );
 					raw(">");
 				}
 				else {
@@ -409,9 +463,9 @@ void TYPE_body_swift
 			wrap("SDAI.");
 			raw( builtinTYPE_body_swiftname(t) );			
 			raw( "<" );
-			TYPE_head_swift( current, tb->base, in_comment, leaf_unowned );
+			TYPE_head_swift( current, tb->base, in_comment );
 			raw(">");
-			EXPRbounds_swift( NULL, tb, in_comment );
+			EXPRbounds_swift( NULL, tb, EMIT_SELF, in_comment );
 			break;
 			
 		case runtime_:
@@ -441,27 +495,46 @@ void TYPE_body_swift
 	}
 	
 	if( in_comment != WO_COMMENT ){
+    bool comment_open = false;
+
 		if( tb->precision ) {
-			wrap( "%s( ", in_comment==YES_IN_COMMENT ? "" : "/* " );
+      if((in_comment != YES_IN_COMMENT) && (!comment_open)){
+        raw("/*");
+        comment_open = true;
+      }
+
+//			wrap( "%s( ", in_comment==YES_IN_COMMENT ? "" : "/* " );
+      raw("(");
 			EXPR_out( tb->precision, 0 );
-			raw( " )%s", in_comment==YES_IN_COMMENT ? "" : " */" );
+//			raw( " )%s", in_comment==YES_IN_COMMENT ? "" : " */" );
+      raw(")");
 		}
 		if( tb->flags.fixed ) {
-			if( in_comment==YES_IN_COMMENT ) {
-				wrap( "FIXED" );
-			}
-			else {
-				wrap( "/* FIXED */" );
-			}
+      if((in_comment != YES_IN_COMMENT) && (!comment_open)){
+        raw("/*");
+        comment_open = true;
+      }
+
+      raw(" FIXED");
+
+//			if( in_comment==YES_IN_COMMENT ) {
+//				wrap( "FIXED" );
+//			}
+//			else {
+//				wrap( "/* FIXED */" );
+//			}
 		}
+    if(comment_open) {
+      raw("*/");
+    }
 	}
 }
 
-const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption in_comment, bool leaf_unowned, char buf[BUFSIZ]) {
+const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption in_comment, char buf[BUFSIZ]) {
 	if( prep_buffer(buf, BUFSIZ) ) {
 		abort();
 	}
-	TYPE_head_swift(current, t, in_comment, leaf_unowned);
+	TYPE_head_swift(current, t, in_comment);
 	finish_buffer();
 	return ( buf );
 }
@@ -491,11 +564,16 @@ bool TYPEis_swiftAssignable(Type lhstype, Type rhstype) {
 			
 		case integer_:
 		case real_:
-		case string_:
-		case binary_:
 		case boolean_:
 			if(lhstb->type != rhstb->type)return false;
 			return  equal_symbol;
+
+    case string_:
+    case binary_:
+      if(lhstb->type != rhstb->type)return false;
+      if(lhstb->flags.fixed != rhstb->flags.fixed)return false;
+      if(!EXPs_are_equal(lhstb->precision, rhstb->precision))return false;
+      return  equal_symbol;
 
 		case number_:
 			if(!equal_symbol) return false;
@@ -604,13 +682,13 @@ void TYPEwhereDefinitions_swift( Scope scope, int level ) {
 			indent_swift(level2);
 			raw("return ");
 			if( EXPRresult_is_optional(scope, simplified, CHECK_DEEP) != no_optional ){
-				TYPE_head_swift(scope, Type_Logical, WO_COMMENT, LEAF_OWNED);	// wrap with explicit type cast
+				TYPE_head_swift(scope, Type_Logical, WO_COMMENT);	// wrap with explicit type cast
 				raw("(");
-				EXPR_swift(scope, simplified, Type_Logical, unknown_optional, NO_PAREN);			
+				EXPR_swift(scope, simplified, Type_Logical, unknown_optional, EMIT_SELF, NO_PAREN);			
 				raw(")");
 			}
 			else {
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, scope, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, scope, simplified, Type_Logical, EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			}
 			raw("\n");
 			EXPR_delete_tempvar_definitions(tempvars);
@@ -623,14 +701,14 @@ void TYPEwhereDefinitions_swift( Scope scope, int level ) {
 
 void TYPEwhereRuleValidation_swift( Type type, int level ) {
 	Linked_List where_rules = TYPEget_where(type);
-	if( LISTis_empty(where_rules) ) return;
+	if( LISTis_empty(where_rules) ) return; // baseline validation will be handled by the protocol extension for SDAI.DefinedType
 
 	raw("\n");
 	indent_swift(level);
 	raw("//WHERE RULE VALIDATION (DEFINED TYPE)\n");
 
 	indent_swift(level);
-	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
+	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel) -> SDAI.WhereRuleValidationRecords {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		
@@ -661,7 +739,7 @@ void insert_select_type_member_tree( Scope scope, Type select_type, const char* 
 	if( SCOPE_search_visited(select_type) )return;
 	
 	char select_type_name[BUFSIZ];
-	TYPEhead_string_swift(scope, select_type, WO_COMMENT, LEAF_OWNED, select_type_name);
+	TYPEhead_string_swift(scope, select_type, WO_COMMENT, select_type_name);
 	
 	indent_swift(level);
 	raw("members.insert(SDAI.STRING(%s.typeName)) // -> %s\n", select_type_name, referencing);

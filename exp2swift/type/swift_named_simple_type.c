@@ -47,7 +47,7 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 	{
 		indent_swift(level2);
 		raw( "public typealias Supertype = " );
-		TYPE_body_swift(type->superscope, type, NOT_IN_COMMENT, LEAF_OWNED);
+		TYPE_body_swift(type->superscope, type, NOT_IN_COMMENT);
 		raw("\n");
 		indent_swift(level2);
 		raw("public typealias FundamentalType = Supertype.FundamentalType\n");
@@ -151,7 +151,7 @@ void namedSimpleTypeExtension_swift( Schema schema, Type type, int level) {
   //__TypeBehavior protocol
 	indent_swift(level);
 	raw( "extension %s.TypeHierarchy {\n public protocol %s__TypeBehavior: ", schemaname, typename);
-	wrap("SDAI.%s__Subtype {}\n}\n\n", builtinTYPE_body_swiftname(type) );
+	wrap("SDAI.TypeHierarchy.%s__Subtype {}\n}\n\n", builtinTYPE_body_swiftname(type) );
 
   // __Subtype protocol
 	indent_swift(level);

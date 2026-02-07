@@ -312,7 +312,7 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 		indent_swift(level2);
 		raw("return ");
 		if( VARis_optional_by_large(attr) ){
-			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 		}
 		else {
 			if( TYPEis_logical(VARget_type(attr)) ){
@@ -321,7 +321,7 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 			else {
 				raw("SDAI.UNWRAP(");
 			}
-			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw(")");
 		}
 		
@@ -365,7 +365,7 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 				raw("SDAI.UNWRAP( ");
 			}
 		}
-		TYPE_head_swift(entity, original_attr->type, WO_COMMENT, LEAF_OWNED);
+		TYPE_head_swift(entity, original_attr->type, WO_COMMENT);
 		char buf[BUFSIZ];
 		raw("(SELF.%s)", attribute_swiftName(attr, buf));
 		if( !VARis_optional_by_large(attr) ){
@@ -391,7 +391,7 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 		
 		indent_swift(level2);
 		raw("let value = ");
-		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), NO_PAREN, OP_UNKNOWN, YES_WRAP);
+		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 		raw("\n");
 
 		indent_swift(level2);
@@ -441,7 +441,7 @@ static void inverseSimpleAttributeDefinition_swift(Entity entity, Variable attr,
 	partialEntityAttribute_swiftName(attr, partialAttrName);
 	
 	char attrTypeName[BUFSIZ];
-	TYPEhead_string_swift(entity, attr->type, NOT_IN_COMMENT, LEAF_OWNED, attrTypeName);
+	TYPEhead_string_swift(entity, attr->type, NOT_IN_COMMENT, attrTypeName);
 	
 	indent_swift(level);
 	raw("// INVERSE SIMPLE ATTRIBUTE\n");
@@ -495,7 +495,7 @@ static void inverseAggregateAttributeDefinition_swift(Entity entity, Variable at
 	partialEntityAttribute_swiftName(attr, partialAttrName);
 	
 	char attrBaseTypeName[BUFSIZ];
-	TYPEhead_string_swift(entity, ATTRget_base_type(attr), NOT_IN_COMMENT, LEAF_OWNED, attrBaseTypeName);
+	TYPEhead_string_swift(entity, ATTRget_base_type(attr), NOT_IN_COMMENT, attrBaseTypeName);
 
 	indent_swift(level);
 	raw("// INVERSE AGGREGATE ATTRIBUTE\n");
@@ -514,7 +514,7 @@ static void inverseAggregateAttributeDefinition_swift(Entity entity, Variable at
 			);
 	{
 		int saved = never_wrap();
-		TYPE_head_swift(entity, attr->type, WO_COMMENT, LEAF_OWNED);
+		TYPE_head_swift(entity, attr->type, WO_COMMENT);
 		restore_wrap(saved);
 	}
 	raw(" \t(SEE CORRESPONDING ENTITY REFERENCE DEFINITION)\n");
@@ -744,21 +744,21 @@ static void simpleUniquenessRule_swift( Entity entity, Linked_List unique, int l
 		case no_optional:
 			indent_swift(level);
 			raw("let attr = ");
-			EXPR_swift(entity, attr_expr,attr_expr->return_type, no_optional, NO_PAREN);
+			EXPR_swift(entity, attr_expr,attr_expr->return_type, no_optional, EMIT_SELF, NO_PAREN);
 			raw("\n");
 			break;
 			
 		case yes_optional:
 			indent_swift(level);
 			raw("guard let attr = ");
-			EXPR_swift(entity, attr_expr,attr_expr->return_type, yes_optional, NO_PAREN);
+			EXPR_swift(entity, attr_expr,attr_expr->return_type, yes_optional, EMIT_SELF, NO_PAREN);
 			wrap(" else { return nil }\n");
 			break;
 			
 		case unknown_optional:
 			indent_swift(level);
 			raw("guard let attr = SDAI.FORCE_OPTIONAL( ");
-			EXPR_swift(entity, attr_expr,attr_expr->return_type, unknown_optional, NO_PAREN);
+			EXPR_swift(entity, attr_expr,attr_expr->return_type, unknown_optional, EMIT_SELF, NO_PAREN);
 			wrap( ") else { return nil }\n");
 			break;
 	}
@@ -786,7 +786,7 @@ static void jointUniquenessRule_swift( Entity entity, Linked_List unique, int jo
 				wrap("guard let attr%d = ",
 						 attr_no
 						 );
-				EXPR_swift(entity, attr_expr,attr_expr->return_type, yes_optional, NO_PAREN);
+				EXPR_swift(entity, attr_expr,attr_expr->return_type, yes_optional, EMIT_SELF, NO_PAREN);
 				wrap(" else { return nil }\n");
 				break;
 				
@@ -795,7 +795,7 @@ static void jointUniquenessRule_swift( Entity entity, Linked_List unique, int jo
 				wrap("guard let attr%d = SDAI.FORCE_OPTIONAL( ",
 						 attr_no
 						 );
-				EXPR_swift(entity, attr_expr,attr_expr->return_type, unknown_optional, NO_PAREN);
+				EXPR_swift(entity, attr_expr,attr_expr->return_type, unknown_optional, EMIT_SELF, NO_PAREN);
 				wrap(") else { return nil }\n");
 				break;
 		}
@@ -859,8 +859,9 @@ static void uniqueDefinitions_swift( Entity entity, int level ) {
 
 //MARK: - constructor
 static void expressConstructor( Entity entity, int level ) {
-	int level2 = level+nestingIndent_swift;
-	
+  int level2 = level+nestingIndent_swift;
+	int level3 = level2+nestingIndent_swift;
+
 	raw("\n");
 	indent_swift(level);
 	raw("//EXPRESS IMPLICIT PARTIAL ENTITY CONSTRUCTOR\n");
@@ -888,14 +889,65 @@ static void expressConstructor( Entity entity, int level ) {
 		LISTdo(params, attr, Variable) {
 			bool backing_store = false;//attribute_need_observer(attr);
 
-			indent_swift(level2);
-			raw("self.%s%s = ",
-					backing_store ? BACKING_STORAGE_PREFIX : "",
-					partialEntityAttribute_swiftName(attr, buf)
-					);
-			raw("%s\n",
-					variable_swiftName(attr,buf)
-					);
+
+      TypeBody attr_typebody = TYPEget_body(attr->type);
+      bool attr_optional = VARis_dynamic(attr) || VARis_optional_by_large(attr);
+
+      if( TYPEis_aggregation_data_type(attr->type) ){
+        //      if( attr_typebody-> upper ){
+        int levelX = level2;
+        if( attr_optional ){
+          indent_swift(level2);
+          raw("if let %s {\n",
+              variable_swiftName(attr, buf)
+              );
+          levelX = level3;
+        }
+
+        raw("self.%s%s = \n",
+            backing_store ? BACKING_STORAGE_PREFIX : "",
+            partialEntityAttribute_swiftName(attr, buf)
+            );
+
+        indent_swift(levelX);
+        TYPE_head_swift(entity, attr->type, WO_COMMENT);
+        raw("(");
+        force_wrap();
+        raw("from: %s.asSwiftType, ",
+            variable_swiftName(attr,buf)
+            );
+
+        if( attr_typebody-> upper ){
+          force_wrap();
+          wrap( "bound1:SDAI.UNWRAP(" );
+          EXPR_swift(entity, attr_typebody->lower, Type_Integer, unknown_optional, SUPPRESS_SELF, YES_PAREN);
+          raw("), ");
+
+          wrap( "bound2:");
+          EXPR_swift(entity, attr_typebody->upper, Type_Integer, unknown_optional, SUPPRESS_SELF, YES_PAREN);
+        }
+        else {
+          force_wrap();
+          wrap("bound1:0, bound2:nil as Int?");
+        }
+
+        raw( ")\n" );
+        
+        if( attr_optional ){
+          indent_swift(level2);
+          raw("}\n");
+        }
+      }
+      else {
+        indent_swift(level2);
+        raw("self.%s%s = ",
+            backing_store ? BACKING_STORAGE_PREFIX : "",
+            partialEntityAttribute_swiftName(attr, buf)
+            );
+        raw("%s\n",
+            variable_swiftName(attr,buf)
+            );
+      }
 		}LISTod;
 
 		if( !LISTis_empty(params) ){
@@ -1032,7 +1084,7 @@ static void p21Constructor( Entity entity, int level ) {
 					paramNo,
 					recoverFunc
 					);
-			TYPE_head_swift(entity, attr->type, WO_COMMENT, LEAF_OWNED);
+			TYPE_head_swift(entity, attr->type, WO_COMMENT);
 			raw(".self, from: parameters[%d])\n",
 					paramNo
 					);
@@ -1118,7 +1170,7 @@ void partialEntityDefinition_swift
           partialEntity_swiftName(entity, NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
           );
      if( LISTget_length(params) == 0 ){
-       wrap(", SDAI.InitializableByVoid");
+       wrap(", SDAI.Initializable.ByVoid");
      }
      wrap(", @unchecked Sendable {\n");
 	 }

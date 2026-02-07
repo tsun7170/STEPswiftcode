@@ -94,7 +94,7 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 			char buf[BUFSIZ];
 			indent_swift(level2);
 			raw("let %s = ",whereRuleLabel_swiftName(where, buf));
-			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, schema, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, schema, simplified, Type_Logical, EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw("\n");
 			indent_swift(level2);
 			raw("_conformance[\"%s\"] = %s\n\n", buf, buf);
