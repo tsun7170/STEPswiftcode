@@ -14,7 +14,7 @@ a set of translated STEP-schema swift source files are generated under current w
 The environment variable EXPRESS_PATH can be utilized to specify the search paths for the STEP schema files.
 
 ## overview
-Based on the [STEPcode](http://stepcode.github.io/docs/home/)/STEP Class Libraries (SCL) by the U.S. National Institute of Standards and Technology (NIST), the exp2swift translates STEP schema files described in ISO 10303-11:1994 EXPRESS language to the Swift programing language. 
+Based on the [STEPcode](http://stepcode.github.io/docs/home/) / STEP Class Libraries (SCL) by the U.S. National Institute of Standards and Technology (NIST), the exp2swift translates STEP schema files described in ISO 10303-11:1994 EXPRESS language to the Swift programing language. 
 Currently it can only handle a single schema file (the ISO 10303-11:1994 longform schema).
 The main intention of the development of this translator is to translate ISO 10303-242 (AP242) schema definition into the Swift programing language.
 
