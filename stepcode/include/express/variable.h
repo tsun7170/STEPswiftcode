@@ -90,7 +90,7 @@ struct Variable_ {
         unsigned int parameter   : 1; /**< is a formal parameter */
         unsigned int attribute   : 1; /**< is an attribute (rule parameters are marked this way, too) */
 				//*TY2020/07/04 added
-			  unsigned int dynamic		 : 1; /**< is an attribure overriden as derived */
+			  unsigned int dynamic		 : 1; /**< is an attribure overridden as derived */
 				unsigned int alias       : 1;	/**< is an alias (for initializer) */
     } flags;
 
@@ -99,7 +99,7 @@ struct Variable_ {
 	// *TY2020/06/20 added
 	Scope defined_in;
 	Linked_List observers;	// of inverse attribures observing this attribute
-	Variable original_attribute;	// original attribute overriden by this attribute
+	Variable original_attribute;	// original attribute overridden by this attribute
 	Dictionary overriders; // of attribute overriding this attribute
 };
 
@@ -143,7 +143,7 @@ extern SC_EXPRESS_EXPORT struct freelist_head VAR_fl;
 #define _VARget_redeclaring_attr(v) ((v)->name->e.op2->u.variable)
 #define _VARget_redeclaring_attr_name_string(v)		((v)->name->e.op2->symbol.name)
 #define _VARget_redeclaring_entity_name_string(v) ((v)->name->e.op1->e.op2->symbol.name)
-#define VARis_overriden(v)			((v)->overriders != NULL)
+#define VARis_overridden(v)			((v)->overriders != NULL)
 #define VARis_dynamic(v)				((v)->flags.dynamic != 0)
 #define VARput_dynamic(v)				((v)->flags.dynamic = 1)
 #define VARis_observed(v)				((v)->observers != NULL)

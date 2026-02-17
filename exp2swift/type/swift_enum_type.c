@@ -26,41 +26,41 @@
 static void enumWhereRuleValidation_swift( Type type, int level ) {
 	Linked_List where_rules = TYPEget_where(type);
 
-	raw("\n");
-	indent_swift(level);
-	raw("//WHERE RULE VALIDATION (ENUMERATION TYPE)\n");
+  raw("\n");
+  indent_swift(level);
+  raw("//WHERE RULE VALIDATION (ENUMERATION TYPE)\n");
 
-	indent_swift(level);
-	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
-	
-	{	int level2 = level+nestingIndent_swift;
-		
-		if( LISTis_empty(where_rules) ) {
-			indent_swift(level2);
-			raw("return [:]\n");		
-		} 
-		else {
-			char typename[BUFSIZ];TYPE_swiftName(type, NO_QUALIFICATION, typename);
-			indent_swift(level2);
-			raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
-			
-			indent_swift(level2);
-			raw("var result: [SDAI.WhereLabel:SDAI.LOGICAL] = [:]\n");
-			
-			LISTdo( where_rules, where, Where ){
-				char whereLabel[BUFSIZ];
-				indent_swift(level2);
-				raw("result[prefix2 + \".%s\"] = %s.%s(SELF: instance)\n", 
-						whereRuleLabel_swiftName(where, whereLabel), typename, whereLabel);
-			}LISTod;
-			
-			indent_swift(level2);
-			raw("return result\n");		
-		}
-	}
-	
-	indent_swift(level);
-	raw("}\n\n");
+  indent_swift(level);
+  raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel) -> SDAI.WhereRuleValidationRecords {\n");
+
+  {  int level2 = level+nestingIndent_swift;
+    
+    if( LISTis_empty(where_rules) ) {
+      indent_swift(level2);
+      raw("return [:]\n");    
+    } 
+    else {
+      char typename[BUFSIZ];TYPE_swiftName(type, NO_QUALIFICATION, SWIFT_QUALIFIER, typename);
+      indent_swift(level2);
+      raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
+      
+      indent_swift(level2);
+      raw("var result: SDAI.WhereRuleValidationRecords = [:]\n");
+      
+      LISTdo( where_rules, where, Where ){
+        char whereLabel[BUFSIZ];
+        indent_swift(level2);
+        raw("result[prefix2 + \".%s\"] = %s.%s(SELF: instance)\n", 
+            whereRuleLabel_swiftName(where, whereLabel), typename, whereLabel);
+      }LISTod;
+      
+      indent_swift(level2);
+      raw("return result\n");    
+    }
+  }
+  
+  indent_swift(level);
+  raw("}\n\n");
 	
 }
 
@@ -76,18 +76,18 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 	
 	// markdown
 	raw("\n/** ENUMERATION type\n");
-	raw("- EXPRESS:\n");
+	raw("- EXPRESS source code:\n");
 	raw("```express\n");
 	TYPE_out(type, level);
 	raw("\n```\n");
 	raw("*/\n");
 	
 	char typename[BUFSIZ];
-	TYPE_swiftName(type,type->superscope,typename);
+	TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typename);
 	indent_swift(level);
-	wrap( "public enum %s : SDAI.ENUMERATION, SDAIValue, ", typename );
-	wrap( "%s__%s__type {\n", SCHEMA_swiftName(schema, buf),typename );
-	
+	wrap( "public enum %s : SDAI.ENUMERATION, SDAI.Value, ", typename );
+	wrap( "TypeHierarchy.%s__TypeBehavior {\n", typename );
+
 	{	
 		if(count>0) {
 			enumCases = (Element*)sc_calloc( count, sizeof(Element) );
@@ -108,18 +108,22 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 				assert(enumCases[i] != NULL);
 				
 				//markdown
-				indent_swift(level2);
-				raw("/// ENUMERATION case in ``%s``\n", typename);
-				
+        indent_swift(level2);
+        raw("/// ENUMERATION case\n");
+        indent_swift(level2);
+        raw("///\n");
+        indent_swift(level2);
+        raw("/// - defined in: ``%s``\n", typename);
+
 				indent_swift(level2);
 				raw( "case %s\n", enumCase_swiftName( enumCases[i]->data, buf ) );
 			}
 		}
 		
-		//MARK: SDAIGenericType
+		//MARK: SDAI.GenericType
 		raw("\n");
 		indent_swift(level2);
-		raw("// SDAIGenericType\n");
+		raw("// SDAI.GenericType\n");
 
 		indent_swift(level2);
 		raw("public var typeMembers: Set<SDAI.STRING> {\n");
@@ -157,33 +161,35 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw("public var genericEnumValue: SDAI.GenericEnumValue? { SDAI.GenericEnumValue(self) }\n");
 		indent_swift(level2);
-		raw("public func arrayOptionalValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.ARRAY_OPTIONAL<ELEM>? {nil}\n");
+		raw("public func arrayOptionalValue<ELEM:SDAI.GenericType>(elementType:ELEM.Type) -> SDAI.ARRAY_OPTIONAL<ELEM>? {nil}\n");
 		indent_swift(level2);
-		raw("public func arrayValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.ARRAY<ELEM>? {nil}\n");
+		raw("public func arrayValue<ELEM:SDAI.GenericType>(elementType:ELEM.Type) -> SDAI.ARRAY<ELEM>? {nil}\n");
 		indent_swift(level2);
-		raw("public func listValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.LIST<ELEM>? {nil}\n");
+		raw("public func listValue<ELEM:SDAI.GenericType>(elementType:ELEM.Type) -> SDAI.LIST<ELEM>? {nil}\n");
 		indent_swift(level2);
-		raw("public func bagValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.BAG<ELEM>? {nil}\n");
+		raw("public func bagValue<ELEM:SDAI.GenericType>(elementType:ELEM.Type) -> SDAI.BAG<ELEM>? {nil}\n");
 		indent_swift(level2);
-		raw("public func setValue<ELEM:SDAIGenericType>(elementType:ELEM.Type) -> SDAI.SET<ELEM>? {nil}\n");
+		raw("public func setValue<ELEM:SDAI.GenericType>(elementType:ELEM.Type) -> SDAI.SET<ELEM>? {nil}\n");
 		indent_swift(level2);
-		raw("public func enumValue<ENUM:SDAIEnumerationType>(enumType:ENUM.Type) -> ENUM? { return self as? ENUM }\n");
+		raw("public func enumValue<ENUM:SDAI.EnumerationType>(enumType:ENUM.Type) -> ENUM? { return self as? ENUM }\n");
 		raw("\n");		
 		
-		//MARK: SDAIUnderlyingType
+		//MARK: SDAI.UnderlyingType
 		indent_swift(level2);
-		raw("// SDAIUnderlyingType\n");
+		raw("// SDAI.UnderlyingType\n");
 
 		indent_swift(level2);
 		raw("public typealias FundamentalType = Self\n");
 
 		indent_swift(level2);
-		raw("public static var typeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope,buf));
-		
+		raw("public static let typeName: String = ");
+		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf));
+
 		indent_swift(level2);
 		raw("public var asFundamentalType: FundamentalType { return self }\n\n");
 
+		indent_swift(level2);
+		raw("/// initialize from the fundamental type value\n");
 		indent_swift(level2);
 		raw("public init(fundamental: FundamentalType) {\n");
 		indent_swift(level2+nestingIndent_swift);
@@ -192,7 +198,9 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("}\n\n" );
 
 		indent_swift(level2);
-		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
+		raw("/// initialize from SDAI generic type value\n");
+		indent_swift(level2);
+		raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
 		raw("guard let enumval = generic?.enumValue(enumType: Self.self) else { return nil }\n");
 		indent_swift(level2+nestingIndent_swift);
@@ -201,14 +209,16 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		raw("}\n");
 
 		
-		//MARK: InitializableByP21Parameter
+		//MARK: Initializable.ByP21Parameter
 		indent_swift(level2);
-		raw("// InitializableByP21Parameter\n");
+		raw("// Initializable.ByP21Parameter\n");
 	
 		indent_swift(level2);
-		raw("public static var bareTypeName: String = ");
-		wrap("\"%s\"\n\n", TYPE_canonicalName(type,NO_QUALIFICATION,buf));
+		raw("public static let bareTypeName: String = ");
+		wrap("\"%s\"\n\n", TYPE_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 
+		indent_swift(level2);
+		raw("/// initialize from ISO 10303-21 exchange structure untyped parameters\n");
 		indent_swift(level2);
 		raw("public	init?(p21untypedParam: P21Decode.ExchangeStructure.UntypedParameter, from exchangeStructure: P21Decode.ExchangeStructure) {\n");
 		{	int level3 = level2 + nestingIndent_swift;
@@ -240,7 +250,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 			}
 			
 			indent_swift(level3);
-			raw("case .rhsOccurenceName(let rhsname):\n");
+			raw("case .rhsOccurrenceName(let rhsname):\n");
 			{	int level4 = level3 + nestingIndent_swift; int level5 = level4 + nestingIndent_swift;
 				
 				indent_swift(level4);
@@ -290,6 +300,8 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw("}\n\n");
 
+		indent_swift(level);
+		raw("/// initialize from ISO 10303-21 exchange structure omitted parameters\n");
 		indent_swift(level2);
 		raw("public init(p21omittedParamfrom exchangeStructure: P21Decode.ExchangeStructure) {\n");
 		indent_swift(level2+nestingIndent_swift);
@@ -324,7 +336,11 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 			
 			//markdown
 			indent_swift(level);
-			raw("/// promoted ENUMERATION case in ``%s``\n", typename);
+			raw("/// promoted ENUMERATION case\n");
+      indent_swift(level);
+      raw("///\n");
+      indent_swift(level);
+      raw("/// - defined in ``%s``\n", typename);
 
 			indent_swift(level);
 			raw( "public static let %s = ", enumname );
@@ -339,23 +355,25 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 
 void enumTypeExtension_swift(Schema schema, Type type, int level) {
 	char typebuf[BUFSIZ];
-	const char* typename = TYPE_swiftName(type,type->superscope,typebuf);
+	const char* typename = TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
 
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);
 
 	raw("\n\n//MARK: - ENUMERATION TYPE HIERARCHY\n");
+  //__TypeBehavior protocol
 	indent_swift(level);
-	raw( "public protocol %s__%s__type: ", schemaname, typename);
-	wrap("SDAIEnumerationType ");
-	wrap("{}\n\n");
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__TypeBehavior: ", schemaname, typename);
+	wrap("SDAI.EnumerationType ");
+	wrap("{}\n}\n\n");
+
 	
-	
+  // __Subtype protocol
 	indent_swift(level);
-	raw( "public protocol %s__%s__subtype: ", schemaname, typename );
-	wrap("%s__%s__type, SDAIDefinedType\n", schemaname, typename );
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__Subtype: ", schemaname, typename );
+	wrap("%s__TypeBehavior, SDAI.DefinedType\n", typename );
 	indent_swift(level);
-	wrap("where Supertype: %s__%s__type\n", schemaname, typename);
+	wrap("where Supertype: %s__TypeBehavior\n", typename);
 	indent_swift(level);
-	raw( "{}\n\n");
+	raw( "{}\n}\n\n");
 }

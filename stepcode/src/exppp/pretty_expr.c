@@ -307,7 +307,7 @@ int EXPRop_length( struct Op_Subexpression * oe ) {
  * any kind of expression
  * contains fragment of string, adds to it
  */
-void EXPRstring( char * buffer, Expression e ) {
+void EXPRstring( char * buffer, size_t buffer_size, Expression e ) {
     int i;
 
     switch( TYPEis( e->type ) ) {
@@ -319,7 +319,7 @@ void EXPRstring( char * buffer, Expression e ) {
             if( isLITERAL_INFINITY(e) ) {	//*TY2020/08/26
                 strcpy( buffer, "?" );
             } else {
-                sprintf( buffer, "%d", e->u.integer );
+                snprintf( buffer, buffer_size, "%d", e->u.integer );
             }
             break;
         case real_:
@@ -328,11 +328,11 @@ void EXPRstring( char * buffer, Expression e ) {
             } else if( isLITERAL_E(e) ) {	//*TY2020/08/26
                 strcpy( buffer, "CONST_E" );	//*TY2020/08/26
             } else {
-                sprintf( buffer, "%s", real2exp( e->u.real ) );
+                snprintf( buffer, buffer_size, "%s", real2exp( e->u.real ) );
             }
             break;
         case binary_:
-            sprintf( buffer, "%%%s", e->u.binary ); /* put "%" back */
+            snprintf( buffer, buffer_size, "%%%s", e->u.binary ); /* put "%" back */
             break;
         case logical_:
         case boolean_:
@@ -350,9 +350,9 @@ void EXPRstring( char * buffer, Expression e ) {
             break;
         case string_:
             if( TYPEis_encoded( e->type ) ) {
-                sprintf( buffer, "\"%s\"", e->symbol.name );
+                snprintf( buffer, buffer_size, "\"%s\"", e->symbol.name );
             } else {
-                sprintf( buffer, "%s", e->symbol.name );
+                snprintf( buffer, buffer_size, "%s", e->symbol.name );
             }
             break;
         case entity_:
@@ -362,30 +362,39 @@ void EXPRstring( char * buffer, Expression e ) {
             strcpy( buffer, e->symbol.name );
             break;
         case query_:
-            sprintf( buffer, "QUERY ( %s <* ", e->u.query->local->name->symbol.name );
-            EXPRstring( buffer + strlen( buffer ), e->u.query->aggregate );
+            snprintf( buffer, buffer_size, "QUERY ( %s <* ", e->u.query->local->name->symbol.name );
+						{
+							size_t slen = strlen( buffer );
+							EXPRstring( buffer + slen, buffer_size - slen, e->u.query->aggregate );
+						}
             strcat( buffer, " | " );
-            EXPRstring( buffer + strlen( buffer ), e->u.query->expression );
+						{
+							size_t slen = strlen( buffer );
+							EXPRstring( buffer + slen, buffer_size - slen, e->u.query->expression );
+						}
             strcat( buffer, " )" );
             break;
         case self_:
             strcpy( buffer, "SELF" );
             break;
         case funcall_:
-            sprintf( buffer, "%s( ", e->symbol.name );
+            snprintf( buffer, buffer_size, "%s( ", e->symbol.name );
             i = 0;
             LISTdo( e->u.funcall.list, arg, Expression )
             i++;
             if( i != 1 ) {
                 strcat( buffer, ", " );
             }
-            EXPRstring( buffer + strlen( buffer ), arg );
+						{
+							size_t slen = strlen( buffer );
+							EXPRstring( buffer + slen, buffer_size - slen, arg );
+						}
             LISTod
             strcat( buffer, " )" );
             break;
 
         case op_:
-            EXPRop_string( buffer, &e->e );
+            EXPRop_string( buffer, buffer_size, &e->e );
             break;
         case aggregate_:
             strcpy( buffer, "[" );
@@ -401,7 +410,10 @@ void EXPRstring( char * buffer, Expression e ) {
                         strcat( buffer, ", " );
                     }
                 }
-                EXPRstring( buffer + strlen( buffer ), arg );
+								{
+									size_t slen = strlen( buffer );
+									EXPRstring( buffer + slen, buffer_size - slen, arg );
+								}
             } LISTod
             strcat( buffer, "]" );
             break;
@@ -414,19 +426,22 @@ void EXPRstring( char * buffer, Expression e ) {
                 if( i != 1 ) {
                     strcat( buffer, ", " );
                 }
-                EXPRstring( buffer + strlen( buffer ), arg );
+								{
+									size_t slen = strlen( buffer );
+									EXPRstring( buffer + slen, buffer_size - slen, arg );
+								}
             } LISTod
 
             strcat( buffer, " )" );
             break;
         default:
-            sprintf( buffer, "EXPRstring: unknown expression, type %d", TYPEis( e->type ) );
+            snprintf( buffer, buffer_size, "EXPRstring: unknown expression, type %d", TYPEis( e->type ) );
             fprintf( stderr, "%s", buffer );
     }
 }
 
-void EXPRop_string( char * buffer, struct Op_Subexpression * oe ) {
-    EXPRstring( buffer, oe->op1 );
+void EXPRop_string( char * buffer, size_t buffer_size, struct Op_Subexpression * oe ) {
+    EXPRstring( buffer, buffer_size, oe->op1 );
     switch( oe->op_code ) {
         case OP_DOT:
             strcat( buffer, "." );
@@ -437,7 +452,8 @@ void EXPRop_string( char * buffer, struct Op_Subexpression * oe ) {
         default:
             strcat( buffer, "(* unknown op-expression *)" );
     }
-    EXPRstring( buffer + strlen( buffer ), oe->op2 );
+	size_t slen = strlen( buffer );
+    EXPRstring( buffer + slen, buffer_size - slen, oe->op2 );
 }
 
 /** returns length of printable representation of expression w.o. printing it
@@ -447,7 +463,7 @@ void EXPRop_string( char * buffer, struct Op_Subexpression * oe ) {
 int EXPRlength( Expression e ) {
     char buffer[10000];
     *buffer = '\0';
-    EXPRstring( buffer, e );
+    EXPRstring( buffer, sizeof buffer, e );
     return( (int)strlen( buffer ) );
 }
 

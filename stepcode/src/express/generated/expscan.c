@@ -275,8 +275,9 @@ buf_prints(struct Buf *buf, const char *fmt, const char *s)
 {
     char *t;
 
-    t = (char*)malloc(strlen(fmt) + strlen(s) + 1);
-    sprintf(t, fmt, s);
+		size_t tsize = strlen(fmt) + strlen(s) + 1;
+    t = (char*)malloc(tsize);
+    snprintf(t, tsize, fmt, s);
     buf = buf_strappend(buf, t);
     free(t);
     return buf;
@@ -311,9 +312,10 @@ buf_linedir(struct Buf *buf, const char* filename, int lineno)
 {
     char *t;
     const char fmt[] = "#line %d \"%s\"\n";
-    
-    t = (char*)malloc(strlen(fmt) + strlen(filename) + numDigits(lineno) + 1);
-    sprintf(t, fmt, lineno, filename);
+
+		size_t tsize = strlen(fmt) + strlen(filename) + numDigits(lineno) + 1;
+    t = (char*)malloc(tsize);
+    snprintf(t, tsize, fmt, lineno, filename);
     buf = buf_strappend(buf, t);
     free(t);
     return buf;
@@ -378,9 +380,10 @@ buf_m4_define(struct Buf *buf, const char* def, const char* val)
     char *str;
 
     val = val ? val : "";
-    str = (char*)malloc(strlen(fmt) + strlen(def) + strlen(val) + 2);
+	size_t strsize = strlen(fmt) + strlen(def) + strlen(val) + 2;
+    str = (char*)malloc(strsize);
 
-    sprintf(str, fmt, def, val);
+    snprintf(str, strsize, fmt, def, val);
     buf_append(buf, &str, 1);
     return buf;
 }
@@ -396,9 +399,10 @@ buf_m4_undefine(struct Buf *buf, const char* def)
     const char *fmt = "m4_undefine( [[%s]])m4_dnl\n";
     char *str;
 
-    str = (char*)malloc(strlen(fmt) + strlen(def) + 2);
+		size_t strsize = strlen(fmt) + strlen(def) + 2;
+    str = (char*)malloc(strsize);
 
-    sprintf(str, fmt, def);
+    snprintf(str, strsize, fmt, def);
     buf_append(buf, &str, 1);
     return buf;
 }
@@ -617,7 +621,7 @@ getTokenText(perplex_t scanner)
 #define      yyextra  scanner->extra
 
 static perplex_t
-newScanner()
+newScanner(void)
 {
     perplex_t scanner;
     scanner = (perplex_t)calloc(1, sizeof(struct perplex));

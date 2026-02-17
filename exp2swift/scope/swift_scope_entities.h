@@ -11,7 +11,7 @@
 
 #include <express/scope.h>
 
-void SCOPEentityList_swift( Scope s, int level );
+void SCOPEentityList_swift( Schema schema, Scope s, int level );
 void SCHEMAentityList_swift( Schema schema );
 
 #endif /* swift_scope_entities_h */

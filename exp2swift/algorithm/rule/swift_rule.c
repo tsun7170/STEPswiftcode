@@ -36,9 +36,9 @@ char 				RULE_swiftNameInitial( Rule rule ) {
 
 void RULE_swift(Schema schema, Rule rule, int level ) {
 	// EXPRESS summary
-	beginExpress_swift("RULE DEFINITION");
+	beginExpress_swift("RULE definition", AS_MARKDOWN_EXPRESS);
 	RULE_out(rule, level);
-	endExpress_swift();	
+	endExpress_swift(AS_MARKDOWN_EXPRESS);	
 	
 	//rule head
 	indent_swift(level);
@@ -64,13 +64,18 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 
 			char buf[BUFSIZ];
 			raw("let %s = ", variable_swiftName(entity_ref,buf));
-			wrap("SDAI.POPULATION(OF: %s.self, FROM: allComplexEntities)\n", ENTITY_swiftName(ent, NO_QUALIFICATION, buf) );
+			wrap("SDAI.POPULATION(OF: %s.self, FROM: allComplexEntities)\n", ENTITY_swiftName(ent, NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
 		}LISTod;
 		raw("\n");
 		
 		//rule body
 		ALGscope_declarations_swift(schema, rule, level2);
-		STMTlist_swift(rule, rule->u.rule->body, &tempvar_id, level2);
+
+		if( !LISTis_empty(rule->u.rule->body) ){
+			indent_swift(level2);
+			raw("//BODY\n");
+			STMTlist_swift(rule, rule->u.rule->body, &tempvar_id, level2);
+		}
 		
 		//where rules
 		raw("\n");
@@ -83,13 +88,13 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		LISTdo(where_rules, where, Where){
 
 			Linked_List tempvars;
-			Expression simplified = EXPR_decompose(where->expr, Type_Logical, &tempvar_id, &tempvars);
+			Expression simplified = EXPR_decompose(schema, where->expr, Type_Logical, &tempvar_id, &tempvars);
 			EXPR_tempvars_swift(schema, tempvars, level2);
 			
 			char buf[BUFSIZ];
 			indent_swift(level2);
 			raw("let %s = ",whereRuleLabel_swiftName(where, buf));
-			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, schema, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, schema, simplified, Type_Logical, EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw("\n");
 			indent_swift(level2);
 			raw("_conformance[\"%s\"] = %s\n\n", buf, buf);
@@ -101,15 +106,6 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 		raw("\n");
 		indent_swift(level2);
 		raw("return _conformance\n");
-//		char* sep = " ";
-//		LISTdo(where_rules, where, Where){
-//			raw("%s",sep);
-//			
-//			char buf[BUFSIZ];
-//			wrap("%s",whereRuleLabel_swiftName(where, buf));
-//			sep = " && ";
-//		}LISTod;
-//		raw("\n");
 	}
 	
 	indent_swift(level);

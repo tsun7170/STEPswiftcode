@@ -130,7 +130,7 @@ extern bool __SCOPE_search_ongoing;
 /* the following is simply to make the resulting code easier to read */
 /* otherwise, you'd see "entity->superscope" even when you KNOW */
 /* it is a schema */
-#define ENTITYget_schema(e)     (e)->superscope
+//*TY2025/08/12 deleted too-naive definition #define ENTITYget_schema(e)     (e)->superscope
 
 //*TY2020/07/23
 #define SCOPE_begin_search()	(assert(__SCOPE_search_ongoing==false),++__SCOPE_search_id, __SCOPE_search_ongoing=true)

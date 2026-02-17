@@ -36,20 +36,20 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 	
 	// markdown
 	raw("\n/** Defined data type (type alias)\n");
-	raw("- EXPRESS:\n");
+	raw("- EXPRESS source code:\n");
 	raw("```express\n");
 	TYPE_out(type, level);
 	raw("\n```\n");
 	raw("*/\n");
 	
 	indent_swift(level);
-	raw( "public struct %s: ", TYPE_swiftName(type,type->superscope,buf));
-	wrap("%s__", SCHEMA_swiftName(schema, buf));
-	raw( "%s__type {\n", TYPE_swiftName(type,type->superscope,buf));
+	raw( "public struct %s: ", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
+//	wrap("%s__", SCHEMA_swiftName(schema, buf));
+	raw( "TypeHierarchy.%s__TypeBehavior {\n", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
 
 	{	
 		indent_swift(level2);
-		raw( "public typealias Supertype = %s\n", TYPE_swiftName(original, type->superscope, buf));
+		raw( "public typealias Supertype = %s\n", TYPE_swiftName(original, type->superscope, SWIFT_QUALIFIER, buf));
 		indent_swift(level2);
 		raw("public typealias FundamentalType = Supertype.FundamentalType\n");
 		indent_swift(level2);
@@ -70,12 +70,12 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		
 		
 		indent_swift(level2);
-		raw("public static var typeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope,buf));
-		
+		raw("public static let typeName: String = ");
+		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf));
+
 		indent_swift(level2);
-		raw("public static var bareTypeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,NO_QUALIFICATION,buf));
+		raw("public static let bareTypeName: String = ");
+		wrap("\"%s\"\n", TYPE_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 
 		indent_swift(level2);
 		raw("public var typeMembers: Set<SDAI.STRING> {\n");
@@ -98,6 +98,8 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		raw( "public var rep: Supertype\n" );
 
 		indent_swift(level2);
+		raw("/// initialize from the fundamental type value\n");
+		indent_swift(level2);
 		raw( "public init(fundamental: FundamentalType) {\n" );
 		indent_swift(level2+nestingIndent_swift);
 		raw( "rep = Supertype(fundamental: fundamental)\n" );
@@ -105,7 +107,9 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		raw("}\n\n");
 		
 		indent_swift(level2);
-		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
+		raw("/// initialize from SDAI generic type value\n");
+		indent_swift(level2);
+		raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
 		raw("guard let repval = Supertype.convert(fromGeneric: generic) else { return nil }\n");
 		indent_swift(level2+nestingIndent_swift);
@@ -123,7 +127,7 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 
 void typeAliasExtension_swift( Schema schema, Type type, Type original, int level) {
 	char typebuf[BUFSIZ];
-	const char* typename = TYPE_swiftName(type,type->superscope,typebuf);
+	const char* typename = TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
 
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);
@@ -132,15 +136,16 @@ void typeAliasExtension_swift( Schema schema, Type type, Type original, int leve
 
 	raw("\n\n//MARK: - DEFINED TYPE HIERARCHY\n");
 
+  //__TypeBehavior protocol
 	indent_swift(level);
-	raw( "public protocol %s__%s__type: ", schemaname, typename);
-	wrap("%s__%s__subtype {}\n\n", schemaname, TYPE_swiftName(original, type->superscope, buf));
-	 
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__TypeBehavior: ", schemaname, typename);
+	wrap("%s__Subtype {}\n}\n\n", TYPE_swiftName(original, type->superscope, SWIFT_QUALIFIER, buf));
+
+  // __Subtype protocol
 	indent_swift(level);
-	raw( "public protocol %s__%s__subtype: ", schemaname, typename);
-	wrap("%s__%s__type\n", schemaname, typename);
-//	indent_swift(level);
-//	wrap("where Supertype: %s__%s__type\n", schemaname, typename);
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__Subtype: ", schemaname, typename);
+	wrap("%s__TypeBehavior\n", typename);
+
 	indent_swift(level);
-	raw( "{}\n");
+	raw( "{}\n}\n\n");
 }

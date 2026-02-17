@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #include <express/error.h>
 #include <sc_memmgr.h>
@@ -32,8 +33,21 @@
 #include "swift_named_aggregate_type.h"
 #include "decompose_expression.h"
 
+const char* scope_prefix(Scope scope) {
+  switch SCOPEis(scope) {
+  case OBJ_ENTITY:
+    return TYPE_swiftNamePrefix(ENTITYget_type(scope));
+
+  case OBJ_TYPE:
+    return TYPE_swiftNamePrefix(scope);
+
+  default:
+    return "";
+  }
+}
+
 // returns length of qualification string
-int accumulate_qualification(Scope target, Scope current, char buf[BUFSIZ]) {
+int accumulate_qualification(Scope target, Scope current, const char* delimiter, char buf[BUFSIZ]) {
 	int qual_len = 0;
 	if( target == NULL ) return qual_len;
 	if( current == NO_QUALIFICATION ) return qual_len;
@@ -44,63 +58,129 @@ int accumulate_qualification(Scope target, Scope current, char buf[BUFSIZ]) {
 	if( target->superscope == current ) {
 		int prnlen;
 		char cbuf[BUFSIZ];
-		snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s.%n",canonical_swiftName(target->symbol.name,cbuf), &prnlen);
+    const char* prefix = scope_prefix(target);
+		snprintf(&buf[qual_len], BUFSIZ-qual_len,
+						 "%s%s%s%n",
+             prefix,
+						 canonical_swiftName(target->symbol.name,cbuf),
+						 delimiter,
+						 &prnlen
+						 );
 		qual_len += prnlen;
 	}
 	else {
-		qual_len = accumulate_qualification(target->superscope, current, buf);
+		qual_len = accumulate_qualification(target->superscope, current, delimiter, buf);
 		if( qual_len > 0 ) {
 			int prnlen;
 			char cbuf[BUFSIZ];
-			snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s.%n",canonical_swiftName(target->symbol.name,cbuf), &prnlen);
+      const char* prefix = scope_prefix(target);
+			snprintf(&buf[qual_len], BUFSIZ-qual_len,
+							 "%s%s%s%n",
+               prefix,
+							 canonical_swiftName(target->symbol.name,cbuf),
+							 delimiter,
+							 &prnlen
+							 );
 			qual_len += prnlen;
 		}
 	}
 	return qual_len;
 }
 
-const char* TYPE_canonicalName( Type t, Scope current, char buf[BUFSIZ] ) {
-	int qual_len = accumulate_qualification(t->superscope, current, buf);
-	
+const char* TYPE_canonicalName( Type t, Scope current, const char* delimiter, char buf[BUFSIZ] ) {
+	int qual_len = accumulate_qualification(t->superscope, current, delimiter, buf);
+
 	assert(t->symbol.name != NULL);
 	char buf2[BUFSIZ];
 	snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s" ,canonical_swiftName(t->symbol.name, buf2));
 	return buf;
 }
 
-const char* TYPE_swiftName( Type t, Scope current, char buf[BUFSIZ] ) {
+const char* TYPE_swiftNamePrefix( Type t )
+{
+  assert(TYPEis_valid(t));
+
+  const char* prefix;// = "";
+
+  if( TYPEget_body(t) == NULL ){
+    prefix = "g";
+  }
+  else{
+    switch (TYPEis(t)) {
+      case entity_:
+        prefix = "e";
+        break;
+      case select_:
+        prefix = "s";
+        break;
+      case enumeration_:
+        prefix = "n";
+        break;
+      case generic_:
+      case aggregate_:
+        prefix = "g";
+        break;
+
+      default:
+        prefix = "t";
+        break;
+    }
+  }
+  return prefix;
+}
+
+const char* TYPE_swiftName
+ ( Type t,
+	Scope current,
+	const char* delimiter,
+	char buf[BUFSIZ] )
+{
 	assert(TYPEis_valid(t));
-	int qual_len = accumulate_qualification(t->superscope, current, buf);
+	int qual_len = accumulate_qualification(t->superscope, current, delimiter, buf);
 	
-	const char* prefix = "";
-	if( TYPEget_body(t) == NULL ){
-		prefix = "g";
-	}
-	else{
-		switch (TYPEis(t)) {
-			case entity_:
-				prefix = "e";
-				break;
-			case select_:
-				prefix = "s";
-				break;
-			case enumeration_:
-				prefix = "n";
-				break;
-			case generic_:
-			case aggregate_:
-				prefix = "g";
-				break;
-				
-			default:
-				prefix = "t";
-				break;
-		}
-	}
+  const char* prefix = TYPE_swiftNamePrefix(t);
+
+  char suffix[BUFSIZ] = "";
+  if( TYPEget_body(t) != NULL && TYPEis(t) == entity_) {
+    if( strcmp(delimiter, DOCC_QUALIFIER) != 0 ){
+      snprintf(suffix, sizeof(suffix), "%sPRef",delimiter);
+    }
+  }
+//	if( TYPEget_body(t) == NULL ){
+//		prefix = "g";
+//	}
+//	else{
+//		switch (TYPEis(t)) {
+//			case entity_:
+//				prefix = "e";
+//				if( strcmp(delimiter, DOCC_QUALIFIER) != 0 ){
+//					snprintf(suffix, sizeof(suffix), "%sPRef",delimiter);
+//				}
+//				break;
+//			case select_:
+//				prefix = "s";
+//				break;
+//			case enumeration_:
+//				prefix = "n";
+//				break;
+//			case generic_:
+//			case aggregate_:
+//				prefix = "g";
+//				break;
+//				
+//			default:
+//				prefix = "t";
+//				break;
+//		}
+//	}
 	
 	assert(t->symbol.name != NULL);
 	char buf2[BUFSIZ];
-	snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s%s", prefix,canonical_swiftName(t->symbol.name, buf2));
+	snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s%s%s",
+					 prefix,
+					 canonical_swiftName(t->symbol.name, buf2),
+					 suffix
+					 );
 	return buf;
 }
 
@@ -118,25 +198,14 @@ const char* selectCase_swiftName( Type selection, char buf[BUFSIZ] ) {
 	return buf;
 }
 
-//MARK: - type definitions
-
-//static void typeArias_swift( Type type, int level, SwiftOutCommentOption in_comment ) {
-//	indent_swift(level);
-//	{
-//		char buf[BUFSIZ];
-//		raw( "public typealias %s = ", TYPE_swiftName(type, type->superscope, buf) );
-//	}
-//	TYPE_body_swift(type->superscope, type, in_comment);
-//	raw("\n");
-//}
 
 
 //MARK: - type definition entry point
 
 void TYPEdefinition_swift(Schema schema, Type t, int level ) {
-	beginExpress_swift("TYPE DEFINITION");
+	beginExpress_swift("TYPE DEFINITION", AS_PLAIN_EXPRESS);
 	TYPE_out(t, level);
-	endExpress_swift();
+	endExpress_swift(AS_PLAIN_EXPRESS);
 	
 	// swift code generation
 	assert(t->symbol.name);
@@ -199,8 +268,66 @@ extern void TYPEextension_swift( Schema schema, Type t, int level ) {
 
 
 //MARK: - type references
+void additional_constraints
+ (Scope current,
+  Type t,
+  SwiftOutCommentOption in_comment
+  )
+{
+  if( in_comment == WO_COMMENT ) return;
 
-void TYPE_head_swift( Scope current, Type t, SwiftOutCommentOption in_comment, bool leaf_unowned ) {
+  bool comment_open = false;
+  TypeBody tb = TYPEget_body( t );
+
+  switch( tb->type ) {
+    case string_:
+    case binary_:
+      {
+        if(tb->precision){
+          if((in_comment != YES_IN_COMMENT) && (!comment_open)){
+            raw("/*");
+            comment_open = true;
+          }
+
+          EXPR_swift(current, tb->precision, tb->precision->return_type, no_optional, EMIT_SELF, YES_PAREN);
+        }
+        if(tb->flags.fixed) {
+          if((in_comment != YES_IN_COMMENT) && (!comment_open)){
+            raw("/*");
+            comment_open = true;
+          }
+          raw(" FIXED");
+        }
+        break;
+      }
+
+    case indeterminate_:
+    case integer_:
+    case real_:
+    case boolean_:
+    case logical_:
+    case number_:
+
+    case bag_:
+    case set_:
+    case array_:
+    case list_:
+
+    default:
+      break;
+  }
+
+  if(comment_open){
+    raw("*/");
+  }
+}
+
+void TYPE_head_swift
+ ( Scope current,
+	Type t,
+	SwiftOutCommentOption in_comment
+  )
+{
 	if( t == NULL ){
 		switch (in_comment) {
 			case YES_IN_COMMENT:
@@ -217,15 +344,11 @@ void TYPE_head_swift( Scope current, Type t, SwiftOutCommentOption in_comment, b
 
 	if( t->symbol.name ) {
 		char buf[BUFSIZ];
-		if( leaf_unowned ){
-			wrap( "SDAI.UnownedWrap<%s>", TYPE_swiftName(t,current,buf) );
-		}
-		else {
-			wrap( "%s", TYPE_swiftName(t,current,buf) );
-		}
-	} else {
-		TYPE_body_swift( current, t, in_comment, leaf_unowned );
-	}
+		wrap( "%s", TYPE_swiftName(t,current, SWIFT_QUALIFIER, buf) );
+    additional_constraints(current, t, in_comment);
+  } else {
+    TYPE_body_swift( current, t, in_comment );
+  }
 }
 
 const char* builtinTYPE_body_swiftname( Type t ) {
@@ -260,12 +383,12 @@ const char* builtinTYPE_body_swiftname( Type t ) {
 	return( "<NON_BUILTIN_TYPE>" );
 }
 
-void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment, bool leaf_unowned ) {
-//	bool first_time = true;
-	
-//	Expression expr;
-//	DictionaryEntry de;
-	
+void TYPE_body_swift
+ ( Scope current,
+	Type t,
+	SwiftOutCommentOption in_comment
+  )
+{
 	TypeBody tb = TYPEget_body( t );
 	
 	switch( tb->type ) {
@@ -288,15 +411,13 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment, b
 	//MARK:entity_
 		case entity_:
 		{
-			if( leaf_unowned ) wrap("SDAI.UnownedWrap<");
 			if( t == Type_Entity ){
 				wrap( "SDAI.GENERIC_ENTITY" );
 			}
 			else {
 				char buf[BUFSIZ];
-				wrap( "%s", ENTITY_swiftName(tb->entity, current, buf) );
+				wrap( "%s", ENTITY_REFTYPE_swiftName(tb->entity, current, SWIFT_QUALIFIER, buf) );
 			}
-			if( leaf_unowned ) wrap(">");
 		}
 			break;
 			
@@ -308,9 +429,8 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment, b
 			}
 			else {
 				char buf[BUFSIZ];
-				wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION,buf) );
+				wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
 			}
-//			wrap("SDAIGenericType");
 		}
 			break;
 			
@@ -321,7 +441,7 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment, b
 				wrap("SDAI.AGGREGATE");
 				if( tb->base != NULL ){
 					raw( "<" );
-					TYPE_head_swift( current, tb->base, in_comment, leaf_unowned );
+					TYPE_head_swift( current, tb->base, in_comment );
 					raw(">");
 				}
 				else {
@@ -330,7 +450,7 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment, b
 			}
 			else {
 				char buf[BUFSIZ];
-				wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION,buf) );
+				wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
 			}
 		}
 			break;
@@ -343,9 +463,9 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment, b
 			wrap("SDAI.");
 			raw( builtinTYPE_body_swiftname(t) );			
 			raw( "<" );
-			TYPE_head_swift( current, tb->base, in_comment, leaf_unowned );
+			TYPE_head_swift( current, tb->base, in_comment );
 			raw(">");
-			EXPRbounds_swift( NULL, tb, in_comment );
+			EXPRbounds_swift( NULL, tb, EMIT_SELF, in_comment );
 			break;
 			
 		case runtime_:
@@ -375,27 +495,46 @@ void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment, b
 	}
 	
 	if( in_comment != WO_COMMENT ){
+    bool comment_open = false;
+
 		if( tb->precision ) {
-			wrap( "%s( ", in_comment==YES_IN_COMMENT ? "" : "/* " );
+      if((in_comment != YES_IN_COMMENT) && (!comment_open)){
+        raw("/*");
+        comment_open = true;
+      }
+
+//			wrap( "%s( ", in_comment==YES_IN_COMMENT ? "" : "/* " );
+      raw("(");
 			EXPR_out( tb->precision, 0 );
-			raw( " )%s", in_comment==YES_IN_COMMENT ? "" : " */" );
+//			raw( " )%s", in_comment==YES_IN_COMMENT ? "" : " */" );
+      raw(")");
 		}
 		if( tb->flags.fixed ) {
-			if( in_comment==YES_IN_COMMENT ) {
-				wrap( "FIXED" );
-			}
-			else {
-				wrap( "/* FIXED */" );
-			}
+      if((in_comment != YES_IN_COMMENT) && (!comment_open)){
+        raw("/*");
+        comment_open = true;
+      }
+
+      raw(" FIXED");
+
+//			if( in_comment==YES_IN_COMMENT ) {
+//				wrap( "FIXED" );
+//			}
+//			else {
+//				wrap( "/* FIXED */" );
+//			}
 		}
+    if(comment_open) {
+      raw("*/");
+    }
 	}
 }
 
-const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption in_comment, bool leaf_unowned, char buf[BUFSIZ]) {
+const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption in_comment, char buf[BUFSIZ]) {
 	if( prep_buffer(buf, BUFSIZ) ) {
 		abort();
 	}
-	TYPE_head_swift(current, t, in_comment, leaf_unowned);
+	TYPE_head_swift(current, t, in_comment);
 	finish_buffer();
 	return ( buf );
 }
@@ -425,11 +564,16 @@ bool TYPEis_swiftAssignable(Type lhstype, Type rhstype) {
 			
 		case integer_:
 		case real_:
-		case string_:
-		case binary_:
 		case boolean_:
 			if(lhstb->type != rhstb->type)return false;
 			return  equal_symbol;
+
+    case string_:
+    case binary_:
+      if(lhstb->type != rhstb->type)return false;
+      if(lhstb->flags.fixed != rhstb->flags.fixed)return false;
+      if(!EXPs_are_equal(lhstb->precision, rhstb->precision))return false;
+      return  equal_symbol;
 
 		case number_:
 			if(!equal_symbol) return false;
@@ -477,7 +621,7 @@ bool TYPEis_swiftAssignable(Type lhstype, Type rhstype) {
 	return false;
 }
 
-bool TYPEis_observable_aggregate(Type t) {
+bool TYPEis_entityYieldingAggregate(Type t) {
 	if( !TYPEis_aggregation_data_type(t) ) return false;
 	Type elementType = TYPEget_nonaggregate_base_type(t);
 	switch (TYPEis(elementType)) {
@@ -522,29 +666,29 @@ void TYPEwhereDefinitions_swift( Scope scope, int level ) {
 		indent_swift(level);
 		wrap("public static func %s(SELF: %s?) -> SDAI.LOGICAL {\n", 
 				 whereRuleLabel_swiftName(where, whereLabel), 
-				 is_entity ? 	ENTITY_swiftName(scope, NO_QUALIFICATION, buf) : 
-				 							TYPE_swiftName(scope, NO_QUALIFICATION, buf) );
-		
+				 is_entity ? 	ENTITY_REFTYPE_swiftName(scope, NO_QUALIFICATION, SWIFT_QUALIFIER, buf) :
+				 							TYPE_swiftName(scope, NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
+
 		{	int level2 = level+nestingIndent_swift;
 			
 			indent_swift(level2);
 			raw("guard let SELF = SELF else { return SDAI.UNKNOWN }\n");
-			
+
 			int tempvar_id = 1;
 			Linked_List tempvars;
-			Expression simplified = EXPR_decompose(where->expr, Type_Logical, &tempvar_id, &tempvars);
+			Expression simplified = EXPR_decompose(scope, where->expr, Type_Logical, &tempvar_id, &tempvars);
 			EXPR_tempvars_swift(scope, tempvars, level2);
 			
 			indent_swift(level2);
 			raw("return ");
-			if( EXPRresult_is_optional(simplified, CHECK_DEEP) != no_optional ){
-				TYPE_head_swift(scope, Type_Logical, WO_COMMENT, LEAF_OWNED);	// wrap with explicit type cast
+			if( EXPRresult_is_optional(scope, simplified, CHECK_DEEP) != no_optional ){
+				TYPE_head_swift(scope, Type_Logical, WO_COMMENT);	// wrap with explicit type cast
 				raw("(");
-				EXPR_swift(scope, simplified, Type_Logical, NO_PAREN);			
+				EXPR_swift(scope, simplified, Type_Logical, unknown_optional, EMIT_SELF, NO_PAREN);			
 				raw(")");
 			}
 			else {
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, scope, simplified, Type_Logical, NO_PAREN, OP_UNKNOWN, YES_WRAP);
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, scope, simplified, Type_Logical, EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			}
 			raw("\n");
 			EXPR_delete_tempvar_definitions(tempvars);
@@ -553,23 +697,22 @@ void TYPEwhereDefinitions_swift( Scope scope, int level ) {
 		indent_swift(level);
 		raw("}\n");
 	}LISTod;
-//	raw("\n");
 }
 
 void TYPEwhereRuleValidation_swift( Type type, int level ) {
 	Linked_List where_rules = TYPEget_where(type);
-	if( LISTis_empty(where_rules) ) return;
+	if( LISTis_empty(where_rules) ) return; // baseline validation will be handled by the protocol extension for SDAI.DefinedType
 
 	raw("\n");
 	indent_swift(level);
 	raw("//WHERE RULE VALIDATION (DEFINED TYPE)\n");
 
 	indent_swift(level);
-	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel) -> [SDAI.WhereLabel:SDAI.LOGICAL] {\n");
+	raw("public static func validateWhereRules(instance:Self?, prefix:SDAI.WhereLabel) -> SDAI.WhereRuleValidationRecords {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
 		
-		char typename[BUFSIZ];TYPE_swiftName(type, NO_QUALIFICATION, typename);
+		char typename[BUFSIZ];TYPE_swiftName(type, NO_QUALIFICATION, SWIFT_QUALIFIER, typename);
 		indent_swift(level2);
 		raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
 		
@@ -596,7 +739,7 @@ void insert_select_type_member_tree( Scope scope, Type select_type, const char* 
 	if( SCOPE_search_visited(select_type) )return;
 	
 	char select_type_name[BUFSIZ];
-	TYPEhead_string_swift(scope, select_type, WO_COMMENT, LEAF_OWNED, select_type_name);
+	TYPEhead_string_swift(scope, select_type, WO_COMMENT, select_type_name);
 	
 	indent_swift(level);
 	raw("members.insert(SDAI.STRING(%s.typeName)) // -> %s\n", select_type_name, referencing);
@@ -620,3 +763,4 @@ void TYPEinsert_select_type_members_swift( Type type, int level ){
 	}LISTod;
 	SCOPE_end_search();
 }
+

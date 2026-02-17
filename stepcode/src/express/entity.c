@@ -346,7 +346,7 @@ Entity ENTITYcopy( Entity e ) {
 }
 
 /** Initialize the Entity module. */
-void ENTITYinitialize() {
+void ENTITYinitialize(void) {
 	//*TY2020/08/26
 	current_filename = __FILE__;
 	yylineno = __LINE__;

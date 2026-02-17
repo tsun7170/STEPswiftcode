@@ -65,34 +65,51 @@ void ALGget_generics( Scope s, Linked_List generics, Linked_List aggregates ) {
 }
 
 
-void ALGargs_swift( Scope current, bool force_optional, Linked_List args, bool drop_single_label, int level ) {
-	aggressively_wrap();
-	int indent2save = captureWrapIndent();
-	
+void ALGargs_swift
+ ( Scope current,
+	bool force_optional,
+	Linked_List args,
+	bool drop_single_label,
+	int level )
+{
 	bool single_param = drop_single_label && (LISTget_second(args) == NULL);
-	char* sep = (single_param ? "_ " : "");
+	char* prefix = (single_param ? "_ " : "");
+	char* sep = "";
 	
 	LISTdo(args, formalp, Variable) {
-		raw("%s", sep);
-		positively_wrap();
+		raw("%s",
+				sep
+				);
+
+		if( LISTget_length(args) > 1 ) {
+			force_wrap();
+		}
 		{
 			char buf[BUFSIZ];
-			wrap("%s: ", variable_swiftName(formalp,buf));
+			raw("%s%s: ",
+					prefix,
+					variable_swiftName(formalp,buf)
+					);
 		}
 		if( VARis_inout(formalp) ) {
-			wrap("inout ");
+			raw("inout ");
 		}
 		variableType_swift(current, formalp, (VARis_dynamic(formalp) ? YES_FORCE_OPTIONAL : force_optional), NOT_IN_COMMENT);
 		sep = ", ";
+		prefix = "";
 	}LISTod;
 	
-	restoreWrapIndent(indent2save);
 }
 
 void ALGvarnize_args_swift( Linked_List args, int level ) {
 	bool generated = false;
 	LISTdo(args, formalp, Variable) {
 		if( VARis_inout(formalp) ) continue;
+
+		if( !generated ) {
+			indent_swift(level);
+			raw("//PARAMETER VALUES\n");
+		}
 		indent_swift(level);
 		char buf[BUFSIZ];
 		raw("var %s = ", variable_swiftName(formalp,buf));
@@ -104,7 +121,7 @@ void ALGvarnize_args_swift( Linked_List args, int level ) {
 
 void ALGscope_declarations_swift(Schema schema, Scope s, int level ) {
 	SCOPEtypeList_swift(schema, s, level);
-	SCOPEentityList_swift(s, level);
+	SCOPEentityList_swift(schema, s, level);
 	SCOPEalgList_swift(schema, s, level);
 
 	Linked_List consts = LISTcreate();

@@ -1117,7 +1117,7 @@ void EXPop_create( int token_number, char * string, Resolve_expr_func * resolve_
     EXPop_table[token_number].resolve = resolve_func;
 }
 
-void EXPop_init() {
+void EXPop_init(void) {
     EXPop_create( OP_AND, "AND",      EXPresolve_op_logical );
     EXPop_create( OP_ANDOR, "ANDOR",      EXPresolve_op_logical );
     EXPop_create( OP_ARRAY_ELEMENT, "[array element]", EXPresolve_op_array_like );
@@ -1423,8 +1423,8 @@ bool EXPs_are_equal( Expression e1, Expression e2){
 		case expr_is_variable:
 			if( !names_are_equal(e1->u.variable->name->symbol.name, e2->u.variable->name->symbol.name) )return false;
 			break;
-		case expr_is_user_defined:
-			if( e1->u.user_defined != e2->u.user_defined )return false;
+		case expr_is_type_optionality:
+			if( e1->u.optionality != e2->u.optionality )return false;
 			break;
 	}
 	

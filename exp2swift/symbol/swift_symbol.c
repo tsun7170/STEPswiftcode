@@ -65,21 +65,30 @@ const char * asVariable_swiftName_n(const char* symbol_name, char* buf, int maxl
 	return canonical_swiftName_n(symbol_name, buf, maxlen);
 }
 
-bool variableType_swift(Scope current, Variable v, bool force_optional, SwiftOutCommentOption in_comment) {
+bool variableType_swift
+ (Scope current,
+	Variable v,
+	bool force_optional,
+	SwiftOutCommentOption in_comment)
+{
 	bool optional = force_optional || VARis_optional_by_large(v);
 	return optionalType_swift(current, v->type, optional, in_comment);
 }
 
-bool optionalType_swift(Scope current, Type type, bool optional, SwiftOutCommentOption in_comment) {
-	bool simple_type = 	( type->symbol.name != NULL) || 
+bool optionalType_swift
+ (Scope current,
+	Type type,
+	bool optional,
+	SwiftOutCommentOption in_comment)
+{
+	bool simple_type = 	( type->symbol.name != NULL) ||
 						!(TYPEhas_bounds(type) || TYPEget_unique(type));
 	
 	if( TYPEis_optional(type) ) optional = true;
 	if( TYPEis_logical(type) ) optional = false;
-//	if( TYPEis_boolean(type) ) optional = false;
 	
 	if( optional && !simple_type ) raw("(");
-	TYPE_head_swift(current, type, in_comment, LEAF_OWNED);
+	TYPE_head_swift(current, type, in_comment);
 	if( optional ) {
 		if( !simple_type ) raw(")");
 		raw("? ");

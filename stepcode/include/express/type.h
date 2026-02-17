@@ -172,7 +172,7 @@ struct TypeBody_ {
     struct {
         unsigned unique     : 1;
         unsigned optional   : 1;
-        unsigned fixed      : 1;
+        unsigned fixed      : 1; // STRING and BINARY FIXED constraint
         unsigned shared     : 1; /**< type is shared */
         unsigned repeat     : 1; /**< Expression is the number of repetitions of the previous Expression
                                    * 10303-11:2004 production #203
@@ -186,7 +186,7 @@ struct TypeBody_ {
     Type base;      /**< underlying base type if any can also contain true type if this type is a type reference */
     Type tag;       /**< optional tag */
     /* a lot of the stuff below can be unionized */
-    Expression precision;
+    Expression precision; // used also for STRING and BINARY width spec
     Linked_List list;   /**< used by select_types and composed types, such as for a list of entities in an instance */
     Expression upper;
     Expression lower;

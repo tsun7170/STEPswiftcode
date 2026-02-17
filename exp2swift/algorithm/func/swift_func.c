@@ -50,8 +50,14 @@ void FUNC_result_cache_var_swift( Schema schema, Function func, int level ) {
 	raw("//MARK: - function result cache\n");
 	
 	indent_swift(level);
-	raw("private var %s = SDAI.FunctionResultCache(", FUNC_cache_swiftName(func, buf));
-	wrap("controller: %s.schemaDefinition)\n", SCHEMA_swiftName(schema, buf));
+	raw("private let %s = SDAI.FunctionResultCache(",
+      FUNC_cache_swiftName(func, buf));
+  force_wrap();
+  wrap("label: \"%s\",",
+       FUNC_swiftName(func, buf));
+  force_wrap();
+	wrap("controller: %s.schemaDefinition )\n",
+       SCHEMA_swiftName(schema, buf));
 }
 
 static void func_result_cache_lookup_swift( Schema schema, Function func, int level ) {
@@ -61,7 +67,7 @@ static void func_result_cache_lookup_swift( Schema schema, Function func, int le
 	
 	//
 	indent_swift(level);
-	raw("// CACHE LOOKUP\n");
+	raw("//CACHE LOOKUP\n");
 
 	//
 	indent_swift(level);
@@ -86,7 +92,7 @@ static void func_result_cache_lookup_swift( Schema schema, Function func, int le
 
 	indent_swift(level2);
 	raw("return _cached_value as%s ", return_optional ? "?" : "!" );
-	TYPE_head_swift(func->superscope, FUNCget_return_type(func), WO_COMMENT, LEAF_OWNED);
+	TYPE_head_swift(func->superscope, FUNCget_return_type(func), WO_COMMENT);
 	raw("\n");
 
 	//
@@ -99,9 +105,9 @@ static void func_result_cache_lookup_swift( Schema schema, Function func, int le
 void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 	if(!nested) {
 		// EXPRESS summary
-		beginExpress_swift("FUNCTION DEFINITION");
+		beginExpress_swift("FUNCTION definition", AS_MARKDOWN_EXPRESS);
 		FUNC_out(func, level);
-		endExpress_swift();	
+		endExpress_swift(AS_MARKDOWN_EXPRESS);	
 	}
 	
 	// function head
@@ -123,21 +129,25 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 		char* sep = "";
 		raw("<");
 		LISTdo(generics, gtag, Type) {
-			wrap("%s%s: SDAIGenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION,buf));
+			wrap("%s%s: SDAI.GenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 			sep=", ";
 		}LISTod;
 		LISTdo(aggregates, atag, Type) {
-			wrap("%s%s: SDAIAggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION,buf));
+			wrap("%s%s: SDAI.AggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 			sep=", ";
 		}LISTod;
 		raw(">");
 	}
 	
 	// parameters
-	raw("(");
+	raw("( ");
 	ALGargs_swift( func->superscope, NO_FORCE_OPTIONAL, func->u.func->parameters, YES_DROP_SINGLE_LABEL, level );
-	raw(") ");
-	
+	if( LISTget_length(func->u.func->parameters) > 1 ){
+		raw("\n");
+		indent_swift(level);
+	}
+	raw(" ) ");
+
 	// return type
 	aggressively_wrap();
 	bool return_optional = FUNCreturn_indeterminate(func);
@@ -153,8 +163,8 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 		LISTdo(aggregates, atag, Type) {
 			Type aggr = atag->u.type->head;	
 			positively_wrap();
-			wrap("%s%s.ELEMENT == ",sep,TYPE_swiftName(atag,NULL,buf));
-			TYPE_head_swift(func->superscope, TYPEget_base_type(aggr), WO_COMMENT, LEAF_OWNED);
+			wrap("%s%s.ELEMENT == ",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+			TYPE_head_swift(func->superscope, TYPEget_base_type(aggr), WO_COMMENT);
 			sep = ", ";
 		}LISTod;
 	}
@@ -170,6 +180,9 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 		
 		ALGvarnize_args_swift(func->u.func->parameters, level2);
 		ALGscope_declarations_swift(schema, func, level2);
+
+		indent_swift(level2);
+		raw("//BODY\n");
 		int tempvar_id = 1;
 		STMTlist_swift(func, func->u.func->body, &tempvar_id, level2);
 	}

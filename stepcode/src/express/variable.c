@@ -96,7 +96,7 @@ Symbol * VAR_get_symbol( Generic v ) {
 }
 
 /** Initialize the Variable module. */
-void VARinitialize() {
+void VARinitialize(void) {
 	//*TY2020/08/26
 	current_filename = __FILE__;
 	yylineno = __LINE__;

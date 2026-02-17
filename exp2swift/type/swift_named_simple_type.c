@@ -33,21 +33,21 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 	
 	// markdown
 	raw("\n/** Defined data type (named simple type)\n");
-	raw("- EXPRESS:\n");
+	raw("- EXPRESS source code:\n");
 	raw("```express\n");
 	TYPE_out(type, level);
 	raw("\n```\n");
 	raw("*/\n");
 	
 	indent_swift(level);
-	raw( "public struct %s: ", TYPE_swiftName(type,type->superscope,buf));
-	wrap("%s__", SCHEMA_swiftName(schema, buf));
-	raw( "%s__type {\n", TYPE_swiftName(type,type->superscope,buf));
+	raw( "public struct %s: ", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
+//	wrap("%s__", SCHEMA_swiftName(schema, buf));
+	raw( "TypeHierarchy.%s__TypeBehavior {\n", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
 
 	{
 		indent_swift(level2);
 		raw( "public typealias Supertype = " );
-		TYPE_body_swift(type->superscope, type, NOT_IN_COMMENT, LEAF_OWNED);
+		TYPE_body_swift(type->superscope, type, NOT_IN_COMMENT);
 		raw("\n");
 		indent_swift(level2);
 		raw("public typealias FundamentalType = Supertype.FundamentalType\n");
@@ -57,12 +57,12 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 		raw("public typealias SwiftType = Supertype.SwiftType\n");
 
 		indent_swift(level2);
-		raw("public static var typeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope,buf));
+		raw("public static let typeName: String = ");
+		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf));
 
 		indent_swift(level2);
-		raw("public static var bareTypeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,NO_QUALIFICATION,buf));
+		raw("public static let bareTypeName: String = ");
+		wrap("\"%s\"\n", TYPE_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 
 		indent_swift(level2);
 		raw("public var typeMembers: Set<SDAI.STRING> {\n");
@@ -85,6 +85,8 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 		raw( "public var rep: Supertype\n\n" );
 		
 		indent_swift(level2);
+		raw("/// initialize from the fundamental type value\n");
+		indent_swift(level2);
 		raw( "public init(fundamental: FundamentalType) {\n" );
 		indent_swift(level2+nestingIndent_swift);
 		raw( "rep = Supertype(fundamental: fundamental)\n" );
@@ -92,7 +94,9 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 		raw("}\n\n");
 	
 		indent_swift(level2);
-		raw("public init?<G: SDAIGenericType>(fromGeneric generic: G?) {\n");
+		raw("/// initialize from SDAI generic type value\n");
+		indent_swift(level2);
+		raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
 		indent_swift(level2+nestingIndent_swift);
 		raw("guard let repval = generic?.");
 		switch( TYPEis(type) ){
@@ -137,25 +141,24 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 
 void namedSimpleTypeExtension_swift( Schema schema, Type type, int level) {
 	char typebuf[BUFSIZ];
-	const char* typename = TYPE_swiftName(type,type->superscope,typebuf);
+	const char* typename = TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
 
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);
 
-//	char buf[BUFSIZ];
-
 	raw("\n\n//MARK: - DEFINED TYPE HIERARCHY\n");
 
+  //__TypeBehavior protocol
 	indent_swift(level);
-	raw( "public protocol %s__%s__type: ", schemaname, typename);
-	wrap("SDAI__%s__subtype {}\n\n", builtinTYPE_body_swiftname(type) );
-	 
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__TypeBehavior: ", schemaname, typename);
+	wrap("SDAI.TypeHierarchy.%s__Subtype {}\n}\n\n", builtinTYPE_body_swiftname(type) );
+
+  // __Subtype protocol
 	indent_swift(level);
-	raw( "public protocol %s__%s__subtype: ", schemaname, typename);
-	wrap("%s__%s__type\n", schemaname, typename);
-//	indent_swift(level);
-//	raw( "where Supertype == %s\n", TYPE_swiftName(type,schema->superscope,buf));
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__Subtype: ", schemaname, typename);
+	wrap("%s__TypeBehavior\n", typename);
+
 	indent_swift(level);
-	raw( "{}\n");
+	raw( "{}\n}\n\n");
 }
 

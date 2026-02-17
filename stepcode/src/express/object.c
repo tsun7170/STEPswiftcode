@@ -35,7 +35,7 @@ Symbol * UNK_get_symbol( Generic x ) {
 }
 
 /** Initialize the Object module */
-void OBJinitialize() {
+void OBJinitialize(void) {
     int i;
 
     OBJ = ( struct Object * )sc_malloc( MAX_OBJECT_TYPES * sizeof( struct Object ) );
@@ -47,7 +47,7 @@ void OBJinitialize() {
 }
 
 /** Clean up the Object module */
-void OBJcleanup() {
+void OBJcleanup(void) {
     sc_free( OBJ );
 }
 

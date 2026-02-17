@@ -26,18 +26,18 @@ static void CASE_swift( Scope algo, struct Case_Statement_ * case_stmt, int* tem
 	int level2 = level+nestingIndent_swift;
 
 	Linked_List tempvars;
-	Expression simplified = EXPR_decompose(case_stmt->selector, case_stmt->selector->return_type, tempvar_id, &tempvars);
+	Expression simplified = EXPR_decompose(algo, case_stmt->selector, case_stmt->selector->return_type, tempvar_id, &tempvars);
 	if( EXPR_tempvars_swift(algo, tempvars, level) > 0 ) indent_swift(level);
 
 	raw("if let selector = ");
-	switch ( EXPRresult_is_optional(simplified, CHECK_DEEP) ) {
+	switch ( EXPRresult_is_optional(algo, simplified, CHECK_DEEP) ) {
 		case yes_optional:
-			EXPR_swift(algo, simplified, case_stmt->selector->return_type, NO_PAREN);
+			EXPR_swift(algo, simplified, case_stmt->selector->return_type, yes_optional, EMIT_SELF, NO_PAREN);
 			break;
 		case no_optional:				
-		case unknown:
+		case unknown_optional:
 			raw("SDAI.FORCE_OPTIONAL(");
-			EXPR_swift(algo, simplified, case_stmt->selector->return_type, NO_PAREN);
+			EXPR_swift(algo, simplified, case_stmt->selector->return_type, unknown_optional, EMIT_SELF, NO_PAREN);
 			raw(")");
 			break;
 	}
@@ -60,7 +60,7 @@ static void CASE_swift( Scope algo, struct Case_Statement_ * case_stmt, int* tem
 				
 				LISTdo_n( case_item->labels, label, Expression, b ) {
 					raw("%s",sep);
-					EXPR_swift(algo, label, NULL, NO_PAREN);
+					EXPR_swift(algo, label, NULL, unknown_optional, EMIT_SELF, NO_PAREN);
 					sep = ", ";
 				} LISTod
 				
@@ -103,22 +103,22 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int*
 	Variable v = ( Variable )DICTdo( &de );
 
 	wrap("if let incrementControl");
-	raw("/*");TYPE_head_swift(loop->scope, VARget_type(v), YES_IN_COMMENT, LEAF_OWNED); raw("*/"); // DEBUG
+	raw("/*");TYPE_head_swift(loop->scope, VARget_type(v), YES_IN_COMMENT); raw("*/"); // DEBUG
 	
 	wrap(" = SDAI.FROM(");
-	raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->init->return_type, YES_IN_COMMENT, LEAF_OWNED); raw("*/"); // DEBUG
-	EXPR_swift(algo, loop->scope->u.incr->init,VARget_type(v), NO_PAREN); raw(", ");
+	raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->init->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+	EXPR_swift(algo, loop->scope->u.incr->init,VARget_type(v), unknown_optional, EMIT_SELF, NO_PAREN); raw(", ");
 
 	wrap("TO:");
-	raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->end->return_type, YES_IN_COMMENT, LEAF_OWNED); raw("*/"); // DEBUG
-	EXPR_swift(algo, loop->scope->u.incr->end,VARget_type(v), NO_PAREN);
+	raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->end->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+	EXPR_swift(algo, loop->scope->u.incr->end,VARget_type(v), unknown_optional, EMIT_SELF, NO_PAREN);
 
 	if( loop->scope->u.incr->increment && 
 		 !( TYPEis_integer(loop->scope->u.incr->increment->type) && (loop->scope->u.incr->increment->u.integer == 1)) ) {
 		raw(", ");
 		wrap("BY:");
-		raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->increment->return_type, YES_IN_COMMENT, LEAF_OWNED); raw("*/"); // DEBUG
-		EXPR_swift(algo, loop->scope->u.incr->increment,VARget_type(v), NO_PAREN);		
+		raw("/*");TYPE_head_swift(algo, loop->scope->u.incr->increment->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+		EXPR_swift(algo, loop->scope->u.incr->increment,VARget_type(v), unknown_optional, EMIT_SELF, NO_PAREN);
 	}
 
 	raw(") {\n");
@@ -133,13 +133,13 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int*
 			
 			if( loop->while_expr ) {
 				Linked_List tempvars;
-				Expression simplified = EXPR_decompose(loop->while_expr, Type_Logical, tempvar_id, &tempvars);
+				Expression simplified = EXPR_decompose(algo, loop->while_expr, Type_Logical, tempvar_id, &tempvars);
 				EXPR_tempvars_swift(algo, tempvars, level2);
 
 				indent_swift(level3);
 				raw("if ");
 				raw("!SDAI.IS_TRUE(");
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, Type_Logical, YES_PAREN, OP_UNKNOWN, YES_WRAP);
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, Type_Logical, EMIT_SELF, YES_PAREN, OP_UNKNOWN, YES_WRAP);
 				raw(") { break }\n");
 
 				EXPR_delete_tempvar_definitions(tempvars);
@@ -149,13 +149,13 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int*
 			
 			if( loop->until_expr ) {
 				Linked_List tempvars;
-				Expression simplified = EXPR_decompose(loop->until_expr, Type_Logical, tempvar_id, &tempvars);
+				Expression simplified = EXPR_decompose(algo, loop->until_expr, Type_Logical, tempvar_id, &tempvars);
 				EXPR_tempvars_swift(algo, tempvars, level2);
 
 				indent_swift(level3);
 				raw("if ");
 				raw("SDAI.IS_TRUE(");
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, Type_Logical, YES_PAREN, OP_UNKNOWN, YES_WRAP);
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, Type_Logical, EMIT_SELF, YES_PAREN, OP_UNKNOWN, YES_WRAP);
 				raw(") { break }\n");
 
 				EXPR_delete_tempvar_definitions(tempvars);
@@ -170,9 +170,8 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int*
 
 static void LOOPwhile_swift( Scope algo, struct Loop_ *loop, int* tempvar_id, int level ) {
 	raw("while ");
-//	EXPR_swift(algo, loop->while_expr, Type_Logical, YES_PAREN);
 	wrap("!SDAI.IS_TRUE(");
-	EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, loop->while_expr, Type_Logical, YES_PAREN, OP_UNKNOWN, YES_WRAP);
+	EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, loop->while_expr, Type_Logical, EMIT_SELF, YES_PAREN, OP_UNKNOWN, YES_WRAP);
 	wrap(") {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
@@ -183,7 +182,7 @@ static void LOOPwhile_swift( Scope algo, struct Loop_ *loop, int* tempvar_id, in
 			indent_swift(level2);
 			raw("if ");
 			raw("SDAI.IS_TRUE(");
-			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, loop->until_expr, Type_Logical, YES_PAREN, OP_UNKNOWN, YES_WRAP);
+			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, loop->until_expr, Type_Logical, EMIT_SELF, YES_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw(") { break }\n");
 		}
 	}
@@ -203,7 +202,7 @@ static void LOOPuntil_swift( Scope algo, struct Loop_ *loop, int* tempvar_id, in
 	indent_swift(level);
 	raw("} while ");
 	raw("SDAI.IS_TRUE(");
-	EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, loop->until_expr, Type_Logical, YES_PAREN, OP_UNKNOWN, YES_WRAP);
+	EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, loop->until_expr, Type_Logical, EMIT_SELF, YES_PAREN, OP_UNKNOWN, YES_WRAP);
 	raw(")\n");
 }
 
@@ -249,19 +248,19 @@ void STMT_swift( Scope algo, Statement stmt, int* tempvar_id, int level ) {
 			Expression lhs = stmt->u.assign->lhs;
 			
 			Linked_List tempvars;
-			Expression rhs_simplified = EXPR_decompose(stmt->u.assign->rhs, lhs->return_type, tempvar_id, &tempvars);
-			Expression lhs_simplified = EXPR_decompose_lhs(lhs, lhs->return_type, tempvar_id, tempvars);
+			Expression rhs_simplified = EXPR_decompose(algo, stmt->u.assign->rhs, lhs->return_type, tempvar_id, &tempvars);
+			Expression lhs_simplified = EXPR_decompose_lhs(algo, lhs, lhs->return_type, tempvar_id, tempvars);
 			if( EXPR_tempvars_swift(algo, tempvars, level) > 0 )indent_swift(level);
 
-			EXPR_swift(algo, lhs_simplified, lhs->return_type, NO_PAREN);
-			raw(" = ");			
+			EXPR_swift(algo, lhs_simplified, lhs->return_type, unknown_optional, EMIT_SELF, NO_PAREN);
+			raw(" = ");
 			aggressively_wrap();
-			if( EXPRresult_is_optional(lhs, CHECK_SHALLOW) == yes_optional ){
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, rhs_simplified, lhs->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);				
+			if( EXPRresult_is_optional(algo, lhs, CHECK_SHALLOW) == yes_optional ){
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, rhs_simplified, lhs->return_type, EMIT_SELF, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 			}
 			else {
 				wrap("SDAI.UNWRAP(");
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, rhs_simplified, lhs->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);		
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, rhs_simplified, lhs->return_type, EMIT_SELF, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 				raw(")");
 			}
 			raw("\n");
@@ -289,11 +288,11 @@ void STMT_swift( Scope algo, Statement stmt, int* tempvar_id, int level ) {
 		case STMT_COND:
 		{
 			Linked_List tempvars;
-			Expression simplified = EXPR_decompose(stmt->u.cond->test, Type_Logical, tempvar_id, &tempvars);
+			Expression simplified = EXPR_decompose(algo, stmt->u.cond->test, Type_Logical, tempvar_id, &tempvars);
 			if( EXPR_tempvars_swift(algo, tempvars, level) > 0 ) indent_swift(level);
 			
 			raw("if SDAI.IS_TRUE( ");
-			EXPR_swift(algo, simplified, Type_Logical, YES_PAREN);
+			EXPR_swift(algo, simplified, Type_Logical, unknown_optional, EMIT_SELF, YES_PAREN);
 			wrap(" ) {\n");
 			
 			STMTlist_swift(algo, stmt->u.cond->code, tempvar_id, level+nestingIndent_swift);
@@ -346,10 +345,10 @@ void STMT_swift( Scope algo, Statement stmt, int* tempvar_id, int level ) {
 				}
 				if(VARis_inout(formal_param)) {
 					raw("&");
-					EXPR_swift(algo, actual_param, actual_param->return_type, NO_PAREN );
+					EXPR_swift(algo, actual_param, actual_param->return_type, unknown_optional, EMIT_SELF, NO_PAREN );
 				}
 				else {
-					EXPRassignment_rhs_swift(YES_RESOLVING_GENERIC, algo, actual_param, formal_param->type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+					EXPRassignment_rhs_swift(YES_RESOLVING_GENERIC, algo, actual_param, formal_param->type, EMIT_SELF, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 				}
 				
 				sep = ", ";
@@ -371,7 +370,7 @@ void STMT_swift( Scope algo, Statement stmt, int* tempvar_id, int level ) {
 				
 				
 				Linked_List tempvars;
-				Expression simplified = EXPR_decompose(stmt->u.ret->value, algo->u.func->return_type, tempvar_id, &tempvars);
+				Expression simplified = EXPR_decompose(algo, stmt->u.ret->value, algo->u.func->return_type, tempvar_id, &tempvars);
 				if( EXPR_tempvars_swift(algo, tempvars, level) > 0 ) indent_swift(level);
 				
 				raw("return ");
@@ -386,7 +385,7 @@ void STMT_swift( Scope algo, Statement stmt, int* tempvar_id, int level ) {
 					raw("SDAI.UNWRAP(");
 					--closing;
 				}
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, algo->u.func->return_type, NO_PAREN,OP_UNKNOWN,YES_WRAP);
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, algo->u.func->return_type, EMIT_SELF, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 				raw(closing);
 				raw("\n");
 				
@@ -401,7 +400,7 @@ void STMT_swift( Scope algo, Statement stmt, int* tempvar_id, int level ) {
 			raw("do {\t/* ALIAS (%s)", variable_swiftName(stmt->u.alias->variable,buf) );
 		}
 			wrap(" FOR (");
-			EXPR_swift(algo, stmt->u.alias->variable->initializer, stmt->u.alias->variable->initializer->return_type, YES_PAREN);
+			EXPR_swift(algo, stmt->u.alias->variable->initializer, stmt->u.alias->variable->initializer->return_type, unknown_optional, EMIT_SELF, YES_PAREN);
 			raw(") */\n");
 			
 			STMTlist_swift(algo, stmt->u.alias->statements, tempvar_id, level+nestingIndent_swift);

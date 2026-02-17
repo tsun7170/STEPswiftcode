@@ -59,7 +59,9 @@ int const_count;	//*TY2021/02/07 ditto for consts
     Express yyexpresult;    /* hook to everything built by parser */
 
     Symbol *interface_schema;    /* schema of interest in use/ref clauses */
-    void (*interface_func)( Schema cur_schema, Symbol * ref_schema, YYSTYPE old, YYSTYPE snnew );    /* func to attach rename clauses */
+
+typedef void (*InterfaceFuncType)( Schema , Symbol * , YYSTYPE , YYSTYPE  );
+InterfaceFuncType interface_func;    /* func to attach rename clauses */
 
     /* record schemas found in a single parse here, allowing them to be */
     /* differentiated from other schemas parsed earlier */
@@ -114,7 +116,7 @@ int const_count;	//*TY2021/02/07 ditto for consts
 
 #define ERROR(code)    ERRORreport(code, yylineno)
 
-void parserInitState()
+void parserInitState(void)
 {
     scope = scopes;
     /* no need to define scope->this */
@@ -3485,7 +3487,7 @@ static void yy_reduce(
 //#line 1378 "expparse.y"
 {
     interface_schema = yymsp[0].minor.yy0.symbol;
-    interface_func = SCHEMAadd_reference;
+    interface_func = (InterfaceFuncType)SCHEMAadd_reference;
 }
 //#line 3440 "expparse.c"
         break;
@@ -3504,7 +3506,7 @@ static void yy_reduce(
 //#line 1397 "expparse.y"
 {
     interface_schema = yymsp[0].minor.yy0.symbol;
-    interface_func = SCHEMAadd_use;
+    interface_func = (InterfaceFuncType)SCHEMAadd_use;
 }
 //#line 3459 "expparse.c"
         break;

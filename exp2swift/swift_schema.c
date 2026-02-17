@@ -64,12 +64,20 @@ static void create_schema_definition(Schema schema, Linked_List constList, int l
 	raw("private static func createSchemaDefinition() -> SDAIDictionarySchema.SchemaDefinition {\n");
 	
 	{	int level2 = level+nestingIndent_swift;
-		
+		int level3 = level2+nestingIndent_swift;
+
 		char buf[BUFSIZ];
 		indent_swift(level2);
-		raw("let schemaDef = SDAIDictionarySchema.SchemaDefinition(name: \"%s\", schema: %s.self)\n\n",
-				canonical_swiftName(schema->symbol.name, buf), SCHEMA_swiftName(schema, buf));
-		
+		raw("let schemaDef = SDAIDictionarySchema.SchemaDefinition.Prototype(\n");
+		indent_swift(level3);
+		raw("name: \"%s\", \n",
+				canonical_swiftName(schema->symbol.name, buf)
+				);
+		indent_swift(level3);
+		raw("schema: %s.self)\n\n",
+				SCHEMA_swiftName(schema, buf)
+				);
+
 		DictionaryEntry dictEntry;
 		
 		indent_swift(level2);
@@ -79,8 +87,9 @@ static void create_schema_definition(Schema schema, Linked_List constList, int l
 		while( 0 != (entity = DICTdo(&dictEntry)) ) {
 			indent_swift(level2);
 			raw("schemaDef.addEntity(entityDef: %s.entityDefinition)\n",
-					ENTITY_swiftName(entity, NO_QUALIFICATION, buf));
-		}	
+					ENTITY_swiftName(entity, NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
+					);
+		}
 
 		raw("\n");
 		indent_swift(level2);
@@ -89,7 +98,10 @@ static void create_schema_definition(Schema schema, Linked_List constList, int l
 		DICTdo_type_init( schema->symbol_table, &dictEntry, OBJ_RULE );
 		while( 0 != (rule = DICTdo(&dictEntry)) ) {
 			indent_swift(level2);
-			raw("schemaDef.addGlobalRule(name: \"%s\", rule: %s)\n", RULE_swiftName(rule, buf), buf);
+			raw("schemaDef.addGlobalRule(name: \"%s\", rule: %s)\n",
+					RULE_swiftName(rule, buf),
+					buf
+					);
 		}
 
 		raw("\n");
@@ -97,12 +109,14 @@ static void create_schema_definition(Schema schema, Linked_List constList, int l
 		raw("//MARK: GLOBAL CONSTANT DICT\n");		
 		LISTdo(constList, var, Variable) {
 			indent_swift(level2);
-			raw("schemaDef.addConstant(name: \"%s\", value: %s)\n", variable_swiftName(var, buf), buf);
+			raw("schemaDef.addConstant(name: \"%s\", value: %s)\n",
+					variable_swiftName(var, buf),
+					buf);
 		}LISTod;
 
 		raw("\n");
 		indent_swift(level2);
-		raw("return schemaDef\n");
+		raw("return schemaDef.freeze()\n");
 	}
 	
 	indent_swift(level);
@@ -121,7 +135,7 @@ void SCHEMA_swift( Schema schema ) {
 	int level2 = level+nestingIndent_swift;
 	
 	first_line = false;
-	beginExpress_swift("SCHEMA DEFINITION");
+	beginExpress_swift("SCHEMA definition", AS_MARKDOWN_EXPRESS);
 	raw( "SCHEMA %s;\n", schema->symbol.name );
 	
 	if( schema->u.schema->usedict || schema->u.schema->use_schemas
@@ -135,15 +149,22 @@ void SCHEMA_swift( Schema schema ) {
 	raw(	"\n"
 			"END_SCHEMA;"	);
 	tail_comment( schema->symbol );
-	endExpress_swift();
+	endExpress_swift(AS_MARKDOWN_EXPRESS);
 	
 	// swift code generation
 	raw("//MARK: - SCHEMA\n");
 	{	char buf[BUFSIZ];
-		raw("public enum %s: SDAISchema {\n", SCHEMA_swiftName(schema, buf));
+		raw("public enum %s: SDAI.SchemaType {\n", SCHEMA_swiftName(schema, buf));
 		
-		indent_swift(level2);
-		raw("public static let schemaDefinition = createSchemaDefinition()\n");
+    indent_swift(level2);
+    raw("public static let schemaDefinition = createSchemaDefinition()\n\n");
+
+    indent_swift(level2);
+    raw("//MARK: TypeHierarchy namespace\n");
+    indent_swift(level2);
+    raw("/// Namespace for the type system hierarchy protocol definitions\n");
+    indent_swift(level2);
+    raw("public enum TypeHierarchy {}\n");
 	}
 	
 	Linked_List constList = LISTcreate();

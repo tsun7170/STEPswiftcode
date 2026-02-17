@@ -40,9 +40,9 @@ const char* PROCcall_swiftName( Statement pcall, char buf[BUFSIZ] ) {
 void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 	if(!nested) {
 		// EXPRESS summary
-		beginExpress_swift("PROCEDURE DEFINITION");
+		beginExpress_swift("PROCEDURE definition", AS_MARKDOWN_EXPRESS);
 		PROC_out(proc, level);
-		endExpress_swift();	
+		endExpress_swift(AS_MARKDOWN_EXPRESS);	
 	}
 	
 		// function head
@@ -64,11 +64,11 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 			char* sep = "";
 			raw("<");
 			LISTdo(generics, gtag, Type) {
-				wrap("%s%s: SDAIGenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION,buf));
+				wrap("%s%s: SDAI.GenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 				sep=", ";
 			}LISTod;
 			LISTdo(aggregates, atag, Type) {
-				wrap("%s%s: SDAIAggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION,buf));
+				wrap("%s%s: SDAI.AggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 				sep=", ";
 			}LISTod;
 			raw(">");
@@ -77,6 +77,10 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 		// parameters
 		raw("(");
 		ALGargs_swift( proc->superscope, NO_FORCE_OPTIONAL, proc->u.proc->parameters, YES_DROP_SINGLE_LABEL, level );
+	if( LISTget_length(proc->u.proc->parameters) > 1 ){
+		raw("\n");
+		indent_swift(level);
+	}
 		raw(")");
 				
 		if(!LISTis_empty(aggregates)) {
@@ -87,8 +91,8 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 			LISTdo(aggregates, atag, Type) {
 				Type base = atag->u.type->head;	//hack!
 				positively_wrap();
-				wrap("%s%s.Element == ",sep,TYPE_swiftName(atag,NULL,buf));
-				TYPE_head_swift(proc->superscope, base, NOT_IN_COMMENT, LEAF_OWNED);
+				wrap("%s%s.Element == ",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+				TYPE_head_swift(proc->superscope, base, NOT_IN_COMMENT);
 				sep = ", ";
 			}LISTod;
 		}
@@ -99,6 +103,9 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 			
 			ALGvarnize_args_swift(proc->u.proc->parameters, level2);
 			ALGscope_declarations_swift(schema, proc, level2);
+
+			indent_swift(level2);
+			raw("//BODY\n");
 			int tempvar_id = 1;
 			STMTlist_swift(proc, proc->u.proc->body, &tempvar_id, level2);
 		}

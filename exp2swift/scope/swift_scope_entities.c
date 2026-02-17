@@ -21,7 +21,7 @@
 #include "swift_entity.h"
 #include "swift_schema.h"
 
-void SCOPEentityList_swift( Scope s, int level ) {
+void SCOPEentityList_swift( Schema schema, Scope s, int level ) {
 	DictionaryEntry dictEntry;
 	Entity entity;
 	
@@ -29,7 +29,7 @@ void SCOPEentityList_swift( Scope s, int level ) {
 	while( 0 != ( entity = ( Entity )DICTdo( &dictEntry ) ) ) {
 		Linked_List dummy = LISTcreate();
 		Linked_List dummy2 = LISTcreate();
-		ENTITY_swift( entity, level, dummy, dummy2 );
+		ENTITY_swift( schema, entity, level, dummy, dummy2 );
 		assert(LISTis_empty(dummy));
 		assert(LISTis_empty(dummy2));
 		LISTfree(dummy);
@@ -55,7 +55,7 @@ static void schemaLevelEntity_swift( Schema schema, Entity entity) {
 	
 	{	int level2 = level + nestingIndent_swift;
 		
-		ENTITY_swift(entity, level2, dynamic_attrs, attr_overrides);
+		ENTITY_swift(schema, entity, level2, dynamic_attrs, attr_overrides);
 	}
 	raw("}\n");
 	

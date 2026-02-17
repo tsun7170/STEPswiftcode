@@ -36,11 +36,14 @@
 				<key>focused</key>
 				<string></string>
 				<key>leading</key>
-				<string>	return empty_aggregate_initializer;
-}
+				<string>		raw(")");
+		return;
 </string>
 				<key>trailing</key>
-				<string></string>
+				<string>	}
+
+	// lhs.type == rhs.type
+</string>
 			</dict>
 			<key>type</key>
 			<string>bookmark</string>
@@ -119,16 +122,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>}
+				<string>		}
 </string>
 				<key>leading</key>
-				<string>																			TYPEget_optional(source_type) );
-	return aligned;
+				<string>				wrap_if(can_wrap, canonical_swiftName(e-&gt;symbol.name,buf) );
+			}
 </string>
 				<key>trailing</key>
-				<string>
+				<string>			break;
 
-/** print expression that has op and operands */
+			//MARK: entity_
 </string>
 			</dict>
 			<key>type</key>
@@ -164,16 +167,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>	}
+				<string>				EXPRopDot_swift( SELF, oe, suppress_SELF, paren, can_wrap );
 </string>
 				<key>leading</key>
-				<string>				break;
-		}
+				<string>			//MARK: OP_DOT
+			case OP_DOT:
 </string>
 				<key>trailing</key>
-				<string>	
-    if( paren ) {
-        raw( " )" );
+				<string>				break;
+				
+			//MARK: OP_GROUP
 </string>
 			</dict>
 			<key>type</key>
@@ -209,16 +212,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>}
+				<string>				EXPRopGroup_swift( SELF, oe, suppress_SELF, paren, can_wrap );
 </string>
 				<key>leading</key>
-				<string>        raw( " )" );
-    }
+				<string>			//MARK: OP_GROUP
+			case OP_GROUP:
 </string>
 				<key>trailing</key>
-				<string>
-static Type resolve_generic_type(Type lhs_generic, Type rhs_concrete) {
-	assert(lhs_generic != NULL);
+				<string>				break;
+				
+				
 </string>
 			</dict>
 			<key>type</key>
