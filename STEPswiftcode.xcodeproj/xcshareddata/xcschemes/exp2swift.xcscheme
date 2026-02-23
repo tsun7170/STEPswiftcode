@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1640"
+   LastUpgradeVersion = "2620"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -39,7 +39,7 @@
       enableUBSanitizer = "YES"
       launchStyle = "0"
       useCustomWorkingDirectory = "YES"
-      customWorkingDirectory = "/Users/home/Dropbox/STEP/STEPcode/SwiftSDAIap242/Sources/SwiftSDAIap242"
+      customWorkingDirectory = "/Users/home/Dropbox/STEP/STEPcode/SwiftSDAIap242ed4/Sources/SwiftSDAIap242ed4"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
@@ -61,11 +61,11 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "ap242/ap242ed2_mim_lf_v1.101_TY.exp"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "ap242/ap242ed2_mim_lf_v1.101.TY.exp"
-            isEnabled = "NO">
+            argument = "ap242ed4/ap242ed4_mim_lf.exp"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "debug/debug1.exp"
@@ -79,17 +79,12 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "EXPRESS_PATH"
-            value = "$(SRCROOT)/schema/"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "EXPRESS_PATH"
-            value = "/Users/home/Dropbox/STEP/STEPcode/StepSchema/StepSchema/"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "EXPRESS_PATH"
             value = "$(SRCROOT)/../SwiftSDAIap242/schema/"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "EXPRESS_PATH"
+            value = "$(SRCROOT)/../SwiftSDAIap242ed4/schema/"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

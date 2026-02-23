@@ -159,6 +159,17 @@ extern SC_EXPRESS_EXPORT struct Scope_  * ENTITYcopy PROTO( ( struct Scope_ * ) 
 extern SC_EXPRESS_EXPORT Variable     ENTITYresolve_attr_ref PROTO( ( Entity, Symbol *, Symbol * ) );
 
 // entity related queries
+/// Searches for an inherited entity by name within the inheritance tree of the given entity.
+/// - Parameters:
+///   - entity: The entity to begin the search from.
+///   - name: The name of the entity to search for in the inheritance hierarchy.
+///   - down: An integer flag indicating whether to search down the subtype hierarchy in addition to the supertype hierarchy.
+///   down == 0: No subtype search.
+///   down != 0 (usually 1): Subtype search enabled.
+///   - under_search: A boolean value indicating whether the search is already in progress (prevents redundant search state management).
+/// - Returns: The inherited entity with the specified name if found; otherwise, `NULL`.
+/// - Note: This method ensures that the search does not revisit previously traversed scopes to avoid infinite recursion in complex inheritance graphs.
+///
 extern SC_EXPRESS_EXPORT Entity       ENTITYfind_inherited_entity PROTO( ( struct Scope_ *, char *, int, bool ) );
 extern SC_EXPRESS_EXPORT bool      ENTITYhas_immediate_supertype PROTO( ( Entity, Entity ) );
 extern SC_EXPRESS_EXPORT bool      ENTITYhas_supertype PROTO( ( Entity sub, Entity sup) );

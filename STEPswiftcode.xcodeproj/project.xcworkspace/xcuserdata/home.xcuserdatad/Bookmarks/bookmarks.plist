@@ -12,13 +12,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>1502</string>
+					<string>1447</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>1501</string>
+					<string>1447</string>
 					<key>Timestamp</key>
-					<string>792141439.697721</string>
+					<string>793010193.477715</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -34,16 +34,15 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>void EXPRassignment_rhs_swift
-</string>
+				<string></string>
 				<key>leading</key>
-				<string>
-//MARK: assignment RHS
+				<string>		raw(")");
+		return;
 </string>
 				<key>trailing</key>
-				<string> (bool resolve_generic, Scope SELF, Expression rhs, Type lhsType,
-  bool suppress_SELF,
-  bool paren, unsigned int previous_op, bool can_wrap)
+				<string>	}
+
+	// lhs.type == rhs.type
 </string>
 			</dict>
 			<key>type</key>

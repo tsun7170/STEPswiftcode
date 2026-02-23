@@ -345,7 +345,7 @@ void TYPE_head_swift
 	if( t->symbol.name ) {
 		char buf[BUFSIZ];
 		wrap( "%s", TYPE_swiftName(t,current, SWIFT_QUALIFIER, buf) );
-    additional_constraints(current, t, in_comment);
+//    additional_constraints(current, t, in_comment);
   } else {
     TYPE_body_swift( current, t, in_comment );
   }

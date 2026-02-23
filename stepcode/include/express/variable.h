@@ -98,7 +98,7 @@ struct Variable_ {
     Variable    inverse_attribute;  /**< attribute related by inverse relationship */
 	// *TY2020/06/20 added
 	Scope defined_in;
-	Linked_List observers;	// of inverse attribures observing this attribute
+	Linked_List observers;	// of inverse attributes observing this attribute
 	Variable original_attribute;	// original attribute overridden by this attribute
 	Dictionary overriders; // of attribute overriding this attribute
 };

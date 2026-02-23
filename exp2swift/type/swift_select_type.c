@@ -1433,7 +1433,203 @@ static void selectUnderlyingTypeConformance_swift(int level, Schema schema, Type
 
 //MARK: - aggregation type conformance
 
-static void selectVarForwarding_swift(Type select_type, const char* var_name, const char* var_type, int level) {
+typedef struct AggregateTypeSpec {
+  Type base_type;
+
+  union {
+    struct None {
+    } none;
+
+    struct ArrayType {
+      Expression upper;
+      Expression lower;
+    } array_type;
+
+    struct NonArrayType {
+      bool canbe_bag;
+      bool canbe_list;
+      bool canbe_set;
+    } non_array_type;
+  } u;
+
+  enum {
+    is_none = 0,
+    is_array_type,
+    is_non_array_type
+  } u_tag;
+
+} AggregateTypeSpec;
+
+// derived from
+//  Type TYPE_retrieve_aggregate_base( Type t_root, Type t_agg_base )
+
+static AggregateTypeSpec common_aggregate_spec
+ ( Type t_root, AggregateTypeSpec counterpart )
+{
+  if( t_root == NULL )return counterpart;
+
+  AggregateTypeSpec result_none;
+  result_none.base_type = NULL;
+  result_none.u_tag = is_none;
+
+
+  if( TYPEis_select( t_root ) ) {
+    /* parse the underlying types */
+    LISTdo_links( t_root->u.type->body->list, link ){
+      /* the current underlying type */
+      Type t_select_case = ( Type ) link->data;
+
+      AggregateTypeSpec case_agg = common_aggregate_spec( t_select_case, counterpart );
+      if( case_agg.u_tag != is_none ) {
+
+        // select down case_agg's base_type
+        if( (counterpart.u_tag != is_none) &&
+           (case_agg.base_type != counterpart.base_type) )
+        {
+          Type common_base = TYPEget_common(case_agg.base_type, counterpart.base_type);
+          /* the underlying select case types did not resolve to a common aggregate base type */
+          if( (common_base == NULL) || (case_agg.u_tag != counterpart.u_tag) )
+          {
+            return result_none;
+          }
+          case_agg.base_type = common_base;
+        }
+
+        // check agg_types
+        switch (case_agg.u_tag) {
+          case is_array_type:
+            if( counterpart.u_tag == is_non_array_type ) {
+              return result_none;
+            }
+            if( counterpart.u_tag == is_array_type ) {
+              if( !EXPs_are_equal(case_agg.u.array_type.lower, counterpart.u.array_type.lower) ||
+                 !EXPs_are_equal(case_agg.u.array_type.upper, counterpart.u.array_type.upper) ) {
+                 return result_none;
+              }
+            }
+            break;
+
+          case is_non_array_type:
+            if( counterpart.u_tag == is_array_type ) {
+              return result_none;
+            }
+            if( counterpart.u_tag == is_non_array_type ){
+              case_agg.u.non_array_type.canbe_bag  |= counterpart.u.non_array_type.canbe_bag;
+              case_agg.u.non_array_type.canbe_list |= counterpart.u.non_array_type.canbe_list;
+              case_agg.u.non_array_type.canbe_set  |= counterpart.u.non_array_type.canbe_set;
+            }
+            break;
+
+          default:
+            break;
+        }
+
+
+        counterpart = case_agg;
+      }
+      else if( TYPEis_aggregation_data_type(t_select_case) ){
+        /* the underlying aggregate base types did not resolve to a common type */
+        AggregateTypeSpec result;
+        result.u_tag = is_none;
+        return result_none;
+      }
+    }LISTod;
+    return counterpart;
+  }
+
+  if( TYPEis_aggregation_data_type(t_root) ){
+    switch (counterpart.u_tag) {
+      case is_array_type:
+        if( !TYPEis_array(t_root) ) return result_none;
+
+        if( !EXPs_are_equal(TYPEget_body(t_root)->lower, counterpart.u.array_type.lower) ||
+           !EXPs_are_equal(TYPEget_body(t_root)->upper, counterpart.u.array_type.upper) ) {
+          return result_none;
+        }
+        break;
+
+      case is_non_array_type:
+        switch (TYPEget_type(t_root)) {
+          case array_:
+            return result_none;
+            break;
+
+          case bag_:
+            counterpart.u.non_array_type.canbe_bag = true;
+            break;
+
+          case list_:
+            counterpart.u.non_array_type.canbe_list = true;
+            break;
+
+          case set_:
+            counterpart.u.non_array_type.canbe_set = true;
+            break;
+
+          default:
+            break;
+        }
+        break;
+
+      case is_none:
+        if( TYPEis_array(t_root) ) {
+          counterpart.u_tag = is_array_type;
+          counterpart.u.array_type.lower = TYPEget_body(t_root)->lower;
+          counterpart.u.array_type.upper = TYPEget_body(t_root)->upper;
+        }
+        else {
+          counterpart.u_tag = is_non_array_type;
+          counterpart.u.non_array_type.canbe_bag = false;
+          counterpart.u.non_array_type.canbe_list = false;
+          counterpart.u.non_array_type.canbe_set = false;
+
+          switch (TYPEget_type(t_root)) {
+            case bag_:
+              counterpart.u.non_array_type.canbe_bag = true;
+              break;
+
+            case list_:
+              counterpart.u.non_array_type.canbe_list = true;
+              break;
+
+            case set_:
+              counterpart.u.non_array_type.canbe_set = true;
+              break;
+
+            default:
+              break;
+          }
+        }
+        break;
+    }
+
+    Type common_base = TYPEget_common(t_root->u.type->body->base, counterpart.base_type);
+    if( common_base == NULL )return result_none;
+    
+    counterpart.base_type = common_base;
+    return  counterpart;
+  }
+
+  /* the underlying select case type is neither a select nor an aggregate */
+  return result_none;
+}
+
+static AggregateTypeSpec SELECTaggregate_spec(Type select_type)
+{
+  AggregateTypeSpec result_none;
+  result_none.base_type = NULL;
+  result_none.u_tag = is_none;
+
+  return common_aggregate_spec(select_type, result_none);
+}
+
+static void selectVarForwarding_swift
+ (Type select_type,
+  const char* var_name,
+  const char* var_type,
+  const char* default_value,
+  int level)
+{
 	TypeBody typeBody = TYPEget_body(select_type);
 	char buf[BUFSIZ];
 
@@ -1443,13 +1639,25 @@ static void selectVarForwarding_swift(Type select_type, const char* var_name, co
 		
 		indent_swift(level2);
 		raw("switch self {\n");
-		
+
+    bool exhausted = true;
 		LISTdo( typeBody->list, selection, Type ) {
-			indent_swift(level2);
-			raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
-			raw("return selection.%s\n", var_name);
+      AggregateTypeSpec common_aggr = SELECTaggregate_spec(selection);
+      if( common_aggr.u_tag != is_none ){
+        indent_swift(level2);
+        raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
+        raw("return selection.%s\n", var_name);
+      }
+      else {
+        exhausted = false;
+      }
 		} LISTod;		
-		
+
+    if( !exhausted ){
+      indent_swift(level2);
+      raw("default: return %s\n", default_value);
+    }
+
 		indent_swift(level2);
 		raw("}\n");
 	}
@@ -1498,7 +1706,9 @@ static void selectAggregationBehaviorForwarding_swift(Type select_type, const ch
 }
 
 
-static void selectAggregationBehaviorConformance_swift(Type select_type, int level) {
+static void selectAggregationBehaviorConformance_swift
+ (Type select_type, int level)
+{
 	indent_swift(level);
 	raw("//MARK: SDAIAggregationBehavior\n");
 	selectAggregationBehaviorForwarding_swift(select_type, "aggregationHiBound", "Int?", "hiBound", level);
@@ -1508,7 +1718,11 @@ static void selectAggregationBehaviorConformance_swift(Type select_type, int lev
 	selectAggregationBehaviorForwarding_swift(select_type, "aggregationSize", "Int?", 	 "size", 		level);
 }
 
-static void selectAggregateTypeConformance_swift(Type select_type, Type aggregate_base, int level) {
+static void selectAggregateTypeConformance_swift
+ (Type select_type,
+  AggregateTypeSpec select_aggr,
+  int level)
+{
 	TypeBody typeBody = TYPEget_body(select_type);
 	char buf[BUFSIZ];
 	
@@ -1516,15 +1730,15 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 	raw("//MARK: SDAI.AggregationType\n");
 
 	indent_swift(level);
-	wrap("public typealias ELEMENT = %s\n", TYPEhead_string_swift(select_type->superscope, aggregate_base, NOT_IN_COMMENT, buf));
+	wrap("public typealias ELEMENT = %s\n", TYPEhead_string_swift(select_type->superscope, select_aggr.base_type, NOT_IN_COMMENT, buf));
 
-	selectVarForwarding_swift(select_type, "hiBound", "Int?", level);
-	selectVarForwarding_swift(select_type, "hiIndex", "Int",  level);
-	selectVarForwarding_swift(select_type, "loBound", "Int",  level);
-	selectVarForwarding_swift(select_type, "loIndex", "Int",  level);
-	selectVarForwarding_swift(select_type, "size",    "Int",  level);
-	selectVarForwarding_swift(select_type, "isEmpty", "Bool", level);
-	
+	selectVarForwarding_swift(select_type, "hiBound", "Int?", "nil",   level);
+	selectVarForwarding_swift(select_type, "hiIndex", "Int",  "0",     level);
+	selectVarForwarding_swift(select_type, "loBound", "Int",  "0",     level);
+	selectVarForwarding_swift(select_type, "loIndex", "Int",  "0",     level);
+	selectVarForwarding_swift(select_type, "size",    "Int",  "0",     level);
+	selectVarForwarding_swift(select_type, "isEmpty", "Bool", "true",  level);
+
 	raw("\n");
 	indent_swift(level);
 	raw("public subscript(index: Int?) -> ELEMENT? {\n");
@@ -1532,13 +1746,25 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 		
 		indent_swift(level2);
 		raw("switch self {\n");
-		
+
+    bool exhausted = true;
 		LISTdo( typeBody->list, selection, Type ) {
-			indent_swift(level2);
-			raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
-			raw("return selection[index]\n");
-		} LISTod;		
-		
+      AggregateTypeSpec common_aggr = SELECTaggregate_spec(selection);
+      if( common_aggr.u_tag != is_none ){
+        indent_swift(level2);
+        raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
+        raw("return selection[index]\n");
+      }
+      else {
+        exhausted = false;
+      }
+		} LISTod;
+
+    if( !exhausted ){
+      indent_swift(level2);
+      raw("default: return nil\n");
+    }
+
 		indent_swift(level2);
 		raw("}\n");
 	}
@@ -1552,13 +1778,25 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 		
 		indent_swift(level2);
 		raw("switch self {\n");
-		
+
+    bool exhausted = true;
 		LISTdo( typeBody->list, selection, Type ) {
-			indent_swift(level2);
-			raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
-			wrap("return AnyIterator<ELEMENT?>(selection.lazy.map({SDAI.FORCE_OPTIONAL($0)}).makeIterator())\n");
-		} LISTod;		
-		
+      AggregateTypeSpec common_aggr = SELECTaggregate_spec(selection);
+      if( common_aggr.u_tag != is_none ){
+        indent_swift(level2);
+        raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
+        wrap("return AnyIterator<ELEMENT?>(selection.lazy.map({SDAI.FORCE_OPTIONAL($0)}).makeIterator())\n");
+      }
+      else {
+        exhausted = false;
+      }
+		} LISTod;
+
+    if( !exhausted ){
+      indent_swift(level2);
+      raw("default: return AnyIterator<ELEMENT?>(EmptyCollection<ELEMENT?>().makeIterator())\n");
+    }
+
 		indent_swift(level2);
 		raw("}\n");
 	}
@@ -1572,13 +1810,25 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 		
 		indent_swift(level2);
 		raw("switch self {\n");
-		
+
+    bool exhausted = true;
 		LISTdo( typeBody->list, selection, Type ) {
-			indent_swift(level2);
-			raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
-			raw("return selection.CONTAINS(elem)\n");
-		} LISTod;		
-		
+      AggregateTypeSpec common_aggr = SELECTaggregate_spec(selection);
+      if( common_aggr.u_tag != is_none ){
+        indent_swift(level2);
+        raw("case .%s(let selection): ", selectCase_swiftName(selection, buf));
+        raw("return selection.CONTAINS(elem)\n");
+      }
+      else {
+        exhausted = false;
+      }
+		} LISTod;
+
+    if( !exhausted ){
+      indent_swift(level2);
+      raw("default: return SDAI.FALSE\n");
+    }
+
 		indent_swift(level2);
 		raw("}\n");
 	}
@@ -1586,26 +1836,76 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 	raw("}\n");
 
 	raw("\n");
-	indent_swift(level);
-	raw("public typealias RESULT_AGGREGATE = SDAI.BAG<ELEMENT>\n");
+  {
+    indent_swift(level);
+    if( select_aggr.u_tag == is_array_type ){
+      raw("public typealias RESULT_AGGREGATE = SDAI.ARRAY_OPTIONAL<ELEMENT>\n");
+    }
+    else {
+      if( select_aggr.u.non_array_type.canbe_list ){
+        raw("public typealias RESULT_AGGREGATE = SDAI.LIST<ELEMENT>\n");
+      }
+      else if( select_aggr.u.non_array_type.canbe_bag ){
+        raw("public typealias RESULT_AGGREGATE = SDAI.BAG<ELEMENT>\n");
+      }
+      else if( select_aggr.u.non_array_type.canbe_set ){
+        raw("public typealias RESULT_AGGREGATE = SDAI.SET<ELEMENT>\n");
+      }
+      else {
+        raw("public typealias RESULT_AGGREGATE = SDAI.LIST<ELEMENT>\n");
+      }
+    }
+  }
 	indent_swift(level);
 	raw("public func QUERY(logical_expression: @escaping (ELEMENT) -> SDAI.LOGICAL ) -> RESULT_AGGREGATE {\n");
 	{	int level2 = level+nestingIndent_swift;
 		
 		indent_swift(level2);
 		raw("switch self {\n");
-		
+
+    bool exhausted = true;
 		LISTdo( typeBody->list, selection, Type ) {
-			indent_swift(level2);
-			raw("case .%s(let selection): \n", selectCase_swiftName(selection, buf));
-			{	int level3 = level2+nestingIndent_swift;
-				indent_swift(level3);
-				raw("let result = RESULT_AGGREGATE.SwiftType( selection.QUERY(logical_expression:logical_expression) )\n");
-				indent_swift(level3);
-				raw("return RESULT_AGGREGATE(from:result)\n");
-			}
-		} LISTod;		
-		
+      AggregateTypeSpec common_aggr = SELECTaggregate_spec(selection);
+      if( common_aggr.u_tag != is_none ){
+        indent_swift(level2);
+        raw("case .%s(let selection): \n", selectCase_swiftName(selection, buf));
+        {	int level3 = level2+nestingIndent_swift;
+          indent_swift(level3);
+          raw("let result = RESULT_AGGREGATE.SwiftType( selection.QUERY(logical_expression:logical_expression) )\n");
+
+          indent_swift(level3);
+          if( select_aggr.u_tag == is_array_type ){
+            raw("return RESULT_AGGREGATE(from:result, ");
+            force_wrap();
+            raw("bound1: SDAI.UNWRAP(");
+            EXPRassignment_rhs_swift
+            (NO_RESOLVING_GENERIC, select_type->superscope,
+             common_aggr.u.array_type.lower, Type_Integer,
+             EMIT_SELF, NO_PAREN, OP_UNKNOWN, NO_WRAP);
+            raw("), ");
+
+            raw("bound2:");
+            EXPRassignment_rhs_swift
+            (NO_RESOLVING_GENERIC, select_type->superscope,
+             common_aggr.u.array_type.upper, Type_Integer,
+             EMIT_SELF, NO_PAREN, OP_UNKNOWN, NO_WRAP);
+            raw(")\n");
+          }
+          else {
+            raw("return RESULT_AGGREGATE(from:result)\n");
+          }
+        }
+      }
+      else {
+        exhausted = false;
+      }
+		} LISTod;
+
+    if( !exhausted ){
+      indent_swift(level2);
+      raw("default: return RESULT_AGGREGATE()\n");
+    }
+
 		indent_swift(level2);
 		raw("}\n");
 	}
@@ -1622,15 +1922,27 @@ static void selectAggregateTypeConformance_swift(Type select_type, Type aggregat
 		indent_swift(level2);
 		raw("switch self {\n");
 		
+    bool exhausted = true;
 		LISTdo( typeBody->list, selection, Type ) {
-			indent_swift(level2);
-			raw("case .%s(let selection): \n", selectCase_swiftName(selection, buf));
-			{	int level3 = level2+nestingIndent_swift;
-				indent_swift(level3);
-				raw("return selection.asAggregationSequence\n");
-			}
-		} LISTod;		
-		
+      AggregateTypeSpec common_aggr = SELECTaggregate_spec(selection);
+      if( common_aggr.u_tag != is_none ){
+        indent_swift(level2);
+        raw("case .%s(let selection): \n", selectCase_swiftName(selection, buf));
+        {	int level3 = level2+nestingIndent_swift;
+          indent_swift(level3);
+          raw("return selection.asAggregationSequence\n");
+        }
+      }
+      else {
+        exhausted = false;
+      }
+		} LISTod;
+
+    if( !exhausted ){
+      indent_swift(level2);
+      raw("default: return AnySequence<ELEMENT>(EmptyCollection<ELEMENT>())\n");
+    }
+
 		indent_swift(level2);
 		raw("}\n");
 	}
@@ -1718,7 +2030,7 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 	
 	listAllSelectionAttributes(select_type, level);
 	TypeBody typeBody = TYPEget_body(select_type);
-	Type common_aggregate_base = TYPE_retrieve_aggregate_base(select_type, NULL);
+  AggregateTypeSpec common_aggr = SELECTaggregate_spec(select_type);
 
 	// markdown
 	raw("\n/** SELECT type\n");
@@ -1726,6 +2038,11 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 	raw("```express\n");
 	TYPE_out(select_type, level);
 	raw("\n```\n");
+//  if( common_aggregate_base != NULL ){
+//    raw("\n- Common Aggregate Element Type: ") ;
+//    TYPE_out(common_aggregate_base, level);
+//    raw("\n");
+//  }
 	raw("*/\n");
 	
 	// swift enum definition
@@ -1772,9 +2089,20 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 						case_kind
 						);
         force_wrap();
-				raw("/// - defined in: ``%s``\n",
+				raw("/// - defined in: ``%s``",
 						TYPE_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
 						);
+
+        {
+          AggregateTypeSpec common_aggr = SELECTaggregate_spec(selection);
+          if( common_aggr.u_tag != is_none ){
+            force_wrap();
+            raw("/// - may yield: aggregate[``%s``]\n",
+                TYPEhead_string_swift(select_type->superscope, common_aggr.base_type, YES_IN_COMMENT, buf)
+                );
+          }
+        }
+        raw("\n");
 
 				indent_swift(level2);
 				raw("@_documentation(visibility:public)\n");
@@ -1841,9 +2169,9 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 			selectAggregationBehaviorConformance_swift(select_type, level2);
 			
 			// SDAI.AggregationType
-			if( common_aggregate_base != NULL ){
+			if( common_aggr.u_tag != is_none ){
 				raw("\n");
-				selectAggregateTypeConformance_swift(select_type, common_aggregate_base, level2);				
+				selectAggregateTypeConformance_swift(select_type, common_aggr, level2);				
 			}
 			
 			// where rules
@@ -1861,7 +2189,7 @@ void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {
 
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);
-	Type common_aggregate_base = TYPE_retrieve_aggregate_base(select_type, NULL);
+  AggregateTypeSpec common_aggr = SELECTaggregate_spec(select_type);
 
 	raw("\n\n//MARK: - SELECT TYPE HIERARCHY\n");
 	//__TypeBehavior protocol
@@ -1872,15 +2200,18 @@ void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {
 	indent_swift(level);
 	raw( "public protocol %s__TypeBehavior: ", typename);
 	wrap("SDAI.SelectType");
-	if( common_aggregate_base != NULL ){
+	if( common_aggr.u_tag != is_none ){
 		raw(", ");
 		wrap("SDAI.AggregationType");
-		if( common_aggregate_base == Type_Entity ){
+    force_wrap();
+		if( common_aggr.base_type == Type_Entity ){
 			wrap("where ELEMENT == SDAI.EntityReference");
 		}
 		else {
 			char buf[BUFSIZ];
-			wrap("where ELEMENT == %s", TYPEhead_string_swift(schema->superscope, common_aggregate_base, NOT_IN_COMMENT, buf));
+			wrap("where ELEMENT == %s",
+           TYPEhead_string_swift(schema->superscope, common_aggr.base_type, NOT_IN_COMMENT, buf)
+           );
 		}
 	}
 	

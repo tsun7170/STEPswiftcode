@@ -78,6 +78,23 @@ void DICTcleanup( void ) {
  * error directly if there is a duplicate value.
  * \return 0 on success, 1 on failure
  */
+/// Defines an entry in the specified dictionary.
+///
+/// If an entry with the same name already exists:
+/// - If both the new and existing entries are enumerations, the old entry is marked as ambiguous.
+/// - If both are non-enumerations, an error is reported and the definition fails.
+/// - If one is an enumeration and the other is not, both are allowed as per newer scoping rules.
+///
+/// - Parameters:
+///   - dict: The dictionary in which to define the entry.
+///   - name: The key for the entry.
+///   - obj: The value (generic object) to store.
+///   - sym: Associated symbol, for error reporting and metadata.
+///   - type: The type code of the object being defined.
+/// - Returns: `0` on success, `1` on failure (e.g., duplicate non-enum definition).
+///
+/// This function may set error state and cause side effects in global error tracking variables.
+///
 int DICTdefine( Dictionary dict, const char * name, Generic obj, Symbol * sym, char type ) {
     struct Element_ new, *old;
 
@@ -107,12 +124,14 @@ int DICTdefine( Dictionary dict, const char * name, Generic obj, Symbol * sym, c
     } else if( ( type != OBJ_ENUM ) && ( !IS_ENUM( old->type ) ) ) {
         /* if we're adding a non-enum, and we've  *
          * already added a non-enum, complain     */
+      if( sym != NULL ){
         if( sym->filename == old->symbol->filename ) {
-            ERRORreport_with_symbol( ERROR_duplicate_decl, sym, name, old->symbol->line );
+          ERRORreport_with_symbol( ERROR_duplicate_decl, sym, name, old->symbol->line );
         } else {
-            ERRORreport_with_symbol( ERROR_duplicate_decl_diff_file, sym, name, old->symbol->line, old->symbol->filename );
+          ERRORreport_with_symbol( ERROR_duplicate_decl_diff_file, sym, name, old->symbol->line, old->symbol->filename );
         }
         experrc = ERROR_subordinate_failed;
+      }
         return( 1 );
     }
     return 0;

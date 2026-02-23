@@ -174,6 +174,17 @@ static Entity ENTITY_find_inherited_entity( Entity entity, char * name, int down
     return 0;
 }
 
+/// Searches for an inherited entity by name within the inheritance tree of the given entity.
+/// - Parameters:
+///   - entity: The entity to begin the search from.
+///   - name: The name of the entity to search for in the inheritance hierarchy.
+///   - down: An integer flag indicating whether to search down the subtype hierarchy in addition to the supertype hierarchy.
+///   down == 0: No subtype search.
+///   down != 0 (usually 1): Subtype search enabled.
+///   - under_search: A boolean value indicating whether the search is already in progress (prevents redundant search state management).
+/// - Returns: The inherited entity with the specified name if found; otherwise, `NULL`.
+/// - Note: This method ensures that the search does not revisit previously traversed scopes to avoid infinite recursion in complex inheritance graphs.
+///
 struct Scope_ * ENTITYfind_inherited_entity( struct Scope_ *entity, char * name, int down, bool under_search ) {
 	if( streq( name, entity->symbol.name ) ) {
 		return( entity );
@@ -195,7 +206,7 @@ int ENTITYget_attr_ambiguous_count( Entity entity, const char* attrName ) {
 	Entity defined_entity = NULL;
 	bool defined_entity_is_subtype = false;
 	LISTdo(attr_defs, attr, Variable) {		
-		if( VARis_redeclaring(attr) ) attr = attr->original_attribute;
+		while( VARis_redeclaring(attr) ) attr = attr->original_attribute;
 		if( defined_entity != NULL ){
 			if( (defined_entity_is_subtype == (bool)LIST_aux) && 
 				 	(attr->defined_in != defined_entity) ) return 2;

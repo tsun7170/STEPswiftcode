@@ -95,42 +95,54 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 	
 		indent_swift(level2);
 		raw("/// initialize from SDAI generic type value\n");
-		indent_swift(level2);
-		raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
-		indent_swift(level2+nestingIndent_swift);
-		raw("guard let repval = generic?.");
-		switch( TYPEis(type) ){
-			case integer_:
-				raw("integerValue");
-				break;
-			case real_:
-				raw("realValue");
-				break;
-			case string_:
-				raw("stringValue");
-				break;
-			case binary_:
-				raw("binaryValue");
-				break;
-			case boolean_:
-				raw("booleanValue");
-				break;
-			case logical_:
-				raw("logicalValue");
-				break;
-			case number_:
-				raw("numberValue");
-				break;
-			default:
-				raw("UNKNOWNTYPE");
-				break;
-		}
-		raw(" else { return nil }\n");
-		indent_swift(level2+nestingIndent_swift);
-		raw("rep = repval\n");
-		indent_swift(level2);
-		raw("}\n");
-		
+    {
+      indent_swift(level2);
+      raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
+      indent_swift(level2+nestingIndent_swift);
+      raw("guard let repval = generic?.");
+      switch( TYPEis(type) ){
+        case integer_:
+          raw("integerValue");
+          break;
+        case real_:
+          raw("realValue");
+          break;
+        case string_:
+          raw("stringValue");
+          break;
+        case binary_:
+          raw("binaryValue");
+          break;
+        case boolean_:
+          raw("booleanValue");
+          break;
+        case logical_:
+          raw("logicalValue");
+          break;
+        case number_:
+          raw("numberValue");
+          break;
+        default:
+          raw("UNKNOWNTYPE");
+          break;
+      }
+      raw(" else { return nil }\n");
+      indent_swift(level2+nestingIndent_swift);
+      raw("rep = repval\n");
+      indent_swift(level2);
+      raw("}\n");
+    }
+//    {
+//      indent_swift(level2);
+//      raw("public init?<G: SDAI.GenericType>(_ generic: G?) {\n");
+//
+//      indent_swift(level3);
+//      raw("self.init(fromGeneric:generic)\n");
+//
+//      indent_swift(level2);
+//      raw("}\n");
+//    }
+
 		TYPEwhereDefinitions_swift(type, level2);
 		TYPEwhereRuleValidation_swift(type, level2);
 	}

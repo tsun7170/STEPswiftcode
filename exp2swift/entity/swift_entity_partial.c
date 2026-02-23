@@ -90,9 +90,11 @@ static void explicitStaticAttributeDefinition_swift(Entity entity, Variable attr
 	char partialAttrName[BUFSIZ];
 	partialEntityAttribute_swiftName(attr,partialAttrName);
 
-	indent_swift(level);
-	raw("/// EXPLICIT ATTRIBUTE %s\n", 
-			VARis_observed(attr) ? "(OBSERVED)" : (attribute_need_observer(attr) ? "(SUBTYPE ATTR OBSERVED)" : "")
+  bool need_observer = attribute_need_observer(attr);
+
+  indent_swift(level);
+	raw("/// EXPLICIT ATTRIBUTE %s\n",
+			VARis_observed(attr) ? "(OBSERVED)" : (need_observer ? "(SUBTYPE ATTR OBSERVED)" : "")
 			);
 	indent_swift(level);
 	raw("@_documentation(visibility:public)\n");
@@ -101,7 +103,7 @@ static void explicitStaticAttributeDefinition_swift(Entity entity, Variable attr
 											NO_PREFIX, attr, VARis_dynamic(attr),
 											level, NOT_IN_COMMENT, buf);
 
-	if( attribute_need_observer(attr) ) {
+	if( need_observer ) {
 		raw(" // OBSERVED EXPLICIT ATTRIBUTE\n");
 	}
 	else {
@@ -118,6 +120,28 @@ static void explicitAttributeRedefinition_swift(Entity entity, Variable attr, in
 			);
 	if( VARis_observed(attr) ) raw(" //OBSERVED");
 	raw(" */\n");
+}
+
+static void overriding_entities(char *buf, Scope current, Variable attr, char **sep)
+{
+  if( VARis_derived(attr) ) {
+    raw("%s",
+        *sep
+        );
+    wrap("%s.typeIdentity",
+         partialEntity_swiftName(attr->defined_in, current, SWIFT_QUALIFIER, buf)
+         );
+    *sep = ", ";
+  }
+
+  if(attr->overriders != NULL) {
+    DictionaryEntry de;
+    Variable overrider;
+    DICTdo_init(attr->overriders, &de);
+    while( 0 != (overrider = DICTdo(&de)) ) {
+      overriding_entities(buf, current, overrider, sep);
+    }
+  }
 }
 
 //MARK: - explicit dynamic attribute
@@ -142,23 +166,18 @@ static void dynamicAttributeValueProvider_swift(Entity entity, Variable attr, in
 	{
 		indent_swift(level2);
 		wrap("let resolved = complex.resolvePartialEntityInstance(from: [");
-		DictionaryEntry de;
-		Variable overrider;
-		char* sep = "";
-		assert(attr->overriders != NULL);
+    char* sep = "";
+    assert(attr->overriders != NULL);
+
+    DictionaryEntry de;
+    Variable overrider;
 		DICTdo_init(attr->overriders, &de);
 		while( 0 != (overrider = DICTdo(&de)) ) {
-			if( !VARis_derived(overrider) ) continue;
-			raw("%s",
-					sep
-					);
-			wrap("%s.typeIdentity",
-					 partialEntity_swiftName(overrider->defined_in, entity->superscope, SWIFT_QUALIFIER, buf)
-					 );
-			sep = ", ";
+      overriding_entities(buf, entity->superscope, overrider, &sep);
 		}
-		wrap("])\n");
-		
+
+    wrap("])\n");
+
 		indent_swift(level2);
 		raw("return resolved as? %s\n",
 				dynamicAttribute_swiftProtocolName(attr, buf)

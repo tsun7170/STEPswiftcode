@@ -119,57 +119,69 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 
 		indent_swift(level2);
 		raw("/// initialize from SDAI generic type value\n");
-		indent_swift(level2);
-		raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
-    
-		indent_swift(level3);
-		raw("guard let repval = generic?.");
-		switch( TYPEis(type) ){
-			case array_:
-				if(TYPEis_optional(type)){
-					raw("arrayOptionalValue(elementType: ELEMENT.self)");
-				}
-				else{
-					raw("arrayValue(elementType: ELEMENT.self)");
-				}
-				break;
-			case list_:
-				raw("listValue(elementType: ELEMENT.self)");
-				break;
-			case bag_:
-				raw("bagValue(elementType: ELEMENT.self)");
-				break;
-			case set_:
-				raw("setValue(elementType: ELEMENT.self)");
-				break;
-			default:
-				raw("UNKNOWNTYPE");
-				break;
-		}
-		raw(" else { return nil }\n");
+    {
+      indent_swift(level2);
+      raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
+      
+      indent_swift(level3);
+      raw("guard let repval = generic?.");
+      switch( TYPEis(type) ){
+        case array_:
+          if(TYPEis_optional(type)){
+            raw("arrayOptionalValue(elementType: ELEMENT.self)");
+          }
+          else{
+            raw("arrayValue(elementType: ELEMENT.self)");
+          }
+          break;
+        case list_:
+          raw("listValue(elementType: ELEMENT.self)");
+          break;
+        case bag_:
+          raw("bagValue(elementType: ELEMENT.self)");
+          break;
+        case set_:
+          raw("setValue(elementType: ELEMENT.self)");
+          break;
+        default:
+          raw("UNKNOWNTYPE");
+          break;
+      }
+      raw(" else { return nil }\n");
 
       indent_swift(level2+nestingIndent_swift);
       raw( "rep = Supertype(from: repval.asSwiftType, " );
 
-    if( basetype_body->upper ){
-      force_wrap();
-      wrap( "bound1:SDAI.UNWRAP(" );
-      EXPR_swift(type->superscope, basetype_body->lower, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
-      raw("), ");
-
-      wrap( "bound2:");
-      EXPR_swift(type->superscope, basetype_body->upper, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
+      if( basetype_body->upper ){
+        force_wrap();
+        wrap( "bound1:SDAI.UNWRAP(" );
+        EXPR_swift(type->superscope, basetype_body->lower, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
+        raw("), ");
+        
+        wrap( "bound2:");
+        EXPR_swift(type->superscope, basetype_body->upper, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
+      }
+      else {
+        force_wrap();
+        wrap( "bound1:0, bound2:nil as Int?");
+      }
+      raw( ")\n" );
+      
+      
+      indent_swift(level2);
+      raw("}\n");
     }
-    else {
-      force_wrap();
-      wrap( "bound1:0, bound2:nil as Int?");
+    {
+      indent_swift(level2);
+      raw("public init?<G: SDAI.GenericType>(_ generic: G?) {\n");
+
+      indent_swift(level3);
+      raw("self.init(fromGeneric:generic)\n");
+
+      indent_swift(level2);
+      raw("}\n");
     }
-    raw( ")\n" );
 
-
-    indent_swift(level2);
-		raw("}\n");
-		
 		TYPEwhereDefinitions_swift(type, level2);
 		TYPEwhereRuleValidation_swift(type, level2);
 	}
