@@ -595,36 +595,6 @@
             endingLineNumber = "419"
             landmarkName = "ERRORreport(what)"
             landmarkType = "9">
-            <Locations>
-               <Location
-                  uuid = "17F4C3EC-0863-459B-92CD-7583D7D7E034 - 3adfb26d2528d340"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "ERRORreport_with_symbol"
-                  moduleName = "exp2swift"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/home/Dropbox/STEP/STEPcode/STEPswiftcode/stepcode/src/express/error.c"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "419"
-                  endingLineNumber = "419">
-               </Location>
-               <Location
-                  uuid = "17F4C3EC-0863-459B-92CD-7583D7D7E034 - 3adfb26d2528d340"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "ERRORreport_with_symbol"
-                  moduleName = "exp2swift"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/home/Dropbox/STEP/STEPcode/STEPswiftcode/stepcode/src/express/error.c"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "419"
-                  endingLineNumber = "419">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -658,6 +628,22 @@
             startingLineNumber = "2056"
             endingLineNumber = "2056"
             landmarkName = "selectTypeDefinition_swift(schema, select_type, level)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "149B1D24-53C9-4F95-8FDD-A5A4E3B0B9F0"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "exp2swift/algorithm/rule/swift_rule.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "68"
+            endingLineNumber = "68"
+            landmarkName = "RULE_swift(schema, rule, level)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>

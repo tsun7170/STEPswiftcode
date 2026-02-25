@@ -127,7 +127,9 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int*
 		{
 			char buf[BUFSIZ];
 			indent_swift(level2);
-			wrap("for %s in incrementControl {\n",variable_swiftName(v, buf));
+			wrap("for %s in incrementControl { SDAI.TOUCH(let: %s)\n",
+           variable_swiftName(v, buf),
+           buf);
 		}
 		{	int level3 = level2+nestingIndent_swift;
 			
