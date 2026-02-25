@@ -279,22 +279,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "A16F291A-DA28-4B4E-B1BA-FC0C52791BD0"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "exp2swift/type/swift_type.c"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "155"
-            endingLineNumber = "155"
-            landmarkName = "TYPE_swiftName(t, current, delimiter, buf)"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "6957768F-7CB3-4F30-B8D0-CFC72615F20C"
             shouldBeEnabled = "No"
             ignoreCount = "0"
@@ -334,8 +318,8 @@
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "679"
-            endingLineNumber = "679"
+            startingLineNumber = "647"
+            endingLineNumber = "647"
             landmarkName = "TYPEwhereDefinitions_swift(scope, level)"
             landmarkType = "9">
          </BreakpointContent>
@@ -382,8 +366,8 @@
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "680"
-            endingLineNumber = "680"
+            startingLineNumber = "648"
+            endingLineNumber = "648"
             landmarkName = "TYPEwhereDefinitions_swift(scope, level)"
             landmarkType = "9">
          </BreakpointContent>
@@ -441,14 +425,14 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "5531D5E2-D8D6-4F18-8AD3-A57D272CD433"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "501"
-            endingLineNumber = "501"
+            startingLineNumber = "479"
+            endingLineNumber = "479"
             landmarkName = "TYPE_body_swift(current, t, in_comment)"
             landmarkType = "9">
          </BreakpointContent>
@@ -457,14 +441,14 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "84B79BF6-AC7C-4394-A829-65381CA1A09D"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "513"
-            endingLineNumber = "513"
+            startingLineNumber = "489"
+            endingLineNumber = "489"
             landmarkName = "TYPE_body_swift(current, t, in_comment)"
             landmarkType = "9">
          </BreakpointContent>
@@ -479,8 +463,8 @@
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "287"
-            endingLineNumber = "287"
+            startingLineNumber = "265"
+            endingLineNumber = "265"
             landmarkName = "additional_constraints(current, t, in_comment)"
             landmarkType = "9">
          </BreakpointContent>
@@ -495,8 +479,8 @@
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "295"
-            endingLineNumber = "295"
+            startingLineNumber = "273"
+            endingLineNumber = "273"
             landmarkName = "additional_constraints(current, t, in_comment)"
             landmarkType = "9">
          </BreakpointContent>
@@ -611,6 +595,36 @@
             endingLineNumber = "419"
             landmarkName = "ERRORreport(what)"
             landmarkType = "9">
+            <Locations>
+               <Location
+                  uuid = "17F4C3EC-0863-459B-92CD-7583D7D7E034 - 3adfb26d2528d340"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "ERRORreport_with_symbol"
+                  moduleName = "exp2swift"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/home/Dropbox/STEP/STEPcode/STEPswiftcode/stepcode/src/express/error.c"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "419"
+                  endingLineNumber = "419">
+               </Location>
+               <Location
+                  uuid = "17F4C3EC-0863-459B-92CD-7583D7D7E034 - 3adfb26d2528d340"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "ERRORreport_with_symbol"
+                  moduleName = "exp2swift"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/home/Dropbox/STEP/STEPcode/STEPswiftcode/stepcode/src/express/error.c"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "419"
+                  endingLineNumber = "419">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -641,8 +655,8 @@
             filePath = "exp2swift/type/swift_select_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2033"
-            endingLineNumber = "2033"
+            startingLineNumber = "2056"
+            endingLineNumber = "2056"
             landmarkName = "selectTypeDefinition_swift(schema, select_type, level)"
             landmarkType = "9">
          </BreakpointContent>

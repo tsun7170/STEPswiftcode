@@ -43,13 +43,19 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 	raw("*/\n");
 	
 	indent_swift(level);
-	raw( "public struct %s: ", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
+	raw( "public struct %s: ",
+      namedType_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf)
+      );
 //	wrap("%s__", SCHEMA_swiftName(schema, buf));
-	raw( "TypeHierarchy.%s__TypeBehavior {\n", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
+	raw( "TypeHierarchy.%s__TypeBehavior {\n",
+      namedType_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf)
+      );
 
 	{	
 		indent_swift(level2);
-		raw( "public typealias Supertype = %s\n", TYPE_swiftName(original, type->superscope, SWIFT_QUALIFIER, buf));
+		raw( "public typealias Supertype = %s\n",
+        namedType_swiftName(original, type->superscope, SWIFT_QUALIFIER, buf)
+        );
 		indent_swift(level2);
 		raw("public typealias FundamentalType = Supertype.FundamentalType\n");
 		indent_swift(level2);
@@ -71,11 +77,15 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 		
 		indent_swift(level2);
 		raw("public static let typeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf));
+		wrap("\"%s\"\n",
+         namedType_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf)
+         );
 
 		indent_swift(level2);
 		raw("public static let bareTypeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+		wrap("\"%s\"\n",
+         namedType_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
+         );
 
 		indent_swift(level2);
 		raw("public var typeMembers: Set<SDAI.STRING> {\n");
@@ -127,7 +137,7 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 
 void typeAliasExtension_swift( Schema schema, Type type, Type original, int level) {
 	char typebuf[BUFSIZ];
-	const char* typename = TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
+	const char* typename = namedType_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
 
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);
@@ -138,13 +148,21 @@ void typeAliasExtension_swift( Schema schema, Type type, Type original, int leve
 
   //__TypeBehavior protocol
 	indent_swift(level);
-	raw( "extension %s.TypeHierarchy {\n public protocol %s__TypeBehavior: ", schemaname, typename);
-	wrap("%s__Subtype {}\n}\n\n", TYPE_swiftName(original, type->superscope, SWIFT_QUALIFIER, buf));
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__TypeBehavior: ",
+      schemaname,
+      typename
+      );
+	wrap("%s__Subtype {}\n}\n\n",
+       namedType_swiftName(original, type->superscope, SWIFT_QUALIFIER, buf)
+       );
 
   // __Subtype protocol
 	indent_swift(level);
-	raw( "extension %s.TypeHierarchy {\n public protocol %s__Subtype: ", schemaname, typename);
-	wrap("%s__TypeBehavior\n", typename);
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__Subtype: ",
+      schemaname,
+      typename);
+	wrap("%s__TypeBehavior\n",
+       typename);
 
 	indent_swift(level);
 	raw( "{}\n}\n\n");

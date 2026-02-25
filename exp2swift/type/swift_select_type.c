@@ -169,11 +169,11 @@ static void selectTypeGroupReference_swift
     raw("///\n");
     indent_swift(level);
     raw("/// - defined in: ``%s``\n",
-        TYPE_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
+        namedType_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
         );
 
 		indent_swift(level);
-		raw("public var %s%s: ", superEntity_swiftPrefix, TYPE_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
+		raw("public var %s%s: ", superEntity_swiftPrefix, namedType_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
 		wrap("%s? {\n", buf);
 		
 		{	int level2 = level+nestingIndent_swift;
@@ -219,7 +219,7 @@ static void selectTypeGroupReference_swift
     raw("///\n");
     indent_swift(level);
     raw("/// - defined in: ``%s``\n",
-        TYPE_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
+        namedType_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
         );
 
 		indent_swift(level);
@@ -294,7 +294,7 @@ static void selectTypeGroupReference_swiftProtocol(Schema schema, Type select_ty
 		}
 		
 		indent_swift(level);
-		raw("var %s%s: ", superEntity_swiftPrefix, TYPE_swiftName(selection, select_type/*->superscope*/, SWIFT_QUALIFIER, buf));
+		raw("var %s%s: ", superEntity_swiftPrefix, namedType_swiftName(selection, select_type/*->superscope*/, SWIFT_QUALIFIER, buf));
 		wrap("%s.%s? { get }\n", schemaname,buf);
 	} LISTod;				
 	
@@ -334,7 +334,7 @@ static void selectSubtypeGroupReference_swift(Schema schema, Type select_type, i
 		}
 		
 		indent_swift(level);
-		raw("var %s%s: ", superEntity_swiftPrefix, TYPE_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
+		raw("var %s%s: ", superEntity_swiftPrefix, namedType_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
 		wrap("%s.%s? { rep.%s%s }\n", schemaname, buf, superEntity_swiftPrefix, buf);
 	} LISTod;				
 	
@@ -401,7 +401,7 @@ static void selectTypeAttributeReference_swift
     raw("///\n");
     indent_swift(level);
     raw("/// - defined in: ``%s``\n",
-        TYPE_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
+        namedType_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
         );
 
     LISTdo(typebody->list, selection_case, Type){
@@ -422,7 +422,7 @@ static void selectTypeAttributeReference_swift
 				if(base_attr_type != NULL ){
 					indent_swift(level);
 					raw("/// - origin: SELECT( ``%s`` )\n",
-							TYPE_swiftName(selection_case, schema->superscope, DOCC_QUALIFIER, buf)
+							namedType_swiftName(selection_case, schema->superscope, DOCC_QUALIFIER, buf)
 							);
 				}
 			}				
@@ -465,7 +465,7 @@ static void selectTypeAttributeReference_swift
 							raw("\n");
 						}
 						else {
-							TYPE_head_swift(NULL, attr_type, WO_COMMENT);
+							emit_typeReference_swift(NULL, attr_type, WO_COMMENT);
 							raw("(");
 							wrap("entity.%s)\n",
 									 as_attributeSwiftName_n(attr_name, buf, BUFSIZ)
@@ -476,7 +476,7 @@ static void selectTypeAttributeReference_swift
 						indent_swift(level2);
 						--unhandled;
 						raw("case .%s/*(let entity)*/: return nil // AMBIGUOUS ATTRIBUTE ",selectCase_swiftName(selection_case, buf));
-						raw("for %s\n", TYPE_swiftName(selection_case, NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+						raw("for %s\n", namedType_swiftName(selection_case, NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 					}
 				}
 
@@ -491,7 +491,7 @@ static void selectTypeAttributeReference_swift
 								selectCase_swiftName(selection_case, buf)
 								);
 						raw("for %s\n",
-								TYPE_swiftName(selection_case, NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
+								namedType_swiftName(selection_case, NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
 								)
 						;
 					}
@@ -511,14 +511,14 @@ static void selectTypeAttributeReference_swift
 							}
 						}
 						else if( TYPEis_free_generic(base_attr_type) ){
-							TYPE_head_swift(NULL, attr_type, WO_COMMENT);
+							emit_typeReference_swift(NULL, attr_type, WO_COMMENT);
 							raw(".convert(fromGeneric: ");
 							wrap("select.%s)",
 									 as_attributeSwiftName_n(attr_name, buf, BUFSIZ)
 									 );
 						}
 						else {
-							TYPE_head_swift(NULL, attr_type, WO_COMMENT);
+							emit_typeReference_swift(NULL, attr_type, WO_COMMENT);
 							raw("(");
 							wrap("select.%s)",
 									 as_attributeSwiftName_n(attr_name, buf, BUFSIZ)
@@ -653,7 +653,9 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 
 			indent_swift(level2);
 			raw("%s let base = underlyingType as? %s {\n",
-					ifhead,TYPE_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
+					ifhead,
+          namedType_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf)
+          );
 			{	int level3 = level2+nestingIndent_swift;
 				indent_swift(level3);
 				raw("self = .%s(base)\n",selectCase_swiftName(selection, buf));
@@ -676,7 +678,9 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 			if( TYPEis_select(selection) ){
 				indent_swift(level2);
 				raw("%s let base = %s(possiblyFrom: underlyingType) {\n",
-						ifhead,TYPE_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
+						ifhead,
+            namedType_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf)
+            );
 				{	int level3 = level2+nestingIndent_swift;
 					indent_swift(level3);
 					raw("self = .%s(base)\n",selectCase_swiftName(selection, buf));
@@ -695,11 +699,17 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 
 				indent_swift(level2);
 				raw("%s let fundamental = underlyingType.asFundamentalType as? %s.FundamentalType {\n",
-						ifhead,TYPE_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
+						ifhead,
+            namedType_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf)
+            );
 				{	int level3 = level2+nestingIndent_swift;
 					indent_swift(level3);
-					raw("self = .%s( ",selectCase_swiftName(selection, buf));
-					raw("%s(fundamental: fundamental) )\n",TYPE_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
+					raw("self = .%s( ",
+              selectCase_swiftName(selection, buf)
+              );
+					raw("%s(fundamental: fundamental) )\n",
+              namedType_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf)
+              );
 				}
 				indent_swift(level2);
 				raw("}\n");
@@ -772,10 +782,14 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 				
 				indent_swift(level2);
 				raw("%s let base = %s(possiblyFrom: complex) {\n",
-						ifhead,TYPE_swiftName(selection_case, select_type->superscope, SWIFT_QUALIFIER, buf));
+						ifhead,
+            namedType_swiftName(selection_case, select_type->superscope, SWIFT_QUALIFIER, buf)
+            );
 				{	int level3 = level2+nestingIndent_swift;
 					indent_swift(level3);
-					raw("self = .%s(base)\n",selectCase_swiftName(selection_case, buf));
+					raw("self = .%s(base)\n",
+              selectCase_swiftName(selection_case, buf)
+              );
 				}
 				indent_swift(level2);
 				raw("}\n");
@@ -833,7 +847,8 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 			}
 			indent_swift(level2);
 			raw("else if let base = %s.convert(fromGeneric: select) {\n", 
-					TYPE_swiftName(selection_case, selection_case->superscope, SWIFT_QUALIFIER, buf));
+					namedType_swiftName(selection_case, selection_case->superscope, SWIFT_QUALIFIER, buf)
+          );
 
 			{	int level3 = level2+nestingIndent_swift;
 				indent_swift(level3);
@@ -857,7 +872,9 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	
 	indent_swift(level);
 	raw("public static let bareTypeName: String = ");
-	wrap("\"%s\"\n\n", TYPE_canonicalName(select_type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+	wrap("\"%s\"\n\n",
+       namedType_canonicalName(select_type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
+       );
 
 	/*
 	public init?(p21typedParam: P21Decode.ExchangeStructure.TypedParameter, from exchangeStructure: P21Decode.ExchangeStructure) {
@@ -895,11 +912,15 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 			if( TYPEis_entity(selection) )continue;
 
 			indent_swift(level2);
-			raw("case %s.bareTypeName:\n",TYPE_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
+			raw("case %s.bareTypeName:\n",
+          namedType_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf)
+          );
 			indent_swift(level3);
 			raw("guard let base = %s(p21typedParam: p21typedParam, from: exchangeStructure) else { exchangeStructure.add(errorContext: \"while resolving \\(Self.bareTypeName) select value\"); return nil }\n", buf);
 			indent_swift(level3);
-			raw("self = .%s(base)\n\n",selectCase_swiftName(selection, buf));
+			raw("self = .%s(base)\n\n",
+          selectCase_swiftName(selection, buf)
+          );
 		}LISTod;
 
 		indent_swift(level2);
@@ -1425,7 +1446,9 @@ static void selectUnderlyingTypeConformance_swift(int level, Schema schema, Type
 	
 	indent_swift(level);
 	raw("public static let typeName: String = ");
-	wrap("\"%s\"\n", TYPE_canonicalName(select_type,schema->superscope, SWIFT_QUALIFIER, buf));
+	wrap("\"%s\"\n",
+       namedType_canonicalName(select_type,schema->superscope, SWIFT_QUALIFIER, buf)
+       );
 
 	indent_swift(level);
 	raw("public var asFundamentalType: FundamentalType { return self }\n");
@@ -1953,7 +1976,7 @@ static void selectAggregateTypeConformance_swift
 
 //MARK: - WHERE rule validation
 static void SELECTwhereRuleValidation_swift( Type select_type, int level ) {
-	char typename[BUFSIZ]; TYPE_swiftName(select_type, select_type->superscope, SWIFT_QUALIFIER, typename);
+	char typename[BUFSIZ]; namedType_swiftName(select_type, select_type->superscope, SWIFT_QUALIFIER, typename);
 
   raw("\n");
   indent_swift(level);
@@ -1983,17 +2006,17 @@ static void SELECTwhereRuleValidation_swift( Type select_type, int level ) {
              ENTITY_swiftName(ENT_TYPEget_entity(selection_case), select_type->superscope, SWIFT_QUALIFIER, buf)
              );
         wrap("prefix:prefix + \"\\\\\\(entity)\")\n",
-             TYPE_canonicalName(selection_case,select_type->superscope, SWIFT_QUALIFIER, buf)
+             namedType_canonicalName(selection_case,select_type->superscope, SWIFT_QUALIFIER, buf)
              );
       }
       else{
         raw("case .%s(let selectValue): ",
             selectCase_swiftName(selection_case, buf));
         wrap("result = %s.validateWhereRules(instance: selectValue, ",
-              TYPE_swiftName(selection_case, select_type->superscope, SWIFT_QUALIFIER, buf)
+              namedType_swiftName(selection_case, select_type->superscope, SWIFT_QUALIFIER, buf)
              );
         wrap("prefix:prefix + \"\\\\%s\")\n",
-             TYPE_canonicalName(selection_case,select_type->superscope, SWIFT_QUALIFIER, buf)
+             namedType_canonicalName(selection_case,select_type->superscope, SWIFT_QUALIFIER, buf)
              );
       }
 
@@ -2049,7 +2072,7 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 		char buf[BUFSIZ];
 				
 		char typename[BUFSIZ];
-		TYPE_swiftName(select_type,select_type->superscope, SWIFT_QUALIFIER, typename);
+		namedType_swiftName(select_type,select_type->superscope, SWIFT_QUALIFIER, typename);
 
 		indent_swift(level);
 		wrap( "public enum %s : SDAI.Value, ", typename );
@@ -2085,12 +2108,12 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
         raw("///");
         force_wrap();
 				raw("/// - target: ``%s`` (%s)",
-						TYPE_swiftName(selection, schema->superscope, DOCC_QUALIFIER, buf),
+						namedType_swiftName(selection, schema->superscope, DOCC_QUALIFIER, buf),
 						case_kind
 						);
         force_wrap();
 				raw("/// - defined in: ``%s``",
-						TYPE_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
+						namedType_swiftName(select_type, schema->superscope, DOCC_QUALIFIER, buf)
 						);
 
         {
@@ -2111,7 +2134,7 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 						selectCase_swiftName(selection, buf)
 						);
 				wrap( "%s)\t// (%s)\n",
-						 TYPE_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf),
+						 namedType_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf),
 //						 suffix,
 						 case_kind
 						 );
@@ -2185,7 +2208,7 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
 
 void selectTypeExtension_swift(Schema schema, Type select_type,  int level) {
 	char typebuf[BUFSIZ];
-	const char* typename = TYPE_swiftName(select_type,select_type->superscope, SWIFT_QUALIFIER, typebuf);
+	const char* typename = namedType_swiftName(select_type,select_type->superscope, SWIFT_QUALIFIER, typebuf);
 
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);

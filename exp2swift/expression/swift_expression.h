@@ -43,6 +43,20 @@ extern void EXPRaggregate_init_swift
  (bool resolve_generic, Scope SELF, Expression rhs, Type lhsType,
   bool suppress_SELF);
 
+extern void emit_aggregateBoundSpec
+ (
+  Type type,
+  Scope current,
+  bool suppress_SELF,
+  const char* trailer);
+
+extern void emit_widthSpec_asRequired
+ (const char* leader,
+  Type type,
+  Scope current,
+  bool suppress_SELF,
+  const char* trailer);
+
 extern void EXPRassignment_rhs_swift
 (bool resolve_generic, Scope SELF, Expression rhs, Type lhsType,
  bool suppress_SELF,

@@ -22,6 +22,7 @@
 #include "swift_type.h"
 #include "swift_files.h"
 #include "swift_schema.h"
+#include "swift_expression.h"
 
 void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 	int level2 = level  + nestingIndent_swift;
@@ -40,9 +41,13 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 	raw("*/\n");
 	
 	indent_swift(level);
-	raw( "public struct %s: ", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
+	raw( "public struct %s: ",
+      namedType_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf)
+      );
 //	wrap("%s__", SCHEMA_swiftName(schema, buf));
-	raw( "TypeHierarchy.%s__TypeBehavior {\n", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
+	raw( "TypeHierarchy.%s__TypeBehavior {\n",
+      namedType_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf)
+      );
 
 	{
 		indent_swift(level2);
@@ -58,11 +63,15 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 
 		indent_swift(level2);
 		raw("public static let typeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf));
+		wrap("\"%s\"\n",
+         namedType_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf)
+         );
 
 		indent_swift(level2);
 		raw("public static let bareTypeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+		wrap("\"%s\"\n",
+         namedType_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
+         );
 
 		indent_swift(level2);
 		raw("public var typeMembers: Set<SDAI.STRING> {\n");
@@ -89,7 +98,9 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw( "public init(fundamental: FundamentalType) {\n" );
 		indent_swift(level2+nestingIndent_swift);
-		raw( "rep = Supertype(fundamental: fundamental)\n" );
+    raw( "rep = Supertype(" );
+    emit_widthSpec_asRequired("", type, type->superscope, EMIT_SELF, ", ");
+		raw( "fundamental: fundamental)\n" );
 		indent_swift(level2);
 		raw("}\n\n");
 	
@@ -127,8 +138,9 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
           break;
       }
       raw(" else { return nil }\n");
+
       indent_swift(level2+nestingIndent_swift);
-      raw("rep = repval\n");
+      raw("self.init(fundamental:repval)\n");
       indent_swift(level2);
       raw("}\n");
     }
@@ -153,7 +165,7 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 
 void namedSimpleTypeExtension_swift( Schema schema, Type type, int level) {
 	char typebuf[BUFSIZ];
-	const char* typename = TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
+	const char* typename = namedType_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
 
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);

@@ -384,7 +384,7 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 				raw("SDAI.UNWRAP( ");
 			}
 		}
-		TYPE_head_swift(entity, original_attr->type, WO_COMMENT);
+		emit_typeReference_swift(entity, original_attr->type, WO_COMMENT);
 		char buf[BUFSIZ];
 		raw("(SELF.%s)", attribute_swiftName(attr, buf));
 		if( !VARis_optional_by_large(attr) ){
@@ -533,7 +533,7 @@ static void inverseAggregateAttributeDefinition_swift(Entity entity, Variable at
 			);
 	{
 		int saved = never_wrap();
-		TYPE_head_swift(entity, attr->type, WO_COMMENT);
+		emit_typeReference_swift(entity, attr->type, WO_COMMENT);
 		restore_wrap(saved);
 	}
 	raw(" \t(SEE CORRESPONDING ENTITY REFERENCE DEFINITION)\n");
@@ -909,11 +909,10 @@ static void expressConstructor( Entity entity, int level ) {
 			bool backing_store = false;//attribute_need_observer(attr);
 
 
-      TypeBody attr_typebody = TYPEget_body(attr->type);
+//      TypeBody attr_typebody = TYPEget_body(attr->type);
       bool attr_optional = VARis_dynamic(attr) || VARis_optional_by_large(attr);
 
-      if( TYPEis_aggregation_data_type(attr->type) ){
-        //      if( attr_typebody-> upper ){
+      if( TYPEis_bounded(attr->type) ) {
         int levelX = level2;
         if( attr_optional ){
           indent_swift(level2);
@@ -923,31 +922,26 @@ static void expressConstructor( Entity entity, int level ) {
           levelX = level3;
         }
 
+        indent_swift(levelX);
         raw("self.%s%s = \n",
             backing_store ? BACKING_STORAGE_PREFIX : "",
             partialEntityAttribute_swiftName(attr, buf)
             );
 
         indent_swift(levelX);
-        TYPE_head_swift(entity, attr->type, WO_COMMENT);
+        emit_typeReference_swift(entity, attr->type, WO_COMMENT);
         raw("(");
-        force_wrap();
-        raw("from: %s.asSwiftType, ",
+//        force_wrap();
+        raw("from: %s.asSwiftType",
             variable_swiftName(attr,buf)
             );
 
-        if( attr_typebody-> upper ){
-          force_wrap();
-          wrap( "bound1:SDAI.UNWRAP(" );
-          EXPR_swift(entity, attr_typebody->lower, Type_Integer, unknown_optional, SUPPRESS_SELF, YES_PAREN);
-          raw("), ");
-
-          wrap( "bound2:");
-          EXPR_swift(entity, attr_typebody->upper, Type_Integer, unknown_optional, SUPPRESS_SELF, YES_PAREN);
+        if( TYPEis_aggregation_data_type(attr->type) ){
+          raw(", ");
+          emit_aggregateBoundSpec(attr->type, entity, SUPPRESS_SELF, "");
         }
-        else {
-          force_wrap();
-          wrap("bound1:0, bound2:nil as Int?");
+        else {// TYPEis_string(attr->type) || TYPEis_binary(attr->type)
+          emit_widthSpec_asRequired(", ", attr->type, entity, SUPPRESS_SELF, "");
         }
 
         raw( ")\n" );
@@ -1103,7 +1097,7 @@ static void p21Constructor( Entity entity, int level ) {
 					paramNo,
 					recoverFunc
 					);
-			TYPE_head_swift(entity, attr->type, WO_COMMENT);
+			emit_typeReference_swift(entity, attr->type, WO_COMMENT);
 			raw(".self, from: parameters[%d])\n",
 					paramNo
 					);

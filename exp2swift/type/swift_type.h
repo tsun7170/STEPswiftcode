@@ -17,21 +17,16 @@ typedef enum {
 	WO_COMMENT
 } SwiftOutCommentOption;
 
-//#define YES_IN_COMMENT	true
-//#define NOT_IN_COMMENT	false
-
 #define NO_QUALIFICATION	NULL
-//#define LEAF_OWNED	false
-//#define LEAF_UNOWNED	true
 
 #define SWIFT_QUALIFIER	"."
 #define DOCC_QUALIFIER	"/"
 
 extern int accumulate_qualification(Scope target, Scope current, const char* delimiter, char buf[BUFSIZ]);
 
-extern const char* TYPE_canonicalName( Type t, Scope current, const char* delimiter, char buf[BUFSIZ] );
+extern const char* namedType_canonicalName( Type t, Scope current, const char* delimiter, char buf[BUFSIZ] );
 extern const char* TYPE_swiftNamePrefix( Type t );
-extern const char* TYPE_swiftName( Type t, Scope current, const char* delimiter, char buf[BUFSIZ]  );
+extern const char* namedType_swiftName( Type t, Scope current, const char* delimiter, char buf[BUFSIZ]  );
 extern char TYPE_swiftNameInitial( Type t );
 extern const char* enumCase_swiftName( Expression expr, char buf[BUFSIZ] );
 extern const char* selectCase_swiftName( Type selection, char buf[BUFSIZ] );
@@ -39,7 +34,7 @@ extern const char* selectCase_swiftName( Type selection, char buf[BUFSIZ] );
 extern void TYPEdefinition_swift(Schema schema, Type t, int level );
 extern void TYPEextension_swift( Schema schema, Type t, int level );
 
-extern void TYPE_head_swift( Scope current, Type t, SwiftOutCommentOption in_comment);
+extern void emit_typeReference_swift( Scope current, Type t, SwiftOutCommentOption in_comment);
 extern void TYPE_body_swift( Scope current, Type t, SwiftOutCommentOption in_comment);
 extern const char* builtinTYPE_body_swiftname( Type t );
 

@@ -290,6 +290,7 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 #define TYPEis_integer(t)   (TYPEget_type(t) == integer_)
 #define TYPEis_number(t)   (TYPEget_type(t) == number_)	//*TY2021/01/19
 #define TYPEis_string(t)    (TYPEget_type(t) == string_)
+#define TYPEis_binary(t)    (TYPEget_type(t) == binary_)//*TY2026/02/24 added
 #define TYPEis_expression(t)    (TYPEget_type(t) == op_)
 #define TYPEis_oneof(t)     (TYPEget_type(t) == oneof_)
 #define TYPEis_entity(t)    (TYPEget_type(t) == entity_)
@@ -312,6 +313,9 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 #define TYPEis_encoded(t)   (TYPEget_body(t)->flags.encoded)
 #define TYPEis_generic_entity(t) (TYPEis_entity(t) && TYPEget_body(t)->entity == NULL)	//*TY2020/12/2
 #define TYPEis_literal(t)	()
+#define TYPEis_bounded(t) ( !TYPEis_namedType(t) && \
+                            ( TYPEis_aggregation_data_type(t) || \
+                              TYPEis_string(t) || TYPEis_binary(t)) )
 
 //*TY2020/12/05
 #define TYPEcanbe_array(t)	(TYPEis_array(t) || TYPEis_AGGREGATE(t))
@@ -321,6 +325,7 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 
 #define TYPEput_name(type,n)    ((type)->symbol.name = (n))
 #define TYPEget_name(type)  ((type)->symbol.name)
+#define TYPEis_namedType(type) (TYPEget_name(type) != NULL)
 
 #define TYPEget_where(t)    ((t)->where)
 #define TYPEput_where(t,w)  (((t)->where) = w)
