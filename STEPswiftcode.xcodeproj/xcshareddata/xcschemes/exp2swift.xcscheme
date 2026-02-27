@@ -56,24 +56,16 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "ap242/242_n8324_mim_lf.exp"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
             argument = "ap242/ap242ed2_mim_lf_v1.101_TY.exp"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "ap242ed4/ap242ed4_mim_lf.exp"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "ap242ed4/ap242ed4_mim_lf_TY.exp"
             isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "debug/debug1.exp"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "debug/debug2.exp"
-            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <EnvironmentVariables>

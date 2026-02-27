@@ -13,4 +13,6 @@ extern char timestamp[BUFSIZ];
 
 extern void EXPRESS_swift( Express e );
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
 #endif /* swift_express_h */

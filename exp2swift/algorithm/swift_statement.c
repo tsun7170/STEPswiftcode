@@ -16,6 +16,7 @@
 #include "swift_proc.h"
 #include "decompose_expression.h"
 #include "swift_func.h"
+#include "swift_express.h"
 
 //const char * alias_swiftName(Statement s) {
 //	return s->symbol.name;
@@ -127,9 +128,15 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int*
 		{
 			char buf[BUFSIZ];
 			indent_swift(level2);
-			wrap("for %s in incrementControl { SDAI.TOUCH(let: %s)\n",
-           variable_swiftName(v, buf),
-           buf);
+      wrap("for %s in incrementControl {",
+           variable_swiftName(v, buf)
+           );
+      if( buf[MIN( strlen(buf), sizeof(buf) )-1] == '_' ){
+        wrap(" SDAI.TOUCH(let: %s)",
+             buf
+             );
+      }
+      raw("\n");
 		}
 		{	int level3 = level2+nestingIndent_swift;
 			

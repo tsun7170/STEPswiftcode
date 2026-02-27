@@ -2120,7 +2120,7 @@ void selectTypeDefinition_swift(Schema schema, Type select_type,  int level) {
           AggregateTypeSpec common_aggr = SELECTaggregate_spec(selection);
           if( common_aggr.u_tag != is_none ){
             force_wrap();
-            raw("/// - may yield: aggregate[``%s``]\n",
+            raw("/// - may yield: aggregate[``%s``]",
                 TYPEhead_string_swift(select_type->superscope, common_aggr.base_type, YES_IN_COMMENT, buf)
                 );
           }
