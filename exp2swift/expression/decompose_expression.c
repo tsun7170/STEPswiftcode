@@ -685,8 +685,7 @@ int EXPR_tempvars_swift( Scope s, Linked_List tempvar_definitions, int level ){
 	int num_tempvars = LISTget_length(tempvar_definitions);
 	if( num_tempvars == 0 )return num_tempvars;
 	
-	raw("\n");
-//	indent_swift(level);
+  raw("//\n");
 //	raw("//DECOMPOSED EXPRESSIONS\n");
 
 	LISTdo(tempvar_definitions, expr, Expression){

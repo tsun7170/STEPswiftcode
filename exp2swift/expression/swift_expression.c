@@ -94,19 +94,25 @@ static void encodedStringLiteral_swift(const char* instring ) {
 //MARK: - aggregation bounds
 void EXPRbounds_swift(Scope SELF, TypeBody tb,
                       bool suppress_SELF,
-                      SwiftOutCommentOption in_comment ) {
-	if( !tb->upper ) return;
-	if( in_comment == WO_COMMENT ) return;
-	
-		wrap( "%s[",
-				 in_comment==YES_IN_COMMENT ? "" : "/*"
-				 );
-		EXPR_swift(SELF, tb->lower, Type_Integer, unknown_optional, suppress_SELF, YES_PAREN );
-		raw( ":" );
-		EXPR_swift(SELF, tb->upper, Type_Integer, unknown_optional, suppress_SELF, YES_PAREN );
-		raw( "]%s ",
-				in_comment==YES_IN_COMMENT ? "" : "*/"
-				);
+                      SwiftOutCommentOption in_comment )
+{
+  if( !tb->upper ) return;
+  if( in_comment == WO_COMMENT ) return;
+
+  wrap( "%s[",
+       in_comment==YES_IN_COMMENT ? "" : "/*"
+       );
+  EXPR_swift(SELF, tb->lower, Type_Integer, unknown_optional, suppress_SELF, YES_PAREN );
+  raw( ":" );
+  if( isLITERAL_INFINITY(tb->upper) ) {
+    raw("?");
+  }
+  else {
+    EXPR_swift(SELF, tb->upper, Type_Integer, unknown_optional, suppress_SELF, YES_PAREN );
+  }
+  raw( "]%s ",
+      in_comment==YES_IN_COMMENT ? "" : "*/"
+      );
 }
 
 //MARK: - special operators
@@ -398,8 +404,9 @@ static void EXPRquery_swift
 	
 	int level = indent2+nestingIndent_swift;
 
-	indent_swift(level);
-	raw("// QUERY BODY\n");
+  indent_swift(level);
+  raw("// QUERY BODY\n");
+  indent_swift(level);
 
 	int tempvar_id = 1;
 	Linked_List tempvars;

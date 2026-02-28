@@ -18,84 +18,72 @@
 #include "swift_func.h"
 #include "swift_express.h"
 
-//const char * alias_swiftName(Statement s) {
-//	return s->symbol.name;
-//}
 
-static void CASE_swift( Scope algo, struct Case_Statement_ * case_stmt, int* tempvar_id, int level ) {
-	Statement otherwise = NULL;
-	int level2 = level+nestingIndent_swift;
+static void CASE_swift
+ ( Scope algo,
+  struct Case_Statement_ * case_stmt,
+  int* tempvar_id,
+  int level )
+{
+  Statement otherwise = NULL;
+  int level2 = level+nestingIndent_swift;
 
-	Linked_List tempvars;
-	Expression simplified = EXPR_decompose(algo, case_stmt->selector, case_stmt->selector->return_type, tempvar_id, &tempvars);
-	if( EXPR_tempvars_swift(algo, tempvars, level) > 0 ) indent_swift(level);
+  Linked_List tempvars;
+  Expression simplified = EXPR_decompose(algo, case_stmt->selector, case_stmt->selector->return_type, tempvar_id, &tempvars);
+  if( EXPR_tempvars_swift(algo, tempvars, level) > 0 ) indent_swift(level);
 
-	raw("if let selector = ");
-	switch ( EXPRresult_is_optional(algo, simplified, CHECK_DEEP) ) {
-		case yes_optional:
-			EXPR_swift(algo, simplified, case_stmt->selector->return_type, yes_optional, EMIT_SELF, NO_PAREN);
-			break;
-		case no_optional:				
-		case unknown_optional:
-			raw("SDAI.FORCE_OPTIONAL(");
-			EXPR_swift(algo, simplified, case_stmt->selector->return_type, unknown_optional, EMIT_SELF, NO_PAREN);
-			raw(")");
-			break;
-	}
-	EXPR_delete_tempvar_definitions(tempvars);
+  int level3 = level2+nestingIndent_swift;
 
-	raw(" {\n");
-	{	
-		int level3 = level2+nestingIndent_swift;
-		
-		indent_swift(level2);
-		raw("switch selector {\n");
-				
-		LISTdo( case_stmt->cases, case_item, Case_Item ) {
-			if( case_item->labels ) {
-				char* sep = "";
-				
-				// case label
-				indent_swift(level2);
-				raw("case ");
-				
-				LISTdo_n( case_item->labels, label, Expression, b ) {
-					raw("%s",sep);
-					EXPR_swift(algo, label, NULL, unknown_optional, EMIT_SELF, NO_PAREN);
-					sep = ", ";
-				} LISTod
-				
-				raw(":\n");
-				STMT_swift(algo, case_item->action, tempvar_id, level3);
-				raw("\n");
-			} 
-			else {
-				/* OTHERWISE */
-				indent_swift(level2);
-				raw("default:\n");
-				otherwise = case_item->action;
-				STMT_swift(algo, otherwise, tempvar_id, level3);
-			}
-		} LISTod
-		
-		if( otherwise == NULL ){
-			indent_swift(level2);
-			raw("default: break\n");
-		}
-		
-		indent_swift(level2);
-		raw("} //end switch\n");
-	}
-	indent_swift(level);
-	raw("}\n");
+  raw("switch ");
+  switch ( EXPRresult_is_optional(algo, simplified, CHECK_DEEP) ) {
+    case yes_optional:
+      EXPR_swift(algo, simplified, case_stmt->selector->return_type, yes_optional, EMIT_SELF, NO_PAREN);
+      break;
+    case no_optional:
+    case unknown_optional:
+      raw("SDAI.FORCE_OPTIONAL(");
+      EXPR_swift(algo, simplified, case_stmt->selector->return_type, unknown_optional, EMIT_SELF, NO_PAREN);
+      raw(")");
+      break;
+  }
+  EXPR_delete_tempvar_definitions(tempvars);
+  raw(" {\n");
 
-	if( otherwise != NULL ){
-		indent_swift(level);
-		raw("else {\n");
-		STMT_swift(algo, otherwise, tempvar_id, level2);
-		indent_swift(level);
-		raw("}\n");
-	}
+  LISTdo( case_stmt->cases, case_item, Case_Item ) {
+    if( case_item->labels ) {
+      char* sep = "";
+
+      // case label
+      indent_swift(level2);
+      raw("case ");
+
+      LISTdo_n( case_item->labels, label, Expression, b ) {
+        raw("%s.some(",sep);
+        EXPR_swift(algo, label, NULL, unknown_optional, EMIT_SELF, NO_PAREN);
+        raw(")");
+        sep = ", ";
+      } LISTod
+
+      raw(":\n");
+      STMT_swift(algo, case_item->action, tempvar_id, level3);
+      raw("\n");
+    }
+    else {
+      /* OTHERWISE */
+      indent_swift(level2);
+      raw("default:\n");
+      otherwise = case_item->action;
+      STMT_swift(algo, otherwise, tempvar_id, level3);
+    }
+  } LISTod
+
+  if( otherwise == NULL ){
+    indent_swift(level2);
+    raw("default: break\n");
+  }
+
+  indent_swift(level);
+  raw("} //end switch\n");
 }
 
 static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int* tempvar_id, int level ) {
