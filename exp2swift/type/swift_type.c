@@ -645,9 +645,11 @@ void TYPEwhereDefinitions_swift( Scope scope, int level ) {
 			int tempvar_id = 1;
 			Linked_List tempvars;
 			Expression simplified = EXPR_decompose(scope, where->expr, Type_Logical, &tempvar_id, &tempvars);
-			EXPR_tempvars_swift(scope, tempvars, level2);
-			
-			indent_swift(level2);
+
+      indent_swift(level2);
+      EXPR_tempvars_swift(scope, tempvars, level2);
+
+      indent_swift(level2);
 			raw("return ");
 			if( EXPRresult_is_optional(scope, simplified, CHECK_DEEP) != no_optional ){
 				emit_typeReference_swift(scope, Type_Logical, WO_COMMENT);	// wrap with explicit type cast

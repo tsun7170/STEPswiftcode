@@ -406,11 +406,12 @@ static void EXPRquery_swift
 
   indent_swift(level);
   raw("// QUERY BODY\n");
-  indent_swift(level);
 
-	int tempvar_id = 1;
-	Linked_List tempvars;
-	Expression simplified = EXPR_decompose(SELF, e->u.query->expression, Type_Logical, &tempvar_id, &tempvars);
+  int tempvar_id = 1;
+  Linked_List tempvars;
+  Expression simplified = EXPR_decompose(SELF, e->u.query->expression, Type_Logical, &tempvar_id, &tempvars);
+
+  indent_swift(level);
 	EXPR_tempvars_swift(SELF, tempvars, level);
 
 	indent_swift(level);

@@ -131,9 +131,11 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int*
 			if( loop->while_expr ) {
 				Linked_List tempvars;
 				Expression simplified = EXPR_decompose(algo, loop->while_expr, Type_Logical, tempvar_id, &tempvars);
-				EXPR_tempvars_swift(algo, tempvars, level2);
 
-				indent_swift(level3);
+        indent_swift(level3);
+        EXPR_tempvars_swift(algo, tempvars, level2);
+
+        indent_swift(level3);
 				raw("if ");
 				raw("!SDAI.IS_TRUE(");
 				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, Type_Logical, EMIT_SELF, YES_PAREN, OP_UNKNOWN, YES_WRAP);
@@ -147,9 +149,11 @@ static void LOOPwithIncrementControl_swift( Scope algo, struct Loop_ *loop, int*
 			if( loop->until_expr ) {
 				Linked_List tempvars;
 				Expression simplified = EXPR_decompose(algo, loop->until_expr, Type_Logical, tempvar_id, &tempvars);
-				EXPR_tempvars_swift(algo, tempvars, level2);
 
-				indent_swift(level3);
+        indent_swift(level3);
+        EXPR_tempvars_swift(algo, tempvars, level2);
+
+        indent_swift(level3);
 				raw("if ");
 				raw("SDAI.IS_TRUE(");
 				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, algo, simplified, Type_Logical, EMIT_SELF, YES_PAREN, OP_UNKNOWN, YES_WRAP);

@@ -326,6 +326,8 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 		int tempvar_id = 1;
 		Linked_List tempvars;
 		Expression simplified = EXPR_decompose(entity, VARget_initializer(attr), VARget_type(attr), &tempvar_id, &tempvars);
+
+    indent_swift(level2);
 		EXPR_tempvars_swift(entity, tempvars, level2);
 				
 		indent_swift(level2);
@@ -406,6 +408,8 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 		int tempvar_id = 1;
 		Linked_List tempvars;
 		Expression simplified = EXPR_decompose(entity, VARget_initializer(attr), VARget_type(attr), &tempvar_id, &tempvars);
+
+    indent_swift(level2);
 		EXPR_tempvars_swift(entity, tempvars, level2);
 		
 		indent_swift(level2);

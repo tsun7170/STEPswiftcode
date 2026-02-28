@@ -206,8 +206,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1249"
-            endingLineNumber = "1249"
+            startingLineNumber = "1250"
+            endingLineNumber = "1250"
             landmarkName = "EXPRop2__swift(SELF1, SELF2, oe, opcode, op1target_type, op2target_type, suppress_SELF, paren, previous_op, can_wrap, need_optional_operand)"
             landmarkType = "9">
          </BreakpointContent>
@@ -222,8 +222,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1097"
-            endingLineNumber = "1097"
+            startingLineNumber = "1098"
+            endingLineNumber = "1098"
             landmarkName = "EXPRop__swift(SELF, oe, target_type, suppress_SELF, paren, previous_op, can_wrap)"
             landmarkType = "9">
          </BreakpointContent>
@@ -238,8 +238,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1265"
-            endingLineNumber = "1265"
+            startingLineNumber = "1266"
+            endingLineNumber = "1266"
             landmarkName = "EXPRop2__swift(SELF1, SELF2, oe, opcode, op1target_type, op2target_type, suppress_SELF, paren, previous_op, can_wrap, need_optional_operand)"
             landmarkType = "9">
          </BreakpointContent>
@@ -350,8 +350,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "626"
-            endingLineNumber = "626"
+            startingLineNumber = "627"
+            endingLineNumber = "627"
             landmarkName = "operator_returns_optional(SELF, oe, deep)"
             landmarkType = "9">
          </BreakpointContent>
@@ -382,8 +382,8 @@
             filePath = "exp2swift/entity/swift_entity_partial.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "762"
-            endingLineNumber = "762"
+            startingLineNumber = "766"
+            endingLineNumber = "766"
             landmarkName = "simpleUniquenessRule_swift(entity, unique, level)"
             landmarkType = "9">
          </BreakpointContent>
@@ -399,8 +399,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "951"
-            endingLineNumber = "951"
+            startingLineNumber = "952"
+            endingLineNumber = "952"
             landmarkName = "EXPR__swift(SELF, e, target_type, optionality, suppress_SELF, paren, previous_op, can_wrap)"
             landmarkType = "9">
          </BreakpointContent>
