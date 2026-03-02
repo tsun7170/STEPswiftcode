@@ -355,7 +355,7 @@ static void explicitStaticSetterCore
         emit_aggregateBoundSpec(target_attr->type, original_partial, EMIT_SELF, ", ");
       }
       else {// TYPEis_string(target_attr->type) || TYPEis_binary(target_attr->type)
-        emit_widthSpec_asRequired("", target_attr->type, entity, EMIT_SELF, ", ");
+        emit_widthSpec_asRequired("", target_attr->type, entity, NOT_FOR_UNDERLYING, EMIT_SELF, ", ");
       }
 
       force_wrap();
@@ -497,7 +497,7 @@ static void explicitStaticGetterCore
         emit_aggregateBoundSpec(attr->type, original_partial, EMIT_SELF, ", ");
       }
       else {// TYPEis_string(attr->type) || TYPEis_binary(attr->type)
-        emit_widthSpec_asRequired("", attr->type, entity, EMIT_SELF, ", ");
+        emit_widthSpec_asRequired("", attr->type, entity, NOT_FOR_UNDERLYING, EMIT_SELF, ", ");
       }
 
       force_wrap();
@@ -699,7 +699,7 @@ static void explicitDynamicGetterSetter_swift
             emit_aggregateBoundSpec(attr->type, original_partial, EMIT_SELF, ", ");
           }
           else {// TYPEis_string(attr->type) || TYPEis_binary(attr->type)
-            emit_widthSpec_asRequired("", attr->type, entity, EMIT_SELF, ", ");
+            emit_widthSpec_asRequired("", attr->type, entity, NOT_FOR_UNDERLYING, EMIT_SELF, ", ");
           }
 
           force_wrap();

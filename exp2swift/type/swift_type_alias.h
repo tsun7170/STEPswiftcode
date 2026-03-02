@@ -11,7 +11,7 @@
 
 #include "../express/type.h"
 
-extern void typeAliasDefinition_swift( Schema schema, Type type, Type original, int level);
-extern void typeAliasExtension_swift( Schema schema, Type type, Type original, int level);
+extern void typeAliasDefinition_swift( Schema schema, Type type, Type underlying, int level);
+extern void typeAliasExtension_swift( Schema schema, Type type, Type underlying, int level);
 
 #endif /* swift_type_alias_h */

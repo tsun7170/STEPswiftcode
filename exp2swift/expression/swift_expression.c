@@ -411,10 +411,9 @@ static void EXPRquery_swift
   Linked_List tempvars;
   Expression simplified = EXPR_decompose(SELF, e->u.query->expression, Type_Logical, &tempvar_id, &tempvars);
 
-  indent_swift(level);
-	EXPR_tempvars_swift(SELF, tempvars, level);
+  EXPR_tempvars_swift(SELF, tempvars, level);
 
-	indent_swift(level);
+  indent_swift(level);
 	raw("return ");
 	EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF, simplified, Type_Logical, suppress_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 	raw("\n");
@@ -1521,27 +1520,23 @@ void emit_widthSpec_asRequired
  (const char* leader,
   Type type,
   Scope current,
+  bool for_underlying_type,
   bool suppress_SELF,
   const char* trailer)
 {
+  if( !for_underlying_type && TYPEis_namedType(type) )return; // defined type
   if( !(TYPEis_string(type) || TYPEis_binary(type)) )return;
-  if( TYPEis_namedType(type) )return; // defined type
 
   TypeBody tb = TYPEget_body(type);
   if( tb->precision == NULL )return;
 
   force_wrap();
   raw(leader);
-//  if( tb->precision ){
     wrap("width:");
     EXPR_swift(current, tb->precision, Type_Integer, unknown_optional, suppress_SELF, YES_PAREN);
     raw(", fixed:%s",
         tb->flags.fixed ? "true" : "false"
         );
-//  }
-//  else {
-//    wrap("width:nil as Int?, fixed:false");
-//  }
   raw(trailer);
 }
 
@@ -1582,7 +1577,7 @@ void EXPRassignment_rhs_swift
 			if( EXP_is_literal(rhs) ){
 				emit_typeReference_swift(SELF, rhs->return_type, WO_COMMENT);	// wrap with explicit type cast
 				raw(".FundamentalType(");
-        emit_widthSpec_asRequired("", rhs->return_type, SELF, suppress_SELF, ", ");
+        emit_widthSpec_asRequired("", rhs->return_type, SELF, NOT_FOR_UNDERLYING, suppress_SELF, ", ");
 				EXPR__swift(SELF, rhs, lhsType, unknown_optional, suppress_SELF, paren, previous_op, can_wrap);
 				raw(")");
 				return;
@@ -1604,7 +1599,7 @@ void EXPRassignment_rhs_swift
 	if( EXP_is_literal(rhs) ){
 		emit_typeReference_swift(SELF, lhsType, WO_COMMENT);	// wrap with explicit type cast
 		raw("(");
-    emit_widthSpec_asRequired("", lhsType, SELF, suppress_SELF, ", ");
+    emit_widthSpec_asRequired("", lhsType, SELF, NOT_FOR_UNDERLYING, suppress_SELF, ", ");
 
 //	raw("/*");TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);raw("*/"); // DEBUG	
 	
@@ -1631,7 +1626,7 @@ void EXPRassignment_rhs_swift
 	
 	emit_typeReference_swift(SELF, lhsType, WO_COMMENT);	// wrap with explicit type cast
 	raw("(");
-  emit_widthSpec_asRequired("", lhsType, SELF, suppress_SELF, ", ");
+  emit_widthSpec_asRequired("", lhsType, SELF, NOT_FOR_UNDERLYING, suppress_SELF, ", ");
 
 	if( TYPEis_generic(rhs->return_type)||TYPEis_runtime(rhs->return_type) ){
 		raw("fromGeneric: ");

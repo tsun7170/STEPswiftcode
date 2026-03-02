@@ -187,8 +187,8 @@ void TYPEdefinition_swift(Schema schema, Type t, int level ) {
 	
 	// swift code generation
 	assert(t->symbol.name);
-	if( TYPEget_head( t ) ) {
-		typeAliasDefinition_swift( schema, t, TYPEget_head(t), level );
+	if( TYPEget_underlyingType( t ) ) {
+		typeAliasDefinition_swift( schema, t, TYPEget_underlyingType(t), level );
 	} 
 	else {
 		TypeBody tb = TYPEget_body( t );
@@ -216,8 +216,8 @@ void TYPEdefinition_swift(Schema schema, Type t, int level ) {
 }
 
 extern void TYPEextension_swift( Schema schema, Type t, int level ) {
-	if( TYPEget_head( t ) ) {
-		typeAliasExtension_swift( schema, t, TYPEget_head(t), level );
+	if( TYPEget_underlyingType( t ) ) {
+		typeAliasExtension_swift( schema, t, TYPEget_underlyingType(t), level );
 	}
 	else {
 		TypeBody tb = TYPEget_body( t );
@@ -646,7 +646,6 @@ void TYPEwhereDefinitions_swift( Scope scope, int level ) {
 			Linked_List tempvars;
 			Expression simplified = EXPR_decompose(scope, where->expr, Type_Logical, &tempvar_id, &tempvars);
 
-      indent_swift(level2);
       EXPR_tempvars_swift(scope, tempvars, level2);
 
       indent_swift(level2);

@@ -272,7 +272,7 @@ extern SC_EXPRESS_EXPORT Error ERROR_corrupted_type;
 
 #define TYPEget_symbol(t)   (&(t)->symbol)
 
-#define TYPEget_head(t)     ((t)->u.type->head)
+#define TYPEget_underlyingType(t)     ((t)->u.type->head)
 #define TYPEput_head(t,h)   ((t)->u.type->head = (h))
 
 #define TYPEget_body(t)     ((t)->u.type->body)

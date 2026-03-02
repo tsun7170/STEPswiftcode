@@ -99,7 +99,7 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
 		raw( "public init(fundamental: FundamentalType) {\n" );
 		indent_swift(level2+nestingIndent_swift);
     raw( "rep = Supertype(" );
-    emit_widthSpec_asRequired("", type, type->superscope, EMIT_SELF, ", ");
+    emit_widthSpec_asRequired("", type, type->superscope, YES_FOR_UNDERLYING, EMIT_SELF, ", ");
 		raw( "fundamental: fundamental)\n" );
 		indent_swift(level2);
 		raw("}\n\n");
@@ -144,16 +144,6 @@ void namedSimpleTypeDefinition_swift( Schema schema, Type type, int level) {
       indent_swift(level2);
       raw("}\n");
     }
-//    {
-//      indent_swift(level2);
-//      raw("public init?<G: SDAI.GenericType>(_ generic: G?) {\n");
-//
-//      indent_swift(level3);
-//      raw("self.init(fromGeneric:generic)\n");
-//
-//      indent_swift(level2);
-//      raw("}\n");
-//    }
 
 		TYPEwhereDefinitions_swift(type, level2);
 		TYPEwhereRuleValidation_swift(type, level2);

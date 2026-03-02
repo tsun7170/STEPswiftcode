@@ -12,13 +12,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>1450</string>
+					<string>1449</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>1449</string>
+					<string>1448</string>
 					<key>Timestamp</key>
-					<string>793967101.248376</string>
+					<string>794045047.255748</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -55,15 +55,15 @@
 				<key>location-parameters</key>
 				<dict>
 					<key>EndingColumnNumber</key>
-					<string>24</string>
+					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>170</string>
+					<string>174</string>
 					<key>StartingColumnNumber</key>
-					<string>23</string>
+					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>170</string>
+					<string>173</string>
 					<key>Timestamp</key>
-					<string>781514874.163658</string>
+					<string>794042781.532858</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -79,15 +79,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string> </string>
+				<string>//		printf("DEBUG BREAK POINT\n");
+</string>
 				<key>leading</key>
 				<string>
 //	if(streq(filename,"applied_area")) {
-//		printf("DEBUG BREAK</string>
+</string>
 				<key>trailing</key>
-				<string>POINT\n");
-//	}
+				<string>//	}
 }
+
 </string>
 			</dict>
 			<key>type</key>
@@ -101,13 +102,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>863</string>
+					<string>862</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>862</string>
+					<string>861</string>
 					<key>Timestamp</key>
-					<string>793967101.249028</string>
+					<string>794045047.255741</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -146,13 +147,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>1218</string>
+					<string>1217</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>1217</string>
+					<string>1216</string>
 					<key>Timestamp</key>
-					<string>793967101.24898</string>
+					<string>794045047.255711</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -191,13 +192,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>1223</string>
+					<string>1222</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>1222</string>
+					<string>1221</string>
 					<key>Timestamp</key>
-					<string>793967101.2489311</string>
+					<string>794045047.255735</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>

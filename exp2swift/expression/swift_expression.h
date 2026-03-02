@@ -27,6 +27,8 @@
 #define SUPPRESS_SELF true
 #define EMIT_SELF false
 
+#define YES_FOR_UNDERLYING  true
+#define NOT_FOR_UNDERLYING  false
 
 extern TypeOptionality EXPRresult_is_optional
  (Scope SELF, Expression e, bool deep);
@@ -54,6 +56,7 @@ extern void emit_widthSpec_asRequired
  (const char* leader,
   Type type,
   Scope current,
+  bool for_underlying_type,
   bool suppress_SELF,
   const char* trailer);
 

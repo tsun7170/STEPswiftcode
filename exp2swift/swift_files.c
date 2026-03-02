@@ -48,6 +48,9 @@ void endExpress_swift(bool asMarkDown) {
 }
 
 void indent_swift(int level) {
+  if( curpos > 1 ){
+    printf("INTERNAL LOGIC ERROR: indent_swift() called while in the middle(curpos:%d) of line output\n", curpos);
+  }
 	indent2 = level+nestingIndent_swift;
 	if( level <= 0 ) return;
 	raw( "%*s", level, "");

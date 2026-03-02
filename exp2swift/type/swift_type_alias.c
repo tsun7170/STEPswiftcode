@@ -26,7 +26,7 @@
 
 
 
-void typeAliasDefinition_swift( Schema schema, Type type, Type original, int level) {
+void typeAliasDefinition_swift( Schema schema, Type type, Type underlying, int level) {
 	int level2 = level  + nestingIndent_swift;
 	int level3 = level2 + nestingIndent_swift;
 	
@@ -54,7 +54,7 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 	{	
 		indent_swift(level2);
 		raw( "public typealias Supertype = %s\n",
-        namedType_swiftName(original, type->superscope, SWIFT_QUALIFIER, buf)
+        namedType_swiftName(underlying, type->superscope, SWIFT_QUALIFIER, buf)
         );
 		indent_swift(level2);
 		raw("public typealias FundamentalType = Supertype.FundamentalType\n");
@@ -135,7 +135,7 @@ void typeAliasDefinition_swift( Schema schema, Type type, Type original, int lev
 	raw("}\n");
 }
 
-void typeAliasExtension_swift( Schema schema, Type type, Type original, int level) {
+void typeAliasExtension_swift( Schema schema, Type type, Type underlying, int level) {
 	char typebuf[BUFSIZ];
 	const char* typename = namedType_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
 
@@ -153,7 +153,7 @@ void typeAliasExtension_swift( Schema schema, Type type, Type original, int leve
       typename
       );
 	wrap("%s__Subtype {}\n}\n\n",
-       namedType_swiftName(original, type->superscope, SWIFT_QUALIFIER, buf)
+       namedType_swiftName(underlying, type->superscope, SWIFT_QUALIFIER, buf)
        );
 
   // __Subtype protocol

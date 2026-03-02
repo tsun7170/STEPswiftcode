@@ -19,10 +19,10 @@ void TYPE_out( Type t, int level ) {
     exppp_ref_info( &t->symbol );
 
     raw( "%*sTYPE %s =", level, "", t->symbol.name );
-    if( TYPEget_head( t ) ) {
+    if( TYPEget_underlyingType( t ) ) {
 			//*TY2020/09/20
-//        wrap( " %s", TYPEget_name( TYPEget_head( t ) ) );
-			TYPE_head_out(TYPEget_head( t ), level + exppp_nesting_indent);
+//        wrap( " %s", TYPEget_name( TYPEget_underlyingType( t ) ) );
+			TYPE_head_out(TYPEget_underlyingType( t ), level + exppp_nesting_indent);
     } else {
         TYPE_body_out( t, level + exppp_nesting_indent );
     }

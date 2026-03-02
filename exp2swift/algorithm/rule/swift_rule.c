@@ -94,11 +94,10 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 			Linked_List tempvars;
 			Expression simplified = EXPR_decompose(schema, where->expr, Type_Logical, &tempvar_id, &tempvars);
 
-      indent_swift(level2);
       EXPR_tempvars_swift(schema, tempvars, level2);
 
-      char buf[BUFSIZ];
       indent_swift(level2);
+      char buf[BUFSIZ];
 			raw("let %s = ",whereRuleLabel_swiftName(where, buf));
 			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, schema, simplified, Type_Logical, EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw("\n");

@@ -327,10 +327,9 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 		Linked_List tempvars;
 		Expression simplified = EXPR_decompose(entity, VARget_initializer(attr), VARget_type(attr), &tempvar_id, &tempvars);
 
+    EXPR_tempvars_swift(entity, tempvars, level2);
+
     indent_swift(level2);
-		EXPR_tempvars_swift(entity, tempvars, level2);
-				
-		indent_swift(level2);
 		raw("return ");
 		if( VARis_optional_by_large(attr) ){
 			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
@@ -409,10 +408,9 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 		Linked_List tempvars;
 		Expression simplified = EXPR_decompose(entity, VARget_initializer(attr), VARget_type(attr), &tempvar_id, &tempvars);
 
+    EXPR_tempvars_swift(entity, tempvars, level2);
+
     indent_swift(level2);
-		EXPR_tempvars_swift(entity, tempvars, level2);
-		
-		indent_swift(level2);
 		raw("let value = ");
 		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 		raw("\n");
@@ -911,9 +909,6 @@ static void expressConstructor( Entity entity, int level ) {
 
 		LISTdo(params, attr, Variable) {
 			bool backing_store = false;//attribute_need_observer(attr);
-
-
-//      TypeBody attr_typebody = TYPEget_body(attr->type);
       bool attr_optional = VARis_dynamic(attr) || VARis_optional_by_large(attr);
 
       if( TYPEis_bounded(attr->type) ) {
@@ -935,7 +930,6 @@ static void expressConstructor( Entity entity, int level ) {
         indent_swift(levelX);
         emit_typeReference_swift(entity, attr->type, WO_COMMENT);
         raw("(");
-//        force_wrap();
         raw("from: %s.asSwiftType",
             variable_swiftName(attr,buf)
             );
@@ -945,7 +939,7 @@ static void expressConstructor( Entity entity, int level ) {
           emit_aggregateBoundSpec(attr->type, entity, SUPPRESS_SELF, "");
         }
         else {// TYPEis_string(attr->type) || TYPEis_binary(attr->type)
-          emit_widthSpec_asRequired(", ", attr->type, entity, SUPPRESS_SELF, "");
+          emit_widthSpec_asRequired(", ", attr->type, entity, NOT_FOR_UNDERLYING,  SUPPRESS_SELF, "");
         }
 
         raw( ")\n" );
@@ -1180,8 +1174,6 @@ void partialEntityDefinition_swift
 
      Linked_List params = ENTITYget_constructor_params(entity);
 
-//		 indent_swift(level);
-//		 raw("@_documentation(visibility:public)\n");
 		 indent_swift(level);
      wrap("public final class %s : SDAI.PartialEntity",
           partialEntity_swiftName(entity, NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
