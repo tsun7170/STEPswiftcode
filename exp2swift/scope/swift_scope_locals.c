@@ -24,13 +24,14 @@
 #include "swift_algorithm.h"
 
 
-void SCOPElocalList_swift( Scope s, int level ) {
+void SCOPElocalList_swift( Scope scope, int level )
+{
 	Variable var;
 	DictionaryEntry de;
 	Linked_List orderedLocals = NULL; /**< this list is used to order the vars the same way they were in the file */
 	int num_locals = 0;
 
-	DICTdo_type_init( s->symbol_table, &de, OBJ_VARIABLE );
+	DICTdo_type_init( scope->symbol_table, &de, OBJ_VARIABLE );
 	while( 0 != (var = DICTdo(&de)) ) {
 		if( var->flags.constant ) {
 			continue;
@@ -60,7 +61,7 @@ void SCOPElocalList_swift( Scope s, int level ) {
 		indent_swift(level);
 		raw("var %s: ", variable_swiftName(var,var_name));
 
-		variableType_swift(s, var, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
+		variableType_swift(scope, var, NO_FORCE_OPTIONAL, NOT_IN_COMMENT);
 
 		if( var->initializer ) {
 			raw( " = " );
@@ -71,9 +72,8 @@ void SCOPElocalList_swift( Scope s, int level ) {
 				positively_wrap();
 			}
 
-			{	//int oldwrap = captureWrapIndent(0);
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, var->initializer, var->type, EMIT_SELF, NO_PAREN,OP_UNKNOWN,YES_WRAP);
-				//restoreWrapIndent(oldwrap);
+			{
+				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, scope, var->initializer, var->type, EMIT_SELF, NO_PAREN,OP_UNKNOWN,YES_WRAP);
 			}
 			raw( "; SDAI.TOUCH(var: &%s)", var_name );
 		}
@@ -81,14 +81,13 @@ void SCOPElocalList_swift( Scope s, int level ) {
 		else if( TYPEhas_bounds(var->type) && !VARis_optional_by_large(var) ) {
 			raw( " = " );
 			force_wrap();
-			{	//int oldwrap = captureWrapIndent(0);
-				TYPE_head_swift(s, var->type, WO_COMMENT);
-				wrap("(bound1: ");
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, TYPEget_body(var->type)->lower, Type_Integer, EMIT_SELF, NO_PAREN,OP_UNKNOWN,YES_WRAP);
-				raw(", bound2: ");
-				EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, s, TYPEget_body(var->type)->upper, Type_Integer, EMIT_SELF, NO_PAREN,OP_UNKNOWN,YES_WRAP);
-				raw(")");
-				//restoreWrapIndent(oldwrap);
+			{
+				emit_typeReference_swift(scope, var->type, WO_COMMENT);
+        raw("(");
+
+        emit_aggregateBoundSpec(var->type, scope, EMIT_SELF, "");
+
+        raw(")");
 			}
 			}
 			raw( "\n" );

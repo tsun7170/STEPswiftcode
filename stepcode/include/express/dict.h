@@ -100,6 +100,24 @@ extern const char* DICT_key;	/**< set as a side-effect of DICTdo routines to the
 
 extern SC_EXPRESS_EXPORT void     DICTinitialize PROTO( ( void ) );
 extern SC_EXPRESS_EXPORT void     DICTcleanup PROTO( ( void ) );
+
+/// Defines an entry in the specified dictionary.
+///
+/// If an entry with the same name already exists:
+/// - If both the new and existing entries are enumerations, the old entry is marked as ambiguous.
+/// - If both are non-enumerations, an error is reported and the definition fails.
+/// - If one is an enumeration and the other is not, both are allowed as per newer scoping rules.
+///
+/// - Parameters:
+///   - dict: The dictionary in which to define the entry.
+///   - name: The key for the entry.
+///   - obj: The value (generic object) to store.
+///   - sym: Associated symbol, for error reporting and metadata.
+///   - type: The type code of the object being defined.
+/// - Returns: `0` on success, `1` on failure (e.g., duplicate non-enum definition).
+///
+/// This function may set error state and cause side effects in global error tracking variables.
+/// 
 extern SC_EXPRESS_EXPORT int      DICTdefine PROTO( ( Dictionary, const char *, Generic, Symbol *, char ) );
 extern SC_EXPRESS_EXPORT int      DICT_define PROTO( ( Dictionary, const char *, Generic, Symbol *, char ) );
 extern SC_EXPRESS_EXPORT void     DICTundefine PROTO( ( Dictionary, const char * ) );

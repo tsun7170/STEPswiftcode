@@ -282,14 +282,25 @@ Type TYPE_retrieve_aggregate_base( Type t_root, Type t_agg_base ) {
 	
 	if( TYPEis_select( t_root ) ) {
 		/* parse the underlying types */
-		LISTdo_links( t_root->u.type->body->list, link ){
-			/* the current underlying type */
-			Type t_select_case = ( Type ) link->data;
-				t_agg_base = TYPE_retrieve_aggregate_base( t_select_case, t_agg_base );
-			
-			/* the underlying select case types did not resolve to a common aggregate base type */
-			if( t_agg_base == NULL )return NULL;	//*TY2021/02/04 comment out to relax to ignore scalar cases
-		}LISTod;
+    LISTdo_links( t_root->u.type->body->list, link ){
+      /* the current underlying type */
+      Type t_select_case = ( Type ) link->data;
+      
+      Type case_agg_base = TYPE_retrieve_aggregate_base( t_select_case, t_agg_base );
+      if( case_agg_base != NULL ) {
+        if( (t_agg_base != NULL) && (case_agg_base != t_agg_base) ){
+          Type common_base = TYPEget_common(case_agg_base, t_agg_base);
+          /* the underlying select case types did not resolve to a common aggregate base type */
+          if( common_base == NULL ) return NULL;
+          case_agg_base = common_base;
+        }
+        t_agg_base = case_agg_base;
+      }
+      else if( TYPEis_aggregation_data_type(t_select_case) ){
+        /* the underlying aggregate base types did not resolve to a common type */
+        return NULL;
+      }
+    }LISTod;
 		return t_agg_base;
 	}
 	
@@ -298,7 +309,6 @@ Type TYPE_retrieve_aggregate_base( Type t_root, Type t_agg_base ) {
 	}
 	
 	/* the underlying select case type is neither a select nor an aggregate */
-//	return t_agg_base;
 	return NULL;
 }
 
@@ -583,7 +593,7 @@ void EXP_resolve( Expression expr, Scope scope, Type typecheck ) {
                 type = expr->u.query->aggregate->return_type->u.type->body->base;
             } else if( TYPEis_select( expr->return_type ) ) {
                 /* retrieve the common aggregate type */
-                type = TYPE_retrieve_aggregate_base( expr->return_type, 0 );
+                type = TYPE_retrieve_aggregate_base( expr->return_type, NULL );
                 if( !type ) {
                     ERRORreport_with_symbol( ERROR_query_requires_aggregate, &expr->u.query->aggregate->symbol );
                     resolve_failed( expr );
@@ -805,6 +815,33 @@ void VAR_resolve_expressions( Variable v, Entity entity /* was scope */ ) {
     }
 }
 
+//*TY2026/02/19
+static Variable resolve_overriders(char attr_type, Variable v)
+{
+  Entity super = ENTITYfind_inherited_entity(/*entity*/ (v)->defined_in,
+                                             /*name*/ _VARget_redeclaring_entity_name_string(v),
+                                             /*down*/ 0, /*under_search*/ false );
+  assert(super != NULL);
+  
+  Variable super_attr = ENTITYget_named_attribute(super, _VARget_redeclaring_attr_name_string(v));
+  assert(super_attr != NULL);
+  
+  if( attr_type == ATTR_DERIVED )VARput_dynamic(super_attr);
+
+  if( super_attr->overriders == NULL )super_attr->overriders = DICTcreate(8);
+  /*int rc = */ DICTdefine(/*dict*/ super_attr->overriders,
+                      /*name*/ ENTITYget_name(v->defined_in),
+                      /*obj*/ (Generic)v, /*sym*/ NULL, /*type*/ attr_type);
+//  assert(rc == DICTsuccess);
+
+  if(_VARis_redeclaring(super_attr) ){
+    super_attr = resolve_overriders(attr_type, super_attr);
+  }
+
+  (v)->original_attribute = super_attr;
+  return super_attr;
+}
+
 /**
 ** \param v variable to resolve
 **
@@ -854,22 +891,14 @@ void VAR_resolve_types( Variable v ) {
 
 	//*TY2020/06/28 added
 	if(_VARis_redeclaring(v) ) {
-		Entity super = ENTITYfind_inherited_entity(v->defined_in, _VARget_redeclaring_entity_name_string(v), 0, false);
-		assert(super != NULL);
-		Variable super_attr = ENTITYget_named_attribute(super, _VARget_redeclaring_attr_name_string(v));
-		assert(super_attr != NULL);
-		v->original_attribute = super_attr;
-		if( super_attr->overriders == NULL) {
-			super_attr->overriders = DICTcreate(8);
-		}
-		char attr_type = ATTR_EXPLICIT;
-		if( VARis_derived(v) ) {
-			attr_type = ATTR_DERIVED;
-			VARput_dynamic(super_attr);
-			VARput_dynamic(v);
-		}
-		int rc = DICTdefine(super_attr->overriders, ENTITYget_name(v->defined_in), ( Generic )v, &v->name->symbol, attr_type);
-		assert(rc == DICTsuccess);
+    char attr_type = ATTR_EXPLICIT;
+    if( VARis_derived(v) ) {
+      attr_type = ATTR_DERIVED;
+      VARput_dynamic(v);
+    }
+
+    resolve_overriders(attr_type, v); //*TY2026/02/19
+
 	}
 	//*TY2021/05/30 added
 	else {

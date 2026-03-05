@@ -64,11 +64,11 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 			char* sep = "";
 			raw("<");
 			LISTdo(generics, gtag, Type) {
-				wrap("%s%s: SDAI.GenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+				wrap("%s%s: SDAI.GenericType",sep,namedType_swiftName(gtag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 				sep=", ";
 			}LISTod;
 			LISTdo(aggregates, atag, Type) {
-				wrap("%s%s: SDAI.AggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+				wrap("%s%s: SDAI.AggregationType",sep,namedType_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 				sep=", ";
 			}LISTod;
 			raw(">");
@@ -91,8 +91,8 @@ void PROC_swift(Schema schema, bool nested, Procedure proc, int level ) {
 			LISTdo(aggregates, atag, Type) {
 				Type base = atag->u.type->head;	//hack!
 				positively_wrap();
-				wrap("%s%s.Element == ",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
-				TYPE_head_swift(proc->superscope, base, NOT_IN_COMMENT);
+				wrap("%s%s.Element == ",sep,namedType_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+				emit_typeReference_swift(proc->superscope, base, NOT_IN_COMMENT);
 				sep = ", ";
 			}LISTod;
 		}

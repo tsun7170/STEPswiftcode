@@ -88,7 +88,7 @@ bool optionalType_swift
 	if( TYPEis_logical(type) ) optional = false;
 	
 	if( optional && !simple_type ) raw("(");
-	TYPE_head_swift(current, type, in_comment);
+	emit_typeReference_swift(current, type, in_comment);
 	if( optional ) {
 		if( !simple_type ) raw(")");
 		raw("? ");

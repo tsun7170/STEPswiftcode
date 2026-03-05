@@ -94,19 +94,25 @@ static void encodedStringLiteral_swift(const char* instring ) {
 //MARK: - aggregation bounds
 void EXPRbounds_swift(Scope SELF, TypeBody tb,
                       bool suppress_SELF,
-                      SwiftOutCommentOption in_comment ) {
-	if( !tb->upper ) return;
-	if( in_comment == WO_COMMENT ) return;
-	
-		wrap( "%s[",
-				 in_comment==YES_IN_COMMENT ? "" : "/*"
-				 );
-		EXPR_swift(SELF, tb->lower, Type_Integer, unknown_optional, suppress_SELF, YES_PAREN );
-		raw( ":" );
-		EXPR_swift(SELF, tb->upper, Type_Integer, unknown_optional, suppress_SELF, YES_PAREN );
-		raw( "]%s ",
-				in_comment==YES_IN_COMMENT ? "" : "*/"
-				);
+                      SwiftOutCommentOption in_comment )
+{
+  if( !tb->upper ) return;
+  if( in_comment == WO_COMMENT ) return;
+
+  wrap( "%s[",
+       in_comment==YES_IN_COMMENT ? "" : "/*"
+       );
+  EXPR_swift(SELF, tb->lower, Type_Integer, unknown_optional, suppress_SELF, YES_PAREN );
+  raw( ":" );
+  if( isLITERAL_INFINITY(tb->upper) ) {
+    raw("?");
+  }
+  else {
+    EXPR_swift(SELF, tb->upper, Type_Integer, unknown_optional, suppress_SELF, YES_PAREN );
+  }
+  raw( "]%s ",
+      in_comment==YES_IN_COMMENT ? "" : "*/"
+      );
 }
 
 //MARK: - special operators
@@ -312,7 +318,7 @@ static void EXPRopIn_swift
 			if( x != NULL ){
 				if( DICT_type == OBJ_TYPE ){
 					wrap_if(YES_WRAP, "IS: %s.self",
-									TYPE_swiftName((Type)x, SELF, SWIFT_QUALIFIER, buf)
+									namedType_swiftName((Type)x, SELF, SWIFT_QUALIFIER, buf)
 									);
 				}
 				else {
@@ -398,15 +404,16 @@ static void EXPRquery_swift
 	
 	int level = indent2+nestingIndent_swift;
 
-	indent_swift(level);
-	raw("// QUERY BODY\n");
+  indent_swift(level);
+  raw("// QUERY BODY\n");
 
-	int tempvar_id = 1;
-	Linked_List tempvars;
-	Expression simplified = EXPR_decompose(SELF, e->u.query->expression, Type_Logical, &tempvar_id, &tempvars);
-	EXPR_tempvars_swift(SELF, tempvars, level);
+  int tempvar_id = 1;
+  Linked_List tempvars;
+  Expression simplified = EXPR_decompose(SELF, e->u.query->expression, Type_Logical, &tempvar_id, &tempvars);
 
-	indent_swift(level);
+  EXPR_tempvars_swift(SELF, tempvars, level);
+
+  indent_swift(level);
 	raw("return ");
 	EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, SELF, simplified, Type_Logical, suppress_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 	raw("\n");
@@ -539,7 +546,7 @@ static void EXPR_aggregate_initializer_swift
 	if( !TYPEis_runtime(basetype) ){
 		raw( " ] " );
 		wrap( "as [SDAI.AggregationInitializerElement<" );
-		TYPE_head_swift(SELF, basetype, WO_COMMENT);
+		emit_typeReference_swift(SELF, basetype, WO_COMMENT);
 		raw(">]) ");
 	}
 	else{
@@ -567,7 +574,7 @@ Expression e,
 		}
 	}
 
-	TYPE_head_swift(SELF, e->return_type, in_comment);
+	emit_typeReference_swift(SELF, e->return_type, in_comment);
 }
 
 static TypeOptionality operator_returns_optional(Scope SELF, struct Op_Subexpression * oe, bool deep) {
@@ -766,7 +773,7 @@ void EXPR__swift
 		case indeterminate_:
     {
       wrap_if(can_wrap, "(nil as " );
-      TYPE_head_swift(SELF, target_type, NOT_IN_COMMENT);
+      emit_typeReference_swift(SELF, target_type, NOT_IN_COMMENT);
       raw("?)");
     }
 			break;
@@ -859,7 +866,7 @@ void EXPR__swift
 		case entity_:
 		{
 			char buf[BUFSIZ];
-			wrap_if(can_wrap, TYPE_swiftName(e->type, SELF, SWIFT_QUALIFIER, buf));
+			wrap_if(can_wrap, namedType_swiftName(e->type, SELF, SWIFT_QUALIFIER, buf));
 		}
 			break;
 
@@ -868,7 +875,7 @@ void EXPR__swift
 		{
 			char buf[BUFSIZ];
 			if( (e->type->symbol.name != NULL) && (strcmp(e->symbol.name, e->type->symbol.name) == 0) ){
-				wrap_if(can_wrap, TYPE_swiftName(e->type, SELF, SWIFT_QUALIFIER, buf));
+				wrap_if(can_wrap, namedType_swiftName(e->type, SELF, SWIFT_QUALIFIER, buf));
 			}
 			else {
 				// probably enum case label
@@ -1422,26 +1429,20 @@ void EXPRaggregate_init_swift
 	// rhs: ?
 	if( isLITERAL_INFINITY(rhs) ) {
 		raw("(nil as ");
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+		emit_typeReference_swift(SELF, lhsType, WO_COMMENT);
 		raw("?)");
 		return;
 	}
 
 	// rhs: [AIE...]
 	if( TYPEis_AGGREGATE(rhs->type) ) {
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+		emit_typeReference_swift(SELF, lhsType, WO_COMMENT);
 		raw("(");
-		if( lhs_tb->upper ){
-			positively_wrap();
-			wrap("bound1: SDAI.UNWRAP(");
-			EXPRassignment_rhs_swift(resolve_generic, SELF, lhs_tb->lower, Type_Integer, suppress_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
-			raw("), ");
-			
-				wrap("bound2: ");
-				EXPRassignment_rhs_swift(resolve_generic, SELF, lhs_tb->upper, Type_Integer, suppress_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
-				raw(", ");
+    if( lhs_tb->upper ){
+      emit_aggregateBoundSpec(lhsType, SELF, suppress_SELF, ", ");
 		}
-//		raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+
+    //		raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
 		EXPR_swift(SELF, rhs, lhsType, unknown_optional, suppress_SELF, NO_PAREN);
 		raw(")");
 		return;
@@ -1455,9 +1456,9 @@ void EXPRaggregate_init_swift
 	
 	// rhs: select type
 	if( TYPEis_select(rhs->return_type) ){
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+		emit_typeReference_swift(SELF, lhsType, WO_COMMENT);
 		raw("(");
-		raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+		raw("/*");emit_typeReference_swift(SELF, rhs->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
 		EXPR_swift(SELF, rhs, lhsType, unknown_optional, suppress_SELF, NO_PAREN);
 		raw(")");
 		return;
@@ -1469,18 +1470,10 @@ void EXPRaggregate_init_swift
 		return;
 	}
 	
-	TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+	emit_typeReference_swift(SELF, lhsType, WO_COMMENT);
 	raw("(");
-	if( lhs_tb->upper ){
-		positively_wrap();
-		wrap("bound1: SDAI.UNWRAP(");
-		EXPRassignment_rhs_swift(resolve_generic, SELF, lhs_tb->lower, Type_Integer, suppress_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
-		raw("), ");
-		
-			wrap("bound2: ");
-			EXPRassignment_rhs_swift(resolve_generic, SELF, lhs_tb->upper, Type_Integer, suppress_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
-			raw(", ");
-		aggressively_wrap();
+  if( lhs_tb->upper ){
+    emit_aggregateBoundSpec(lhsType, SELF, suppress_SELF, ", ");
 	}
 	if( TYPEis_generic(rhs->return_type) ){
 		wrap("fromGeneric: ");
@@ -1492,10 +1485,59 @@ void EXPRaggregate_init_swift
 					(TYPEis_runtime(TYPEget_base_type(rhs->return_type))||TYPEis_generic(TYPEget_base_type(rhs->return_type))) ){
 		wrap("generic: ");
 	}
-	raw("/*");TYPE_head_swift(SELF, rhs->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
-	
+	raw("/*");emit_typeReference_swift(SELF, rhs->return_type, YES_IN_COMMENT); raw("*/"); // DEBUG
+
 	EXPR_swift(SELF, rhs, lhsType, unknown_optional, suppress_SELF, NO_PAREN);
 	raw(")");
+}
+
+//MARK: bound specs
+void emit_aggregateBoundSpec
+(
+ Type type,
+ Scope current,
+ bool suppress_SELF,
+ const char* trailer)
+{
+  TypeBody tb = TYPEget_body(type);
+
+  if( tb-> upper ){
+    force_wrap();
+    wrap( "bound1:SDAI.UNWRAP(" );
+    EXPR_swift(current, tb->lower, Type_Integer, unknown_optional, suppress_SELF, YES_PAREN);
+    raw("), ");
+
+    wrap( "bound2:");
+    EXPR_swift(current, tb->upper, Type_Integer, unknown_optional, suppress_SELF, YES_PAREN);
+  }
+  else {
+    wrap("bound1:0, bound2:nil as SDAI.INTEGER?");
+  }
+  raw(trailer);
+}
+
+void emit_widthSpec_asRequired
+ (const char* leader,
+  Type type,
+  Scope current,
+  bool for_underlying_type,
+  bool suppress_SELF,
+  const char* trailer)
+{
+  if( !for_underlying_type && TYPEis_namedType(type) )return; // defined type
+  if( !(TYPEis_string(type) || TYPEis_binary(type)) )return;
+
+  TypeBody tb = TYPEget_body(type);
+  if( tb->precision == NULL )return;
+
+  force_wrap();
+  raw(leader);
+    wrap("width:");
+    EXPR_swift(current, tb->precision, Type_Integer, unknown_optional, suppress_SELF, YES_PAREN);
+    raw(", fixed:%s",
+        tb->flags.fixed ? "true" : "false"
+        );
+  raw(trailer);
 }
 
 //MARK: assignment RHS
@@ -1519,7 +1561,7 @@ void EXPRassignment_rhs_swift
 	
 	if( isLITERAL_INFINITY(rhs) ) {
 		raw("(nil as ");
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT);
+		emit_typeReference_swift(SELF, lhsType, WO_COMMENT);
 		raw("?)");
 		return;
 	}
@@ -1533,9 +1575,9 @@ void EXPRassignment_rhs_swift
 		if( !rhs_is_partial ){
 			//*TY2025/08/13
 			if( EXP_is_literal(rhs) ){
-				TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);	// wrap with explicit type cast
+				emit_typeReference_swift(SELF, rhs->return_type, WO_COMMENT);	// wrap with explicit type cast
 				raw(".FundamentalType(");
-
+        emit_widthSpec_asRequired("", rhs->return_type, SELF, NOT_FOR_UNDERLYING, suppress_SELF, ", ");
 				EXPR__swift(SELF, rhs, lhsType, unknown_optional, suppress_SELF, paren, previous_op, can_wrap);
 				raw(")");
 				return;
@@ -1546,7 +1588,7 @@ void EXPRassignment_rhs_swift
 			return;
 		}
 		
-		TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);	// wrap with explicit type cast to entity reference
+		emit_typeReference_swift(SELF, rhs->return_type, WO_COMMENT);	// wrap with explicit type cast to entity reference
 		raw("(");
 		raw("/*partial entity*/");
 		EXPR__swift(SELF, rhs, lhsType, unknown_optional, suppress_SELF, paren, previous_op, can_wrap);
@@ -1555,9 +1597,10 @@ void EXPRassignment_rhs_swift
 	}// resolve_generic
 
 	if( EXP_is_literal(rhs) ){
-		TYPE_head_swift(SELF, lhsType, WO_COMMENT);	// wrap with explicit type cast
+		emit_typeReference_swift(SELF, lhsType, WO_COMMENT);	// wrap with explicit type cast
 		raw("(");
-	
+    emit_widthSpec_asRequired("", lhsType, SELF, NOT_FOR_UNDERLYING, suppress_SELF, ", ");
+
 //	raw("/*");TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);raw("*/"); // DEBUG	
 	
 		EXPR__swift(SELF, rhs, lhsType, unknown_optional, suppress_SELF, paren, previous_op, can_wrap);
@@ -1581,8 +1624,10 @@ void EXPRassignment_rhs_swift
 		return;
 	}
 	
-	TYPE_head_swift(SELF, lhsType, WO_COMMENT);	// wrap with explicit type cast
+	emit_typeReference_swift(SELF, lhsType, WO_COMMENT);	// wrap with explicit type cast
 	raw("(");
+  emit_widthSpec_asRequired("", lhsType, SELF, NOT_FOR_UNDERLYING, suppress_SELF, ", ");
+
 	if( TYPEis_generic(rhs->return_type)||TYPEis_runtime(rhs->return_type) ){
 		raw("fromGeneric: ");
 	}
@@ -1590,7 +1635,7 @@ void EXPRassignment_rhs_swift
 		raw("/*partial entity*/");
 	}
 	else {
-		raw("/*");TYPE_head_swift(SELF, rhs->return_type, WO_COMMENT);raw("*/"); // DEBUG	
+		raw("/*");emit_typeReference_swift(SELF, rhs->return_type, WO_COMMENT);raw("*/"); // DEBUG
 	}
 	
 	EXPR__swift(SELF, rhs, lhsType, unknown_optional, suppress_SELF, paren, previous_op, can_wrap);

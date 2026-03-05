@@ -90,9 +90,11 @@ static void explicitStaticAttributeDefinition_swift(Entity entity, Variable attr
 	char partialAttrName[BUFSIZ];
 	partialEntityAttribute_swiftName(attr,partialAttrName);
 
-	indent_swift(level);
-	raw("/// EXPLICIT ATTRIBUTE %s\n", 
-			VARis_observed(attr) ? "(OBSERVED)" : (attribute_need_observer(attr) ? "(SUBTYPE ATTR OBSERVED)" : "")
+  bool need_observer = attribute_need_observer(attr);
+
+  indent_swift(level);
+	raw("/// EXPLICIT ATTRIBUTE %s\n",
+			VARis_observed(attr) ? "(OBSERVED)" : (need_observer ? "(SUBTYPE ATTR OBSERVED)" : "")
 			);
 	indent_swift(level);
 	raw("@_documentation(visibility:public)\n");
@@ -101,7 +103,7 @@ static void explicitStaticAttributeDefinition_swift(Entity entity, Variable attr
 											NO_PREFIX, attr, VARis_dynamic(attr),
 											level, NOT_IN_COMMENT, buf);
 
-	if( attribute_need_observer(attr) ) {
+	if( need_observer ) {
 		raw(" // OBSERVED EXPLICIT ATTRIBUTE\n");
 	}
 	else {
@@ -118,6 +120,28 @@ static void explicitAttributeRedefinition_swift(Entity entity, Variable attr, in
 			);
 	if( VARis_observed(attr) ) raw(" //OBSERVED");
 	raw(" */\n");
+}
+
+static void overriding_entities(char *buf, Scope current, Variable attr, char **sep)
+{
+  if( VARis_derived(attr) ) {
+    raw("%s",
+        *sep
+        );
+    wrap("%s.typeIdentity",
+         partialEntity_swiftName(attr->defined_in, current, SWIFT_QUALIFIER, buf)
+         );
+    *sep = ", ";
+  }
+
+  if(attr->overriders != NULL) {
+    DictionaryEntry de;
+    Variable overrider;
+    DICTdo_init(attr->overriders, &de);
+    while( 0 != (overrider = DICTdo(&de)) ) {
+      overriding_entities(buf, current, overrider, sep);
+    }
+  }
 }
 
 //MARK: - explicit dynamic attribute
@@ -142,23 +166,18 @@ static void dynamicAttributeValueProvider_swift(Entity entity, Variable attr, in
 	{
 		indent_swift(level2);
 		wrap("let resolved = complex.resolvePartialEntityInstance(from: [");
-		DictionaryEntry de;
-		Variable overrider;
-		char* sep = "";
-		assert(attr->overriders != NULL);
+    char* sep = "";
+    assert(attr->overriders != NULL);
+
+    DictionaryEntry de;
+    Variable overrider;
 		DICTdo_init(attr->overriders, &de);
 		while( 0 != (overrider = DICTdo(&de)) ) {
-			if( !VARis_derived(overrider) ) continue;
-			raw("%s",
-					sep
-					);
-			wrap("%s.typeIdentity",
-					 partialEntity_swiftName(overrider->defined_in, entity->superscope, SWIFT_QUALIFIER, buf)
-					 );
-			sep = ", ";
+      overriding_entities(buf, entity->superscope, overrider, &sep);
 		}
-		wrap("])\n");
-		
+
+    wrap("])\n");
+
 		indent_swift(level2);
 		raw("return resolved as? %s\n",
 				dynamicAttribute_swiftProtocolName(attr, buf)
@@ -307,9 +326,10 @@ static void derivedAttributeDefinition_swift(Entity entity, Variable attr, int l
 		int tempvar_id = 1;
 		Linked_List tempvars;
 		Expression simplified = EXPR_decompose(entity, VARget_initializer(attr), VARget_type(attr), &tempvar_id, &tempvars);
-		EXPR_tempvars_swift(entity, tempvars, level2);
-				
-		indent_swift(level2);
+
+    EXPR_tempvars_swift(entity, tempvars, level2);
+
+    indent_swift(level2);
 		raw("return ");
 		if( VARis_optional_by_large(attr) ){
 			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
@@ -365,7 +385,7 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 				raw("SDAI.UNWRAP( ");
 			}
 		}
-		TYPE_head_swift(entity, original_attr->type, WO_COMMENT);
+		emit_typeReference_swift(entity, original_attr->type, WO_COMMENT);
 		char buf[BUFSIZ];
 		raw("(SELF.%s)", attribute_swiftName(attr, buf));
 		if( !VARis_optional_by_large(attr) ){
@@ -387,9 +407,10 @@ static void derivedAttributeRedefinition_swift(Entity entity, Variable attr, int
 		int tempvar_id = 1;
 		Linked_List tempvars;
 		Expression simplified = EXPR_decompose(entity, VARget_initializer(attr), VARget_type(attr), &tempvar_id, &tempvars);
-		EXPR_tempvars_swift(entity, tempvars, level2);
-		
-		indent_swift(level2);
+
+    EXPR_tempvars_swift(entity, tempvars, level2);
+
+    indent_swift(level2);
 		raw("let value = ");
 		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, simplified, VARget_type(attr), EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 		raw("\n");
@@ -453,8 +474,6 @@ static void inverseSimpleAttributeDefinition_swift(Entity entity, Variable attr,
 	raw(" .%s\n",
 			partialEntityAttribute_swiftName(observing_attr, buf)
 			);
-
-	indent_swift(level);
 	raw("//internal private(set) weak var %s: %s? \t(SEE CORRESPONDING ENTITY REFERENCE DEFINITION)\n",
 			partialAttrName,
 			attrTypeName
@@ -514,7 +533,7 @@ static void inverseAggregateAttributeDefinition_swift(Entity entity, Variable at
 			);
 	{
 		int saved = never_wrap();
-		TYPE_head_swift(entity, attr->type, WO_COMMENT);
+		emit_typeReference_swift(entity, attr->type, WO_COMMENT);
 		restore_wrap(saved);
 	}
 	raw(" \t(SEE CORRESPONDING ENTITY REFERENCE DEFINITION)\n");
@@ -888,13 +907,9 @@ static void expressConstructor( Entity entity, int level ) {
 
 		LISTdo(params, attr, Variable) {
 			bool backing_store = false;//attribute_need_observer(attr);
-
-
-      TypeBody attr_typebody = TYPEget_body(attr->type);
       bool attr_optional = VARis_dynamic(attr) || VARis_optional_by_large(attr);
 
-      if( TYPEis_aggregation_data_type(attr->type) ){
-        //      if( attr_typebody-> upper ){
+      if( TYPEis_bounded(attr->type) ) {
         int levelX = level2;
         if( attr_optional ){
           indent_swift(level2);
@@ -904,31 +919,25 @@ static void expressConstructor( Entity entity, int level ) {
           levelX = level3;
         }
 
+        indent_swift(levelX);
         raw("self.%s%s = \n",
             backing_store ? BACKING_STORAGE_PREFIX : "",
             partialEntityAttribute_swiftName(attr, buf)
             );
 
         indent_swift(levelX);
-        TYPE_head_swift(entity, attr->type, WO_COMMENT);
+        emit_typeReference_swift(entity, attr->type, WO_COMMENT);
         raw("(");
-        force_wrap();
-        raw("from: %s.asSwiftType, ",
+        raw("from: %s.asSwiftType",
             variable_swiftName(attr,buf)
             );
 
-        if( attr_typebody-> upper ){
-          force_wrap();
-          wrap( "bound1:SDAI.UNWRAP(" );
-          EXPR_swift(entity, attr_typebody->lower, Type_Integer, unknown_optional, SUPPRESS_SELF, YES_PAREN);
-          raw("), ");
-
-          wrap( "bound2:");
-          EXPR_swift(entity, attr_typebody->upper, Type_Integer, unknown_optional, SUPPRESS_SELF, YES_PAREN);
+        if( TYPEis_aggregation_data_type(attr->type) ){
+          raw(", ");
+          emit_aggregateBoundSpec(attr->type, entity, SUPPRESS_SELF, "");
         }
-        else {
-          force_wrap();
-          wrap("bound1:0, bound2:nil as Int?");
+        else {// TYPEis_string(attr->type) || TYPEis_binary(attr->type)
+          emit_widthSpec_asRequired(", ", attr->type, entity, NOT_FOR_UNDERLYING,  SUPPRESS_SELF, "");
         }
 
         raw( ")\n" );
@@ -1084,7 +1093,7 @@ static void p21Constructor( Entity entity, int level ) {
 					paramNo,
 					recoverFunc
 					);
-			TYPE_head_swift(entity, attr->type, WO_COMMENT);
+			emit_typeReference_swift(entity, attr->type, WO_COMMENT);
 			raw(".self, from: parameters[%d])\n",
 					paramNo
 					);
@@ -1163,8 +1172,6 @@ void partialEntityDefinition_swift
 
      Linked_List params = ENTITYget_constructor_params(entity);
 
-//		 indent_swift(level);
-//		 raw("@_documentation(visibility:public)\n");
 		 indent_swift(level);
      wrap("public final class %s : SDAI.PartialEntity",
           partialEntity_swiftName(entity, NO_QUALIFICATION, SWIFT_QUALIFIER, buf)

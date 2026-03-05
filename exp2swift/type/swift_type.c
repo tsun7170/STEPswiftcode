@@ -87,7 +87,12 @@ int accumulate_qualification(Scope target, Scope current, const char* delimiter,
 	return qual_len;
 }
 
-const char* TYPE_canonicalName( Type t, Scope current, const char* delimiter, char buf[BUFSIZ] ) {
+const char* namedType_canonicalName
+ ( Type t,
+  Scope current,
+  const char* delimiter,
+  char buf[BUFSIZ] )
+{
 	int qual_len = accumulate_qualification(t->superscope, current, delimiter, buf);
 
 	assert(t->symbol.name != NULL);
@@ -129,7 +134,7 @@ const char* TYPE_swiftNamePrefix( Type t )
   return prefix;
 }
 
-const char* TYPE_swiftName
+const char* namedType_swiftName
  ( Type t,
 	Scope current,
 	const char* delimiter,
@@ -137,7 +142,7 @@ const char* TYPE_swiftName
 {
 	assert(TYPEis_valid(t));
 	int qual_len = accumulate_qualification(t->superscope, current, delimiter, buf);
-	
+
   const char* prefix = TYPE_swiftNamePrefix(t);
 
   char suffix[BUFSIZ] = "";
@@ -146,35 +151,8 @@ const char* TYPE_swiftName
       snprintf(suffix, sizeof(suffix), "%sPRef",delimiter);
     }
   }
-//	if( TYPEget_body(t) == NULL ){
-//		prefix = "g";
-//	}
-//	else{
-//		switch (TYPEis(t)) {
-//			case entity_:
-//				prefix = "e";
-//				if( strcmp(delimiter, DOCC_QUALIFIER) != 0 ){
-//					snprintf(suffix, sizeof(suffix), "%sPRef",delimiter);
-//				}
-//				break;
-//			case select_:
-//				prefix = "s";
-//				break;
-//			case enumeration_:
-//				prefix = "n";
-//				break;
-//			case generic_:
-//			case aggregate_:
-//				prefix = "g";
-//				break;
-//				
-//			default:
-//				prefix = "t";
-//				break;
-//		}
-//	}
-	
-	assert(t->symbol.name != NULL);
+
+	assert(TYPEis_namedType(t));
 	char buf2[BUFSIZ];
 	snprintf(&buf[qual_len], BUFSIZ-qual_len, "%s%s%s",
 					 prefix,
@@ -209,8 +187,8 @@ void TYPEdefinition_swift(Schema schema, Type t, int level ) {
 	
 	// swift code generation
 	assert(t->symbol.name);
-	if( TYPEget_head( t ) ) {
-		typeAliasDefinition_swift( schema, t, TYPEget_head(t), level );
+	if( TYPEget_underlyingType( t ) ) {
+		typeAliasDefinition_swift( schema, t, TYPEget_underlyingType(t), level );
 	} 
 	else {
 		TypeBody tb = TYPEget_body( t );
@@ -238,8 +216,8 @@ void TYPEdefinition_swift(Schema schema, Type t, int level ) {
 }
 
 extern void TYPEextension_swift( Schema schema, Type t, int level ) {
-	if( TYPEget_head( t ) ) {
-		typeAliasExtension_swift( schema, t, TYPEget_head(t), level );
+	if( TYPEget_underlyingType( t ) ) {
+		typeAliasExtension_swift( schema, t, TYPEget_underlyingType(t), level );
 	}
 	else {
 		TypeBody tb = TYPEget_body( t );
@@ -322,7 +300,7 @@ void additional_constraints
   }
 }
 
-void TYPE_head_swift
+void emit_typeReference_swift
  ( Scope current,
 	Type t,
 	SwiftOutCommentOption in_comment
@@ -342,10 +320,10 @@ void TYPE_head_swift
 		return;
 	}
 
-	if( t->symbol.name ) {
+	if( TYPEis_namedType(t) ) {
 		char buf[BUFSIZ];
-		wrap( "%s", TYPE_swiftName(t,current, SWIFT_QUALIFIER, buf) );
-    additional_constraints(current, t, in_comment);
+		wrap( "%s", namedType_swiftName(t,current, SWIFT_QUALIFIER, buf) );
+//    additional_constraints(current, t, in_comment);
   } else {
     TYPE_body_swift( current, t, in_comment );
   }
@@ -429,7 +407,7 @@ void TYPE_body_swift
 			}
 			else {
 				char buf[BUFSIZ];
-				wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
+				wrap( "%s", namedType_swiftName(tb->tag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
 			}
 		}
 			break;
@@ -441,7 +419,7 @@ void TYPE_body_swift
 				wrap("SDAI.AGGREGATE");
 				if( tb->base != NULL ){
 					raw( "<" );
-					TYPE_head_swift( current, tb->base, in_comment );
+					emit_typeReference_swift( current, tb->base, in_comment );
 					raw(">");
 				}
 				else {
@@ -450,7 +428,7 @@ void TYPE_body_swift
 			}
 			else {
 				char buf[BUFSIZ];
-				wrap( "%s", TYPE_swiftName(tb->tag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
+				wrap( "%s", namedType_swiftName(tb->tag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
 			}
 		}
 			break;
@@ -463,7 +441,7 @@ void TYPE_body_swift
 			wrap("SDAI.");
 			raw( builtinTYPE_body_swiftname(t) );			
 			raw( "<" );
-			TYPE_head_swift( current, tb->base, in_comment );
+			emit_typeReference_swift( current, tb->base, in_comment );
 			raw(">");
 			EXPRbounds_swift( NULL, tb, EMIT_SELF, in_comment );
 			break;
@@ -503,10 +481,8 @@ void TYPE_body_swift
         comment_open = true;
       }
 
-//			wrap( "%s( ", in_comment==YES_IN_COMMENT ? "" : "/* " );
       raw("(");
 			EXPR_out( tb->precision, 0 );
-//			raw( " )%s", in_comment==YES_IN_COMMENT ? "" : " */" );
       raw(")");
 		}
 		if( tb->flags.fixed ) {
@@ -514,15 +490,7 @@ void TYPE_body_swift
         raw("/*");
         comment_open = true;
       }
-
       raw(" FIXED");
-
-//			if( in_comment==YES_IN_COMMENT ) {
-//				wrap( "FIXED" );
-//			}
-//			else {
-//				wrap( "/* FIXED */" );
-//			}
 		}
     if(comment_open) {
       raw("*/");
@@ -534,7 +502,7 @@ const char* TYPEhead_string_swift( Scope current, Type t, SwiftOutCommentOption 
 	if( prep_buffer(buf, BUFSIZ) ) {
 		abort();
 	}
-	TYPE_head_swift(current, t, in_comment);
+	emit_typeReference_swift(current, t, in_comment);
 	finish_buffer();
 	return ( buf );
 }
@@ -667,7 +635,7 @@ void TYPEwhereDefinitions_swift( Scope scope, int level ) {
 		wrap("public static func %s(SELF: %s?) -> SDAI.LOGICAL {\n", 
 				 whereRuleLabel_swiftName(where, whereLabel), 
 				 is_entity ? 	ENTITY_REFTYPE_swiftName(scope, NO_QUALIFICATION, SWIFT_QUALIFIER, buf) :
-				 							TYPE_swiftName(scope, NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
+				 							namedType_swiftName(scope, NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
 
 		{	int level2 = level+nestingIndent_swift;
 			
@@ -677,12 +645,13 @@ void TYPEwhereDefinitions_swift( Scope scope, int level ) {
 			int tempvar_id = 1;
 			Linked_List tempvars;
 			Expression simplified = EXPR_decompose(scope, where->expr, Type_Logical, &tempvar_id, &tempvars);
-			EXPR_tempvars_swift(scope, tempvars, level2);
-			
-			indent_swift(level2);
+
+      EXPR_tempvars_swift(scope, tempvars, level2);
+
+      indent_swift(level2);
 			raw("return ");
 			if( EXPRresult_is_optional(scope, simplified, CHECK_DEEP) != no_optional ){
-				TYPE_head_swift(scope, Type_Logical, WO_COMMENT);	// wrap with explicit type cast
+				emit_typeReference_swift(scope, Type_Logical, WO_COMMENT);	// wrap with explicit type cast
 				raw("(");
 				EXPR_swift(scope, simplified, Type_Logical, unknown_optional, EMIT_SELF, NO_PAREN);			
 				raw(")");
@@ -712,7 +681,7 @@ void TYPEwhereRuleValidation_swift( Type type, int level ) {
 	
 	{	int level2 = level+nestingIndent_swift;
 		
-		char typename[BUFSIZ];TYPE_swiftName(type, NO_QUALIFICATION, SWIFT_QUALIFIER, typename);
+		char typename[BUFSIZ];namedType_swiftName(type, NO_QUALIFICATION, SWIFT_QUALIFIER, typename);
 		indent_swift(level2);
 		raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
 		

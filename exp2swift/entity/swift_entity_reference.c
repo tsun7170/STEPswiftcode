@@ -309,7 +309,7 @@ static void explicitStaticSetterCore
       raw("\n");
     }
 
-    if( target_typebody->upper ) {
+    if( target_typebody->upper || target_typebody->precision) {
       indent_swift(level2);
       if( is_subtype_attr ){
         raw("guard ");
@@ -342,26 +342,20 @@ static void explicitStaticSetterCore
          partialAttrName
          );
 
-    if( TYPEis_aggregation_data_type(target_attr->type) ){
+    if( TYPEis_bounded(target_attr->type) ) {
       if( !target_optional ){
         raw("SDAI.UNWRAP(");
       }
 
-      TYPE_head_swift(entity, target_attr->type, WO_COMMENT);
+      emit_typeReference_swift(entity, target_attr->type, WO_COMMENT);
       raw("(");
 
       force_wrap();
-      if( target_typebody->upper ) {
-        wrap( "bound1:SDAI.UNWRAP(" );
-        EXPR_swift(original_partial, target_typebody->lower, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
-        raw("), ");
-
-        wrap( "bound2:");
-        EXPR_swift(original_partial, target_typebody->upper, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
-        raw(",");
+      if( TYPEis_aggregation_data_type(target_attr->type) ){
+        emit_aggregateBoundSpec(target_attr->type, original_partial, EMIT_SELF, ", ");
       }
-      else {
-        wrap("bound1:0, bound2:nil as Int?,");
+      else {// TYPEis_string(target_attr->type) || TYPEis_binary(target_attr->type)
+        emit_widthSpec_asRequired("", target_attr->type, entity, NOT_FOR_UNDERLYING, EMIT_SELF, ", ");
       }
 
       force_wrap();
@@ -385,7 +379,7 @@ static void explicitStaticSetterCore
       }
 
       if( VARis_redeclaring(attr) ){
-        TYPE_head_swift(entity, target_attr->type, WO_COMMENT);
+        emit_typeReference_swift(entity, target_attr->type, WO_COMMENT);
         raw("(fromGeneric: newValue)" );
       }
       else {
@@ -459,9 +453,8 @@ static void explicitStaticGetterCore
        );
 
   if( VARis_redeclaring(attr) ){
-    if( TYPEis_aggregation_data_type(attr->type) ){
-
-      if( attr_typebody->upper ) {
+    if( TYPEis_bounded(attr->type) ) {
+      if( attr_typebody->upper || attr_typebody->precision ) {
         indent_swift(level);
         if( is_subtype_attr ){
           raw("guard ");
@@ -497,22 +490,14 @@ static void explicitStaticGetterCore
       indent_swift(level);
       wrap("let value = " );
 
-      indent_swift(level);
-      TYPE_head_swift(entity, attr->type, WO_COMMENT);
+      emit_typeReference_swift(entity, attr->type, WO_COMMENT);
       raw("(");
 
-      if( attr_typebody-> upper ){
-        force_wrap();
-        wrap( "bound1:SDAI.UNWRAP(" );
-        EXPR_swift(original_partial, attr_typebody->lower, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
-        raw("), ");
-
-        wrap( "bound2:");
-        EXPR_swift(original_partial, attr_typebody->upper, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
-        raw(",");
+      if( TYPEis_aggregation_data_type(attr->type) ){
+        emit_aggregateBoundSpec(attr->type, original_partial, EMIT_SELF, ", ");
       }
-      else {
-        wrap("bound1:0, bound2:nil as Int?,");
+      else {// TYPEis_string(attr->type) || TYPEis_binary(attr->type)
+        emit_widthSpec_asRequired("", attr->type, entity, NOT_FOR_UNDERLYING, EMIT_SELF, ", ");
       }
 
       force_wrap();
@@ -541,7 +526,7 @@ static void explicitStaticGetterCore
     }
   }
 
-  TYPE_head_swift(entity, attr->type, WO_COMMENT);
+  emit_typeReference_swift(entity, attr->type, WO_COMMENT);
   raw("( originalValue )" );
 
   if( !attr_optional ){
@@ -669,9 +654,9 @@ static void explicitDynamicGetterSetter_swift
 
 
       if( VARis_redeclaring(attr) ){
-        if( TYPEis_aggregation_data_type(attr->type) ){
+        if( TYPEis_bounded(attr->type) ) {
 
-          if( attr_typebody->upper ) {
+          if( attr_typebody->upper || attr_typebody->precision ) {
             indent_swift(level3);
             if( is_subtype_attr ){
               raw("guard ");
@@ -707,22 +692,14 @@ static void explicitDynamicGetterSetter_swift
           indent_swift(level3);
           wrap("let value = " );
 
-          indent_swift(level3);
-          TYPE_head_swift(entity, attr->type, WO_COMMENT);
+          emit_typeReference_swift(entity, attr->type, WO_COMMENT);
           raw("(");
 
-          if( attr_typebody-> upper ){
-            force_wrap();
-            wrap( "bound1:SDAI.UNWRAP(" );
-            EXPR_swift(original_partial, attr_typebody->lower, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
-            raw("), ");
-
-            wrap( "bound2:");
-            EXPR_swift(original_partial, attr_typebody->upper, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
-            raw(",");
+          if( TYPEis_aggregation_data_type(attr->type) ){
+            emit_aggregateBoundSpec(attr->type, original_partial, EMIT_SELF, ", ");
           }
-          else {
-            wrap("bound1:0, bound2:nil as Int?,");
+          else {// TYPEis_string(attr->type) || TYPEis_binary(attr->type)
+            emit_widthSpec_asRequired("", attr->type, entity, NOT_FOR_UNDERLYING, EMIT_SELF, ", ");
           }
 
           force_wrap();
@@ -750,7 +727,7 @@ static void explicitDynamicGetterSetter_swift
             }
           }
 
-          TYPE_head_swift(entity, attr->type, WO_COMMENT);
+          emit_typeReference_swift(entity, attr->type, WO_COMMENT);
           raw("( originalValue )");
 
           if( !attr_optional ){
@@ -895,7 +872,7 @@ static void derivedGetter_swift(Variable attr, bool is_subtype_attr, Entity enti
 			raw(")");
 		}
 		else {
-			TYPE_head_swift(entity, attr->type, WO_COMMENT);
+			emit_typeReference_swift(entity, attr->type, WO_COMMENT);
 			raw("(");
 			wrap("origin.partialEntity.%s__getter(SELF: origin.pRef",
 					 partialEntityAttribute_swiftName(attr, partialAttr)
@@ -1051,23 +1028,18 @@ static void inverseAggregateAttributeGetter_swift(Entity entity, Variable attr, 
 
 		indent_swift(level2);
 		raw("let swiftValue = ");
-		TYPE_head_swift(entity, attr->type, NOT_IN_COMMENT);
+		emit_typeReference_swift(entity, attr->type, NOT_IN_COMMENT);
 		raw(".SwiftType( entities )\n");
 
 		/*
 		 let value = <attr_type>(from: swiftValue, bound1: <I1>, bound2: <I2?>)
 		 */
-		TypeBody attr_tb = TYPEget_body( attr->type );
 
 		indent_swift(level2);
 		raw("let value = ");
-		TYPE_head_swift(entity, attr->type, NOT_IN_COMMENT);
-    raw("(");
-    force_wrap();
-		raw("from: swiftValue, bound1: SDAI.UNWRAP(");
-		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, attr_tb->lower, Type_Integer, EMIT_SELF, NO_PAREN, OP_UNKNOWN, NO_WRAP);
-		raw("), bound2: ");
-		EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, entity, attr_tb->upper, Type_Integer, EMIT_SELF, NO_PAREN, OP_UNKNOWN, NO_WRAP);
+		emit_typeReference_swift(entity, attr->type, NOT_IN_COMMENT);
+    raw("(from: swiftValue, ");
+    emit_aggregateBoundSpec(attr->type, entity, EMIT_SELF, "");
 		raw(")\n");
 
 

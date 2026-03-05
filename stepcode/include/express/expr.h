@@ -310,5 +310,12 @@ extern SC_EXPRESS_EXPORT int      EXPget_integer_value PROTO( ( Expression ) );
 extern bool EXP_is_literal( Expression e );
 extern bool EXP_is_indeterminate( Expression e);
 extern bool EXP_is_definite_literal( Expression e);
+
+/// Determines whether two expressions are structurally and semantically equal.
+/// - Parameters:
+///   - e1: The first expression to compare.
+///   - e2: The second expression to compare.
+/// - Returns: `true` if both expressions are equivalent in structure and value; otherwise, `false`.
+/// - Note: This comparison typically considers the entire expression tree, including type, operator, operands, and literal values.
 extern bool EXPs_are_equal( Expression e1, Expression e2);
 #endif /*EXPRESSION_H*/

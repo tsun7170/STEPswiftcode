@@ -62,9 +62,13 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 			Entity ent = TYPEget_body(TYPEget_base_type(entity_ref->type))->entity;
 			indent_swift(level2);
 
-			char buf[BUFSIZ];
-			raw("let %s = ", variable_swiftName(entity_ref,buf));
-			wrap("SDAI.POPULATION(OF: %s.self, FROM: allComplexEntities)\n", ENTITY_swiftName(ent, NO_QUALIFICATION, SWIFT_QUALIFIER, buf) );
+      char buf[BUFSIZ];
+			char varname[BUFSIZ];
+			raw("let %s = ", variable_swiftName(entity_ref,varname));
+			wrap("SDAI.POPULATION(OF: %s.self, FROM: allComplexEntities); SDAI.TOUCH(let: %s)\n",
+           ENTITY_swiftName(ent, NO_QUALIFICATION, SWIFT_QUALIFIER, buf),
+           varname
+           );
 		}LISTod;
 		raw("\n");
 		
@@ -89,10 +93,11 @@ void RULE_swift(Schema schema, Rule rule, int level ) {
 
 			Linked_List tempvars;
 			Expression simplified = EXPR_decompose(schema, where->expr, Type_Logical, &tempvar_id, &tempvars);
-			EXPR_tempvars_swift(schema, tempvars, level2);
-			
-			char buf[BUFSIZ];
-			indent_swift(level2);
+
+      EXPR_tempvars_swift(schema, tempvars, level2);
+
+      indent_swift(level2);
+      char buf[BUFSIZ];
 			raw("let %s = ",whereRuleLabel_swiftName(where, buf));
 			EXPRassignment_rhs_swift(NO_RESOLVING_GENERIC, schema, simplified, Type_Logical, EMIT_SELF, NO_PAREN, OP_UNKNOWN, YES_WRAP);
 			raw("\n");

@@ -918,7 +918,7 @@ bool TYPEs_are_equal(Type lhstype, Type rhstype) {
 Type TYPEget_fundamental_type(Type t) {
 	Type underlying;
 	Type fundamental = t;
-	while ( (underlying = TYPEget_head(fundamental)) ) {
+	while ( (underlying = TYPEget_underlyingType(fundamental)) ) {
 		fundamental = underlying;
 	}
 	return fundamental;

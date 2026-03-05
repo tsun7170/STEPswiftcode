@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
+<<<<<<< HEAD
    LastUpgradeVersion = "1640"
+=======
+   LastUpgradeVersion = "2620"
+>>>>>>> develop
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -39,7 +43,11 @@
       enableUBSanitizer = "YES"
       launchStyle = "0"
       useCustomWorkingDirectory = "YES"
+<<<<<<< HEAD
       customWorkingDirectory = "/Users/home/Dropbox/STEP/STEPcode/SwiftSDAIap242/Sources/SwiftSDAIap242"
+=======
+      customWorkingDirectory = "/Users/home/Dropbox/STEP/STEPcode/SwiftSDAIap242ed4/Sources/SwiftSDAIap242ed4"
+>>>>>>> develop
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
@@ -56,6 +64,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
+<<<<<<< HEAD
             argument = "ap242/242_n8324_mim_lf.exp"
             isEnabled = "NO">
          </CommandLineArgument>
@@ -74,22 +83,42 @@
          <CommandLineArgument
             argument = "debug/debug2.exp"
             isEnabled = "NO">
+=======
+            argument = "ap242/ap242ed2_mim_lf_v1.101_TY.exp"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "ap242ed4/ap242ed4_mim_lf.exp"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "ap242ed4/ap242ed4_mim_lf_TY.exp"
+            isEnabled = "YES">
+>>>>>>> develop
          </CommandLineArgument>
       </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "EXPRESS_PATH"
+<<<<<<< HEAD
             value = "$(SRCROOT)/schema/"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "EXPRESS_PATH"
             value = "/Users/home/Dropbox/STEP/STEPcode/StepSchema/StepSchema/"
+=======
+            value = "$(SRCROOT)/../SwiftSDAIap242/schema/"
+>>>>>>> develop
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "EXPRESS_PATH"
+<<<<<<< HEAD
             value = "$(SRCROOT)/../SwiftSDAIap242/schema/"
+=======
+            value = "$(SRCROOT)/../SwiftSDAIap242ed4/schema/"
+>>>>>>> develop
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

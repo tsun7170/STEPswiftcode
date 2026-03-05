@@ -129,25 +129,29 @@ const char* uniqueRuleLabel_swiftName( int serial, Linked_List unique, char buf[
 	return buf;
 }
 
+static bool overriders_need_observer(Variable attr) {
+  if( VARis_overridden(attr)) {
+    DictionaryEntry de;
+    Variable overrider;
+    DICTdo_init(attr->overriders, &de);
+    while( 0 != ( overrider = DICTdo( &de ) ) ) {
+      if( VARis_observed(overrider)) return true;
+      if( overriders_need_observer(overrider) ) return true;
+    }
+  }
+  return false;
+}
+
 extern bool attribute_need_observer( Variable attr ) {
 	if( VARis_observed(attr) ){
 		return true;
 	}
 	if( VARis_redeclaring(attr) ) {
-		return attribute_need_observer( VARget_redeclaring_attr(attr) );
+    Variable original = VARget_redeclaring_attr(attr);
+		return attribute_need_observer( original );
 	}
 	
-	if( VARis_overridden(attr)) {
-		DictionaryEntry de;
-		Variable overrider;
-		DICTdo_init(attr->overriders, &de);
-		while( 0 != ( overrider = DICTdo( &de ) ) ) {
-			if( VARis_observed(overrider)){
-				return true;
-			}
-		}
-	}
-	return false;
+  return overriders_need_observer(attr);
 }
 
 //MARK: - entity information
@@ -157,6 +161,46 @@ enum AttrType {
 	derived,
 	inverse
 };
+
+static void overrider_out(Variable effective_definition, int level, Variable overrider)
+{
+  indent_swift(level);
+  if( overrider == effective_definition ) {
+    raw("*** ");
+  }
+  else {
+    raw("    ");
+  }
+  raw("ENTITY: %s,\t",
+      ENTITYget_name(overrider->defined_in)
+      );
+  raw("TYPE: ");
+  if(VARis_optional(overrider)) {
+    raw("OPTIONAL ");
+  }
+  raw(ATTRget_type_string(overrider));
+  if( VARis_derived(overrider) ){
+    raw("\t(as DERIVED)");
+  }
+  if( VARis_observed(overrider)){
+    raw("\t(OBSERVED)");
+  }
+  raw("\n");
+}
+
+static void overriders_out(Variable effective_definition, int level, Variable v)
+{
+  DictionaryEntry de;
+  Variable overrider;
+  DICTdo_init(v->overriders, &de);
+  while( 0 != ( overrider = DICTdo( &de ) ) ) {
+    overrider_out(effective_definition, level, overrider);
+
+    if( overrider->overriders != NULL ){
+      overriders_out(effective_definition, level+nestingIndent_swift, overrider);
+    }
+  }
+}
 
 static void attribute_out( Entity leaf, Variable v, int level ) {
 	enum AttrType attr_type = explicit;
@@ -195,7 +239,8 @@ static void attribute_out( Entity leaf, Variable v, int level ) {
 	if(VARis_dynamic(v)) {
 		raw(" (DYNAMIC)");
 	}
-	if( ENTITYget_attr_ambiguous_count(leaf, ATTRget_name_string(v)) > 1 ) {
+  int ambiguous_count = ENTITYget_attr_ambiguous_count(leaf, ATTRget_name_string(v));
+	if( ambiguous_count > 1 ) {
 		if( v->defined_in == leaf ){
 			raw("\t(MASKING)");
 		}
@@ -249,34 +294,10 @@ static void attribute_out( Entity leaf, Variable v, int level ) {
 		if( VARis_overridden(v)) {
 			indent_swift(level2);
 			raw("-- possibly overridden by\n");
-			Variable effective_definition = ENTITYfind_attribute_effective_definition(leaf, ATTRget_name_string(v));
-			DictionaryEntry de;
-			Variable overrider;
-			DICTdo_init(v->overriders, &de);
-			while( 0 != ( overrider = DICTdo( &de ) ) ) {
-				indent_swift(level2);
-				if( overrider == effective_definition ) {
-					raw("*** ");
-				}
-				else {
-					raw("    ");
-				}
-				raw("ENTITY: %s,\t",
-						ENTITYget_name(overrider->defined_in)
-						);
-				raw("TYPE: ");
-				if(VARis_optional(overrider)) {
-					raw("OPTIONAL ");
-				}
-				raw(ATTRget_type_string(overrider));
-				if( VARis_derived(overrider) ){
-					raw("\t(as DERIVED)");
-				}
-				if( VARis_observed(overrider)){
-					raw("\t(OBSERVED)");
-				}
-				raw("\n");
-			}
+			Variable effective_definition =
+      ENTITYfind_attribute_effective_definition(leaf, ATTRget_name_string(v));
+
+      overriders_out(effective_definition, level2, v);
 		}
 	}
 	raw( "\n" );

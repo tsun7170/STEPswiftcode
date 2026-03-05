@@ -40,7 +40,7 @@ static void enumWhereRuleValidation_swift( Type type, int level ) {
       raw("return [:]\n");    
     } 
     else {
-      char typename[BUFSIZ];TYPE_swiftName(type, NO_QUALIFICATION, SWIFT_QUALIFIER, typename);
+      char typename[BUFSIZ];namedType_swiftName(type, NO_QUALIFICATION, SWIFT_QUALIFIER, typename);
       indent_swift(level2);
       raw("let prefix2 = prefix + \"\\\\%s\"\n", typename);
       
@@ -83,7 +83,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 	raw("*/\n");
 	
 	char typename[BUFSIZ];
-	TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typename);
+	namedType_swiftName(type,type->superscope, SWIFT_QUALIFIER, typename);
 	indent_swift(level);
 	wrap( "public enum %s : SDAI.ENUMERATION, SDAI.Value, ", typename );
 	wrap( "TypeHierarchy.%s__TypeBehavior {\n", typename );
@@ -183,7 +183,9 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 
 		indent_swift(level2);
 		raw("public static let typeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf));
+		wrap("\"%s\"\n",
+         namedType_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf)
+         );
 
 		indent_swift(level2);
 		raw("public var asFundamentalType: FundamentalType { return self }\n\n");
@@ -215,7 +217,9 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 	
 		indent_swift(level2);
 		raw("public static let bareTypeName: String = ");
-		wrap("\"%s\"\n\n", TYPE_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+		wrap("\"%s\"\n\n",
+         namedType_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
+         );
 
 		indent_swift(level2);
 		raw("/// initialize from ISO 10303-21 exchange structure untyped parameters\n");
@@ -355,7 +359,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 
 void enumTypeExtension_swift(Schema schema, Type type, int level) {
 	char typebuf[BUFSIZ];
-	const char* typename = TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
+	const char* typename = namedType_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
 
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);

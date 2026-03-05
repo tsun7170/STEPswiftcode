@@ -41,9 +41,13 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 	raw("*/\n");
 	
 	indent_swift(level);
-	raw( "public struct %s: ", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
+	raw( "public struct %s: ",
+      namedType_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf)
+      );
 //	wrap("%s__", SCHEMA_swiftName(schema, buf));
-	raw( "TypeHierarchy.%s__TypeBehavior {\n", TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf));
+	raw( "TypeHierarchy.%s__TypeBehavior {\n",
+      namedType_swiftName(type,type->superscope, SWIFT_QUALIFIER, buf)
+      );
 
 	{
     TypeBody basetype_body = TYPEget_body( type );
@@ -65,11 +69,15 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 
 		indent_swift(level2);
 		raw("public static let typeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf));
+		wrap("\"%s\"\n",
+         namedType_canonicalName(type,schema->superscope, SWIFT_QUALIFIER, buf)
+         );
 
 		indent_swift(level2);
 		raw("public static let bareTypeName: String = ");
-		wrap("\"%s\"\n", TYPE_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+		wrap("\"%s\"\n",
+         namedType_canonicalName(type,NO_QUALIFICATION, SWIFT_QUALIFIER, buf)
+         );
 
 		indent_swift(level2);
 		raw("public var typeMembers: Set<SDAI.STRING> {\n");
@@ -96,22 +104,10 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 		indent_swift(level2);
 		raw( "public init(fundamental: FundamentalType) {\n" );
 
-      indent_swift(level3);
-      raw( "rep = Supertype(from: fundamental.asSwiftType, " );
+    indent_swift(level3);
+    raw( "rep = Supertype(from: fundamental.asSwiftType, " );
 
-    if( basetype_body->upper ){
-      force_wrap();
-      wrap( "bound1:SDAI.UNWRAP(" );
-      EXPR_swift(type->superscope, basetype_body->lower, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
-      raw("), ");
-
-      wrap( "bound2:");
-      EXPR_swift(type->superscope, basetype_body->upper, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
-    }
-    else {
-      force_wrap();
-      wrap( "bound1:0, bound2:nil as Int?");
-    }
+    emit_aggregateBoundSpec(type, type->superscope, EMIT_SELF, "");
     raw( ")\n" );
 
     indent_swift(level2);
@@ -119,57 +115,57 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 
 		indent_swift(level2);
 		raw("/// initialize from SDAI generic type value\n");
-		indent_swift(level2);
-		raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
-    
-		indent_swift(level3);
-		raw("guard let repval = generic?.");
-		switch( TYPEis(type) ){
-			case array_:
-				if(TYPEis_optional(type)){
-					raw("arrayOptionalValue(elementType: ELEMENT.self)");
-				}
-				else{
-					raw("arrayValue(elementType: ELEMENT.self)");
-				}
-				break;
-			case list_:
-				raw("listValue(elementType: ELEMENT.self)");
-				break;
-			case bag_:
-				raw("bagValue(elementType: ELEMENT.self)");
-				break;
-			case set_:
-				raw("setValue(elementType: ELEMENT.self)");
-				break;
-			default:
-				raw("UNKNOWNTYPE");
-				break;
-		}
-		raw(" else { return nil }\n");
+    {
+      indent_swift(level2);
+      raw("public init?<G: SDAI.GenericType>(fromGeneric generic: G?) {\n");
+      
+      indent_swift(level3);
+      raw("guard let repval = generic?.");
+      switch( TYPEis(type) ){
+        case array_:
+          if(TYPEis_optional(type)){
+            raw("arrayOptionalValue(elementType: ELEMENT.self)");
+          }
+          else{
+            raw("arrayValue(elementType: ELEMENT.self)");
+          }
+          break;
+        case list_:
+          raw("listValue(elementType: ELEMENT.self)");
+          break;
+        case bag_:
+          raw("bagValue(elementType: ELEMENT.self)");
+          break;
+        case set_:
+          raw("setValue(elementType: ELEMENT.self)");
+          break;
+        default:
+          raw("UNKNOWNTYPE");
+          break;
+      }
+      raw(" else { return nil }\n");
 
       indent_swift(level2+nestingIndent_swift);
       raw( "rep = Supertype(from: repval.asSwiftType, " );
 
-    if( basetype_body->upper ){
-      force_wrap();
-      wrap( "bound1:SDAI.UNWRAP(" );
-      EXPR_swift(type->superscope, basetype_body->lower, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
-      raw("), ");
-
-      wrap( "bound2:");
-      EXPR_swift(type->superscope, basetype_body->upper, Type_Integer, unknown_optional, EMIT_SELF, YES_PAREN);
+      emit_aggregateBoundSpec(type, type->superscope, EMIT_SELF, "");
+      raw( ")\n" );
+      
+      
+      indent_swift(level2);
+      raw("}\n");
     }
-    else {
-      force_wrap();
-      wrap( "bound1:0, bound2:nil as Int?");
+    {
+      indent_swift(level2);
+      raw("public init?<G: SDAI.GenericType>(_ generic: G?) {\n");
+
+      indent_swift(level3);
+      raw("self.init(fromGeneric:generic)\n");
+
+      indent_swift(level2);
+      raw("}\n");
     }
-    raw( ")\n" );
 
-
-    indent_swift(level2);
-		raw("}\n");
-		
 		TYPEwhereDefinitions_swift(type, level2);
 		TYPEwhereRuleValidation_swift(type, level2);
 	}
@@ -181,7 +177,7 @@ void namedAggregateTypeDefinition_swift( Schema schema, Type type, int level) {
 
 void namedAggregateTypeExtension_swift( Schema schema, Type type, int level) {
 	char typebuf[BUFSIZ];
-	const char* typename = TYPE_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
+	const char* typename = namedType_swiftName(type,type->superscope, SWIFT_QUALIFIER, typebuf);
 
 	char schemabuf[BUFSIZ];
 	const char* schemaname = SCHEMA_swiftName(schema, schemabuf);
@@ -190,17 +186,27 @@ void namedAggregateTypeExtension_swift( Schema schema, Type type, int level) {
 	
   //__TypeBehavior protocol
 	indent_swift(level);
-	raw( "extension %s.TypeHierarchy {\n public protocol %s__TypeBehavior: ", schemaname, typename);
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__TypeBehavior: ",
+      schemaname,
+      typename
+      );
 	positively_wrap();
 	if( TYPEis_entityYieldingAggregate(type) ){
 		wrap("SDAI.EntityReferenceYielding, ");		
 	}
-	wrap("SDAI.TypeHierarchy.%s__Subtype {}\n}\n\n", builtinTYPE_body_swiftname(type) );
+	wrap("SDAI.TypeHierarchy.%s__Subtype {}\n}\n\n",
+       builtinTYPE_body_swiftname(type)
+       );
 
   // __Subtype protocol
 	indent_swift(level);
-	raw( "extension %s.TypeHierarchy {\n public protocol %s__Subtype: ", schemaname, typename);
-	wrap("%s__TypeBehavior\n", typename);
+	raw( "extension %s.TypeHierarchy {\n public protocol %s__Subtype: ",
+      schemaname,
+      typename
+      );
+	wrap("%s__TypeBehavior\n",
+       typename
+       );
 
 	indent_swift(level);
 	raw( "{}\n}\n\n");

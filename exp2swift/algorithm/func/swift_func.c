@@ -92,7 +92,7 @@ static void func_result_cache_lookup_swift( Schema schema, Function func, int le
 
 	indent_swift(level2);
 	raw("return _cached_value as%s ", return_optional ? "?" : "!" );
-	TYPE_head_swift(func->superscope, FUNCget_return_type(func), WO_COMMENT);
+	emit_typeReference_swift(func->superscope, FUNCget_return_type(func), WO_COMMENT);
 	raw("\n");
 
 	//
@@ -129,11 +129,11 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 		char* sep = "";
 		raw("<");
 		LISTdo(generics, gtag, Type) {
-			wrap("%s%s: SDAI.GenericType",sep,TYPE_swiftName(gtag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+			wrap("%s%s: SDAI.GenericType",sep,namedType_swiftName(gtag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 			sep=", ";
 		}LISTod;
 		LISTdo(aggregates, atag, Type) {
-			wrap("%s%s: SDAI.AggregationType",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+			wrap("%s%s: SDAI.AggregationType",sep,namedType_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
 			sep=", ";
 		}LISTod;
 		raw(">");
@@ -163,8 +163,8 @@ void FUNC_swift( Schema schema, bool nested, Function func, int level ) {
 		LISTdo(aggregates, atag, Type) {
 			Type aggr = atag->u.type->head;	
 			positively_wrap();
-			wrap("%s%s.ELEMENT == ",sep,TYPE_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
-			TYPE_head_swift(func->superscope, TYPEget_base_type(aggr), WO_COMMENT);
+			wrap("%s%s.ELEMENT == ",sep,namedType_swiftName(atag,NO_QUALIFICATION, SWIFT_QUALIFIER, buf));
+			emit_typeReference_swift(func->superscope, TYPEget_base_type(aggr), WO_COMMENT);
 			sep = ", ";
 		}LISTod;
 	}
