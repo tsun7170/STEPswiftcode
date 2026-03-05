@@ -62,13 +62,8 @@
             filePath = "stepcode/src/express/resolve.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "726"
-            endingLineNumber = "726"
-=======
             startingLineNumber = "736"
             endingLineNumber = "736"
->>>>>>> develop
             landmarkName = "TYPE_resolve(typeaddr)"
             landmarkType = "9">
          </BreakpointContent>
@@ -179,13 +174,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "244"
-            endingLineNumber = "244"
-=======
             startingLineNumber = "250"
             endingLineNumber = "250"
->>>>>>> develop
             landmarkName = "emit_usedin_call(SELF, e, suppress_SELF, can_wrap)"
             landmarkType = "9">
          </BreakpointContent>
@@ -200,13 +190,8 @@
             filePath = "exp2swift/swift_files.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "195"
-            endingLineNumber = "195"
-=======
             startingLineNumber = "198"
             endingLineNumber = "198"
->>>>>>> develop
             landmarkName = "openSwiftFileForFunction(s, func)"
             landmarkType = "9">
          </BreakpointContent>
@@ -221,13 +206,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "1242"
-            endingLineNumber = "1242"
-=======
             startingLineNumber = "1249"
             endingLineNumber = "1249"
->>>>>>> develop
             landmarkName = "EXPRop2__swift(SELF1, SELF2, oe, opcode, op1target_type, op2target_type, suppress_SELF, paren, previous_op, can_wrap, need_optional_operand)"
             landmarkType = "9">
          </BreakpointContent>
@@ -242,13 +222,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "1090"
-            endingLineNumber = "1090"
-=======
             startingLineNumber = "1097"
             endingLineNumber = "1097"
->>>>>>> develop
             landmarkName = "EXPRop__swift(SELF, oe, target_type, suppress_SELF, paren, previous_op, can_wrap)"
             landmarkType = "9">
          </BreakpointContent>
@@ -263,13 +238,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "1258"
-            endingLineNumber = "1258"
-=======
             startingLineNumber = "1265"
             endingLineNumber = "1265"
->>>>>>> develop
             landmarkName = "EXPRop2__swift(SELF1, SELF2, oe, opcode, op1target_type, op2target_type, suppress_SELF, paren, previous_op, can_wrap, need_optional_operand)"
             landmarkType = "9">
          </BreakpointContent>
@@ -309,25 +279,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-<<<<<<< HEAD
-            uuid = "A16F291A-DA28-4B4E-B1BA-FC0C52791BD0"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "exp2swift/type/swift_type.c"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "155"
-            endingLineNumber = "155"
-            landmarkName = "TYPE_swiftName(t, current, delimiter, buf)"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-=======
->>>>>>> develop
             uuid = "6957768F-7CB3-4F30-B8D0-CFC72615F20C"
             shouldBeEnabled = "No"
             ignoreCount = "0"
@@ -335,13 +286,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "376"
-            endingLineNumber = "376"
-=======
             startingLineNumber = "382"
             endingLineNumber = "382"
->>>>>>> develop
             landmarkName = "EXPRquery_swift(SELF, can_wrap, e, suppress_SELF)"
             landmarkType = "9">
          </BreakpointContent>
@@ -356,13 +302,8 @@
             filePath = "exp2swift/swift_files.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "171"
-            endingLineNumber = "171"
-=======
             startingLineNumber = "174"
             endingLineNumber = "174"
->>>>>>> develop
             landmarkName = "openSwiftFile(s, category, initial, filename)"
             landmarkType = "9">
          </BreakpointContent>
@@ -377,13 +318,8 @@
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "679"
-            endingLineNumber = "679"
-=======
             startingLineNumber = "647"
             endingLineNumber = "647"
->>>>>>> develop
             landmarkName = "TYPEwhereDefinitions_swift(scope, level)"
             landmarkType = "9">
          </BreakpointContent>
@@ -414,13 +350,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "619"
-            endingLineNumber = "619"
-=======
             startingLineNumber = "626"
             endingLineNumber = "626"
->>>>>>> develop
             landmarkName = "operator_returns_optional(SELF, oe, deep)"
             landmarkType = "9">
          </BreakpointContent>
@@ -435,13 +366,8 @@
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "680"
-            endingLineNumber = "680"
-=======
             startingLineNumber = "648"
             endingLineNumber = "648"
->>>>>>> develop
             landmarkName = "TYPEwhereDefinitions_swift(scope, level)"
             landmarkType = "9">
          </BreakpointContent>
@@ -456,13 +382,8 @@
             filePath = "exp2swift/entity/swift_entity_partial.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "743"
-            endingLineNumber = "743"
-=======
             startingLineNumber = "764"
             endingLineNumber = "764"
->>>>>>> develop
             landmarkName = "simpleUniquenessRule_swift(entity, unique, level)"
             landmarkType = "9">
          </BreakpointContent>
@@ -478,13 +399,8 @@
             filePath = "exp2swift/expression/swift_expression.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "944"
-            endingLineNumber = "944"
-=======
             startingLineNumber = "951"
             endingLineNumber = "951"
->>>>>>> develop
             landmarkName = "EXPR__swift(SELF, e, target_type, optionality, suppress_SELF, paren, previous_op, can_wrap)"
             landmarkType = "9">
          </BreakpointContent>
@@ -499,13 +415,8 @@
             filePath = "exp2swift/swift_files.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "168"
-            endingLineNumber = "168"
-=======
             startingLineNumber = "171"
             endingLineNumber = "171"
->>>>>>> develop
             landmarkName = "openSwiftFile(s, category, initial, filename)"
             landmarkType = "9">
          </BreakpointContent>
@@ -514,23 +425,14 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "5531D5E2-D8D6-4F18-8AD3-A57D272CD433"
-<<<<<<< HEAD
-            shouldBeEnabled = "Yes"
-=======
             shouldBeEnabled = "No"
->>>>>>> develop
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "501"
-            endingLineNumber = "501"
-=======
             startingLineNumber = "479"
             endingLineNumber = "479"
->>>>>>> develop
             landmarkName = "TYPE_body_swift(current, t, in_comment)"
             landmarkType = "9">
          </BreakpointContent>
@@ -539,23 +441,14 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "84B79BF6-AC7C-4394-A829-65381CA1A09D"
-<<<<<<< HEAD
-            shouldBeEnabled = "Yes"
-=======
             shouldBeEnabled = "No"
->>>>>>> develop
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "513"
-            endingLineNumber = "513"
-=======
             startingLineNumber = "489"
             endingLineNumber = "489"
->>>>>>> develop
             landmarkName = "TYPE_body_swift(current, t, in_comment)"
             landmarkType = "9">
          </BreakpointContent>
@@ -564,23 +457,14 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "117E6F5B-01E8-42E9-811B-064DFEDC1B97"
-<<<<<<< HEAD
-            shouldBeEnabled = "Yes"
-=======
             shouldBeEnabled = "No"
->>>>>>> develop
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "287"
-            endingLineNumber = "287"
-=======
             startingLineNumber = "265"
             endingLineNumber = "265"
->>>>>>> develop
             landmarkName = "additional_constraints(current, t, in_comment)"
             landmarkType = "9">
          </BreakpointContent>
@@ -589,23 +473,14 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "1F76F77F-657C-4DE5-86CD-0C7CDC89E544"
-<<<<<<< HEAD
-            shouldBeEnabled = "Yes"
-=======
             shouldBeEnabled = "No"
->>>>>>> develop
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "exp2swift/type/swift_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-<<<<<<< HEAD
-            startingLineNumber = "295"
-            endingLineNumber = "295"
-=======
             startingLineNumber = "273"
             endingLineNumber = "273"
->>>>>>> develop
             landmarkName = "additional_constraints(current, t, in_comment)"
             landmarkType = "9">
          </BreakpointContent>
@@ -674,8 +549,6 @@
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
-<<<<<<< HEAD
-=======
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
@@ -790,6 +663,5 @@
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
->>>>>>> develop
    </Breakpoints>
 </Bucket>

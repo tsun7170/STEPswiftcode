@@ -12,13 +12,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>1398</string>
+					<string>1449</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>1397</string>
+					<string>1448</string>
 					<key>Timestamp</key>
-					<string>794395735.675283</string>
+					<string>794045047.255748</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -34,16 +34,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>		Expression bound2 = TYPEget_body(lhs_generic)-&gt;upper;
+				<string>	}
 </string>
 				<key>leading</key>
-				<string>		if( bound1 == NULL ) bound1 = TYPEget_body(rhs_concrete)-&gt;lower; 
-		
+				<string>		raw(")");
+		return;
 </string>
 				<key>trailing</key>
-				<string>		if( bound2 == NULL ) bound2 = TYPEget_body(rhs_concrete)-&gt;upper;
-		
-		bool unique = TYPEget_unique(lhs_generic);
+				<string>
+	// lhs.type == rhs.type
+	if( TYPEis_swiftAssignable(lhsType, rhs-&gt;return_type) ){
 </string>
 			</dict>
 			<key>type</key>
@@ -102,13 +102,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>819</string>
+					<string>862</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>818</string>
+					<string>861</string>
 					<key>Timestamp</key>
-					<string>794395719.110616</string>
+					<string>794045047.255741</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -124,16 +124,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>			}
+				<string>		}
 </string>
 				<key>leading</key>
-				<string>					wrap_if(can_wrap, "SDAI.UNKNOWN" );
-					break;
+				<string>				wrap_if(can_wrap, canonical_swiftName(e-&gt;symbol.name,buf) );
+			}
 </string>
 				<key>trailing</key>
 				<string>			break;
-			
-			//MARK: string_
+
+			//MARK: entity_
 </string>
 			</dict>
 			<key>type</key>
@@ -147,13 +147,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>1166</string>
+					<string>1217</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>1165</string>
+					<string>1216</string>
 					<key>Timestamp</key>
-					<string>794395735.6752599</string>
+					<string>794045047.255711</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -169,16 +169,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>				
+				<string>				EXPRopDot_swift( SELF, oe, suppress_SELF, paren, can_wrap );
 </string>
 				<key>leading</key>
-				<string>				EXPRop2__swift( SELF,SELF, oe, " .!=. ", oe-&gt;op1-&gt;return_type,oe-&gt;op2-&gt;return_type, suppress_SELF, paren, OP_UNKNOWN, can_wrap, NO_NEED_OPTIONAL_OPERAND );
-				break;
+				<string>			//MARK: OP_DOT
+			case OP_DOT:
 </string>
 				<key>trailing</key>
-				<string>		//MARK: - String Op
-			//MARK: OP_SUBCOMPONENT
-			case OP_SUBCOMPONENT:
+				<string>				break;
+				
+			//MARK: OP_GROUP
 </string>
 			</dict>
 			<key>type</key>
@@ -192,13 +192,13 @@
 					<key>EndingColumnNumber</key>
 					<string>0</string>
 					<key>EndingLineNumber</key>
-					<string>1171</string>
+					<string>1222</string>
 					<key>StartingColumnNumber</key>
 					<string>0</string>
 					<key>StartingLineNumber</key>
-					<string>1170</string>
+					<string>1221</string>
 					<key>Timestamp</key>
-					<string>794395735.67529</string>
+					<string>794045047.255735</string>
 				</dict>
 				<key>rebasable-url</key>
 				<dict>
@@ -214,16 +214,16 @@
 			<key>text-context</key>
 			<dict>
 				<key>focused</key>
-				<string>					case no_optional:
+				<string>				EXPRopGroup_swift( SELF, oe, suppress_SELF, paren, can_wrap );
 </string>
 				<key>leading</key>
-				<string>			case OP_SUBCOMPONENT:
-				switch (EXPRresult_is_optional(SELF, oe-&gt;op1, CHECK_SHALLOW)) {
+				<string>			//MARK: OP_GROUP
+			case OP_GROUP:
 </string>
 				<key>trailing</key>
-				<string>						EXPR__swift( SELF, oe-&gt;op1,oe-&gt;op1-&gt;return_type, no_optional, suppress_SELF, YES_PAREN, OP_UNKNOWN, can_wrap );
-						break;
-					case yes_optional:
+				<string>				break;
+				
+				
 </string>
 			</dict>
 			<key>type</key>

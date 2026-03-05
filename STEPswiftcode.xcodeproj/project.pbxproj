@@ -670,11 +670,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1240;
-<<<<<<< HEAD
-				LastUpgradeCheck = 1640;
-=======
 				LastUpgradeCheck = 2620;
->>>>>>> develop
 				ORGANIZATIONNAME = "Minokamo, Japan";
 				TargetAttributes = {
 					F44D025124BE402700E77B2A = {
