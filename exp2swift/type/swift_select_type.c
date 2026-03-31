@@ -139,6 +139,8 @@ static void listAllSelectionAttributes(Type select_type, int level) {
 }
 
 //MARK: - underlying reference codes
+const char* underlyingRep_swiftPrefix = "underlying_";
+
 static void selectTypeGroupReference_swift
  (
   Schema schema,
@@ -173,7 +175,7 @@ static void selectTypeGroupReference_swift
         );
 
 		indent_swift(level);
-		raw("public var %s%s: ", superEntity_swiftPrefix, namedType_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
+		raw("public var %s%s: ", underlyingRep_swiftPrefix, namedType_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
 		wrap("%s? {\n", buf);
 		
 		{	int level2 = level+nestingIndent_swift;
@@ -223,8 +225,8 @@ static void selectTypeGroupReference_swift
         );
 
 		indent_swift(level);
-		raw("public var %s%s: ", superEntity_swiftPrefix, as_entitySwiftName_n(entity_name, buf, sizeof(buf))); 
-		wrap("%s.PRef {\n", buf);
+		raw("public var %s%s: ", underlyingRep_swiftPrefix, as_entitySwiftName_n(entity_name, buf, sizeof(buf)));
+		wrap("%s.PRef? {\n", buf);
 
 		{	int level2 = level+nestingIndent_swift;
 			char buf2[BUFSIZ];
@@ -237,7 +239,7 @@ static void selectTypeGroupReference_swift
 				if( TYPEis_select(selection) ) {
 					indent_swift(level2);
 					raw("case .%s(let select): return select",selectCase_swiftName(selection, buf2));
-					wrap(".%s%s\n",superEntity_swiftPrefix,as_entitySwiftName_n(entity_name, buf2, sizeof(buf2)));
+					wrap(".%s%s\n",underlyingRep_swiftPrefix,as_entitySwiftName_n(entity_name, buf2, sizeof(buf2)));
 				}
 				else {
 					Entity entity = TYPEget_body(selection)->entity;
@@ -264,7 +266,7 @@ static void selectTypeGroupReference_swift
 			
 			if( unhandled > 0 ) {
 				indent_swift(level2);
-				raw("default: return %s.PRef(nil)\n", buf);
+				raw("default: return nil\n");
 			}
 			
 			indent_swift(level2);				
@@ -282,8 +284,8 @@ static void selectTypeGroupReference_swiftProtocol(Schema schema, Type select_ty
 	
 	TypeBody typeBody = TYPEget_body(select_type);
 	
-	char* mark = "//MARK: GROUP REFERENCES\n";
-	
+	char* mark = "//MARK: UNDERLYING TYPE REFERENCES\n";
+
 	LISTdo( typeBody->list, selection, Type ) {
 		if( TYPEis_entity(selection) ) continue;
 		
@@ -294,7 +296,7 @@ static void selectTypeGroupReference_swiftProtocol(Schema schema, Type select_ty
 		}
 		
 		indent_swift(level);
-		raw("var %s%s: ", superEntity_swiftPrefix, namedType_swiftName(selection, select_type/*->superscope*/, SWIFT_QUALIFIER, buf));
+		raw("var %s%s: ", underlyingRep_swiftPrefix, namedType_swiftName(selection, select_type/*->superscope*/, SWIFT_QUALIFIER, buf));
 		wrap("%s.%s? { get }\n", schemaname,buf);
 	} LISTod;				
 	
@@ -311,8 +313,8 @@ static void selectTypeGroupReference_swiftProtocol(Schema schema, Type select_ty
 		}
 		
 		indent_swift(level);
-		raw("var %s%s: ", superEntity_swiftPrefix, as_entitySwiftName_n(entity_name, buf, sizeof(buf))); 
-		wrap("%s.%s.PRef { get }\n", schemaname, buf);
+		raw("var %s%s: ", underlyingRep_swiftPrefix, as_entitySwiftName_n(entity_name, buf, sizeof(buf)));
+		wrap("%s.%s.PRef? { get }\n", schemaname, buf);
 	}
 }
 static void selectSubtypeGroupReference_swift(Schema schema, Type select_type, int level) {
@@ -322,8 +324,8 @@ static void selectSubtypeGroupReference_swift(Schema schema, Type select_type, i
 	
 	TypeBody typeBody = TYPEget_body(select_type);
 	
-	char* mark = "//MARK: GROUP REFERENCES\n";
-	
+	char* mark = "//MARK: UNDERLYING TYPE REFERENCES\n";
+
 	LISTdo( typeBody->list, selection, Type ) {
 		if( TYPEis_entity(selection) ) continue;
 		
@@ -334,9 +336,9 @@ static void selectSubtypeGroupReference_swift(Schema schema, Type select_type, i
 		}
 		
 		indent_swift(level);
-		raw("var %s%s: ", superEntity_swiftPrefix, namedType_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
-		wrap("%s.%s? { rep.%s%s }\n", schemaname, buf, superEntity_swiftPrefix, buf);
-	} LISTod;				
+		raw("var %s%s: ", underlyingRep_swiftPrefix, namedType_swiftName(selection, select_type->superscope, SWIFT_QUALIFIER, buf));
+		wrap("%s.%s? { rep.%s%s }\n", schemaname, buf, underlyingRep_swiftPrefix, buf);
+	} LISTod;
 	
 	Dictionary all_supers = SELECTget_super_entity_list(select_type);
 	DictionaryEntry de;
@@ -351,8 +353,8 @@ static void selectSubtypeGroupReference_swift(Schema schema, Type select_type, i
 		}
 		
 		indent_swift(level);
-		raw("var %s%s: ", superEntity_swiftPrefix, as_entitySwiftName_n(entity_name, buf, sizeof(buf))); 
-		wrap("%s.%s.PRef { rep.%s%s }\n", schemaname, buf, superEntity_swiftPrefix, buf);
+		raw("var %s%s: ", underlyingRep_swiftPrefix, as_entitySwiftName_n(entity_name, buf, sizeof(buf)));
+		wrap("%s.%s.PRef? { rep.%s%s }\n", schemaname, buf, underlyingRep_swiftPrefix, buf);
 	}
 }
 
@@ -1012,14 +1014,14 @@ static void selectTypeConstructor_swift(Type select_type,  int level) {
 	raw("}\n\n");
 
 	/*
-	public init?(p21omittedParamfrom exchangeStructure: P21Decode.ExchangeStructure) {
+	public init?(p21omittedParamFrom exchangeStructure: P21Decode.ExchangeStructure) {
 		return nil
 	}
 	*/
 	indent_swift(level);
 	raw("/// initialize from ISO 10303-21 exchange structure omitted parameters\n");
 	indent_swift(level);
-	raw("public init?(p21omittedParamfrom exchangeStructure: P21Decode.ExchangeStructure) {\n");
+	raw("public init?(p21omittedParamFrom exchangeStructure: P21Decode.ExchangeStructure) {\n");
 	{	int level2 = level + nestingIndent_swift;
 
 		indent_swift(level2);

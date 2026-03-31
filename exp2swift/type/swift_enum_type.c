@@ -307,7 +307,7 @@ void enumTypeDefinition_swift(Schema schema, Type type, int level) {
 		indent_swift(level);
 		raw("/// initialize from ISO 10303-21 exchange structure omitted parameters\n");
 		indent_swift(level2);
-		raw("public init(p21omittedParamfrom exchangeStructure: P21Decode.ExchangeStructure) {\n");
+		raw("public init(p21omittedParamFrom exchangeStructure: P21Decode.ExchangeStructure) {\n");
 		indent_swift(level2+nestingIndent_swift);
 		assert(count > 0);
 		raw("self = .%s\n",enumCase_swiftName( enumCases[0]->data, buf ));

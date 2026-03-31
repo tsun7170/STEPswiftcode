@@ -625,8 +625,8 @@
             filePath = "exp2swift/type/swift_select_type.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2056"
-            endingLineNumber = "2056"
+            startingLineNumber = "2058"
+            endingLineNumber = "2058"
             landmarkName = "selectTypeDefinition_swift(schema, select_type, level)"
             landmarkType = "9">
          </BreakpointContent>

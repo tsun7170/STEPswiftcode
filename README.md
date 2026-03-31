@@ -32,5 +32,5 @@ The main intention of the development of this translator is to translate ISO 103
 
 
 ## Development environment
-* Xcode version 26.3
-* macOS Tahoe 26.3
+* Xcode version 26.4
+* macOS Tahoe 26.3.1(a)
